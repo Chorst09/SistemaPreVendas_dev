@@ -1,262 +1,262 @@
-# Project Structure & Organization
+# Estrutura e Organização do Projeto
 
-## Root Level Organization
+## Organização do Nível Raiz
 
 ```
-proyecto-root/
-├── backend/              # Express.js API server
-├── frontend/             # Next.js web application
-├── shared/               # Shared code (types, schemas, utils)
-├── prisma/               # Database schema & migrations
-├── k8s/                  # Kubernetes manifests
-├── scripts/              # Build & utility scripts
-├── tests/                # Test suites (visual, performance)
-├── docs/                 # Documentation
-├── public/               # Static assets (root level)
-├── src/                  # Root-level source (legacy/monorepo)
-├── docker-compose.yml    # Local development orchestration
-├── Dockerfile            # Root-level Docker config
-├── package.json          # Root workspace dependencies
-└── tsconfig.json         # Root TypeScript config
+raiz-projeto/
+├── backend/              # Servidor API Express.js
+├── frontend/             # Aplicação web Next.js
+├── shared/               # Código compartilhado (tipos, schemas, utils)
+├── prisma/               # Schema do banco & migrações
+├── k8s/                  # Manifestos Kubernetes
+├── scripts/              # Scripts de build & utilitários
+├── tests/                # Suites de testes (visual, performance)
+├── docs/                 # Documentação
+├── public/               # Ativos estáticos (nível raiz)
+├── src/                  # Fonte nível raiz (legado/monorepo)
+├── docker-compose.yml    # Orquestração de desenvolvimento local
+├── Dockerfile            # Configuração Docker nível raiz
+├── package.json          # Dependências do workspace raiz
+└── tsconfig.json         # Configuração TypeScript raiz
 ```
 
 ---
 
-## Backend Structure (`backend/`)
+## Estrutura do Backend (`backend/`)
 
 ```
 backend/
 ├── src/
-│   ├── index.ts                    # Entry point, Express app setup
+│   ├── index.ts                    # Ponto de entrada, setup app Express
 │   ├── middleware/
-│   │   └── error-handler.ts        # Centralized error handling
-│   ├── routes/                     # API route handlers
+│   │   └── error-handler.ts        # Tratamento centralizado de erros
+│   ├── routes/                     # Manipuladores de rotas da API
 │   │   ├── service-desk.ts
 │   │   ├── proposals.ts
 │   │   ├── edital-analysis.ts
 │   │   └── job-positions.ts
-│   ├── services/                   # Business logic layer
+│   ├── services/                   # Camada de lógica de negócio
 │   ├── db/
-│   │   ├── schema.prisma           # Database schema (symlink to root)
-│   │   └── seed.ts                 # Database seeding
-│   └── types/                      # Backend-specific types
-├── dist/                           # Compiled output (generated)
-├── Dockerfile                      # Backend container config
-├── package.json                    # Backend dependencies
-├── tsconfig.json                   # Backend TypeScript config
-└── .env.example                    # Environment template
+│   │   ├── schema.prisma           # Schema do banco (symlink para raiz)
+│   │   └── seed.ts                 # Seed do banco
+│   └── types/                      # Tipos específicos do backend
+├── dist/                           # Saída compilada (gerada)
+├── Dockerfile                      # Configuração container backend
+├── package.json                    # Dependências do backend
+├── tsconfig.json                   # Configuração TypeScript backend
+└── .env.example                    # Template de ambiente
 ```
 
-### Backend Conventions
-- **Routes**: Handle HTTP requests, validation, response formatting
-- **Services**: Contain business logic, calculations, database operations
-- **Middleware**: Cross-cutting concerns (auth, logging, error handling)
-- **Types**: Backend-specific interfaces (extend shared types as needed)
+### Convenções do Backend
+- **Routes**: Manipulam requisições HTTP, validação, formatação de resposta
+- **Services**: Contêm lógica de negócio, cálculos, operações de banco
+- **Middleware**: Preocupações transversais (auth, logging, tratamento de erro)
+- **Types**: Interfaces específicas do backend (estendem tipos compartilhados conforme necessário)
 
 ---
 
-## Frontend Structure (`frontend/`)
+## Estrutura do Frontend (`frontend/`)
 
 ```
 frontend/
 ├── src/
-│   ├── app/                        # Next.js App Router
-│   │   ├── layout.tsx              # Root layout
-│   │   ├── page.tsx                # Home page
-│   │   ├── api/                    # API routes (if needed)
-│   │   ├── dashboard/              # Dashboard pages
-│   │   ├── projects/               # Project management pages
-│   │   ├── propostas/              # Proposal pages
-│   │   ├── noc/                    # NOC pricing pages
-│   │   ├── login/                  # Authentication pages
-│   │   └── [module]/               # Dynamic routes
+│   ├── app/                        # App Router Next.js
+│   │   ├── layout.tsx              # Layout raiz
+│   │   ├── page.tsx                # Página inicial
+│   │   ├── api/                    # Rotas da API (se necessário)
+│   │   ├── dashboard/              # Páginas do dashboard
+│   │   ├── projects/               # Páginas de gestão de projetos
+│   │   ├── propostas/              # Páginas de propostas
+│   │   ├── noc/                    # Páginas de precificação NOC
+│   │   ├── login/                  # Páginas de autenticação
+│   │   └── [module]/               # Rotas dinâmicas
 │   │
-│   ├── components/                 # React components
-│   │   ├── ui/                     # Base UI components (Radix-based)
+│   ├── components/                 # Componentes React
+│   │   ├── ui/                     # Componentes UI base (baseados em Radix)
 │   │   │   ├── button.tsx
 │   │   │   ├── dialog.tsx
 │   │   │   ├── form.tsx
 │   │   │   └── ...
-│   │   ├── shared/                 # Shared components (Header, Footer, Nav)
-│   │   ├── dashboard/              # Dashboard-specific components
-│   │   ├── proposals/              # Proposal-related components
-│   │   ├── propostas/              # Proposal template components
-│   │   ├── calculators/            # Calculator components
-│   │   ├── edital-analysis/        # Edital analysis components
-│   │   ├── noc-pricing/            # NOC pricing components
-│   │   ├── pdf-generation/         # PDF export components
-│   │   └── [feature]/              # Feature-specific components
+│   │   ├── shared/                 # Componentes compartilhados (Header, Footer, Nav)
+│   │   ├── dashboard/              # Componentes específicos do dashboard
+│   │   ├── proposals/              # Componentes relacionados a propostas
+│   │   ├── propostas/              # Componentes de template de propostas
+│   │   ├── calculators/            # Componentes de calculadoras
+│   │   ├── edital-analysis/        # Componentes de análise de editais
+│   │   ├── noc-pricing/            # Componentes de precificação NOC
+│   │   ├── pdf-generation/         # Componentes de exportação PDF
+│   │   └── [feature]/              # Componentes específicos de feature
 │   │
-│   ├── hooks/                      # Custom React hooks
-│   │   ├── use-api.ts              # API communication
-│   │   ├── use-auth.tsx            # Authentication
-│   │   ├── use-mobile.tsx          # Responsive design
-│   │   ├── use-toast.ts            # Toast notifications
+│   ├── hooks/                      # Hooks React customizados
+│   │   ├── use-api.ts              # Comunicação com API
+│   │   ├── use-auth.tsx            # Autenticação
+│   │   ├── use-mobile.tsx          # Design responsivo
+│   │   ├── use-toast.ts            # Notificações toast
 │   │   ├── use-pricing-integration.ts
 │   │   ├── use-project-data.ts
 │   │   └── ...
 │   │
-│   ├── lib/                        # Utilities & helpers
-│   │   ├── api-client.ts           # Axios/fetch wrapper
-│   │   ├── firebase.ts             # Firebase config
-│   │   ├── prisma.ts               # Prisma client
-│   │   ├── types.ts                # Frontend types
-│   │   ├── utils.ts                # General utilities
+│   ├── lib/                        # Utilitários & helpers
+│   │   ├── api-client.ts           # Wrapper Axios/fetch
+│   │   ├── firebase.ts             # Configuração Firebase
+│   │   ├── prisma.ts               # Cliente Prisma
+│   │   ├── types.ts                # Tipos do frontend
+│   │   ├── utils.ts                # Utilitários gerais
 │   │   ├── feature-flags.ts        # Feature toggles
-│   │   ├── constants/              # App constants
-│   │   ├── services/               # API service functions
-│   │   ├── stores/                 # Zustand stores
-│   │   └── utils/                  # Utility functions
+│   │   ├── constants/              # Constantes da app
+│   │   ├── services/               # Funções de serviço da API
+│   │   ├── stores/                 # Stores Zustand
+│   │   └── utils/                  # Funções utilitárias
 │   │
-│   ├── contexts/                   # React Context providers
+│   ├── contexts/                   # Provedores React Context
 │   │   └── QuoteContext.tsx
 │   │
-│   ├── styles/                     # Global styles
+│   ├── styles/                     # Estilos globais
 │   │   ├── globals.css
 │   │   ├── print.css
 │   │   └── pabx-background.css
 │   │
-│   └── middleware.ts               # Next.js middleware
+│   └── middleware.ts               # Middleware Next.js
 │
-├── public/                         # Static assets
-│   ├── clients/                    # Client logos
-│   ├── images/                     # Images
-│   └── proposal/                   # Proposal templates
+├── public/                         # Ativos estáticos
+│   ├── clients/                    # Logos de clientes
+│   ├── images/                     # Imagens
+│   └── proposal/                   # Templates de propostas
 │
-├── .next/                          # Build output (generated)
-├── Dockerfile                      # Frontend container config
-├── next.config.ts                  # Next.js configuration
-├── tailwind.config.ts              # Tailwind CSS config
-├── postcss.config.mjs              # PostCSS config
-├── package.json                    # Frontend dependencies
-├── tsconfig.json                   # Frontend TypeScript config
-└── .env.example                    # Environment template
+├── .next/                          # Saída de build (gerada)
+├── Dockerfile                      # Configuração container frontend
+├── next.config.ts                  # Configuração Next.js
+├── tailwind.config.ts              # Configuração Tailwind CSS
+├── postcss.config.mjs              # Configuração PostCSS
+├── package.json                    # Dependências do frontend
+├── tsconfig.json                   # Configuração TypeScript frontend
+└── .env.example                    # Template de ambiente
 ```
 
-### Frontend Conventions
-- **App Router**: File-based routing, server/client components
-- **Components**: Reusable, single responsibility, prop-based
-- **Hooks**: Custom logic extraction, state management helpers
-- **Lib**: Pure functions, no React dependencies (mostly)
-- **Stores**: Zustand for global state (auth, UI state, etc.)
-- **Services**: API communication functions
+### Convenções do Frontend
+- **App Router**: Roteamento baseado em arquivos, componentes server/client
+- **Components**: Reutilizáveis, responsabilidade única, baseados em props
+- **Hooks**: Extração de lógica customizada, helpers de gestão de estado
+- **Lib**: Funções puras, sem dependências React (na maioria)
+- **Stores**: Zustand para estado global (auth, estado UI, etc.)
+- **Services**: Funções de comunicação com API
 
 ---
 
-## Shared Code Structure (`shared/`)
+## Estrutura de Código Compartilhado (`shared/`)
 
 ```
 shared/
 ├── types/
-│   └── index.ts                    # Shared TypeScript interfaces
+│   └── index.ts                    # Interfaces TypeScript compartilhadas
 │                                   # (User, Project, Proposal, etc.)
 ├── schemas/
-│   └── index.ts                    # Zod validation schemas
-│                                   # (Used by both frontend & backend)
+│   └── index.ts                    # Schemas de validação Zod
+│                                   # (Usados por frontend & backend)
 └── utils/
-    └── index.ts                    # Shared utility functions
-                                    # (Erlang C, formatting, calculations)
+    └── index.ts                    # Funções utilitárias compartilhadas
+                                    # (Erlang C, formatação, cálculos)
 ```
 
-### Shared Conventions
-- **Types**: Interfaces used across frontend and backend
-- **Schemas**: Zod schemas for runtime validation (single source of truth)
-- **Utils**: Pure functions with no external dependencies
+### Convenções Compartilhadas
+- **Types**: Interfaces usadas entre frontend e backend
+- **Schemas**: Schemas Zod para validação em runtime (fonte única de verdade)
+- **Utils**: Funções puras sem dependências externas
 
 ---
 
-## Database Structure (`prisma/`)
+## Estrutura do Banco de Dados (`prisma/`)
 
 ```
 prisma/
-├── schema.prisma                   # Database schema definition
+├── schema.prisma                   # Definição do schema do banco
 ├── migrations/
 │   ├── 20251021210949_init/
 │   │   └── migration.sql
 │   ├── 20251022122753_add_job_positions_table/
 │   │   └── migration.sql
 │   └── migration_lock.toml
-└── seed.ts                         # Database seeding script
+└── seed.ts                         # Script de seed do banco
 ```
 
-### Database Conventions
-- **Schema**: Single source of truth for data model
-- **Migrations**: Version-controlled, incremental schema changes
-- **Seed**: Optional development data population
+### Convenções do Banco de Dados
+- **Schema**: Fonte única de verdade para o modelo de dados
+- **Migrations**: Mudanças de schema versionadas e incrementais
+- **Seed**: População opcional de dados de desenvolvimento
 
 ---
 
-## Tests Structure (`tests/`)
+## Estrutura de Testes (`tests/`)
 
 ```
 tests/
-├── visual/                         # Playwright visual regression tests
+├── visual/                         # Testes de regressão visual Playwright
 │   ├── color-system.spec.ts
 │   ├── components.spec.ts
 │   ├── domain-components.spec.ts
 │   └── utils/
-├── performance/                    # Performance benchmarks
+├── performance/                    # Benchmarks de performance
 │   ├── color-performance.test.ts
 │   ├── comprehensive-performance.test.ts
 │   └── benchmark-utils.ts
-└── README.md                       # Testing guide
+└── README.md                       # Guia de testes
 ```
 
-### Test Conventions
-- **Visual**: Playwright for UI regression testing
-- **Performance**: Vitest for benchmarking
-- **Unit/Integration**: Vitest in component/service files
+### Convenções de Testes
+- **Visual**: Playwright para testes de regressão UI
+- **Performance**: Vitest para benchmarking
+- **Unit/Integração**: Vitest em arquivos de componentes/serviços
 
 ---
 
-## Scripts Structure (`scripts/`)
+## Estrutura de Scripts (`scripts/`)
 
 ```
 scripts/
-├── dev.sh                          # Local development startup
-├── build.sh                        # Production build
-├── deploy.sh                       # Deployment script
-├── setup.sh                        # Initial setup
-├── migrate-colors.ts               # Color system migration
-├── performance-benchmark.ts        # Performance testing
-└── visual-regression-runner.ts     # Visual regression runner
+├── dev.sh                          # Inicialização de desenvolvimento local
+├── build.sh                        # Build para produção
+├── deploy.sh                       # Script de deploy
+├── setup.sh                        # Setup inicial
+├── migrate-colors.ts               # Migração do sistema de cores
+├── performance-benchmark.ts        # Testes de performance
+└── visual-regression-runner.ts     # Executor de regressão visual
 ```
 
 ---
 
-## Documentation Structure (`docs/`)
+## Estrutura de Documentação (`docs/`)
 
 ```
 docs/
-├── README.md                       # Documentation index
-├── QUICKSTART.md                   # 5-minute setup guide
-├── ARCHITECTURE.md                 # System architecture
-├── API.md                          # API reference
-├── DEPLOYMENT-GUIDE.md             # Production deployment
-├── CONTRIBUTING.md                 # Contribution guidelines
-├── color-system.md                 # Color system documentation
-└── [feature-docs]/                 # Feature-specific docs
+├── README.md                       # Índice de documentação
+├── QUICKSTART.md                   # Guia de setup em 5 minutos
+├── ARCHITECTURE.md                 # Arquitetura do sistema
+├── API.md                          # Referência da API
+├── DEPLOYMENT-GUIDE.md             # Deploy para produção
+├── CONTRIBUTING.md                 # Guia de contribuição
+├── color-system.md                 # Documentação do sistema de cores
+└── [feature-docs]/                 # Docs específicas de feature
 ```
 
 ---
 
-## Key Patterns & Conventions
+## Padrões e Convenções Principais
 
-### File Naming
+### Nomenclatura de Arquivos
 - **Components**: PascalCase (`ServiceDeskForm.tsx`)
-- **Hooks**: camelCase with `use` prefix (`useApi.ts`)
+- **Hooks**: camelCase com prefixo `use` (`useApi.ts`)
 - **Utils**: camelCase (`calculateErlangC.ts`)
 - **Types**: PascalCase (`User.ts`, `Project.ts`)
 - **Styles**: kebab-case (`pabx-background.css`)
 
-### Import Organization
-1. External dependencies
-2. Shared code (`shared/`)
-3. Local lib utilities
-4. Components
-5. Styles
+### Organização de Imports
+1. Dependências externas
+2. Código compartilhado (`shared/`)
+3. Utilitários lib locais
+4. Componentes
+5. Estilos
 
-### Component Structure
+### Estrutura de Componentes
 ```typescript
 // Imports
 import { useState } from 'react';
@@ -267,32 +267,32 @@ interface Props {
   title: string;
 }
 
-// Component
+// Componente
 export function MyComponent({ title }: Props) {
-  // Logic
+  // Lógica
   return <div>{title}</div>;
 }
 ```
 
-### API Communication
-- Use `use-api.ts` hook for data fetching
-- Validate responses with Zod schemas
-- Handle errors consistently
-- Use React Query patterns (if needed)
+### Comunicação com API
+- Use hook `use-api.ts` para busca de dados
+- Valide respostas com schemas Zod
+- Trate erros consistentemente
+- Use padrões React Query (se necessário)
 
-### State Management
-- **Global**: Zustand stores in `lib/stores/`
+### Gestão de Estado
+- **Global**: Stores Zustand em `lib/stores/`
 - **Local**: React `useState`
-- **Server**: Prisma queries in backend
+- **Servidor**: Queries Prisma no backend
 
-### Database Access
-- Backend only: Use Prisma client
-- Frontend: Call backend API endpoints
-- Never expose database directly to frontend
+### Acesso ao Banco de Dados
+- Apenas backend: Use cliente Prisma
+- Frontend: Chame endpoints da API backend
+- Nunca exponha banco diretamente ao frontend
 
 ---
 
-## Environment Configuration
+## Configuração de Ambiente
 
 ### Backend (`.env`)
 ```
@@ -310,16 +310,16 @@ NEXT_PUBLIC_APP_NAME=Sistema de Prevendas
 
 ---
 
-## Build Outputs
+## Saídas de Build
 
-| Directory | Purpose | Generated |
-|-----------|---------|-----------|
-| `backend/dist/` | Compiled backend | Yes |
-| `frontend/.next/` | Next.js build | Yes |
-| `node_modules/` | Dependencies | Yes |
-| `public/` | Static assets | No |
-| `prisma/migrations/` | DB migrations | No |
+| Diretório | Propósito | Gerado |
+|-----------|-----------|--------|
+| `backend/dist/` | Backend compilado | Sim |
+| `frontend/.next/` | Build Next.js | Sim |
+| `node_modules/` | Dependências | Sim |
+| `public/` | Ativos estáticos | Não |
+| `prisma/migrations/` | Migrações do banco | Não |
 
 ---
 
-**Last Updated**: November 2025
+**Última Atualização**: Novembro 2025

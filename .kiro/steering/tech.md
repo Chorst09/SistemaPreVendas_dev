@@ -1,168 +1,168 @@
-# Technology Stack & Build System
+# Pilha Tecnológica e Sistema de Build
 
-## Tech Stack Overview
+## Visão Geral da Pilha Tecnológica
 
 ### Frontend
 - **Framework**: Next.js 15.3.3 (React 18, App Router)
-- **Language**: TypeScript 5
-- **Styling**: Tailwind CSS 3.4.1 + PostCSS
-- **UI Components**: Radix UI (accessible component library)
-- **Forms**: React Hook Form 7.54.2 + Zod validation
-- **State Management**: Zustand 5.0.7
-- **Charts**: Recharts 2.15.1
-- **PDF Generation**: jsPDF 3.0.1, html2canvas 1.4.1
-- **Document Processing**: Mammoth 1.10.0 (Word docs), pdfjs-dist 5.4.54
-- **Spreadsheets**: XLSX 0.18.5
-- **Animations**: Framer Motion 12.23.24
-- **Icons**: Lucide React 0.475.0
-- **Date Handling**: date-fns 3.6.0
-- **Theme**: next-themes 0.3.0
-- **Testing**: Vitest 3.2.4, Playwright 1.55.0, React Testing Library
-- **Build Tool**: Turbopack (via Next.js)
+- **Linguagem**: TypeScript 5
+- **Estilo**: Tailwind CSS 3.4.1 + PostCSS
+- **Componentes UI**: Radix UI (biblioteca de componentes acessíveis)
+- **Formulários**: React Hook Form 7.54.2 + validação Zod
+- **Gestão de Estado**: Zustand 5.0.7
+- **Gráficos**: Recharts 2.15.1
+- **Geração de PDF**: jsPDF 3.0.1, html2canvas 1.4.1
+- **Processamento de Documentos**: Mammoth 1.10.0 (docs Word), pdfjs-dist 5.4.54
+- **Planilhas**: XLSX 0.18.5
+- **Animações**: Framer Motion 12.23.24
+- **Ícones**: Lucide React 0.475.0
+- **Manipulação de Datas**: date-fns 3.6.0
+- **Tema**: next-themes 0.3.0
+- **Testes**: Vitest 3.2.4, Playwright 1.55.0, React Testing Library
+- **Ferramenta de Build**: Turbopack (via Next.js)
 
 ### Backend
-- **Runtime**: Node.js (ES modules)
+- **Runtime**: Node.js (módulos ES)
 - **Framework**: Express.js 4.18.2
-- **Language**: TypeScript 5
-- **Database ORM**: Prisma 6.17.1
-- **Database**: PostgreSQL
-- **Validation**: Zod 3.24.2
+- **Linguagem**: TypeScript 5
+- **ORM do Banco**: Prisma 6.17.1
+- **Banco de Dados**: PostgreSQL
+- **Validação**: Zod 3.24.2
 - **CORS**: cors 2.8.5
-- **Environment**: dotenv 16.5.0
-- **AI Integration**: Genkit 1.14.1, @genkit-ai/googleai 1.14.1
-- **Testing**: Vitest 3.2.4
-- **Dev Runtime**: tsx 4.20.6 (TypeScript execution)
+- **Ambiente**: dotenv 16.5.0
+- **Integração com IA**: Genkit 1.14.1, @genkit-ai/googleai 1.14.1
+- **Testes**: Vitest 3.2.4
+- **Runtime de Dev**: tsx 4.20.6 (execução TypeScript)
 
-### Shared Code
-- **Validation**: Zod schemas
-- **Types**: TypeScript interfaces
-- **Utilities**: Shared functions (Erlang C calculations, formatting, etc.)
+### Código Compartilhado
+- **Validação**: Schemas Zod
+- **Tipos**: Interfaces TypeScript
+- **Utilitários**: Funções compartilhadas (cálculos Erlang C, formatação, etc.)
 
-### DevOps & Infrastructure
-- **Containerization**: Docker, Docker Compose
-- **Orchestration**: Kubernetes (k8s manifests included)
-- **CI/CD**: GitHub Actions ready
-- **Deployment**: Vercel (frontend), custom servers (backend)
-- **Database Migrations**: Prisma migrations
+### DevOps e Infraestrutura
+- **Containerização**: Docker, Docker Compose
+- **Orquestração**: Kubernetes (manifestos k8s inclusos)
+- **CI/CD**: Pronto para GitHub Actions
+- **Deploy**: Vercel (frontend), servidores customizados (backend)
+- **Migrações de Banco**: Migrações Prisma
 
-### Development Tools
-- **Package Manager**: npm
-- **Version Control**: Git
-- **Code Quality**: ESLint, TypeScript strict mode
-- **Testing Framework**: Vitest (unit/integration), Playwright (E2E/visual)
-- **Build**: TypeScript compiler, Next.js build system
+### Ferramentas de Desenvolvimento
+- **Gerenciador de Pacotes**: npm
+- **Controle de Versão**: Git
+- **Qualidade de Código**: ESLint, modo strict TypeScript
+- **Framework de Testes**: Vitest (unit/integração), Playwright (E2E/visual)
+- **Build**: Compilador TypeScript, sistema de build Next.js
 
 ---
 
-## Common Commands
+## Comandos Comuns
 
-### Frontend Development
+### Desenvolvimento Frontend
 ```bash
-# Development with Turbopack
+# Desenvolvimento com Turbopack
 npm run dev
 
-# Production build
+# Build para produção
 npm run build
 
-# Start production server
+# Inicia servidor de produção
 npm run start
 
-# Type checking
+# Verificação de tipos
 npm run typecheck
 
 # Linting
 npm run lint
 
-# Unit/integration tests
+# Testes unitários/integração
 npm run test
 npm run test:run
 
-# Visual regression tests
+# Testes de regressão visual
 npm run test:visual
 npm run test:visual:ui
 npm run test:visual:update
 npm run test:visual:regression
 
-# Performance benchmarks
+# Benchmarks de performance
 npm run test:performance
 npm run benchmark:performance
 ```
 
-### Backend Development
+### Desenvolvimento Backend
 ```bash
-# Development with hot reload
+# Desenvolvimento com hot reload
 npm run dev
 
-# Production build
+# Build para produção
 npm run build
 
-# Start production server
+# Inicia servidor de produção
 npm run start
 
-# Type checking
+# Verificação de tipos
 npm run typecheck
 
 # Linting
 npm run lint
 
-# Tests
+# Testes
 npm run test
 npm run test:run
 
-# Database migrations
+# Migrações de banco
 npm run migrate
 npm run migrate:prod
 
-# Seed database
+# Seed do banco
 npm run db:seed
 ```
 
-### Database (Prisma)
+### Banco de Dados (Prisma)
 ```bash
-# Generate Prisma client
+# Gera cliente Prisma
 npx prisma generate
 
-# Create migration
-npx prisma migrate dev --name migration_name
+# Cria migração
+npx prisma migrate dev --name nome_migracao
 
-# Deploy migrations (production)
+# Deploy de migrações (produção)
 npx prisma migrate deploy
 
-# Open Prisma Studio (GUI)
+# Abre Prisma Studio (GUI)
 npx prisma studio
 
-# Seed database
+# Seed do banco
 npx prisma db seed
 ```
 
 ### Docker
 ```bash
-# Build all services
+# Build de todos os serviços
 docker-compose up --build
 
-# Run in background
+# Executa em background
 docker-compose up -d
 
-# Stop services
+# Para serviços
 docker-compose down
 
-# View logs
-docker-compose logs -f [service-name]
+# Visualiza logs
+docker-compose logs -f [nome-servico]
 
-# Build individual images
+# Build de imagens individuais
 docker build -t sistema-prevendas-backend ./backend
 docker build -t sistema-prevendas-frontend ./frontend
 ```
 
 ### Kubernetes
 ```bash
-# Apply all manifests
+# Aplica todos os manifestos
 kubectl apply -f k8s/
 
-# Check status
+# Verifica status
 kubectl get pods -n sistema-prevendas
 
-# View logs
+# Visualiza logs
 kubectl logs -f deployment/app -n sistema-prevendas
 
 # Port forward
@@ -171,60 +171,60 @@ kubectl port-forward svc/app 3000:3000 -n sistema-prevendas
 
 ---
 
-## Build & Deployment
+## Build e Deploy
 
-### Frontend Build
-- **Output**: `.next/` directory
-- **Optimization**: Automatic code splitting, image optimization
-- **Deployment**: Vercel, Docker, or any static host
-- **Environment**: `NEXT_PUBLIC_API_URL` for API endpoint
+### Build Frontend
+- **Saída**: Diretório `.next/`
+- **Otimização**: Code splitting automático, otimização de imagens
+- **Deploy**: Vercel, Docker, ou qualquer host estático
+- **Ambiente**: `NEXT_PUBLIC_API_URL` para endpoint da API
 
-### Backend Build
-- **Output**: `dist/` directory (compiled JavaScript)
-- **Optimization**: TypeScript compilation with strict mode
-- **Deployment**: Docker, Kubernetes, or Node.js servers
-- **Environment**: `DATABASE_URL`, `CORS_ORIGIN`, `PORT`
+### Build Backend
+- **Saída**: Diretório `dist/` (JavaScript compilado)
+- **Otimização**: Compilação TypeScript com modo strict
+- **Deploy**: Docker, Kubernetes, ou servidores Node.js
+- **Ambiente**: `DATABASE_URL`, `CORS_ORIGIN`, `PORT`
 
-### Database
-- **Provider**: PostgreSQL
-- **Migrations**: Prisma migrations (version-controlled)
-- **Seeding**: Optional seed scripts for development
-
----
-
-## Key Configuration Files
-
-| File | Purpose |
-|------|---------|
-| `tsconfig.json` | TypeScript configuration (root) |
-| `frontend/tsconfig.json` | Frontend-specific TypeScript config |
-| `backend/tsconfig.json` | Backend-specific TypeScript config |
-| `tailwind.config.ts` | Tailwind CSS customization |
-| `postcss.config.mjs` | PostCSS plugins |
-| `next.config.ts` | Next.js configuration |
-| `prisma/schema.prisma` | Database schema definition |
-| `docker-compose.yml` | Local development orchestration |
-| `k8s/*.yaml` | Kubernetes manifests |
-| `.env.example` | Environment variable template |
+### Banco de Dados
+- **Provedor**: PostgreSQL
+- **Migrações**: Migrações Prisma (versionadas)
+- **Seed**: Scripts opcionais de seed para desenvolvimento
 
 ---
 
-## Performance Considerations
+## Arquivos de Configuração Principais
 
-- **Frontend**: Turbopack for fast builds, automatic code splitting, image optimization
-- **Backend**: Connection pooling via Prisma, request validation with Zod
-- **Database**: Indexed queries, migrations for schema changes
-- **Caching**: HTTP headers configured for API responses
+| Arquivo | Propósito |
+|---------|-----------|
+| `tsconfig.json` | Configuração TypeScript (raiz) |
+| `frontend/tsconfig.json` | Configuração TypeScript específica do frontend |
+| `backend/tsconfig.json` | Configuração TypeScript específica do backend |
+| `tailwind.config.ts` | Customização Tailwind CSS |
+| `postcss.config.mjs` | Plugins PostCSS |
+| `next.config.ts` | Configuração Next.js |
+| `prisma/schema.prisma` | Definição do schema do banco |
+| `docker-compose.yml` | Orquestração de desenvolvimento local |
+| `k8s/*.yaml` | Manifestos Kubernetes |
+| `.env.example` | Template de variáveis de ambiente |
 
 ---
 
-## Testing Strategy
+## Considerações de Performance
 
-- **Unit/Integration**: Vitest (fast, ESM-native)
-- **Visual Regression**: Playwright with snapshot testing
-- **Performance**: Custom benchmarks in `tests/performance/`
-- **E2E**: Playwright for critical user flows
+- **Frontend**: Turbopack para builds rápidos, code splitting automático, otimização de imagens
+- **Backend**: Connection pooling via Prisma, validação de requisições com Zod
+- **Banco de Dados**: Queries indexadas, migrações para mudanças de schema
+- **Cache**: Headers HTTP configurados para respostas da API
 
 ---
 
-**Last Updated**: November 2025
+## Estratégia de Testes
+
+- **Unit/Integração**: Vitest (rápido, nativo ESM)
+- **Regressão Visual**: Playwright com snapshot testing
+- **Performance**: Benchmarks customizados em `tests/performance/`
+- **E2E**: Playwright para fluxos críticos de usuário
+
+---
+
+**Última Atualização**: Novembro 2025
