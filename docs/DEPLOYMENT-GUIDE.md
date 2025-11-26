@@ -1,443 +1,323 @@
-# 🚀 Guia Completo de Deploy - Service Desk Pricing
+# Guia de Deploy - Sistema de Prevendas
 
-## 📋 **Visão Geral da Arquitetura**
+## 📋 Pré-requisitos
 
-```
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   Kubernetes    │    │     Docker      │    │   PostgreSQL    │
-│    Cluster      │◄──►│   Containers    │◄──►│   Database      │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-         │                       │                       │
-         │              ┌─────────────────┐              │
-         └─────────────►│     Redis       │◄─────────────┘
-                        │     Cache       │
-                        └─────────────────┘
-```
+- Docker e Docker Compose
+- Node.js 20+
+- PostgreSQL 16+ (se não usar Docker)
+- Git
 
-### **Stack Tecnológico:**
-- **Frontend:** Next.js 15 + React + TypeScript + Tailwind CSS
-- **Backend:** Next.js API Routes + Prisma ORM
-- **Database:** PostgreSQL 15
-- **Cache:** Redis 7
-- **Containerização:** Docker + Docker Compose
-- **Orquestração:** Kubernetes
-- **Proxy:** Nginx (Load Balancer)
+## 🐳 Deploy com Docker Compose (Recomendado)
 
-## 🛠️ **Pré-requisitos**
-
-### **Desenvolvimento Local:**
-- Node.js 18+
-- Docker & Docker Compose
-- PostgreSQL 15+ (opcional, pode usar Docker)
-- Redis 7+ (opcional, pode usar Docker)
-
-### **Produção:**
-- Kubernetes Cluster (v1.24+)
-- kubectl configurado
-- Docker Registry (Docker Hub, AWS ECR, etc.)
-- Domínio configurado (opcional)
-- Certificado SSL (opcional)
-
-## 🏗️ **Configuração Inicial**
-
-### **1. Clone e Configuração**
-```bash
-# Clone o repositório
-git clone <repository-url>
-cd servicedesk-pricing
-
-# Instale dependências
-npm install
-
-# Configure ambiente
-cp .env.example .env
-# Edite .env com suas configurações
-```
-
-### **2. Configuração do Banco de Dados**
-```bash
-# Gere o cliente Prisma
-npx prisma generate
-
-# Execute migrações
-npx prisma migrate dev --name init
-
-# (Opcional) Seed do banco
-npx prisma db seed
-```
-
-## 🐳 **Desenvolvimento Local com Docker**
-
-### **Opção 1: Script Automatizado**
-```bash
-# Execute o script de desenvolvimento
-./scripts/local-dev.sh
-```
-
-### **Opção 2: Manual**
-```bash
-# Inicie apenas os bancos de dados
-docker-compose up -d postgres redis
-
-# Execute migrações
-npx prisma migrate dev
-
-# Inicie a aplicação
-npm run dev
-```
-
-### **Serviços Disponíveis:**
-- **Aplicação:** http://localhost:3000
-- **Health Check:** http://localhost:3000/api/health
-- **PostgreSQL:** localhost:5432
-- **Redis:** localhost:6379
-- **Prisma Studio:** `npx prisma studio`
-
-## 🚀 **Deploy em Produção**
-
-### **1. Preparação da Imagem Docker**
+### Desenvolvimento Local
 
 ```bash
-# Build da imagem
-docker build -t your-registry/servicedesk-pricing:v1.0.0 .
+# 1. Clone o repositório
+git clone <repo>
+cd projeto-root
 
-# Push para registry
-docker push your-registry/servicedesk-pricing:v1.0.0
+# 2. Configure variáveis de ambiente
+cp backend/.env.example backend/.env
+cp frontend/.env.example frontend/.env.local
+
+# 3. Inicie os containers
+docker-compose up --build
+
+# 4. Acesse
+# Frontend: http://localhost:3000
+# Backend: http://localhost:3001
+# Database: localhost:5432
 ```
 
-### **2. Configuração do Kubernetes**
+### Produção
 
-#### **Atualizar Configurações:**
 ```bash
-# Edite os arquivos de configuração
-vim k8s/configmap.yaml    # Configurações da aplicação
-vim k8s/secrets.yaml      # Secrets (use base64)
-vim k8s/app.yaml         # Atualize a imagem Docker
-vim k8s/ingress.yaml     # Configure seu domínio
+# 1. Configure variáveis de produção
+export NODE_ENV=production
+export DATABASE_URL="postgresql://user:pass@prod-db:5432/db"
+export CORS_ORIGIN="https://seu-dominio.com"
+
+# 2. Build e inicie
+docker-compose -f docker-compose.yml up -d
+
+# 3. Verifique saúde
+curl http://localhost:3001/api/health
 ```
 
-#### **Criar Secrets (Recomendado):**
+## ☁️ Deploy em Kubernetes
+
+### Preparação
+
 ```bash
-# Crie secrets via kubectl (mais seguro)
-kubectl create secret generic servicedesk-secrets \
-  --from-literal=DATABASE_URL="postgresql://user:pass@postgres-service:5432/servicedesk_pricing" \
-  --from-literal=NEXTAUTH_SECRET="your-secret-key" \
-  --from-literal=REDIS_URL="redis://:password@redis-service:6379" \
-  --namespace=servicedesk-pricing
+# 1. Build e push das imagens
+docker build -t seu-registry/backend:latest ./backend
+docker build -t seu-registry/frontend:latest ./frontend
+
+docker push seu-registry/backend:latest
+docker push seu-registry/frontend:latest
+
+# 2. Atualize k8s/deployment.yaml com suas imagens
 ```
 
-### **3. Deploy Automatizado**
+### Deploy
+
 ```bash
-# Execute o script de deploy
-./scripts/deploy.sh v1.0.0
+# 1. Crie namespace
+kubectl create namespace sistema-prevendas
+
+# 2. Configure secrets
+kubectl create secret generic db-credentials \
+  --from-literal=DATABASE_URL="postgresql://..." \
+  -n sistema-prevendas
+
+# 3. Deploy
+kubectl apply -f k8s/ -n sistema-prevendas
+
+# 4. Verifique
+kubectl get pods -n sistema-prevendas
+kubectl logs -f deployment/backend -n sistema-prevendas
 ```
 
-### **4. Deploy Manual**
+## 🚀 Deploy em Vercel (Frontend)
+
+### Setup
+
 ```bash
-# Crie namespace
-kubectl apply -f k8s/namespace.yaml
+# 1. Instale Vercel CLI
+npm i -g vercel
 
-# Aplique configurações
-kubectl apply -f k8s/configmap.yaml
-kubectl apply -f k8s/secrets.yaml
+# 2. Faça login
+vercel login
 
-# Deploy bancos de dados
-kubectl apply -f k8s/postgres.yaml
-kubectl apply -f k8s/redis.yaml
+# 3. Configure projeto
+cd frontend
+vercel link
 
-# Aguarde bancos ficarem prontos
-kubectl wait --for=condition=available --timeout=300s deployment/postgres -n servicedesk-pricing
-kubectl wait --for=condition=available --timeout=300s deployment/redis -n servicedesk-pricing
-
-# Deploy aplicação
-kubectl apply -f k8s/app.yaml
-
-# Configure ingress
-kubectl apply -f k8s/ingress.yaml
+# 4. Configure variáveis de ambiente
+vercel env add NEXT_PUBLIC_API_URL
+# Digite: https://seu-backend.com/api
 ```
 
-## 📊 **Monitoramento e Verificação**
+### Deploy
 
-### **Verificar Status do Deploy:**
 ```bash
-# Status dos pods
-kubectl get pods -n servicedesk-pricing
+# Produção
+vercel --prod
 
-# Status dos services
-kubectl get services -n servicedesk-pricing
-
-# Status do ingress
-kubectl get ingress -n servicedesk-pricing
-
-# Logs da aplicação
-kubectl logs -f deployment/servicedesk-app -n servicedesk-pricing
+# Preview
+vercel
 ```
 
-### **Health Checks:**
-```bash
-# Health check interno
-kubectl exec -it deployment/servicedesk-app -n servicedesk-pricing -- curl http://localhost:3000/api/health
+## 🔌 Deploy do Backend em Heroku
 
-# Health check externo (se ingress configurado)
-curl https://your-domain.com/api/health
+### Setup
+
+```bash
+# 1. Instale Heroku CLI
+brew tap heroku/brew && brew install heroku
+
+# 2. Faça login
+heroku login
+
+# 3. Crie app
+heroku create seu-app-backend
+
+# 4. Configure banco de dados
+heroku addons:create heroku-postgresql:standard-0 -a seu-app-backend
+
+# 5. Configure variáveis
+heroku config:set NODE_ENV=production -a seu-app-backend
+heroku config:set CORS_ORIGIN=https://seu-frontend.vercel.app -a seu-app-backend
 ```
 
-## 🔧 **Configurações Avançadas**
+### Deploy
 
-### **1. Scaling Horizontal**
 ```bash
-# Scale manual
-kubectl scale deployment servicedesk-app --replicas=5 -n servicedesk-pricing
+# 1. Adicione remote
+git remote add heroku https://git.heroku.com/seu-app-backend.git
 
-# HPA já configurado no k8s/app.yaml
-# Escala automática baseada em CPU/Memory
+# 2. Deploy
+git push heroku main
+
+# 3. Verifique
+heroku logs --tail -a seu-app-backend
 ```
 
-### **2. Backup do Banco de Dados**
+## 🔐 Variáveis de Ambiente
+
+### Backend
+
+```env
+# Obrigatórias
+NODE_ENV=production
+PORT=3001
+DATABASE_URL=postgresql://user:pass@host:5432/db
+CORS_ORIGIN=https://seu-dominio.com
+
+# Opcionais
+GENKIT_API_KEY=your-key
+LOG_LEVEL=info
+```
+
+### Frontend
+
+```env
+NEXT_PUBLIC_API_URL=https://seu-backend.com/api
+NEXT_PUBLIC_APP_NAME=Sistema de Prevendas
+```
+
+## 🗄️ Banco de Dados
+
+### Migração Inicial
+
 ```bash
-# Backup manual
-kubectl exec -it deployment/postgres -n servicedesk-pricing -- pg_dump -U postgres servicedesk_pricing > backup.sql
+# 1. Conecte ao banco
+psql postgresql://user:pass@host:5432/db
+
+# 2. Execute migrações
+cd backend
+npx prisma migrate deploy
+
+# 3. Seed (opcional)
+npm run db:seed
+```
+
+### Backup
+
+```bash
+# Backup
+pg_dump postgresql://user:pass@host:5432/db > backup.sql
 
 # Restore
-kubectl exec -i deployment/postgres -n servicedesk-pricing -- psql -U postgres servicedesk_pricing < backup.sql
+psql postgresql://user:pass@host:5432/db < backup.sql
 ```
 
-### **3. Configuração de SSL/TLS**
-```yaml
-# No k8s/ingress.yaml, configure cert-manager
-metadata:
-  annotations:
-    cert-manager.io/cluster-issuer: "letsencrypt-prod"
-spec:
-  tls:
-  - hosts:
-    - your-domain.com
-    secretName: servicedesk-tls
-```
+## 📊 Monitoramento
 
-### **4. Configuração de Recursos**
-```yaml
-# No k8s/app.yaml, ajuste recursos conforme necessário
-resources:
-  requests:
-    memory: "512Mi"
-    cpu: "250m"
-  limits:
-    memory: "2Gi"
-    cpu: "1000m"
-```
+### Health Checks
 
-## 🔒 **Segurança**
-
-### **1. Secrets Management**
-- Use Kubernetes Secrets para dados sensíveis
-- Considere usar HashiCorp Vault ou AWS Secrets Manager
-- Nunca commite secrets no código
-
-### **2. Network Policies**
-```yaml
-# Exemplo de Network Policy
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-  name: servicedesk-network-policy
-  namespace: servicedesk-pricing
-spec:
-  podSelector:
-    matchLabels:
-      app: servicedesk-app
-  policyTypes:
-  - Ingress
-  - Egress
-  ingress:
-  - from:
-    - namespaceSelector:
-        matchLabels:
-          name: ingress-nginx
-  egress:
-  - to:
-    - podSelector:
-        matchLabels:
-          app: postgres
-  - to:
-    - podSelector:
-        matchLabels:
-          app: redis
-```
-
-### **3. RBAC**
-```yaml
-# Exemplo de RBAC
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: servicedesk-sa
-  namespace: servicedesk-pricing
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: Role
-metadata:
-  name: servicedesk-role
-  namespace: servicedesk-pricing
-rules:
-- apiGroups: [""]
-  resources: ["pods", "services"]
-  verbs: ["get", "list"]
-```
-
-## 📈 **Performance e Otimização**
-
-### **1. Cache Strategy**
-- Redis para cache de sessões
-- Next.js cache para páginas estáticas
-- CDN para assets estáticos
-
-### **2. Database Optimization**
-```sql
--- Índices recomendados
-CREATE INDEX idx_projects_user_id ON projects(user_id);
-CREATE INDEX idx_projects_status ON projects(status);
-CREATE INDEX idx_team_members_project_id ON team_members(project_id);
-CREATE INDEX idx_forecast_projections_forecast_scenario ON forecast_projections(forecast_id, scenario_id);
-```
-
-### **3. Monitoring**
-```yaml
-# Prometheus monitoring (opcional)
-apiVersion: v1
-kind: Service
-metadata:
-  name: servicedesk-metrics
-  namespace: servicedesk-pricing
-  annotations:
-    prometheus.io/scrape: "true"
-    prometheus.io/port: "3000"
-    prometheus.io/path: "/api/metrics"
-spec:
-  selector:
-    app: servicedesk-app
-  ports:
-  - port: 3000
-```
-
-## 🚨 **Troubleshooting**
-
-### **Problemas Comuns:**
-
-#### **1. Pod não inicia**
 ```bash
-# Verificar logs
-kubectl describe pod <pod-name> -n servicedesk-pricing
-kubectl logs <pod-name> -n servicedesk-pricing
+# Backend
+curl https://seu-backend.com/api/health
 
-# Verificar recursos
-kubectl top pods -n servicedesk-pricing
+# Frontend
+curl https://seu-frontend.com
 ```
 
-#### **2. Banco de dados não conecta**
+### Logs
+
 ```bash
-# Testar conectividade
-kubectl exec -it deployment/servicedesk-app -n servicedesk-pricing -- nc -zv postgres-service 5432
+# Docker
+docker-compose logs -f backend
+docker-compose logs -f frontend
 
-# Verificar secrets
-kubectl get secret servicedesk-secrets -n servicedesk-pricing -o yaml
+# Kubernetes
+kubectl logs -f deployment/backend -n sistema-prevendas
+kubectl logs -f deployment/frontend -n sistema-prevendas
+
+# Heroku
+heroku logs --tail -a seu-app-backend
 ```
 
-#### **3. Aplicação lenta**
-```bash
-# Verificar métricas
-kubectl top pods -n servicedesk-pricing
-kubectl top nodes
+## 🔄 CI/CD com GitHub Actions
 
-# Verificar HPA
-kubectl get hpa -n servicedesk-pricing
-```
+### Setup
 
-### **Comandos Úteis:**
-```bash
-# Port forward para debug local
-kubectl port-forward service/servicedesk-app-service 3000:80 -n servicedesk-pricing
-
-# Executar shell no container
-kubectl exec -it deployment/servicedesk-app -n servicedesk-pricing -- /bin/sh
-
-# Verificar configuração
-kubectl get configmap servicedesk-config -n servicedesk-pricing -o yaml
-
-# Restart deployment
-kubectl rollout restart deployment/servicedesk-app -n servicedesk-pricing
-```
-
-## 🔄 **CI/CD Pipeline**
-
-### **GitHub Actions Example:**
 ```yaml
 # .github/workflows/deploy.yml
-name: Deploy to Kubernetes
+name: Deploy
+
 on:
   push:
     branches: [main]
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
-    - name: Build and Push
-      run: |
-        docker build -t ${{ secrets.REGISTRY }}/servicedesk-pricing:${{ github.sha }} .
-        docker push ${{ secrets.REGISTRY }}/servicedesk-pricing:${{ github.sha }}
-    - name: Deploy to K8s
-      run: |
-        ./scripts/deploy.sh ${{ github.sha }}
+      - uses: actions/checkout@v3
+      
+      - name: Build Backend
+        run: |
+          cd backend
+          npm install
+          npm run build
+      
+      - name: Build Frontend
+        run: |
+          cd frontend
+          npm install
+          npm run build
+      
+      - name: Deploy
+        run: |
+          # Seu script de deploy
+          ./scripts/deploy-docker.sh
 ```
 
-## 📚 **Recursos Adicionais**
+## 🆘 Troubleshooting
 
-### **Documentação:**
-- [Prisma Documentation](https://www.prisma.io/docs/)
-- [Next.js Deployment](https://nextjs.org/docs/deployment)
-- [Kubernetes Documentation](https://kubernetes.io/docs/)
-- [Docker Best Practices](https://docs.docker.com/develop/dev-best-practices/)
+### Backend não conecta ao banco
 
-### **Monitoramento:**
-- Prometheus + Grafana
-- ELK Stack (Elasticsearch, Logstash, Kibana)
-- Jaeger para tracing
-- Sentry para error tracking
+```bash
+# Verifique conexão
+psql $DATABASE_URL
 
-### **Backup e Disaster Recovery:**
-- Velero para backup do Kubernetes
-- pg_dump para backup do PostgreSQL
-- Redis persistence configurado
+# Verifique migrações
+npx prisma migrate status
+
+# Execute migrações
+npx prisma migrate deploy
+```
+
+### Frontend não conecta ao backend
+
+```bash
+# Verifique CORS
+curl -H "Origin: http://localhost:3000" \
+  http://localhost:3001/api/health
+
+# Verifique variável de ambiente
+echo $NEXT_PUBLIC_API_URL
+```
+
+### Containers não iniciam
+
+```bash
+# Verifique logs
+docker-compose logs
+
+# Reconstrua
+docker-compose down
+docker-compose up --build
+```
+
+## 📈 Performance
+
+### Otimizações
+
+- Frontend: Next.js Image Optimization, Code Splitting
+- Backend: Connection Pooling, Caching
+- Database: Indexes, Query Optimization
+
+### Scaling
+
+```bash
+# Kubernetes - Scale backend
+kubectl scale deployment backend --replicas=3 -n sistema-prevendas
+
+# Docker Compose - Use load balancer
+# Configure nginx ou similar
+```
+
+## 🔒 Segurança
+
+- Use HTTPS em produção
+- Configure CORS corretamente
+- Use variáveis de ambiente para secrets
+- Mantenha dependências atualizadas
+- Configure firewall/WAF
 
 ---
 
-## ✅ **Checklist de Deploy**
-
-### **Pré-Deploy:**
-- [ ] Variáveis de ambiente configuradas
-- [ ] Secrets criados no Kubernetes
-- [ ] Imagem Docker buildada e pushed
-- [ ] Domínio configurado (se aplicável)
-- [ ] Certificados SSL configurados (se aplicável)
-
-### **Deploy:**
-- [ ] Namespace criado
-- [ ] ConfigMaps aplicados
-- [ ] Secrets aplicados
-- [ ] PostgreSQL deployado e funcionando
-- [ ] Redis deployado e funcionando
-- [ ] Migrações executadas
-- [ ] Aplicação deployada
-- [ ] Ingress configurado
-
-### **Pós-Deploy:**
-- [ ] Health checks passando
-- [ ] Logs sem erros críticos
-- [ ] Aplicação acessível via URL
-- [ ] Banco de dados populado
-- [ ] Cache funcionando
-- [ ] Monitoramento configurado
-- [ ] Backup configurado
-
-**🎉 Parabéns! Sua aplicação Service Desk Pricing está rodando em produção!**
+**Última atualização**: Novembro 2025

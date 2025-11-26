@@ -1,117 +1,60 @@
 version: '3.8'
 
 services:
-  # PostgreSQL Database
   postgres:
-    image: postgres:15-alpine
-    container_name: servicedesk-postgres
-    restart: unless-stopped
+    image: postgres:16-alpine
+    container_name: sistema-prevendas-db
     environment:
-      POSTGRES_DB: servicedesk_pricing
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres123
-      PGDATA: /var/lib/postgresql/data/pgdata
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ./init-scripts:/docker-entrypoint-initdb.d
+      POSTGRES_USER: prevendas
+      POSTGRES_PASSWORD: prevendas123
+      POSTGRES_DB: sistema_prevendas
     ports:
       - "5432:5432"
-    networks:
-      - servicedesk-network
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d servicedesk_pricing"]
+      test: ["CMD-SHELL", "pg_isready -U prevendas"]
       interval: 10s
       timeout: 5s
       retries: 5
 
-  # Redis for caching
-  redis:
-    image: redis:7-alpine
-    container_name: servicedesk-redis
-    restart: unless-stopped
-    command: redis-server --appendonly yes --requirepass redis123
-    volumes:
-      - redis_data:/data
-    ports:
-      - "6379:6379"
-    networks:
-      - servicedesk-network
-    healthcheck:
-      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
-      interval: 10s
-      timeout: 3s
-      retries: 5
-
-  # Next.js Application
-  app:
+  backend:
     build:
-      context: .
+      context: ./backend
       dockerfile: Dockerfile
-    container_name: servicedesk-app
-    restart: unless-stopped
+    container_name: sistema-prevendas-backend
     environment:
-      - NODE_ENV=production
-      - DATABASE_URL=postgresql://postgres:postgres123@postgres:5432/servicedesk_pricing?schema=public
-      - REDIS_URL=redis://:redis123@redis:6379
-      - NEXTAUTH_URL=http://localhost:3000
-      - NEXTAUTH_SECRET=your-secret-key-here
+      NODE_ENV: development
+      PORT: 3001
+      DATABASE_URL: postgresql://prevendas:prevendas123@postgres:5432/sistema_prevendas
+      CORS_ORIGIN: http://localhost:3000
+    ports:
+      - "3001:3001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./backend/src:/app/src
+    command: npm run dev
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: sistema-prevendas-frontend
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:3001/api
     ports:
       - "3000:3000"
     depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    networks:
-      - servicedesk-network
+      - backend
     volumes:
-      - app_uploads:/app/uploads
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-
-  # Nginx Reverse Proxy (optional)
-  nginx:
-    image: nginx:alpine
-    container_name: servicedesk-nginx
-    restart: unless-stopped
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./ssl:/etc/nginx/ssl:ro
-    depends_on:
-      - app
-    networks:
-      - servicedesk-network
-
-  # Database migrations (init container)
-  migrate:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: servicedesk-migrate
-    environment:
-      - DATABASE_URL=postgresql://postgres:postgres123@postgres:5432/servicedesk_pricing?schema=public
-    command: ["npx", "prisma", "migrate", "deploy"]
-    depends_on:
-      postgres:
-        condition: service_healthy
-    networks:
-      - servicedesk-network
-    restart: "no"
+      - ./frontend/src:/app/src
+    command: npm run dev
 
 volumes:
   postgres_data:
-    driver: local
-  redis_data:
-    driver: local
-  app_uploads:
-    driver: local
 
 networks:
-  servicedesk-network:
-    driver: bridge
+  default:
+    name: sistema-prevendas-network

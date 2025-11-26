@@ -1,304 +1,324 @@
-# Guia de Migração - Sistema de Cores
+# Guia de Migração - Código Legado para Nova Arquitetura
 
-## Visão Geral
+## 📋 Visão Geral
 
-Este guia detalha o processo de migração suave do sistema de cores legado para o novo sistema moderno do Pre-Sales Ally. A migração foi projetada para ser gradual, permitindo rollback em caso de problemas e garantindo compatibilidade com código existente.
+Este guia ajuda a migrar componentes e funcionalidades do código legado para a nova arquitetura separada (backend/frontend).
 
-## Estratégia de Migração
+## 🔄 Processo de Migração
 
-### 1. Feature Flags
+### 1. Identificar Componentes
 
-O sistema utiliza feature flags para controlar a ativação gradual das novas funcionalidades:
-
-```typescript
-// Configuração via variáveis de ambiente
-NEXT_PUBLIC_NEW_COLOR_SYSTEM=true      // Ativa novo sistema de cores
-NEXT_PUBLIC_HIGH_CONTRAST_MODE=true    // Habilita modo alto contraste
-NEXT_PUBLIC_MODERN_COMPONENTS=true     // Ativa componentes modernos
-NEXT_PUBLIC_GLASS_EFFECTS=true         // Habilita efeitos de vidro
-NEXT_PUBLIC_CHART_COLORS=true          // Ativa nova paleta de gráficos
+**Legado:**
+```
+src/components/service-desk/
+src/components/proposals/
+src/components/edital-analysis/
 ```
 
-### 2. Camada de Compatibilidade
-
-Uma camada de compatibilidade mapeia automaticamente cores legadas para o novo sistema:
-
-```typescript
-// Mapeamento automático
-'bg-indigo-600' → 'bg-primary'
-'text-violet-400' → 'text-accent-purple'
-'#4F46E5' → 'hsl(var(--primary))'
+**Novo:**
+```
+frontend/src/components/service-desk/
+frontend/src/components/proposals/
+frontend/src/components/edital-analysis/
 ```
 
-### 3. Monitoramento em Tempo Real
-
-O componente `ColorSystemMigration` monitora a compatibilidade e fornece feedback visual sobre problemas.
-
-## Processo de Migração
-
-### Fase 1: Preparação
-
-1. **Backup do código atual**
-   ```bash
-   git checkout -b backup-before-color-migration
-   git commit -am "Backup antes da migração de cores"
-   ```
-
-2. **Configurar variáveis de ambiente**
-   ```bash
-   cp .env.example .env.local
-   # Edite as variáveis conforme necessário
-   ```
-
-3. **Instalar dependências**
-   ```bash
-   npm install
-   ```
-
-### Fase 2: Análise Automática
-
-1. **Executar análise dry-run**
-   ```bash
-   npm run migrate:colors:dry-run
-   ```
-
-2. **Revisar relatório gerado**
-   ```bash
-   cat color-migration-report.json
-   ```
-
-3. **Identificar problemas críticos**
-   - Cores não mapeadas
-   - Conflitos de contraste
-   - Componentes incompatíveis
-
-### Fase 3: Migração Gradual
-
-1. **Ativar feature flags uma por vez**
-   ```bash
-   # Começar apenas com o sistema de cores
-   NEXT_PUBLIC_NEW_COLOR_SYSTEM=true
-   NEXT_PUBLIC_MODERN_COMPONENTS=false
-   NEXT_PUBLIC_GLASS_EFFECTS=false
-   ```
-
-2. **Testar funcionalidade básica**
-   ```bash
-   npm run dev
-   # Navegar pela aplicação e verificar problemas
-   ```
-
-3. **Ativar próxima feature**
-   ```bash
-   NEXT_PUBLIC_MODERN_COMPONENTS=true
-   ```
-
-4. **Repetir até todas as features estarem ativas**
-
-### Fase 4: Aplicação Automática
-
-1. **Executar migração automática**
-   ```bash
-   npm run migrate:colors:verbose
-   ```
-
-2. **Revisar mudanças aplicadas**
-   ```bash
-   git diff
-   ```
-
-3. **Testar aplicação completa**
-   ```bash
-   npm run test
-   npm run test:visual
-   ```
-
-### Fase 5: Validação
-
-1. **Executar testes de acessibilidade**
-   ```bash
-   npm run test:a11y
-   ```
-
-2. **Verificar performance**
-   ```bash
-   npm run test:performance
-   ```
-
-3. **Testar em diferentes navegadores**
-   ```bash
-   npm run test:visual:cross-browser
-   ```
-
-## Rollback de Emergência
-
-### Rollback Automático
-
-Se o sistema detectar problemas críticos, o rollback pode ser acionado automaticamente:
-
-```typescript
-// Rollback via interface
-<ColorSystemMigration />
-// Clique no botão "Rollback" se aparecer
-```
-
-### Rollback Manual
-
-1. **Via variáveis de ambiente**
-   ```bash
-   NEXT_PUBLIC_NEW_COLOR_SYSTEM=false
-   NEXT_PUBLIC_MODERN_COMPONENTS=false
-   NEXT_PUBLIC_GLASS_EFFECTS=false
-   ```
-
-2. **Via código**
-   ```typescript
-   import { rollbackFeature } from '@/lib/feature-flags';
-   rollbackFeature('newColorSystem');
-   ```
-
-3. **Via Git**
-   ```bash
-   git checkout backup-before-color-migration
-   ```
-
-## Problemas Comuns e Soluções
-
-### 1. Cores não Mapeadas
-
-**Problema**: Cores customizadas não são migradas automaticamente.
-
-**Solução**:
-```typescript
-// Adicionar ao mapeamento em legacy-colors.ts
-export const legacyColorMap = {
-  // ... mapeamentos existentes
-  'custom-blue': 'hsl(var(--accent-cyan))',
-  'custom-orange': 'hsl(var(--accent-orange))',
-};
-```
-
-### 2. Contraste Insuficiente
-
-**Problema**: Combinações de cores não atendem critérios de acessibilidade.
-
-**Solução**:
-```css
-/* Ajustar cores no globals.css */
-:root {
-  --custom-color: 220 45% 25%; /* Ajustar luminosidade */
-}
-```
-
-### 3. Componentes Quebrados
-
-**Problema**: Componentes não funcionam com novo sistema.
-
-**Solução**:
-```typescript
-// Usar wrapper de compatibilidade
-import { MigrationWrapper } from '@/components/migration/ColorSystemMigration';
-
-<MigrationWrapper fallbackComponent={<LegacyComponent />}>
-  <ModernComponent />
-</MigrationWrapper>
-```
-
-### 4. Performance Degradada
-
-**Problema**: CSS Custom Properties causam lentidão.
-
-**Solução**:
-```css
-/* Adicionar fallbacks estáticos */
-.my-component {
-  background: #1A2332; /* Fallback */
-  background: hsl(var(--primary-900)); /* Moderno */
-}
-```
-
-## Validação de Compatibilidade
-
-### Checklist de Pré-Migração
-
-- [ ] Backup do código atual criado
-- [ ] Variáveis de ambiente configuradas
-- [ ] Análise dry-run executada sem erros críticos
-- [ ] Testes existentes passando
-- [ ] Navegadores alvo identificados
-
-### Checklist de Pós-Migração
-
-- [ ] Todas as páginas carregam sem erros
-- [ ] Contraste de cores atende WCAG 2.1 AA
-- [ ] Componentes funcionam em todos os temas
-- [ ] Performance mantida ou melhorada
-- [ ] Testes visuais passando
-- [ ] Documentação atualizada
-
-## Monitoramento Contínuo
-
-### Métricas a Acompanhar
-
-1. **Tempo de carregamento**
-   - CSS parsing time
-   - Paint time
-   - Layout shift
-
-2. **Acessibilidade**
-   - Contraste de cores
-   - Navegação por teclado
-   - Compatibilidade com leitores de tela
-
-3. **Compatibilidade**
-   - Suporte a navegadores
-   - Renderização consistente
-   - Fallbacks funcionando
-
-### Ferramentas de Monitoramento
+### 2. Mover Componentes React
 
 ```bash
-# Lighthouse CI para performance
-npm install -g @lhci/cli
-lhci autorun
+# Copiar componentes para frontend
+cp -r src/components/* frontend/src/components/
 
-# axe-core para acessibilidade
-npm run test:a11y
+# Copiar hooks
+cp -r src/hooks/* frontend/src/hooks/
 
-# Visual regression testing
-npm run test:visual:regression
+# Copiar estilos
+cp -r src/styles/* frontend/src/styles/
 ```
 
-## Suporte e Troubleshooting
+### 3. Mover Lógica de Negócio para Backend
 
-### Logs de Debug
-
+**Antes (Frontend):**
 ```typescript
-// Habilitar logs detalhados
-localStorage.setItem('debug-color-system', 'true');
-
-// Verificar feature flags ativas
-console.log(getFeatureUsageStats());
-
-// Validar compatibilidade
-console.log(validateCompatibility());
+// src/lib/calculations.ts
+export function calculateErlangC(calls, aht, agents) {
+  // lógica
+}
 ```
 
-### Contatos de Suporte
+**Depois (Backend):**
+```typescript
+// backend/src/services/service-desk.ts
+export function calculateErlangC(calls, aht, agents) {
+  // lógica
+}
 
-- **Equipe de Design System**: design-system@company.com
-- **Equipe de Frontend**: frontend@company.com
-- **Documentação**: [Link para documentação interna]
+// backend/src/routes/service-desk.ts
+router.post('/calculate', (req, res) => {
+  const result = calculateErlangC(...);
+  res.json(result);
+});
+```
 
-### Recursos Adicionais
+### 4. Atualizar Chamadas de API
 
-- [Sistema de Cores - Documentação Completa](./color-system.md)
-- [Guia de Estilo para Desenvolvedores](./style-guide.md)
-- [Testes de Acessibilidade](./accessibility-testing.md)
-- [Performance Guidelines](./performance.md)
+**Antes:**
+```typescript
+// Lógica local no frontend
+const result = calculateErlangC(100, 300, 10);
+```
+
+**Depois:**
+```typescript
+// Chamada para backend
+const response = await ApiClient.post('/service-desk/calculate', {
+  callsPerHour: 100,
+  averageHandleTime: 300,
+  agents: 10,
+});
+```
+
+### 5. Migrar Modelos de Dados
+
+**Antes (Prisma no frontend):**
+```typescript
+// src/lib/db.ts
+```
+
+**Depois (Prisma no backend):**
+```typescript
+// backend/src/db/schema.prisma
+model ServiceDeskDimension {
+  id String @id @default(cuid())
+  agents Int
+  // ...
+}
+```
+
+### 6. Atualizar Variáveis de Ambiente
+
+**Antes:**
+```env
+DATABASE_URL=...
+NEXTAUTH_SECRET=...
+```
+
+**Depois:**
+
+Backend (.env):
+```env
+DATABASE_URL=...
+PORT=3001
+CORS_ORIGIN=http://localhost:3000
+```
+
+Frontend (.env.local):
+```env
+NEXT_PUBLIC_API_URL=http://localhost:3001/api
+```
+
+## 📦 Checklist de Migração
+
+### Componentes
+- [ ] Copiar componentes React para `frontend/src/components/`
+- [ ] Atualizar imports de paths
+- [ ] Remover dependências de backend do frontend
+- [ ] Testar componentes isoladamente
+
+### Lógica de Negócio
+- [ ] Identificar funções de cálculo/processamento
+- [ ] Mover para `backend/src/services/`
+- [ ] Criar endpoints correspondentes
+- [ ] Adicionar validação com Zod
+
+### Banco de Dados
+- [ ] Definir schema no `backend/src/db/schema.prisma`
+- [ ] Criar migrações
+- [ ] Testar queries
+
+### API
+- [ ] Criar rotas no backend
+- [ ] Implementar error handling
+- [ ] Documentar endpoints
+- [ ] Testar com Postman/Insomnia
+
+### Frontend
+- [ ] Criar hooks com `useApi`
+- [ ] Atualizar componentes para usar API
+- [ ] Adicionar loading/error states
+- [ ] Testar integração
+
+### Testes
+- [ ] Testes unitários do backend
+- [ ] Testes de integração
+- [ ] Testes visuais do frontend
+- [ ] Testes E2E
+
+## 🔧 Exemplos de Migração
+
+### Exemplo 1: Service Desk Calculator
+
+**Antes (Tudo no Frontend):**
+```typescript
+// src/components/service-desk/Calculator.tsx
+export function Calculator() {
+  const [agents, setAgents] = useState(10);
+  
+  const handleCalculate = () => {
+    const erlangC = calculateErlangC(100, 300, agents);
+    setResult(erlangC);
+  };
+  
+  return (
+    <div>
+      <input value={agents} onChange={e => setAgents(+e.target.value)} />
+      <button onClick={handleCalculate}>Calcular</button>
+    </div>
+  );
+}
+```
+
+**Depois (Separado):**
+
+Backend:
+```typescript
+// backend/src/routes/service-desk.ts
+router.post('/calculate', (req, res) => {
+  const { agents, callsPerHour, aht } = req.body;
+  const erlangC = calculateErlangC(callsPerHour, aht, agents);
+  res.json({ erlangC });
+});
+```
+
+Frontend:
+```typescript
+// frontend/src/components/service-desk/Calculator.tsx
+export function Calculator() {
+  const { data, loading, post } = useApi();
+  const [agents, setAgents] = useState(10);
+  
+  const handleCalculate = async () => {
+    await post('/service-desk/calculate', {
+      agents,
+      callsPerHour: 100,
+      aht: 300,
+    });
+  };
+  
+  return (
+    <div>
+      <input value={agents} onChange={e => setAgents(+e.target.value)} />
+      <button onClick={handleCalculate} disabled={loading}>
+        {loading ? 'Calculando...' : 'Calcular'}
+      </button>
+      {data && <p>Erlang C: {data.erlangC}</p>}
+    </div>
+  );
+}
+```
+
+### Exemplo 2: Proposals Management
+
+**Antes:**
+```typescript
+// src/components/proposals/ProposalForm.tsx
+export function ProposalForm() {
+  const [proposals, setProposals] = useState([]);
+  
+  const handleSubmit = async (data) => {
+    // Salvar direto no banco
+    const result = await db.proposals.create(data);
+    setProposals([...proposals, result]);
+  };
+}
+```
+
+**Depois:**
+
+Backend:
+```typescript
+// backend/src/routes/proposals.ts
+router.post('/', async (req, res) => {
+  const data = ProposalSchema.parse(req.body);
+  const proposal = await prisma.proposal.create({ data });
+  res.json({ success: true, data: proposal });
+});
+```
+
+Frontend:
+```typescript
+// frontend/src/components/proposals/ProposalForm.tsx
+export function ProposalForm() {
+  const { data: proposals, post } = useApi();
+  
+  const handleSubmit = async (data) => {
+    await post('/proposals', data);
+  };
+}
+```
+
+## 🧪 Testes Pós-Migração
+
+### Backend
+```bash
+cd backend
+npm run test
+npm run typecheck
+```
+
+### Frontend
+```bash
+cd frontend
+npm run test
+npm run typecheck
+npm run lint
+```
+
+### Integração
+```bash
+# Iniciar ambos
+docker-compose up
+
+# Testar endpoints
+curl http://localhost:3001/api/health
+curl http://localhost:3000
+```
+
+## 🚨 Problemas Comuns
+
+### Problema: CORS Error
+**Solução:**
+```typescript
+// backend/src/index.ts
+app.use(cors({
+  origin: process.env.CORS_ORIGIN,
+  credentials: true,
+}));
+```
+
+### Problema: Tipos não encontrados
+**Solução:**
+```typescript
+// Importar de shared
+import { ServiceDeskDimension } from '../../../shared/types';
+```
+
+### Problema: Variáveis de ambiente não carregam
+**Solução:**
+```bash
+# Verificar arquivo .env
+cat backend/.env
+
+# Reiniciar containers
+docker-compose down
+docker-compose up --build
+```
+
+## 📚 Recursos
+
+- [Arquitetura](./ARCHITECTURE.md)
+- [API Reference](./API.md)
+- [Deployment Guide](./DEPLOYMENT-GUIDE.md)
 
 ---
 
-**Versão**: 1.0  
-**Última atualização**: Dezembro 2024  
-**Responsável**: Equipe de Design System
+**Última atualização**: Novembro 2025

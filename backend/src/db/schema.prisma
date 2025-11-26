@@ -1,0 +1,58 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model ServiceDeskDimension {
+  id                String   @id @default(cuid())
+  agents            Int
+  erlangC           Float
+  serviceLevel      Float
+  averageHandleTime Float
+  callsPerHour      Float
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@map("service_desk_dimensions")
+}
+
+model Proposal {
+  id        String   @id @default(cuid())
+  title     String
+  clientName String
+  status    String   @default("draft")
+  content   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("proposals")
+}
+
+model EditalAnalysis {
+  id        String   @id @default(cuid())
+  fileName  String
+  content   String
+  analysis  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("edital_analyses")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String
+  role      String   @default("user")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("users")
+}
