@@ -13,10 +13,11 @@ const cardVariants = cva(
         gradient: "gradient-card border border-border/50 shadow-lg hover:shadow-xl hover:shadow-primary/20 hover:-translate-y-1",
         modern: "card-modern hover:shadow-xl hover:shadow-primary/25 hover:-translate-y-1",
         glow: "bg-card border border-primary/20 shadow-lg shadow-primary/10 hover:shadow-xl hover:shadow-primary/30 hover:-translate-y-1",
+        premium: "bg-gradient-to-br from-card to-accent-green/5 border border-accent-green/30 shadow-lg shadow-accent-green/10 hover:shadow-xl hover:shadow-accent-green/20 hover:-translate-y-1",
       },
     },
     defaultVariants: {
-      variant: "default",
+      variant: "premium",
     },
   }
 )

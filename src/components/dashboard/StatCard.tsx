@@ -20,6 +20,7 @@ const StatCard: React.FC<StatCardProps> = ({
   className 
 }) => {
   const getVariantClasses = () => {
+    // Variantes específicas para cards coloridos (primary, accent, success)
     switch (variant) {
       case 'primary':
         return 'gradient-primary border-primary/20 hover:tech-glow';
@@ -28,7 +29,7 @@ const StatCard: React.FC<StatCardProps> = ({
       case 'success':
         return 'bg-gradient-to-br from-card to-accent-green/10 border-accent-green/20 hover:shadow-[0_0_20px_hsl(var(--accent-green)/0.4)]';
       default:
-        return 'gradient-card border-border/50 hover:tech-glow';
+        return ''; // Premium variant é aplicado via Card component
     }
   };
 
@@ -41,7 +42,7 @@ const StatCard: React.FC<StatCardProps> = ({
       case 'success':
         return 'text-accent-green';
       default:
-        return 'text-primary';
+        return 'text-accent-green';
     }
   };
 
@@ -58,10 +59,13 @@ const StatCard: React.FC<StatCardProps> = ({
     }
   };
 
+  // Use premium variant for default/success, but use specific variants for primary/accent
+  const cardVariant = (variant === 'primary' || variant === 'accent') ? 'default' : 'premium';
+  
   return (
-    <Card className={cn(
+    <Card variant={cardVariant} className={cn(
       'glass-effect hover-lift transition-all duration-300 group',
-      'border backdrop-blur-sm',
+      'backdrop-blur-sm',
       getVariantClasses(),
       className
     )}>
@@ -70,7 +74,9 @@ const StatCard: React.FC<StatCardProps> = ({
           "text-sm font-medium transition-colors duration-300",
           variant === 'primary' || variant === 'accent' 
             ? 'text-primary-foreground/80' 
-            : 'text-muted-foreground'
+            : variant === 'success'
+            ? 'text-muted-foreground'
+            : 'text-cyan-400' // Premium/default cards get cyan title
         )}>
           {title}
         </CardTitle>

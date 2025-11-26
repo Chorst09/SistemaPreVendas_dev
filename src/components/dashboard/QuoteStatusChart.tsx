@@ -10,7 +10,7 @@ interface QuoteStatusChartProps {
 
 const QuoteStatusChart: React.FC<QuoteStatusChartProps> = ({ data }) => {
     return (
-        <Card className="glass-effect hover-lift h-full border-border/50">
+        <Card variant="premium" className="glass-effect hover-lift h-full">
             <CardHeader>
                 <CardTitle className="text-foreground">Status dos Orçamentos</CardTitle>
             </CardHeader>

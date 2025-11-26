@@ -5,13 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { 
-  Building, 
-  User, 
-  Phone, 
-  Mail, 
-  FileText, 
-  Calendar,
-  DollarSign,
+  FileText,
   Server,
   Cpu,
   HardDrive,
@@ -103,87 +97,6 @@ export function ProposalDetailsView({ proposal, calculateVMPrice }: ProposalDeta
           </div>
         </CardContent>
       </Card>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Dados do Cliente */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <Building className="h-5 w-5 text-blue-500" />
-              <span>Dados do Cliente</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <label className="text-sm font-medium text-muted-foreground">Razão Social</label>
-              <p className="text-lg font-semibold">{clientData.razaoSocial}</p>
-            </div>
-            
-            <div>
-              <label className="text-sm font-medium text-muted-foreground">Contato Principal</label>
-              <p className="font-medium">{clientData.nomeContato}</p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="flex items-center space-x-2">
-                <Phone className="h-4 w-4 text-muted-foreground" />
-                <div>
-                  <label className="text-xs text-muted-foreground">Telefone</label>
-                  <p className="text-sm">{clientData.telefoneCliente}</p>
-                </div>
-              </div>
-              
-              <div className="flex items-center space-x-2">
-                <Mail className="h-4 w-4 text-muted-foreground" />
-                <div>
-                  <label className="text-xs text-muted-foreground">Email</label>
-                  <p className="text-sm">{clientData.emailCliente}</p>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Dados do Gerente de Contas */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <User className="h-5 w-5 text-green-500" />
-              <span>Gerente de Contas</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <label className="text-sm font-medium text-muted-foreground">Nome</label>
-              <p className="text-lg font-semibold">{clientData.nomeGerente}</p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="flex items-center space-x-2">
-                <Phone className="h-4 w-4 text-muted-foreground" />
-                <div>
-                  <label className="text-xs text-muted-foreground">Telefone</label>
-                  <p className="text-sm">{clientData.telefoneGerente}</p>
-                </div>
-              </div>
-              
-              <div className="flex items-center space-x-2">
-                <Mail className="h-4 w-4 text-muted-foreground" />
-                <div>
-                  <label className="text-xs text-muted-foreground">Email</label>
-                  <p className="text-sm">{clientData.emailGerente}</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-4 p-3 bg-muted rounded-lg">
-              <p className="text-xs text-muted-foreground">
-                Responsável pelo acompanhamento comercial e técnico da proposta
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
 
       {/* Especificações Técnicas */}
       <Card>

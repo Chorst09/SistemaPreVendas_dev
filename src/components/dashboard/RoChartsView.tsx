@@ -129,7 +129,7 @@ export function RoChartsView({ ros, partners }: RoChartsViewProps) {
   return (
     <div className="space-y-6">
       {/* Filtros */}
-      <Card>
+      <Card variant="premium">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Building className="h-5 w-5" />
@@ -200,7 +200,7 @@ export function RoChartsView({ ros, partners }: RoChartsViewProps) {
 
       {/* Cards de Estatísticas */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card>
+        <Card variant="premium">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
@@ -212,7 +212,7 @@ export function RoChartsView({ ros, partners }: RoChartsViewProps) {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card variant="premium">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
@@ -229,7 +229,7 @@ export function RoChartsView({ ros, partners }: RoChartsViewProps) {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card variant="premium">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
@@ -246,7 +246,7 @@ export function RoChartsView({ ros, partners }: RoChartsViewProps) {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card variant="premium">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
@@ -261,7 +261,7 @@ export function RoChartsView({ ros, partners }: RoChartsViewProps) {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Gráfico de Pizza - Status dos RO's */}
-        <Card>
+        <Card variant="premium">
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
               <CheckCircle className="h-5 w-5" />
@@ -305,7 +305,7 @@ export function RoChartsView({ ros, partners }: RoChartsViewProps) {
         </Card>
 
         {/* Gráfico de Barras - RO's por Fornecedor */}
-        <Card>
+        <Card variant="premium">
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
               <Building className="h-5 w-5" />
@@ -337,7 +337,7 @@ export function RoChartsView({ ros, partners }: RoChartsViewProps) {
       </div>
 
       {/* Gráfico de Linha - Evolução Mensal */}
-      <Card>
+      <Card variant="premium">
         <CardHeader>
           <CardTitle className="flex items-center space-x-2">
             <Calendar className="h-5 w-5" />
@@ -377,7 +377,7 @@ export function RoChartsView({ ros, partners }: RoChartsViewProps) {
       </Card>
 
       {/* Tabela de Detalhes por Fornecedor */}
-      <Card>
+      <Card variant="premium">
         <CardHeader>
           <CardTitle>Detalhes por Fornecedor</CardTitle>
         </CardHeader>

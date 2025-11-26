@@ -53,10 +53,13 @@ export class ServiceDeskCalculationEngine {
       const memberCalculation = this.calculateMemberCost(member, schedules);
       breakdown.push(memberCalculation);
       totalMonthlyCost += memberCalculation.totalCost;
-      totalHours += member.workload * 4.33; // weeks to month conversion
+      // FIXED: Use more precise weeks per month calculation (52/12 = 4.333...)
+      const weeksPerMonth = 52 / 12;
+      totalHours += member.workload * weeksPerMonth;
     });
 
     const totalAnnualCost = totalMonthlyCost * 12;
+    // FIXED: Validate division by zero
     const costPerHour = totalHours > 0 ? totalMonthlyCost / totalHours : 0;
 
     const result = {
@@ -98,6 +101,7 @@ export class ServiceDeskCalculationEngine {
 
   /**
    * Calculate benefits for a team member
+   * FIXED: Use configured values properly, with correct defaults
    */
   private calculateBenefits(member: TeamMember): number {
     const benefits = member.benefits;
@@ -109,11 +113,16 @@ export class ServiceDeskCalculationEngine {
     totalBenefits += benefits.transportVoucher || 0;
     totalBenefits += benefits.lifeInsurance || 0;
 
-    // Percentage-based benefits
-    totalBenefits += member.salary * (benefits.vacation / 100 || 0);
-    totalBenefits += member.salary * (benefits.thirteenthSalary / 100 || 0);
-    totalBenefits += member.salary * (benefits.fgts / 100 || 0.08); // Default 8%
-    totalBenefits += member.salary * (benefits.inss / 100 || 0);
+    // Percentage-based benefits - use configured values with proper defaults
+    const vacationRate = benefits.vacation ?? 8.33; // 1/12 of year
+    const thirteenthRate = benefits.thirteenthSalary ?? 8.33; // 1/12 of year
+    const fgtsRate = benefits.fgts ?? 8; // Default 8% FGTS
+    const inssRate = benefits.inss ?? 0; // Default 0% (employer doesn't pay)
+
+    totalBenefits += member.salary * (vacationRate / 100);
+    totalBenefits += member.salary * (thirteenthRate / 100);
+    totalBenefits += member.salary * (fgtsRate / 100);
+    totalBenefits += member.salary * (inssRate / 100);
 
     // Custom benefits
     benefits.otherBenefits?.forEach(benefit => {
@@ -558,11 +567,13 @@ export class ServiceDeskCalculationEngine {
 
   /**
    * Calculate Internal Rate of Return using Newton-Raphson method
+   * FIXED: Improved convergence handling and validation
    */
   private calculateIRR(investment: number, returns: number[]): number {
     let rate = 0.1; // Initial guess
     const maxIterations = 100;
     const tolerance = 0.0001;
+    let lastValidRate = rate;
 
     for (let i = 0; i < maxIterations; i++) {
       let npv = -investment;
@@ -579,13 +590,24 @@ export class ServiceDeskCalculationEngine {
       }
 
       if (Math.abs(dnpv) < tolerance) {
-        break;
+        // Convergence too slow - return last valid rate
+        return lastValidRate * 100;
       }
 
-      rate = rate - npv / dnpv;
+      lastValidRate = rate;
+      const newRate = rate - npv / dnpv;
+      
+      // FIXED: Validate rate is in reasonable range
+      if (newRate < -0.99 || newRate > 10) {
+        // Rate out of bounds - return last valid rate
+        return lastValidRate * 100;
+      }
+      
+      rate = newRate;
     }
 
-    return rate * 100;
+    // Return best approximation after max iterations
+    return lastValidRate * 100;
   }
 
   /**

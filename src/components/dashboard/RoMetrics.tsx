@@ -60,7 +60,7 @@ export function RoMetrics({ ros, partners }: RoMetricsProps) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
       {/* Taxa de Aprovação */}
-      <Card>
+      <Card variant="premium">
         <CardContent className="p-6">
           <div className="flex items-center justify-between">
             <div>
@@ -81,7 +81,7 @@ export function RoMetrics({ ros, partners }: RoMetricsProps) {
       </Card>
 
       {/* Taxa de Rejeição */}
-      <Card>
+      <Card variant="premium">
         <CardContent className="p-6">
           <div className="flex items-center justify-between">
             <div>
@@ -102,7 +102,7 @@ export function RoMetrics({ ros, partners }: RoMetricsProps) {
       </Card>
 
       {/* Valor Aprovado */}
-      <Card>
+      <Card variant="premium">
         <CardContent className="p-6">
           <div className="flex items-center justify-between">
             <div>
@@ -125,7 +125,7 @@ export function RoMetrics({ ros, partners }: RoMetricsProps) {
       </Card>
 
       {/* Próximos do Vencimento */}
-      <Card>
+      <Card variant="premium">
         <CardContent className="p-6">
           <div className="flex items-center justify-between">
             <div>
@@ -146,7 +146,7 @@ export function RoMetrics({ ros, partners }: RoMetricsProps) {
       </Card>
 
       {/* Top Fornecedor */}
-      <Card>
+      <Card variant="premium">
         <CardContent className="p-6">
           <div className="flex items-center justify-between">
             <div>
@@ -169,7 +169,7 @@ export function RoMetrics({ ros, partners }: RoMetricsProps) {
       </Card>
 
       {/* RO's Expirados */}
-      <Card>
+      <Card variant="premium">
         <CardContent className="p-6">
           <div className="flex items-center justify-between">
             <div>
@@ -185,7 +185,7 @@ export function RoMetrics({ ros, partners }: RoMetricsProps) {
       </Card>
 
       {/* Ticket Médio */}
-      <Card>
+      <Card variant="premium">
         <CardContent className="p-6">
           <div className="flex items-center justify-between">
             <div>
@@ -208,7 +208,7 @@ export function RoMetrics({ ros, partners }: RoMetricsProps) {
       </Card>
 
       {/* Performance Geral */}
-      <Card>
+      <Card variant="premium">
         <CardContent className="p-6">
           <div className="flex items-center justify-between">
             <div>

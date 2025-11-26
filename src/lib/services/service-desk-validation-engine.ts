@@ -16,6 +16,15 @@ import {
 export class ServiceDeskValidationEngine {
   
   /**
+   * Validate email format
+   * FIXED: Added missing implementation
+   */
+  private isValidEmail(email: string): boolean {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  }
+  
+  /**
    * Validates data for a specific tab
    */
   validateTabData(tabId: string, data: any): TabValidationStatus {
@@ -109,12 +118,37 @@ export class ServiceDeskValidationEngine {
     // Contract period validation
     if (data?.contractPeriod) {
       const { startDate, endDate } = data.contractPeriod;
-      if (startDate && endDate && new Date(startDate) >= new Date(endDate)) {
-        errors.push({
-          field: 'contractPeriod',
-          message: 'Data de início deve ser anterior à data de fim',
-          code: 'INVALID_DATE_RANGE'
-        });
+      if (startDate && endDate) {
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+        
+        if (start >= end) {
+          errors.push({
+            field: 'contractPeriod',
+            message: 'Data de início deve ser anterior à data de fim',
+            code: 'INVALID_DATE_RANGE'
+          });
+        }
+        
+        // FIXED: Validate contract period is reasonable (1 month to 5 years)
+        const durationDays = (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24);
+        const durationMonths = durationDays / 30;
+        
+        if (durationMonths < 1) {
+          errors.push({
+            field: 'contractPeriod',
+            message: 'Período de contrato deve ser de pelo menos 1 mês',
+            code: 'INVALID_DURATION'
+          });
+        }
+        
+        if (durationMonths > 60) {
+          warnings.push({
+            field: 'contractPeriod',
+            message: 'Período de contrato muito longo (mais de 5 anos)',
+            suggestion: 'Considere dividir em contratos menores para melhor análise'
+          });
+        }
       }
     }
 
