@@ -15,8 +15,9 @@ interface HeaderProps {
 export function Header({ currentTitle, currentSubtitle, logoSrc }: HeaderProps) {
     return (
         <header className="bg-gradient-to-r from-slate-900 via-blue-900 to-slate-900 border-b border-slate-700/50 shadow-2xl relative overflow-hidden">
-            {/* Efeito de brilho sutil */}
+            {/* Efeito de brilho sutil com animação melhorada */}
             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent animate-pulse"></div>
+            <div className="absolute inset-0 bg-gradient-to-r from-amber-500/0 via-amber-400/5 to-amber-500/0 animate-in fade-in duration-1000"></div>
 
             {/* Logo e Título Principal */}
             <div className="px-4 py-3 border-b border-slate-700/30 relative z-10">
@@ -32,10 +33,10 @@ export function Header({ currentTitle, currentSubtitle, logoSrc }: HeaderProps) 
 
                         {/* Nome do Sistema */}
                         <div className="flex flex-col min-w-0">
-                            <h1 className="text-lg md:text-xl font-bold text-white bg-gradient-to-r from-white to-amber-100 bg-clip-text text-transparent">
+                            <h1 className="text-2xl md:text-4xl lg:text-5xl font-black bg-gradient-to-r from-white via-amber-100 to-amber-300 bg-clip-text text-transparent animate-slide-in-left tracking-tight leading-tight">
                                 Sistema Pré-Venda TI
                             </h1>
-                            <p className="text-xs text-slate-300 font-medium">
+                            <p className="text-sm md:text-base lg:text-lg text-slate-200 font-semibold mt-2 animate-slide-in-left-delay">
                                 Gestão Completa de Precificações, Oportunidades e Propostas
                             </p>
                         </div>
