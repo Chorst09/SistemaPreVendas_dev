@@ -482,7 +482,7 @@ export function ProjectDetailView({ project, onUpdate, onBack }: ProjectDetailVi
                     <XCircle className="h-4 w-4 mr-2 text-red-600" />
                     Fora do Escopo
                   </h4>
-                  <ul className="list-disc list-inside space-y-1 text-sm text-gray-600">
+                  <ul className="list-disc list-inside space-y-1 text-sm text-gray-900 dark:text-gray-100 font-medium">
                     {project.scope.outOfScope.map((item, i) => (
                       <li key={i}>{item}</li>
                     ))}
@@ -496,7 +496,7 @@ export function ProjectDetailView({ project, onUpdate, onBack }: ProjectDetailVi
                     <Info className="h-4 w-4 mr-2 text-purple-600" />
                     Premissas
                   </h4>
-                  <ul className="list-disc list-inside space-y-1 text-sm text-gray-600">
+                  <ul className="list-disc list-inside space-y-1 text-sm text-gray-900 dark:text-gray-100 font-medium">
                     {project.scope.assumptions.map((item, i) => (
                       <li key={i}>{item}</li>
                     ))}
@@ -510,7 +510,7 @@ export function ProjectDetailView({ project, onUpdate, onBack }: ProjectDetailVi
                     <AlertTriangle className="h-4 w-4 mr-2 text-orange-600" />
                     Restrições
                   </h4>
-                  <ul className="list-disc list-inside space-y-1 text-sm text-gray-600">
+                  <ul className="list-disc list-inside space-y-1 text-sm text-gray-900 dark:text-gray-100 font-medium">
                     {project.scope.constraints.map((item, i) => (
                       <li key={i}>{item}</li>
                     ))}
@@ -526,7 +526,7 @@ export function ProjectDetailView({ project, onUpdate, onBack }: ProjectDetailVi
                 <CardTitle>Notas</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-gray-600 whitespace-pre-wrap">{project.notes}</p>
+                <p className="text-sm text-gray-900 dark:text-gray-100 whitespace-pre-wrap font-medium">{project.notes}</p>
               </CardContent>
             </Card>
           )}
