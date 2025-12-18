@@ -603,93 +603,138 @@ const PartnerView: React.FC<PartnerViewProps> = ({ partnerType }) => {
                     <div className="space-y-6">
                       {/* Header da Seção */}
                       <div className="flex items-center">
-                        <div className="bg-gradient-to-r from-emerald-500 to-teal-500 p-3 rounded-lg mr-4">
+                        <div className="bg-gradient-to-r from-emerald-500 to-teal-500 p-3 rounded-lg mr-4 shadow-lg">
                           <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                           </svg>
                         </div>
-                        <h3 className="text-2xl font-bold text-gray-800">Informações de RO</h3>
+                        <h3 className="text-2xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
+                          Acessos ao Partner
+                        </h3>
                       </div>
                       
-                      {/* Cards de Informações */}
-                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                        {/* Sites */}
-                        <div className="bg-white border border-gray-200 rounded-xl shadow-md p-6">
-                          <div className="flex items-center mb-4">
-                            <div className="bg-emerald-100 p-3 rounded-lg mr-3">
-                              <svg className="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9v-9m0-9v9" />
-                              </svg>
-                            </div>
-                            <h4 className="text-xl font-bold text-gray-800">Sites e Portais</h4>
-                          </div>
-                          <div className="space-y-4">
-                            {viewingPartner.sitePartner && (
-                              <div className="bg-emerald-50 rounded-lg p-4 border border-emerald-100">
-                                <p className="text-sm font-medium text-emerald-600 mb-2">Site Partner</p>
-                                <LinkOrText 
-                                  text={viewingPartner.sitePartner} 
-                                  className="font-semibold break-all text-sm"
-                                />
-                              </div>
-                            )}
-                            {viewingPartner.siteRO && (
-                              <div className="bg-teal-50 rounded-lg p-4 border border-teal-100">
-                                <p className="text-sm font-medium text-teal-600 mb-2">Site RO</p>
-                                <LinkOrText 
-                                  text={viewingPartner.siteRO} 
-                                  className="font-semibold break-all text-sm"
-                                />
-                              </div>
-                            )}
-                          </div>
-                        </div>
-
-                        {/* Credenciais e Templates */}
-                        <div className="bg-white border border-gray-200 rounded-xl shadow-md p-6">
-                          <div className="flex items-center mb-4">
-                            <div className="bg-amber-100 p-3 rounded-lg mr-3">
-                              <svg className="w-6 h-6 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m0 0a2 2 0 012 2m-2-2a2 2 0 00-2 2m2-2V5a2 2 0 00-2-2H9a2 2 0 00-2 2v.01M15 7H9m6 0a2 2 0 012 2M9 7a2 2 0 00-2 2m0 0v8a2 2 0 002 2h6a2 2 0 002-2V9a2 2 0 00-2-2" />
-                              </svg>
-                            </div>
-                            <h4 className="text-xl font-bold text-gray-800">Acesso e Templates</h4>
-                          </div>
-                          <div className="space-y-4">
-                            {viewingPartner.login && (
-                              <div className="bg-amber-50 rounded-lg p-4 border border-amber-100">
-                                <p className="text-sm font-medium text-amber-600 mb-2">Login</p>
-                                <p className="font-semibold text-gray-800">{viewingPartner.login}</p>
-                              </div>
-                            )}
-                            {viewingPartner.templateRO && (
-                              <div className="bg-blue-50 rounded-lg p-4 border border-blue-100">
-                                <p className="text-sm font-medium text-blue-600 mb-2">Template RO</p>
-                                <div className="flex items-center gap-2">
-                                  <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                  </svg>
-                                  <p className="font-semibold text-gray-800">{viewingPartner.templateRO}</p>
+                      {/* Acessos ao Partner */}
+                      {viewingPartner.acessosPartner && viewingPartner.acessosPartner.length > 0 ? (
+                        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+                          {viewingPartner.acessosPartner.map((acesso, index) => (
+                            <div key={index} className="bg-white border-2 border-emerald-200 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 p-6 hover:border-emerald-300">
+                              {/* Header do Card */}
+                              <div className="flex items-center mb-4">
+                                <div className="bg-gradient-to-r from-emerald-500 to-teal-500 p-3 rounded-lg mr-3 shadow-md">
+                                  <Globe className="w-6 h-6 text-white" />
+                                </div>
+                                <div>
+                                  <h4 className="text-lg font-bold text-emerald-800">{acesso.nome}</h4>
+                                  <div className="w-12 h-1 bg-gradient-to-r from-emerald-400 to-teal-400 rounded-full mt-1"></div>
                                 </div>
                               </div>
-                            )}
+
+                              {/* Site */}
+                              <div className="mb-4 p-4 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-lg border border-emerald-100">
+                                <div className="flex items-center mb-2">
+                                  <svg className="w-4 h-4 text-emerald-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9v-9m0-9v9" />
+                                  </svg>
+                                  <span className="text-sm font-bold text-emerald-700 uppercase tracking-wide">Site</span>
+                                </div>
+                                <LinkOrText 
+                                  text={acesso.site} 
+                                  className="font-semibold text-gray-800 break-all text-sm leading-relaxed"
+                                />
+                              </div>
+
+                              {/* Credenciais */}
+                              <div className="space-y-3">
+                                {/* Login */}
+                                <div className="p-3 bg-blue-50 rounded-lg border-l-4 border-blue-400">
+                                  <div className="flex items-center mb-1">
+                                    <User className="w-4 h-4 text-blue-600 mr-2" />
+                                    <span className="text-xs font-bold text-blue-700 uppercase tracking-wide">Login</span>
+                                  </div>
+                                  <p className="font-bold text-gray-800 text-sm">{acesso.login}</p>
+                                </div>
+
+                                {/* Senha */}
+                                <div className="p-3 bg-purple-50 rounded-lg border-l-4 border-purple-400">
+                                  <div className="flex items-center mb-1">
+                                    <Lock className="w-4 h-4 text-purple-600 mr-2" />
+                                    <span className="text-xs font-bold text-purple-700 uppercase tracking-wide">Senha</span>
+                                  </div>
+                                  <p className="font-bold text-gray-800 text-sm font-mono bg-purple-100 px-2 py-1 rounded border">
+                                    {acesso.senha}
+                                  </p>
+                                </div>
+                              </div>
+
+                              {/* Badge de Status */}
+                              <div className="mt-4 pt-3 border-t border-emerald-100">
+                                <div className="flex items-center justify-center">
+                                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800 border border-green-200">
+                                    <div className="w-2 h-2 bg-green-400 rounded-full mr-2 animate-pulse"></div>
+                                    Ativo
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="text-center py-12 bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl border-2 border-dashed border-gray-300">
+                          <Globe className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                          <h4 className="text-lg font-semibold text-gray-600 mb-2">Nenhum Acesso Cadastrado</h4>
+                          <p className="text-gray-500">Este fornecedor ainda não possui acessos ao partner configurados.</p>
+                        </div>
+                      )}
+
+                      {/* Template RO */}
+                      {viewingPartner.templateRO && (
+                        <div className="bg-white border-2 border-blue-200 rounded-xl shadow-lg p-6">
+                          <div className="flex items-center mb-4">
+                            <div className="bg-gradient-to-r from-blue-500 to-indigo-500 p-3 rounded-lg mr-3 shadow-md">
+                              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                              </svg>
+                            </div>
+                            <div>
+                              <h4 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                                Template RO
+                              </h4>
+                              <div className="w-16 h-1 bg-gradient-to-r from-blue-400 to-indigo-400 rounded-full mt-1"></div>
+                            </div>
+                          </div>
+                          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-100 rounded-lg p-4">
+                            <div className="flex items-center gap-3">
+                              <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                              </svg>
+                              <p className="font-bold text-gray-800 text-lg">{viewingPartner.templateRO}</p>
+                            </div>
                           </div>
                         </div>
-                      </div>
+                      )}
 
                       {/* Procedimento para RO */}
                       {viewingPartner.procedimentoRO && (
-                        <div className="bg-white border border-gray-200 rounded-xl shadow-md p-6">
+                        <div className="bg-white border-2 border-indigo-200 rounded-xl shadow-lg p-6">
                           <div className="flex items-center mb-4">
-                            <div className="bg-indigo-100 p-3 rounded-lg mr-3">
-                              <svg className="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <div className="bg-gradient-to-r from-indigo-500 to-purple-500 p-3 rounded-lg mr-3 shadow-md">
+                              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
                               </svg>
                             </div>
-                            <h4 className="text-xl font-bold text-gray-800">Procedimento para RO</h4>
+                            <div>
+                              <h4 className="text-xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                                Procedimento para RO
+                              </h4>
+                              <div className="w-20 h-1 bg-gradient-to-r from-indigo-400 to-purple-400 rounded-full mt-1"></div>
+                            </div>
                           </div>
-                          <div className="bg-indigo-50 border border-indigo-100 rounded-lg p-4">
-                            <p className="whitespace-pre-wrap text-gray-800 leading-relaxed">{viewingPartner.procedimentoRO}</p>
+                          <div className="bg-gradient-to-r from-indigo-50 to-purple-50 border-2 border-indigo-100 rounded-lg p-6">
+                            <div className="prose prose-indigo max-w-none">
+                              <p className="whitespace-pre-wrap text-gray-800 leading-relaxed font-medium text-base">
+                                {viewingPartner.procedimentoRO}
+                              </p>
+                            </div>
                           </div>
                         </div>
                       )}
