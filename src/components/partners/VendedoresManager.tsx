@@ -28,6 +28,7 @@ interface VendedoresManagerProps {
 export function VendedoresManager({ vendedores, onChange }: VendedoresManagerProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingVendedor, setEditingVendedor] = useState<VendedorResponsavel | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string>('');
 
   const form = useForm<z.infer<typeof vendedorSchema>>({
     resolver: zodResolver(vendedorSchema),
@@ -40,6 +41,8 @@ export function VendedoresManager({ vendedores, onChange }: VendedoresManagerPro
   });
 
   const handleOpenModal = (vendedor?: VendedorResponsavel) => {
+    console.log('Abrindo modal para:', vendedor ? 'editar' : 'adicionar'); // Debug log
+    
     if (vendedor) {
       setEditingVendedor(vendedor);
       form.reset({
@@ -61,39 +64,58 @@ export function VendedoresManager({ vendedores, onChange }: VendedoresManagerPro
   };
 
   const handleCloseModal = () => {
+    console.log('Fechando modal'); // Debug log
     setIsModalOpen(false);
     setEditingVendedor(null);
+    setSuccessMessage('');
     form.reset();
   };
 
   const onSubmit = (values: z.infer<typeof vendedorSchema>) => {
-    console.log('Submetendo vendedor:', values); // Debug log
+    console.log('=== SUBMISSÃO INICIADA ===');
+    console.log('Dados do formulário:', values);
     
     if (editingVendedor) {
       // Editando vendedor existente
       const updatedVendedores = vendedores.map(v => 
         v.id === editingVendedor.id 
-          ? { ...editingVendedor, ...values }
+          ? { ...v, ...values }
           : v
       );
-      console.log('Vendedores atualizados:', updatedVendedores); // Debug log
       onChange(updatedVendedores);
+      setSuccessMessage('Vendedor atualizado com sucesso!');
+      console.log('Vendedor editado com sucesso');
     } else {
       // Adicionando novo vendedor
       const newVendedor: VendedorResponsavel = {
         id: Date.now().toString(),
-        ...values,
+        name: values.vendedor,
+        phone: values.telefone,
+        email: values.email,
+        fornecedor: values.fornecedor,
+        vendedor: values.vendedor,
+        telefone: values.telefone,
       };
+      
       const novosVendedores = [...vendedores, newVendedor];
-      console.log('Novo vendedor adicionado:', newVendedor); // Debug log
-      console.log('Lista completa de vendedores:', novosVendedores); // Debug log
       onChange(novosVendedores);
+      setSuccessMessage(`Vendedor "${values.vendedor}" adicionado com sucesso!`);
+      console.log('Novo vendedor adicionado:', newVendedor);
+      console.log('Total de vendedores:', novosVendedores.length);
     }
     
-    // Fechar modal após um pequeno delay para garantir que o estado foi atualizado
-    setTimeout(() => {
-      handleCloseModal();
-    }, 100);
+    // Resetar o formulário mas manter o modal aberto
+    form.reset({
+      fornecedor: '',
+      vendedor: '',
+      telefone: '',
+      email: '',
+    });
+    
+    // Limpar mensagem de sucesso após 3 segundos
+    setTimeout(() => setSuccessMessage(''), 3000);
+    
+    console.log('=== SUBMISSÃO CONCLUÍDA - MODAL PERMANECE ABERTO ===');
   };
 
   const handleRemove = (id: string) => {
@@ -106,14 +128,15 @@ export function VendedoresManager({ vendedores, onChange }: VendedoresManagerPro
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h4 className="text-md font-semibold">Vendedores Responsáveis</h4>
-        <Dialog open={isModalOpen} onOpenChange={(open) => {
-          console.log('Modal state changing to:', open); // Debug log
-          setIsModalOpen(open);
-          if (!open) {
-            setEditingVendedor(null);
-            form.reset();
-          }
-        }}>
+        <Dialog 
+          open={isModalOpen} 
+          onOpenChange={(open) => {
+            console.log('Dialog onOpenChange chamado com:', open); // Debug log
+            if (!open) {
+              handleCloseModal();
+            }
+          }}
+        >
           <DialogTrigger asChild>
             <Button 
               type="button" 
@@ -131,6 +154,11 @@ export function VendedoresManager({ vendedores, onChange }: VendedoresManagerPro
                 {editingVendedor ? 'Editar Vendedor' : 'Adicionar Vendedor Responsável'}
               </DialogTitle>
             </DialogHeader>
+            {successMessage && (
+              <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
+                {successMessage}
+              </div>
+            )}
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit, (errors) => {
                 console.log('Erros de validação:', errors); // Debug log
@@ -189,13 +217,33 @@ export function VendedoresManager({ vendedores, onChange }: VendedoresManagerPro
                     )}
                   />
                 </div>
-                <div className="flex justify-end space-x-2">
-                  <Button type="button" variant="outline" onClick={handleCloseModal}>
-                    Cancelar
+                <div className="flex justify-between">
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    onClick={handleCloseModal}
+                  >
+                    Fechar
                   </Button>
-                  <Button type="submit">
-                    {editingVendedor ? 'Atualizar' : 'Adicionar'}
-                  </Button>
+                  <div className="space-x-2">
+                    <Button 
+                      type="button" 
+                      variant="outline" 
+                      onClick={() => {
+                        form.reset({
+                          fornecedor: '',
+                          vendedor: '',
+                          telefone: '',
+                          email: '',
+                        });
+                      }}
+                    >
+                      Limpar
+                    </Button>
+                    <Button type="submit">
+                      {editingVendedor ? 'Atualizar' : 'Adicionar'}
+                    </Button>
+                  </div>
                 </div>
               </form>
             </Form>
