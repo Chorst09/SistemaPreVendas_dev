@@ -67,6 +67,8 @@ export function VendedoresManager({ vendedores, onChange }: VendedoresManagerPro
   };
 
   const onSubmit = (values: z.infer<typeof vendedorSchema>) => {
+    console.log('Submetendo vendedor:', values); // Debug log
+    
     if (editingVendedor) {
       // Editando vendedor existente
       const updatedVendedores = vendedores.map(v => 
@@ -74,6 +76,7 @@ export function VendedoresManager({ vendedores, onChange }: VendedoresManagerPro
           ? { ...editingVendedor, ...values }
           : v
       );
+      console.log('Vendedores atualizados:', updatedVendedores); // Debug log
       onChange(updatedVendedores);
     } else {
       // Adicionando novo vendedor
@@ -81,9 +84,16 @@ export function VendedoresManager({ vendedores, onChange }: VendedoresManagerPro
         id: Date.now().toString(),
         ...values,
       };
-      onChange([...vendedores, newVendedor]);
+      const novosVendedores = [...vendedores, newVendedor];
+      console.log('Novo vendedor adicionado:', newVendedor); // Debug log
+      console.log('Lista completa de vendedores:', novosVendedores); // Debug log
+      onChange(novosVendedores);
     }
-    handleCloseModal();
+    
+    // Fechar modal após um pequeno delay para garantir que o estado foi atualizado
+    setTimeout(() => {
+      handleCloseModal();
+    }, 100);
   };
 
   const handleRemove = (id: string) => {
@@ -96,7 +106,14 @@ export function VendedoresManager({ vendedores, onChange }: VendedoresManagerPro
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h4 className="text-md font-semibold">Vendedores Responsáveis</h4>
-        <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+        <Dialog open={isModalOpen} onOpenChange={(open) => {
+          console.log('Modal state changing to:', open); // Debug log
+          setIsModalOpen(open);
+          if (!open) {
+            setEditingVendedor(null);
+            form.reset();
+          }
+        }}>
           <DialogTrigger asChild>
             <Button 
               type="button" 
@@ -115,7 +132,9 @@ export function VendedoresManager({ vendedores, onChange }: VendedoresManagerPro
               </DialogTitle>
             </DialogHeader>
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <form onSubmit={form.handleSubmit(onSubmit, (errors) => {
+                console.log('Erros de validação:', errors); // Debug log
+              })} className="space-y-4">
                 <FormField
                   control={form.control}
                   name="fornecedor"
