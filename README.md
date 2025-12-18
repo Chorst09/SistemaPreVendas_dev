@@ -1,4 +1,4 @@
-# Sistema de Prevendas - Arquitetura Refatorada v2
+# Sistema de Prevendas - Arquitetura Refatorada v2.1
 
 Reorganização completa do projeto com separação clara entre backend e frontend, pronto para publicação e deploy em produção.
 
