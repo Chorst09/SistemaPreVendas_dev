@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { PlusCircle, Edit, Trash2, Package, Search, Eye, FileText } from "lucide-react";
+import { PlusCircle, Edit, Trash2, Package, Search, Eye, FileText, Building } from "lucide-react";
 import PartnerForm from "./PartnerForm"; // Assumindo que você tem este componente
 import { Partner } from "@/lib/types"; // Assumindo que você tem este tipo
 
@@ -142,6 +142,36 @@ const PartnerView: React.FC<PartnerViewProps> = ({ partnerType }) => {
     if (viewingPartner) {
       window.print();
     }
+  };
+
+  // Função para verificar se é uma URL válida
+  const isValidUrl = (string: string) => {
+    try {
+      new URL(string);
+      return true;
+    } catch (_) {
+      return false;
+    }
+  };
+
+  // Componente para renderizar link ou texto
+  const LinkOrText = ({ text, className = "" }: { text: string; className?: string }) => {
+    if (isValidUrl(text)) {
+      return (
+        <a
+          href={text}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={`text-blue-600 hover:text-blue-800 hover:underline transition-colors duration-200 ${className}`}
+        >
+          {text}
+          <svg className="w-3 h-3 inline ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+          </svg>
+        </a>
+      );
+    }
+    return <span className={className}>{text}</span>;
   };
 
   // Função para remover campos undefined dos dados
@@ -381,7 +411,12 @@ const PartnerView: React.FC<PartnerViewProps> = ({ partnerType }) => {
                           </div>
                           <div>
                             <p className="text-sm font-medium text-gray-500">Email</p>
-                            <p className="text-lg font-semibold text-gray-800">{viewingPartner.contact}</p>
+                            <a 
+                              href={`mailto:${viewingPartner.contact}`}
+                              className="text-lg font-semibold text-blue-600 hover:text-blue-800 hover:underline transition-colors duration-200"
+                            >
+                              {viewingPartner.contact}
+                            </a>
                           </div>
                         </div>
                         {viewingPartner.phone && (
@@ -393,7 +428,12 @@ const PartnerView: React.FC<PartnerViewProps> = ({ partnerType }) => {
                             </div>
                             <div>
                               <p className="text-sm font-medium text-gray-500">Telefone</p>
-                              <p className="text-lg font-semibold text-gray-800">{viewingPartner.phone}</p>
+                              <a 
+                                href={`tel:${viewingPartner.phone.replace(/\D/g, '')}`}
+                                className="text-lg font-semibold text-orange-600 hover:text-orange-800 hover:underline transition-colors duration-200"
+                              >
+                                {viewingPartner.phone}
+                              </a>
                             </div>
                           </div>
                         )}
@@ -455,9 +495,12 @@ const PartnerView: React.FC<PartnerViewProps> = ({ partnerType }) => {
                           </div>
                           <div className="space-y-3">
                             {viewingPartner.site && (
-                              <div className="bg-white rounded-lg p-3 border border-blue-100">
-                                <p className="text-sm font-medium text-blue-600 mb-1">Site</p>
-                                <p className="text-gray-800 font-semibold break-all">{viewingPartner.site}</p>
+                              <div className="bg-white rounded-lg p-3 border border-blue-100 hover:border-blue-200 transition-colors">
+                                <p className="text-sm font-medium text-blue-600 mb-2">Site</p>
+                                <LinkOrText 
+                                  text={viewingPartner.site} 
+                                  className="font-semibold break-all text-sm"
+                                />
                               </div>
                             )}
                             {viewingPartner.login && (
@@ -481,9 +524,12 @@ const PartnerView: React.FC<PartnerViewProps> = ({ partnerType }) => {
                           </div>
                           <div className="space-y-3">
                             {viewingPartner.siteEcommerce && (
-                              <div className="bg-white rounded-lg p-3 border border-purple-100">
-                                <p className="text-sm font-medium text-purple-600 mb-1">Site</p>
-                                <p className="text-gray-800 font-semibold break-all">{viewingPartner.siteEcommerce}</p>
+                              <div className="bg-white rounded-lg p-3 border border-purple-100 hover:border-purple-200 transition-colors">
+                                <p className="text-sm font-medium text-purple-600 mb-2">Site</p>
+                                <LinkOrText 
+                                  text={viewingPartner.siteEcommerce} 
+                                  className="font-semibold break-all text-sm"
+                                />
                               </div>
                             )}
                             {viewingPartner.loginEcommerce && (
@@ -554,46 +600,96 @@ const PartnerView: React.FC<PartnerViewProps> = ({ partnerType }) => {
 
                   {/* Informações de Fornecedor */}
                   {viewingPartner.type === 'Fornecedor' && (
-                    <div className="space-y-4">
-                      <h3 className="text-lg font-semibold text-gray-800">Informações de RO</h3>
+                    <div className="space-y-6">
+                      {/* Header da Seção */}
+                      <div className="flex items-center">
+                        <div className="bg-gradient-to-r from-emerald-500 to-teal-500 p-3 rounded-lg mr-4">
+                          <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                          </svg>
+                        </div>
+                        <h3 className="text-2xl font-bold text-gray-800">Informações de RO</h3>
+                      </div>
                       
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="space-y-3">
-                          {viewingPartner.sitePartner && (
-                            <div>
-                              <span className="font-medium text-gray-600">Site Partner:</span>
-                              <span className="ml-2">{viewingPartner.sitePartner}</span>
+                      {/* Cards de Informações */}
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        {/* Sites */}
+                        <div className="bg-white border border-gray-200 rounded-xl shadow-md p-6">
+                          <div className="flex items-center mb-4">
+                            <div className="bg-emerald-100 p-3 rounded-lg mr-3">
+                              <svg className="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9v-9m0-9v9" />
+                              </svg>
                             </div>
-                          )}
-                          {viewingPartner.siteRO && (
-                            <div>
-                              <span className="font-medium text-gray-600">Site RO:</span>
-                              <span className="ml-2">{viewingPartner.siteRO}</span>
-                            </div>
-                          )}
+                            <h4 className="text-xl font-bold text-gray-800">Sites e Portais</h4>
+                          </div>
+                          <div className="space-y-4">
+                            {viewingPartner.sitePartner && (
+                              <div className="bg-emerald-50 rounded-lg p-4 border border-emerald-100">
+                                <p className="text-sm font-medium text-emerald-600 mb-2">Site Partner</p>
+                                <LinkOrText 
+                                  text={viewingPartner.sitePartner} 
+                                  className="font-semibold break-all text-sm"
+                                />
+                              </div>
+                            )}
+                            {viewingPartner.siteRO && (
+                              <div className="bg-teal-50 rounded-lg p-4 border border-teal-100">
+                                <p className="text-sm font-medium text-teal-600 mb-2">Site RO</p>
+                                <LinkOrText 
+                                  text={viewingPartner.siteRO} 
+                                  className="font-semibold break-all text-sm"
+                                />
+                              </div>
+                            )}
+                          </div>
                         </div>
 
-                        <div className="space-y-3">
-                          {viewingPartner.login && (
-                            <div>
-                              <span className="font-medium text-gray-600">Login:</span>
-                              <span className="ml-2">{viewingPartner.login}</span>
+                        {/* Credenciais e Templates */}
+                        <div className="bg-white border border-gray-200 rounded-xl shadow-md p-6">
+                          <div className="flex items-center mb-4">
+                            <div className="bg-amber-100 p-3 rounded-lg mr-3">
+                              <svg className="w-6 h-6 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m0 0a2 2 0 012 2m-2-2a2 2 0 00-2 2m2-2V5a2 2 0 00-2-2H9a2 2 0 00-2 2v.01M15 7H9m6 0a2 2 0 012 2M9 7a2 2 0 00-2 2m0 0v8a2 2 0 002 2h6a2 2 0 002-2V9a2 2 0 00-2-2" />
+                              </svg>
                             </div>
-                          )}
-                          {viewingPartner.templateRO && (
-                            <div>
-                              <span className="font-medium text-gray-600">Template RO:</span>
-                              <span className="ml-2">{viewingPartner.templateRO}</span>
-                            </div>
-                          )}
+                            <h4 className="text-xl font-bold text-gray-800">Acesso e Templates</h4>
+                          </div>
+                          <div className="space-y-4">
+                            {viewingPartner.login && (
+                              <div className="bg-amber-50 rounded-lg p-4 border border-amber-100">
+                                <p className="text-sm font-medium text-amber-600 mb-2">Login</p>
+                                <p className="font-semibold text-gray-800">{viewingPartner.login}</p>
+                              </div>
+                            )}
+                            {viewingPartner.templateRO && (
+                              <div className="bg-blue-50 rounded-lg p-4 border border-blue-100">
+                                <p className="text-sm font-medium text-blue-600 mb-2">Template RO</p>
+                                <div className="flex items-center gap-2">
+                                  <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                  </svg>
+                                  <p className="font-semibold text-gray-800">{viewingPartner.templateRO}</p>
+                                </div>
+                              </div>
+                            )}
+                          </div>
                         </div>
                       </div>
 
+                      {/* Procedimento para RO */}
                       {viewingPartner.procedimentoRO && (
-                        <div>
-                          <h4 className="font-medium text-gray-700 mb-2">Procedimento para RO</h4>
-                          <div className="bg-gray-50 p-3 rounded-lg">
-                            <p className="whitespace-pre-wrap">{viewingPartner.procedimentoRO}</p>
+                        <div className="bg-white border border-gray-200 rounded-xl shadow-md p-6">
+                          <div className="flex items-center mb-4">
+                            <div className="bg-indigo-100 p-3 rounded-lg mr-3">
+                              <svg className="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                              </svg>
+                            </div>
+                            <h4 className="text-xl font-bold text-gray-800">Procedimento para RO</h4>
+                          </div>
+                          <div className="bg-indigo-50 border border-indigo-100 rounded-lg p-4">
+                            <p className="whitespace-pre-wrap text-gray-800 leading-relaxed">{viewingPartner.procedimentoRO}</p>
                           </div>
                         </div>
                       )}
