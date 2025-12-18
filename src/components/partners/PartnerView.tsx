@@ -130,15 +130,17 @@ const PartnerView: React.FC<PartnerViewProps> = ({ partnerType }) => {
     const cleaned: any = {};
     Object.keys(data).forEach(key => {
       if (data[key] !== undefined && data[key] !== null) {
-        // Preservar arrays vazios para vendedoresResponsaveis
-        if (key === 'vendedoresResponsaveis' && Array.isArray(data[key])) {
-          cleaned[key] = data[key];
+        // Sempre preservar vendedoresResponsaveis, mesmo se for array vazio
+        if (key === 'vendedoresResponsaveis') {
+          cleaned[key] = Array.isArray(data[key]) ? data[key] : [];
+          console.log(`Preservando ${key}:`, cleaned[key]); // Debug log específico
         } else if (data[key] !== '') {
           cleaned[key] = data[key];
         }
       }
     });
-    console.log('Dados após limpeza:', cleaned); // Debug log
+    console.log('Dados após limpeza completa:', cleaned); // Debug log
+    console.log('Vendedores após limpeza:', cleaned.vendedoresResponsaveis); // Debug log específico
     return cleaned;
   };
 
