@@ -324,117 +324,226 @@ const PartnerView: React.FC<PartnerViewProps> = ({ partnerType }) => {
               </DialogHeader>
               
               {viewingPartner && (
-                <div id="partner-print-content" className="space-y-6 p-4">
-                  {/* Cabeçalho */}
-                  <div className="border-b pb-4">
-                    <h1 className="text-2xl font-bold text-gray-800">{viewingPartner.name}</h1>
-                    <p className="text-lg text-gray-600">{viewingPartner.type}</p>
-                    <div className="mt-2">
-                      <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${
-                        viewingPartner.status === 'Ativo' 
-                          ? 'bg-green-100 text-green-800' 
-                          : 'bg-red-100 text-red-800'
-                      }`}>
-                        {viewingPartner.status}
-                      </span>
+                <div id="partner-print-content" className="space-y-6">
+                  {/* Cabeçalho Moderno */}
+                  <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6 rounded-lg shadow-lg">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                      <div>
+                        <h1 className="text-3xl font-bold mb-2">{viewingPartner.name}</h1>
+                        <p className="text-blue-100 text-lg font-medium">{viewingPartner.type}</p>
+                      </div>
+                      <div className="mt-4 sm:mt-0">
+                        <span className={`inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold shadow-md ${
+                          viewingPartner.status === 'Ativo' 
+                            ? 'bg-green-500 text-white' 
+                            : 'bg-red-500 text-white'
+                        }`}>
+                          <div className={`w-2 h-2 rounded-full mr-2 ${
+                            viewingPartner.status === 'Ativo' ? 'bg-green-200' : 'bg-red-200'
+                          }`}></div>
+                          {viewingPartner.status}
+                        </span>
+                      </div>
                     </div>
                   </div>
 
-                  {/* Informações de Contato */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <h3 className="text-lg font-semibold mb-3 text-gray-800">Informações de Contato</h3>
-                      <div className="space-y-2">
+                  {/* Cards de Informações */}
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {/* Card de Contato */}
+                    <div className="bg-white border border-gray-200 rounded-xl shadow-md hover:shadow-lg transition-shadow p-6">
+                      <div className="flex items-center mb-4">
+                        <div className="bg-blue-100 p-3 rounded-lg mr-3">
+                          <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                          </svg>
+                        </div>
+                        <h3 className="text-xl font-bold text-gray-800">Informações de Contato</h3>
+                      </div>
+                      <div className="space-y-4">
                         {viewingPartner.mainContact && (
-                          <div className="flex items-center gap-2">
-                            <span className="font-medium text-gray-600">Contato Principal:</span>
-                            <span>{viewingPartner.mainContact}</span>
+                          <div className="flex items-start gap-3">
+                            <div className="bg-purple-100 p-2 rounded-lg">
+                              <svg className="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                              </svg>
+                            </div>
+                            <div>
+                              <p className="text-sm font-medium text-gray-500">Contato Principal</p>
+                              <p className="text-lg font-semibold text-gray-800">{viewingPartner.mainContact}</p>
+                            </div>
                           </div>
                         )}
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium text-gray-600">Email:</span>
-                          <span>{viewingPartner.contact}</span>
+                        <div className="flex items-start gap-3">
+                          <div className="bg-green-100 p-2 rounded-lg">
+                            <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                            </svg>
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium text-gray-500">Email</p>
+                            <p className="text-lg font-semibold text-gray-800">{viewingPartner.contact}</p>
+                          </div>
                         </div>
                         {viewingPartner.phone && (
-                          <div className="flex items-center gap-2">
-                            <span className="font-medium text-gray-600">Telefone:</span>
-                            <span>{viewingPartner.phone}</span>
+                          <div className="flex items-start gap-3">
+                            <div className="bg-orange-100 p-2 rounded-lg">
+                              <svg className="w-4 h-4 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                              </svg>
+                            </div>
+                            <div>
+                              <p className="text-sm font-medium text-gray-500">Telefone</p>
+                              <p className="text-lg font-semibold text-gray-800">{viewingPartner.phone}</p>
+                            </div>
                           </div>
                         )}
                       </div>
                     </div>
 
-                    {/* Produtos/Serviços */}
-                    <div>
-                      <h3 className="text-lg font-semibold mb-3 text-gray-800">Produtos/Serviços</h3>
+                    {/* Card de Produtos/Serviços */}
+                    <div className="bg-white border border-gray-200 rounded-xl shadow-md hover:shadow-lg transition-shadow p-6">
+                      <div className="flex items-center mb-4">
+                        <div className="bg-indigo-100 p-3 rounded-lg mr-3">
+                          <Package className="w-6 h-6 text-indigo-600" />
+                        </div>
+                        <h3 className="text-xl font-bold text-gray-800">Produtos/Serviços</h3>
+                      </div>
                       {viewingPartner.products ? (
                         <div className="flex flex-wrap gap-2">
                           {viewingPartner.products.split(',').map((product, index) => (
                             <span
                               key={index}
-                              className="inline-block bg-blue-100 text-blue-800 text-sm px-3 py-1 rounded-full"
+                              className="inline-flex items-center px-3 py-2 rounded-lg text-sm font-medium bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-sm hover:shadow-md transition-shadow"
                             >
                               {product.trim()}
                             </span>
                           ))}
                         </div>
                       ) : (
-                        <p className="text-gray-500">Nenhum produto/serviço cadastrado</p>
+                        <div className="text-center py-8">
+                          <Package className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                          <p className="text-gray-500 font-medium">Nenhum produto/serviço cadastrado</p>
+                        </div>
                       )}
                     </div>
                   </div>
 
                   {/* Informações Específicas por Tipo */}
                   {viewingPartner.type === 'Distribuidor' && (
-                    <div className="space-y-4">
-                      <h3 className="text-lg font-semibold text-gray-800">Informações do Portal</h3>
+                    <div className="space-y-6">
+                      {/* Header da Seção */}
+                      <div className="flex items-center">
+                        <div className="bg-gradient-to-r from-cyan-500 to-blue-500 p-3 rounded-lg mr-4">
+                          <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9v-9m0-9v9" />
+                          </svg>
+                        </div>
+                        <h3 className="text-2xl font-bold text-gray-800">Informações do Portal</h3>
+                      </div>
                       
-                      {/* Sites e Acessos */}
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="space-y-3">
-                          <h4 className="font-medium text-gray-700">Portal Principal</h4>
-                          {viewingPartner.site && (
-                            <div>
-                              <span className="font-medium text-gray-600">Site:</span>
-                              <span className="ml-2">{viewingPartner.site}</span>
+                      {/* Cards de Sites e Acessos */}
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        {/* Portal Principal */}
+                        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-6 shadow-sm">
+                          <div className="flex items-center mb-4">
+                            <div className="bg-blue-500 p-2 rounded-lg mr-3">
+                              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                              </svg>
                             </div>
-                          )}
-                          {viewingPartner.login && (
-                            <div>
-                              <span className="font-medium text-gray-600">Login:</span>
-                              <span className="ml-2">{viewingPartner.login}</span>
-                            </div>
-                          )}
+                            <h4 className="text-lg font-bold text-blue-800">Portal Principal</h4>
+                          </div>
+                          <div className="space-y-3">
+                            {viewingPartner.site && (
+                              <div className="bg-white rounded-lg p-3 border border-blue-100">
+                                <p className="text-sm font-medium text-blue-600 mb-1">Site</p>
+                                <p className="text-gray-800 font-semibold break-all">{viewingPartner.site}</p>
+                              </div>
+                            )}
+                            {viewingPartner.login && (
+                              <div className="bg-white rounded-lg p-3 border border-blue-100">
+                                <p className="text-sm font-medium text-blue-600 mb-1">Login</p>
+                                <p className="text-gray-800 font-semibold">{viewingPartner.login}</p>
+                              </div>
+                            )}
+                          </div>
                         </div>
 
-                        <div className="space-y-3">
-                          <h4 className="font-medium text-gray-700">E-commerce</h4>
-                          {viewingPartner.siteEcommerce && (
-                            <div>
-                              <span className="font-medium text-gray-600">Site:</span>
-                              <span className="ml-2">{viewingPartner.siteEcommerce}</span>
+                        {/* E-commerce */}
+                        <div className="bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-200 rounded-xl p-6 shadow-sm">
+                          <div className="flex items-center mb-4">
+                            <div className="bg-purple-500 p-2 rounded-lg mr-3">
+                              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                              </svg>
                             </div>
-                          )}
-                          {viewingPartner.loginEcommerce && (
-                            <div>
-                              <span className="font-medium text-gray-600">Login:</span>
-                              <span className="ml-2">{viewingPartner.loginEcommerce}</span>
-                            </div>
-                          )}
+                            <h4 className="text-lg font-bold text-purple-800">E-commerce</h4>
+                          </div>
+                          <div className="space-y-3">
+                            {viewingPartner.siteEcommerce && (
+                              <div className="bg-white rounded-lg p-3 border border-purple-100">
+                                <p className="text-sm font-medium text-purple-600 mb-1">Site</p>
+                                <p className="text-gray-800 font-semibold break-all">{viewingPartner.siteEcommerce}</p>
+                              </div>
+                            )}
+                            {viewingPartner.loginEcommerce && (
+                              <div className="bg-white rounded-lg p-3 border border-purple-100">
+                                <p className="text-sm font-medium text-purple-600 mb-1">Login</p>
+                                <p className="text-gray-800 font-semibold">{viewingPartner.loginEcommerce}</p>
+                              </div>
+                            )}
+                          </div>
                         </div>
                       </div>
 
                       {/* Vendedores Responsáveis */}
                       {viewingPartner.vendedoresResponsaveis && viewingPartner.vendedoresResponsaveis.length > 0 && (
-                        <div>
-                          <h4 className="font-medium text-gray-700 mb-3">Vendedores Responsáveis</h4>
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="bg-white border border-gray-200 rounded-xl shadow-md p-6">
+                          <div className="flex items-center mb-6">
+                            <div className="bg-gradient-to-r from-green-500 to-teal-500 p-3 rounded-lg mr-4">
+                              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                              </svg>
+                            </div>
+                            <h4 className="text-xl font-bold text-gray-800">Vendedores Responsáveis</h4>
+                          </div>
+                          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                             {viewingPartner.vendedoresResponsaveis.map((vendedor, index) => (
-                              <div key={index} className="border rounded-lg p-3 bg-gray-50">
-                                <div className="font-medium text-blue-700 mb-1">{vendedor.fornecedor}</div>
-                                <div className="font-semibold">{vendedor.vendedor}</div>
-                                <div className="text-sm text-gray-600">{vendedor.telefone}</div>
-                                <div className="text-sm text-gray-600">{vendedor.email}</div>
+                              <div key={index} className="bg-gradient-to-br from-gray-50 to-gray-100 border-l-4 border-l-blue-500 rounded-lg p-5 shadow-sm hover:shadow-md transition-shadow">
+                                {/* Fornecedor em destaque */}
+                                <div className="flex items-center mb-3">
+                                  <div className="bg-blue-500 p-2 rounded-lg mr-3">
+                                    <Building className="w-4 h-4 text-white" />
+                                  </div>
+                                  <span className="text-lg font-bold text-blue-700 bg-blue-100 px-3 py-1 rounded-full">
+                                    {vendedor.fornecedor}
+                                  </span>
+                                </div>
+                                
+                                {/* Nome do vendedor */}
+                                <div className="mb-4">
+                                  <p className="text-lg font-semibold text-gray-800">{vendedor.vendedor}</p>
+                                </div>
+                                
+                                {/* Informações de contato */}
+                                <div className="space-y-2">
+                                  <div className="flex items-center gap-3">
+                                    <div className="bg-green-100 p-1.5 rounded-lg">
+                                      <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                                      </svg>
+                                    </div>
+                                    <span className="font-medium text-gray-800">{vendedor.telefone}</span>
+                                  </div>
+                                  <div className="flex items-center gap-3">
+                                    <div className="bg-purple-100 p-1.5 rounded-lg">
+                                      <svg className="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                      </svg>
+                                    </div>
+                                    <span className="font-medium text-gray-800">{vendedor.email}</span>
+                                  </div>
+                                </div>
                               </div>
                             ))}
                           </div>
