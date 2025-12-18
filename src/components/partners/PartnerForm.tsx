@@ -4,7 +4,7 @@ import React, { useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import type { Partner, VendedorResponsavel } from '@/lib/types';
+import type { Partner, VendedorResponsavel, AcessoPartner } from '@/lib/types';
 import { GeneralStatus } from '@/lib/types/enums';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Paperclip, X } from 'lucide-react';
 import { VendedoresManager } from './VendedoresManager';
+import { AcessosManager } from './AcessosManager';
 
 const formSchema = z.object({
   name: z.string().min(1, 'O nome é obrigatório.'),
@@ -67,6 +68,7 @@ const PartnerForm: React.FC<PartnerFormProps> = ({ partner, onSave, onCancel, pa
 
   const [fileName, setFileName] = useState(partner?.templateRO || '');
   const [vendedores, setVendedores] = useState<VendedorResponsavel[]>(partner?.vendedoresResponsaveis || []);
+  const [acessos, setAcessos] = useState<AcessoPartner[]>(partner?.acessosPartner || []);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -93,7 +95,9 @@ const PartnerForm: React.FC<PartnerFormProps> = ({ partner, onSave, onCancel, pa
 
     console.log('=== SALVANDO PARCEIRO ===');
     console.log('Vendedores no estado local:', vendedores);
+    console.log('Acessos no estado local:', acessos);
     console.log('Quantidade de vendedores:', vendedores.length);
+    console.log('Quantidade de acessos:', acessos.length);
 
     // Certifique-se de que mainContact está incluído nos dados salvos
     const partnerData: Partner = {
@@ -102,11 +106,13 @@ const PartnerForm: React.FC<PartnerFormProps> = ({ partner, onSave, onCancel, pa
       type: partnerType as any,
       phone: cleanedValues.phone || '', // Garantir que phone não seja undefined
       status: values.status === 'Ativo' ? GeneralStatus.ACTIVE : GeneralStatus.INACTIVE,
-      vendedoresResponsaveis: vendedores // Sempre passar o array, mesmo se vazio
+      vendedoresResponsaveis: vendedores, // Sempre passar o array, mesmo se vazio
+      acessosPartner: acessos // Adicionar os acessos
     } as Partner;
 
     console.log('Dados completos do parceiro antes de salvar:', partnerData);
     console.log('Vendedores no partnerData:', partnerData.vendedoresResponsaveis);
+    console.log('Acessos no partnerData:', partnerData.acessosPartner);
     console.log('=== ENVIANDO PARA SALVAR ===');
     onSave(partnerData);
   };
@@ -216,21 +222,13 @@ const PartnerForm: React.FC<PartnerFormProps> = ({ partner, onSave, onCancel, pa
               </FormItem>
             )} />
 
-            <h4 className="text-md font-semibold pt-4 border-t">Informações de RO</h4>
-            <FormField control={form.control} name="sitePartner" render={({ field }) => (
-              <FormItem><FormLabel>Site Partner</FormLabel><FormControl><Input placeholder="https://partner.fornecedor.com" {...field} /></FormControl><FormMessage /></FormItem>
-            )} />
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField control={form.control} name="login" render={({ field }) => (
-                <FormItem><FormLabel>Login</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
-              )} />
-              <FormField control={form.control} name="password" render={({ field }) => (
-                <FormItem><FormLabel>Senha</FormLabel><FormControl><Input type="text" {...field} /></FormControl><FormMessage /></FormItem>
-              )} />{/* Alterado type para text */}
+            {/* Acessos ao Partner */}
+            <div className="pt-4 border-t">
+              <AcessosManager
+                acessos={acessos}
+                onChange={setAcessos}
+              />
             </div>
-            <FormField control={form.control} name="siteRO" render={({ field }) => (
-              <FormItem><FormLabel>Site Abertura de RO</FormLabel><FormControl><Input placeholder="https://partner.fornecedor.com/ro" {...field} /></FormControl><FormMessage /></FormItem>
-            )} />
             <FormField control={form.control} name="templateRO" render={({ field }) => (
               <FormItem>
                 <FormLabel>Template RO</FormLabel>
