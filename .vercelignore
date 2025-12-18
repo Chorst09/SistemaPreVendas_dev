@@ -9,6 +9,7 @@ coverage
 .vscode
 .idea
 backend
+frontend
 k8s
 tests
 docs
