@@ -1,6 +1,6 @@
 # Sistema de Prevendas - Arquitetura Refatorada v2.2
 
-Reorganização completa do projeto com separação clara entre backend e frontend, pronto para publicação e deploy em produção.
+Reorganização completa do projeto com separação clara entre backend e frontend, pronto para publicação e deploy em produção. Banco NEON configurado e migrações aplicadas.
 
 ## � Quick uStart
 
