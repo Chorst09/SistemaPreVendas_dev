@@ -4,7 +4,7 @@ Reorganização completa do projeto com separação clara entre backend e fronte
 
 ## � Quick uStart
 
-👉 **[Comece em 5 minutos](./docs/QUICKSTART.md)**
+👉 **[Comece em 5 minutos](./docs/QUICKSTART.md)** - Deploy automático configurado!
 
 ## 📁 Estrutura do Projeto
 
