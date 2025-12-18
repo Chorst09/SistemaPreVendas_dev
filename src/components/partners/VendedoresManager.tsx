@@ -71,7 +71,13 @@ export function VendedoresManager({ vendedores, onChange }: VendedoresManagerPro
     form.reset();
   };
 
-  const onSubmit = (values: z.infer<typeof vendedorSchema>) => {
+  const onSubmit = (values: z.infer<typeof vendedorSchema>, event?: React.BaseSyntheticEvent) => {
+    // Prevenir comportamento padrão do formulário
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    
     console.log('=== SUBMISSÃO INICIADA ===');
     console.log('Dados do formulário:', values);
     
@@ -116,6 +122,9 @@ export function VendedoresManager({ vendedores, onChange }: VendedoresManagerPro
     setTimeout(() => setSuccessMessage(''), 3000);
     
     console.log('=== SUBMISSÃO CONCLUÍDA - MODAL PERMANECE ABERTO ===');
+    
+    // Retornar false para garantir que o modal não feche
+    return false;
   };
 
   const handleRemove = (id: string) => {
@@ -132,7 +141,9 @@ export function VendedoresManager({ vendedores, onChange }: VendedoresManagerPro
           open={isModalOpen} 
           onOpenChange={(open) => {
             console.log('Dialog onOpenChange chamado com:', open); // Debug log
-            if (!open) {
+            // Só fechar se o usuário realmente quiser fechar (clicou fora ou ESC)
+            // Não fechar automaticamente quando o formulário for submetido
+            if (!open && !successMessage) {
               handleCloseModal();
             }
           }}
@@ -160,9 +171,13 @@ export function VendedoresManager({ vendedores, onChange }: VendedoresManagerPro
               </div>
             )}
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit, (errors) => {
-                console.log('Erros de validação:', errors); // Debug log
-              })} className="space-y-4">
+              <form onSubmit={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                form.handleSubmit(onSubmit, (errors) => {
+                  console.log('Erros de validação:', errors);
+                })(e);
+              }} className="space-y-4">
                 <FormField
                   control={form.control}
                   name="fornecedor"
@@ -240,7 +255,13 @@ export function VendedoresManager({ vendedores, onChange }: VendedoresManagerPro
                     >
                       Limpar
                     </Button>
-                    <Button type="submit">
+                    <Button 
+                      type="submit"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        console.log('Botão Adicionar clicado - modal deve permanecer aberto');
+                      }}
+                    >
                       {editingVendedor ? 'Atualizar' : 'Adicionar'}
                     </Button>
                   </div>
