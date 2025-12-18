@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { PlusCircle, Edit, Trash2, Package, Search, Eye, FileText, Building } from "lucide-react";
+import { PlusCircle, Edit, Trash2, Package, Search, Eye, FileText, Building, Globe } from "lucide-react";
 import PartnerForm from "./PartnerForm"; // Assumindo que você tem este componente
 import { Partner } from "@/lib/types"; // Assumindo que você tem este tipo
 
