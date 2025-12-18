@@ -130,14 +130,23 @@ const PartnerView: React.FC<PartnerViewProps> = ({ partnerType }) => {
     const cleaned: any = {};
     Object.keys(data).forEach(key => {
       if (data[key] !== undefined && data[key] !== null) {
-        cleaned[key] = data[key];
+        // Preservar arrays vazios para vendedoresResponsaveis
+        if (key === 'vendedoresResponsaveis' && Array.isArray(data[key])) {
+          cleaned[key] = data[key];
+        } else if (data[key] !== '') {
+          cleaned[key] = data[key];
+        }
       }
     });
+    console.log('Dados após limpeza:', cleaned); // Debug log
     return cleaned;
   };
 
   // Lógica para salvar/atualizar parceiro no Firestore
   const handleSave = async (partnerData: Partner) => {
+    console.log('Dados recebidos para salvar:', partnerData); // Debug log
+    console.log('Vendedores no partnerData:', partnerData.vendedoresResponsaveis); // Debug log
+
     // Verifica se Firestore está disponível antes de salvar
     if (!db) {
       console.error("Firestore não disponível para salvar.");
@@ -160,6 +169,10 @@ const PartnerView: React.FC<PartnerViewProps> = ({ partnerType }) => {
         // Cria um objeto com os dados a serem salvos, excluindo o ID (que já está no caminho)
         const { id, ...rawDataToSave } = partnerData;
         const dataToSave = cleanDataForFirestore(rawDataToSave);
+        
+        console.log('Dados limpos para salvar:', dataToSave); // Debug log
+        console.log('Vendedores nos dados limpos:', dataToSave.vendedoresResponsaveis); // Debug log
+        
         await setDoc(partnerDocRef, dataToSave, { merge: true }); // Atualiza o documento mesclando os dados
         console.log("Parceiro atualizado no Firestore:", partnerData.id);
 
@@ -170,6 +183,9 @@ const PartnerView: React.FC<PartnerViewProps> = ({ partnerType }) => {
         // Inclua o partnerType nos dados ao salvar um novo parceiro
         const rawDataToSave = { ...partnerData, type: partnerType };
         const dataToSave = cleanDataForFirestore(rawDataToSave);
+        
+        console.log('Dados limpos para novo parceiro:', dataToSave); // Debug log
+        
         await setDoc(newPartnerRef, dataToSave); // Salva os dados no novo documento
         console.log("Novo parceiro adicionado ao Firestore com ID:", newPartnerRef.id);
 

@@ -91,15 +91,20 @@ const PartnerForm: React.FC<PartnerFormProps> = ({ partner, onSave, onCancel, pa
       Object.entries(values).map(([key, value]) => [key, value || ''])
     );
 
+    console.log('Salvando vendedores:', vendedores); // Debug log
+
     // Certifique-se de que mainContact está incluído nos dados salvos
-    onSave({
+    const partnerData: Partner = {
       ...cleanedValues,
       id: partner ? partner.id : Date.now(),
       type: partnerType as any,
       phone: cleanedValues.phone || '', // Garantir que phone não seja undefined
       status: values.status === 'Ativo' ? GeneralStatus.ACTIVE : GeneralStatus.INACTIVE,
-      vendedoresResponsaveis: vendedores
-    } as Partner);
+      vendedoresResponsaveis: vendedores.length > 0 ? vendedores : [] // Garantir que vendedores seja sempre um array
+    } as Partner;
+
+    console.log('Dados completos do parceiro:', partnerData); // Debug log
+    onSave(partnerData);
   };
 
   return (
