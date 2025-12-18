@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { AcessoPartner } from '@/lib/types';
+import { AcessoPartner } from '@/lib/types/base';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
@@ -130,7 +130,7 @@ export function AcessosManager({ acessos, onChange }: AcessosManagerProps) {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h4 className="text-md font-semibold">Acessos ao Partner</h4>
+        <h4 className="text-md font-semibold text-gray-800">Acessos ao Partner</h4>
         <Dialog 
           open={isModalOpen} 
           onOpenChange={(open) => {
@@ -267,10 +267,10 @@ export function AcessosManager({ acessos, onChange }: AcessosManagerProps) {
       {/* Lista de Acessos */}
       <div className="space-y-2">
         {acessos.length === 0 ? (
-          <div className="text-center py-8 text-muted-foreground">
+          <div className="text-center py-8 text-gray-600">
             <Globe className="h-12 w-12 mx-auto mb-2 opacity-50" />
-            <p>Nenhum acesso cadastrado</p>
-            <p className="text-sm">Clique em "Adicionar Acesso" para começar</p>
+            <p className="text-gray-700 font-medium">Nenhum acesso cadastrado</p>
+            <p className="text-sm text-gray-600">Clique em "Adicionar Acesso" para começar</p>
           </div>
         ) : (
           acessos.map((acesso) => (
@@ -304,11 +304,11 @@ export function AcessosManager({ acessos, onChange }: AcessosManagerProps) {
                   <div className="flex items-center space-x-6 ml-8 text-sm">
                     <div className="flex items-center space-x-2">
                       <User className="h-4 w-4 text-blue-600" />
-                      <span className="font-medium text-white">{acesso.login}</span>
+                      <span className="font-medium text-gray-700">{acesso.login}</span>
                     </div>
                     <div className="flex items-center space-x-2">
                       <Lock className="h-4 w-4 text-purple-600" />
-                      <span className="font-medium text-white">
+                      <span className="font-medium text-gray-700">
                         {showPasswords[acesso.id] ? acesso.senha : '••••••••'}
                       </span>
                       <Button
