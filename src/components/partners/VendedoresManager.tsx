@@ -282,42 +282,56 @@ export function VendedoresManager({ vendedores, onChange }: VendedoresManagerPro
           </div>
         ) : (
           vendedores.map((vendedor) => (
-            <Card key={vendedor.id} className="p-3">
+            <Card key={vendedor.id} className="p-4 border-l-4 border-l-blue-500 hover:shadow-md transition-shadow">
               <div className="flex items-center justify-between">
-                <div className="flex-1 space-y-1">
-                  <div className="flex items-center space-x-2">
-                    <Building className="h-4 w-4 text-blue-500" />
-                    <Badge variant="outline">{vendedor.fornecedor}</Badge>
-                    <span className="font-medium">{vendedor.vendedor}</span>
+                <div className="flex-1 space-y-2">
+                  {/* Fornecedor em destaque */}
+                  <div className="flex items-center space-x-3">
+                    <Building className="h-5 w-5 text-blue-600" />
+                    <span className="text-lg font-bold text-blue-700 bg-blue-50 px-3 py-1 rounded-full">
+                      {vendedor.fornecedor}
+                    </span>
                   </div>
-                  <div className="flex items-center space-x-4 text-sm text-muted-foreground">
-                    <div className="flex items-center space-x-1">
-                      <Phone className="h-3 w-3" />
-                      <span>{vendedor.telefone}</span>
+                  
+                  {/* Nome do vendedor */}
+                  <div className="ml-8">
+                    <span className="text-base font-semibold text-gray-800">
+                      {vendedor.vendedor}
+                    </span>
+                  </div>
+                  
+                  {/* Informações de contato */}
+                  <div className="flex items-center space-x-6 ml-8 text-sm">
+                    <div className="flex items-center space-x-2">
+                      <Phone className="h-4 w-4 text-green-600" />
+                      <span className="font-medium text-white">{vendedor.telefone}</span>
                     </div>
-                    <div className="flex items-center space-x-1">
-                      <Mail className="h-3 w-3" />
-                      <span>{vendedor.email}</span>
+                    <div className="flex items-center space-x-2">
+                      <Mail className="h-4 w-4 text-purple-600" />
+                      <span className="font-medium text-white">{vendedor.email}</span>
                     </div>
                   </div>
                 </div>
-                <div className="flex space-x-1">
+                <div className="flex flex-col space-y-2">
                   <Button
                     type="button"
-                    variant="ghost"
-                    size="icon"
+                    variant="outline"
+                    size="sm"
                     onClick={() => handleOpenModal(vendedor)}
+                    className="text-blue-600 border-blue-200 hover:bg-blue-50"
                   >
-                    <Edit className="h-4 w-4" />
+                    <Edit className="h-4 w-4 mr-1" />
+                    Editar
                   </Button>
                   <Button
                     type="button"
-                    variant="ghost"
-                    size="icon"
+                    variant="outline"
+                    size="sm"
                     onClick={() => handleRemove(vendedor.id)}
-                    className="text-red-500 hover:text-red-600"
+                    className="text-red-600 border-red-200 hover:bg-red-50"
                   >
-                    <Trash2 className="h-4 w-4" />
+                    <Trash2 className="h-4 w-4 mr-1" />
+                    Remover
                   </Button>
                 </div>
               </div>

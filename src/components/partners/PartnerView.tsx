@@ -2,12 +2,13 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import '@/styles/print.css';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { PlusCircle, Edit, Trash2, Package, Search } from "lucide-react";
+import { PlusCircle, Edit, Trash2, Package, Search, Eye, FileText } from "lucide-react";
 import PartnerForm from "./PartnerForm"; // Assumindo que você tem este componente
 import { Partner } from "@/lib/types"; // Assumindo que você tem este tipo
 
@@ -32,6 +33,8 @@ const PartnerView: React.FC<PartnerViewProps> = ({ partnerType }) => {
   const [partners, setPartners] = useState<Partner[]>([]);
   const [loadingPartners, setLoadingPartners] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [viewingPartner, setViewingPartner] = useState<Partner | null>(null);
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
 
   // Uso de useAuth removido
   // const { user, loading: loadingAuth } = useAuth();
@@ -123,6 +126,22 @@ const PartnerView: React.FC<PartnerViewProps> = ({ partnerType }) => {
   const handleCloseModal = () => {
     setEditingPartner(null);
     setIsModalOpen(false);
+  };
+
+  const handleViewPartner = (partner: Partner) => {
+    setViewingPartner(partner);
+    setIsViewModalOpen(true);
+  };
+
+  const handleCloseViewModal = () => {
+    setViewingPartner(null);
+    setIsViewModalOpen(false);
+  };
+
+  const handlePrintPDF = () => {
+    if (viewingPartner) {
+      window.print();
+    }
   };
 
   // Função para remover campos undefined dos dados
@@ -282,6 +301,199 @@ const PartnerView: React.FC<PartnerViewProps> = ({ partnerType }) => {
               )}
             </DialogContent>
           </Dialog>
+
+          {/* Modal de Visualização */}
+          <Dialog open={isViewModalOpen} onOpenChange={setIsViewModalOpen}>
+            <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <div className="flex justify-between items-center">
+                  <DialogTitle className="flex items-center gap-2">
+                    <Eye className="h-5 w-5" />
+                    Visualizar {partnerType}: {viewingPartner?.name}
+                  </DialogTitle>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handlePrintPDF}
+                    className="flex items-center gap-2"
+                  >
+                    <FileText className="h-4 w-4" />
+                    Imprimir PDF
+                  </Button>
+                </div>
+              </DialogHeader>
+              
+              {viewingPartner && (
+                <div id="partner-print-content" className="space-y-6 p-4">
+                  {/* Cabeçalho */}
+                  <div className="border-b pb-4">
+                    <h1 className="text-2xl font-bold text-gray-800">{viewingPartner.name}</h1>
+                    <p className="text-lg text-gray-600">{viewingPartner.type}</p>
+                    <div className="mt-2">
+                      <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${
+                        viewingPartner.status === 'Ativo' 
+                          ? 'bg-green-100 text-green-800' 
+                          : 'bg-red-100 text-red-800'
+                      }`}>
+                        {viewingPartner.status}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Informações de Contato */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <h3 className="text-lg font-semibold mb-3 text-gray-800">Informações de Contato</h3>
+                      <div className="space-y-2">
+                        {viewingPartner.mainContact && (
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium text-gray-600">Contato Principal:</span>
+                            <span>{viewingPartner.mainContact}</span>
+                          </div>
+                        )}
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium text-gray-600">Email:</span>
+                          <span>{viewingPartner.contact}</span>
+                        </div>
+                        {viewingPartner.phone && (
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium text-gray-600">Telefone:</span>
+                            <span>{viewingPartner.phone}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Produtos/Serviços */}
+                    <div>
+                      <h3 className="text-lg font-semibold mb-3 text-gray-800">Produtos/Serviços</h3>
+                      {viewingPartner.products ? (
+                        <div className="flex flex-wrap gap-2">
+                          {viewingPartner.products.split(',').map((product, index) => (
+                            <span
+                              key={index}
+                              className="inline-block bg-blue-100 text-blue-800 text-sm px-3 py-1 rounded-full"
+                            >
+                              {product.trim()}
+                            </span>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-gray-500">Nenhum produto/serviço cadastrado</p>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Informações Específicas por Tipo */}
+                  {viewingPartner.type === 'Distribuidor' && (
+                    <div className="space-y-4">
+                      <h3 className="text-lg font-semibold text-gray-800">Informações do Portal</h3>
+                      
+                      {/* Sites e Acessos */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-3">
+                          <h4 className="font-medium text-gray-700">Portal Principal</h4>
+                          {viewingPartner.site && (
+                            <div>
+                              <span className="font-medium text-gray-600">Site:</span>
+                              <span className="ml-2">{viewingPartner.site}</span>
+                            </div>
+                          )}
+                          {viewingPartner.login && (
+                            <div>
+                              <span className="font-medium text-gray-600">Login:</span>
+                              <span className="ml-2">{viewingPartner.login}</span>
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="space-y-3">
+                          <h4 className="font-medium text-gray-700">E-commerce</h4>
+                          {viewingPartner.siteEcommerce && (
+                            <div>
+                              <span className="font-medium text-gray-600">Site:</span>
+                              <span className="ml-2">{viewingPartner.siteEcommerce}</span>
+                            </div>
+                          )}
+                          {viewingPartner.loginEcommerce && (
+                            <div>
+                              <span className="font-medium text-gray-600">Login:</span>
+                              <span className="ml-2">{viewingPartner.loginEcommerce}</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Vendedores Responsáveis */}
+                      {viewingPartner.vendedoresResponsaveis && viewingPartner.vendedoresResponsaveis.length > 0 && (
+                        <div>
+                          <h4 className="font-medium text-gray-700 mb-3">Vendedores Responsáveis</h4>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {viewingPartner.vendedoresResponsaveis.map((vendedor, index) => (
+                              <div key={index} className="border rounded-lg p-3 bg-gray-50">
+                                <div className="font-medium text-blue-700 mb-1">{vendedor.fornecedor}</div>
+                                <div className="font-semibold">{vendedor.vendedor}</div>
+                                <div className="text-sm text-gray-600">{vendedor.telefone}</div>
+                                <div className="text-sm text-gray-600">{vendedor.email}</div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Informações de Fornecedor */}
+                  {viewingPartner.type === 'Fornecedor' && (
+                    <div className="space-y-4">
+                      <h3 className="text-lg font-semibold text-gray-800">Informações de RO</h3>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-3">
+                          {viewingPartner.sitePartner && (
+                            <div>
+                              <span className="font-medium text-gray-600">Site Partner:</span>
+                              <span className="ml-2">{viewingPartner.sitePartner}</span>
+                            </div>
+                          )}
+                          {viewingPartner.siteRO && (
+                            <div>
+                              <span className="font-medium text-gray-600">Site RO:</span>
+                              <span className="ml-2">{viewingPartner.siteRO}</span>
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="space-y-3">
+                          {viewingPartner.login && (
+                            <div>
+                              <span className="font-medium text-gray-600">Login:</span>
+                              <span className="ml-2">{viewingPartner.login}</span>
+                            </div>
+                          )}
+                          {viewingPartner.templateRO && (
+                            <div>
+                              <span className="font-medium text-gray-600">Template RO:</span>
+                              <span className="ml-2">{viewingPartner.templateRO}</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {viewingPartner.procedimentoRO && (
+                        <div>
+                          <h4 className="font-medium text-gray-700 mb-2">Procedimento para RO</h4>
+                          <div className="bg-gray-50 p-3 rounded-lg">
+                            <p className="whitespace-pre-wrap">{viewingPartner.procedimentoRO}</p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+            </DialogContent>
+          </Dialog>
           {/* )} */}
         </CardHeader>
         <CardContent>
@@ -412,16 +624,35 @@ const PartnerView: React.FC<PartnerViewProps> = ({ partnerType }) => {
                       </TableCell>
                       <TableCell>{partner.status}</TableCell>
                       <TableCell>
-                        {/* Botões de ação (Editar e Excluir) - Excluir não depende mais do usuário logado */}
-                        <Button variant="ghost" size="icon" onClick={() => handleOpenModal(partner)}>
-                          <Edit size={18} />
-                        </Button>
-                        {/* Botão de excluir não depende mais do usuário logado */}
-                        {/* {user && ( */}
-                        <Button variant="ghost" size="icon" onClick={() => handleDelete(partner.id.toString())}> {/* Usa partner.id! para afirmar que não é undefined */}
-                          <Trash2 size={18} className="text-red-500" />
-                        </Button>
-                        {/* )} */}
+                        <div className="flex space-x-1">
+                          {/* Botão Visualizar */}
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            onClick={() => handleViewPartner(partner)}
+                            title="Visualizar"
+                          >
+                            <Eye size={18} className="text-blue-500" />
+                          </Button>
+                          {/* Botão Editar */}
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            onClick={() => handleOpenModal(partner)}
+                            title="Editar"
+                          >
+                            <Edit size={18} />
+                          </Button>
+                          {/* Botão Excluir */}
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            onClick={() => handleDelete(partner.id.toString())}
+                            title="Excluir"
+                          >
+                            <Trash2 size={18} className="text-red-500" />
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}
