@@ -2,11 +2,15 @@
 
 import React from 'react';
 import { NOCPricingSystem } from '@/components/noc-pricing/NOCPricingSystem';
+import { QuoteProvider } from '@/contexts/QuoteContext';
+import { initialQuotes } from '@/lib/data';
 
 export default function NOCPage() {
   return (
-    <div className="min-h-screen bg-gray-50">
-      <NOCPricingSystem />
-    </div>
+    <QuoteProvider initialData={initialQuotes}>
+      <div className="min-h-screen bg-gray-50">
+        <NOCPricingSystem />
+      </div>
+    </QuoteProvider>
   );
 }

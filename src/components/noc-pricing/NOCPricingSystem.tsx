@@ -21,10 +21,13 @@ import { CostsTab } from './tabs/CostsTab';
 import { TaxesTab } from './tabs/TaxesTab';
 import { VariablesTab } from './tabs/VariablesTab';
 import { ReportTab } from './tabs/ReportTab';
+import type { ProposalClientData } from '@/components/shared/ProposalClientDataForm';
+import { mapProposalClientDataToLegacyClientData } from '@/components/shared/proposalClientDataMapper';
 
 // Import services
 import { UnifiedProposalService } from '@/lib/services/unified-proposal-service';
 import { useToast } from '@/hooks/use-toast';
+import { usePricingIntegration } from '@/hooks/use-pricing-integration';
 
 // Tabs do sistema NOC
 const NOC_TABS = [
@@ -42,9 +45,11 @@ const NOC_TABS = [
 
 interface NOCPricingSystemProps {
   onBack?: () => void;
+  proposalClientData?: ProposalClientData | null;
+  onNavigateToQuotes?: () => void;
 }
 
-export function NOCPricingSystem({ onBack }: NOCPricingSystemProps = {}) {
+export function NOCPricingSystem({ onBack, proposalClientData, onNavigateToQuotes }: NOCPricingSystemProps = {}) {
   const [isMounted, setIsMounted] = useState(false);
   const [data, setData] = useState<NOCPricingData>(NOCDataManager.createEmptyData());
   const [validationStatus, setValidationStatus] = useState<Record<string, NOCTabValidationStatus>>({});
@@ -55,6 +60,7 @@ export function NOCPricingSystem({ onBack }: NOCPricingSystemProps = {}) {
   const dataManager = useMemo(() => new NOCDataManager(), []);
   const validationEngine = useMemo(() => new NOCValidationEngine(), []);
   const { toast } = useToast();
+  const { createQuoteFromPricingData } = usePricingIntegration();
 
   // Previne erros de SSR
   useEffect(() => {
@@ -150,18 +156,54 @@ export function NOCPricingSystem({ onBack }: NOCPricingSystemProps = {}) {
       console.log('NOCPricingSystem.handleSaveProposal - Iniciando...', proposalData);
       
       const proposal = await UnifiedProposalService.saveNOCProposal(proposalData);
+      const mappedClientData = proposalClientData
+        ? mapProposalClientDataToLegacyClientData(proposalClientData)
+        : {
+            razaoSocial: data.project.clientName || 'Cliente não informado',
+            nomeContato: data.project.clientName || 'Contato não informado',
+            telefoneCliente: '',
+            emailCliente: '',
+            nomeProjeto: data.project.projectName || proposalData.title || 'Projeto NOC',
+            nomeGerente: '',
+            telefoneGerente: '',
+            emailGerente: '',
+          };
+
+      const contractMonths = Math.max(data.project.contractDuration || 12, 1);
+      const totalProjectValue = (data.calculations?.finalMonthlyPrice || 0) * contractMonths;
+
+      if (totalProjectValue > 0) {
+        createQuoteFromPricingData({
+          name: `NOC - ${mappedClientData.nomeProjeto}`,
+          clientName: mappedClientData.razaoSocial,
+          totalPrice: totalProjectValue,
+          module: 'NOC',
+          technicalSpecs: {
+            contractMonths,
+            monthlyPrice: data.calculations?.finalMonthlyPrice || 0,
+            annualPrice: data.calculations?.finalAnnualPrice || 0,
+            totalDevices: data.totalDevices,
+            serviceLevel: data.project.serviceLevel,
+            coverage: data.project.coverage,
+          },
+          clientData: mappedClientData,
+        });
+      }
       
       console.log('NOCPricingSystem.handleSaveProposal - Proposta salva:', proposal);
       
       toast({
         title: 'Proposta NOC Salva!',
-        description: `A proposta "${proposal.title}" foi salva com sucesso em Propostas.`,
+        description: `A proposta "${proposal.title}" foi salva em Propostas e Orçamentos.`,
         variant: 'default'
       });
 
       // Navegar para propostas após 2 segundos
       setTimeout(() => {
         console.log('NOCPricingSystem - Proposta NOC salva:', proposal.id);
+        if (onNavigateToQuotes) {
+          onNavigateToQuotes();
+        }
       }, 2000);
 
       return proposal;
@@ -174,7 +216,7 @@ export function NOCPricingSystem({ onBack }: NOCPricingSystemProps = {}) {
       });
       throw error;
     }
-  }, [toast]);
+  }, [toast, proposalClientData, data, createQuoteFromPricingData, onNavigateToQuotes]);
 
   // Exporta PDF
   const handleExportPDF = useCallback(() => {

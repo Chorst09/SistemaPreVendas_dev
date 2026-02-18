@@ -6,7 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
-import { Loader2, BookOpen, BarChart3, Download, X, Users } from 'lucide-react';
+import { Loader2, BookOpen, BarChart3, Download, X, Users, Save } from 'lucide-react';
 import { ServiceDeskData, TabValidationStatus } from '@/lib/types/service-desk-pricing';
 import { ServiceDeskDataManager } from '@/lib/services/service-desk-data-manager';
 import { ServiceDeskValidationEngine } from '@/lib/services/service-desk-validation-engine';
@@ -51,12 +51,17 @@ import { basicServiceDeskTour, advancedFeaturesTour, quickTipsTour, TourLauncher
 import { DocumentationSystem } from './documentation/DocumentationSystem';
 import { IntegratedHelpSystem, QuickHelpButton } from './help/IntegratedHelpSystem';
 import { EmployeeRegistryManager } from './employees/EmployeeRegistryManager';
+import type { ProposalClientData } from '@/components/shared/ProposalClientDataForm';
+import { mapProposalClientDataToLegacyClientData } from '@/components/shared/proposalClientDataMapper';
+import { usePricingIntegration } from '@/hooks/use-pricing-integration';
 
 export interface ServiceDeskPricingSystemProps {
   initialData?: ServiceDeskData;
   onDataChange?: (data: ServiceDeskData) => void;
   onBack?: () => void;
   integrationMode?: 'standalone' | 'integrated';
+  proposalClientData?: ProposalClientData | null;
+  onNavigateToQuotes?: () => void;
 }
 
 const TAB_CONFIG = [
@@ -175,7 +180,9 @@ export function ServiceDeskPricingSystem({
   initialData,
   onDataChange,
   onBack,
-  integrationMode = 'integrated'
+  integrationMode = 'integrated',
+  proposalClientData,
+  onNavigateToQuotes
 }: ServiceDeskPricingSystemProps) {
   // Early return for SSR - prevent localStorage access on server
   const [isMounted, setIsMounted] = useState(false);
@@ -227,6 +234,7 @@ export function ServiceDeskPricingSystem({
   const debouncedCalculations = useDebouncedCalculations();
   const templateService = useMemo(() => new ServiceDeskTemplateService(), []);
   const analyticsService = useMemo(() => new ServiceDeskAnalyticsService(), []);
+  const { createQuoteFromPricingData } = usePricingIntegration();
 
   // Enhanced navigation with validation
   const navigation = useServiceDeskNavigation({
@@ -581,6 +589,46 @@ export function ServiceDeskPricingSystem({
     }, duration);
   }, []);
 
+  const handleSaveToQuotes = useCallback(() => {
+    const totalPrice = data?.budget?.totalPrice || 0;
+    if (totalPrice <= 0) {
+      showNotification('warning', 'Preencha os dados de orçamento antes de salvar em Orçamentos.');
+      return;
+    }
+
+    const mappedClientData = proposalClientData
+      ? mapProposalClientDataToLegacyClientData(proposalClientData)
+      : {
+          razaoSocial: data.project?.client?.name || 'Cliente não informado',
+          nomeContato: data.project?.client?.contactPerson || data.project?.client?.name || 'Contato não informado',
+          telefoneCliente: data.project?.client?.phone || '',
+          emailCliente: data.project?.client?.email || '',
+          nomeProjeto: data.project?.name || 'Projeto Service Desk',
+          nomeGerente: proposalClientData?.managerName || data.project?.client?.contactPerson || '',
+          telefoneGerente: proposalClientData?.managerPhone || data.project?.client?.phone || '',
+          emailGerente: proposalClientData?.managerEmail || data.project?.client?.email || '',
+        };
+
+    createQuoteFromPricingData({
+      name: `Service Desk - ${mappedClientData.nomeProjeto}`,
+      clientName: mappedClientData.razaoSocial,
+      totalPrice,
+      module: 'Service Desk',
+      technicalSpecs: {
+        projectId: data.project?.id,
+        totalCosts: data.budget?.totalCosts || 0,
+        totalPrice,
+        margin: data.budget?.margin,
+      },
+      clientData: mappedClientData,
+    });
+
+    showNotification('success', 'Orçamento de Service Desk salvo com sucesso.');
+    if (onNavigateToQuotes) {
+      onNavigateToQuotes();
+    }
+  }, [data, proposalClientData, createQuoteFromPricingData, showNotification, onNavigateToQuotes]);
+
   // Tour management
   const handleStartTour = useCallback((tourId: string) => {
     setActiveTour(tourId);
@@ -746,6 +794,17 @@ export function ServiceDeskPricingSystem({
                   <span>← Voltar</span>
                 </Button>
               )}
+
+              <Tooltip content="Salvar resultado atual na aba de Orçamentos">
+                <Button
+                  variant="default"
+                  onClick={handleSaveToQuotes}
+                  className="flex items-center space-x-2"
+                >
+                  <Save className="h-4 w-4" />
+                  <span>Salvar em Orçamentos</span>
+                </Button>
+              </Tooltip>
               
               <Tooltip content="Gerencie templates para reutilizar configurações">
                 <Button

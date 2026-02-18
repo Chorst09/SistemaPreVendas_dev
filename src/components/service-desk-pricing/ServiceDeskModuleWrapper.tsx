@@ -5,7 +5,11 @@ import { ServiceDeskLandingPage } from './ServiceDeskLandingPage';
 import { ServiceDeskPricingSystem } from './ServiceDeskPricingSystem';
 import { ProposalClientDataForm, ProposalClientData } from '@/components/shared/ProposalClientDataForm';
 
-export function ServiceDeskModuleWrapper() {
+interface ServiceDeskModuleWrapperProps {
+  onNavigateToQuotes?: () => void;
+}
+
+export function ServiceDeskModuleWrapper({ onNavigateToQuotes }: ServiceDeskModuleWrapperProps = {}) {
   const [view, setView] = useState<'landing' | 'client-data' | 'pricing' | 'admin'>('landing');
   const [clientData, setClientData] = useState<ProposalClientData | null>(null);
 
@@ -37,6 +41,8 @@ export function ServiceDeskModuleWrapper() {
         integrationMode="integrated"
         onDataChange={(data) => console.log('Service Desk data updated:', data)}
         onBack={() => setView('landing')}
+        proposalClientData={clientData}
+        onNavigateToQuotes={onNavigateToQuotes}
       />
     );
   }

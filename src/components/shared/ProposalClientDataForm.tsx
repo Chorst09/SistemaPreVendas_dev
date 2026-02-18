@@ -35,14 +35,15 @@ export interface ProposalClientData {
 interface ProposalClientDataFormProps {
   onSubmit: (data: ProposalClientData) => void;
   onBack: () => void;
-  moduleType: 'noc' | 'service-desk' | 'printer';
+  moduleType: 'noc' | 'service-desk' | 'printer' | 'it-vls';
   initialData?: Partial<ProposalClientData>;
 }
 
 const PROJECT_TYPES: Record<string, string[]> = {
   'noc': ['Monitoramento 24x7', 'NOC Gerenciado', 'Infraestrutura Crítica', 'Cloud Monitoring'],
   'service-desk': ['Service Desk N1', 'Service Desk N1/N2', 'Service Desk Completo', 'Suporte Técnico'],
-  'printer': ['Outsourcing Completo', 'Locação de Equipamentos', 'Gestão de Impressão', 'Print as a Service']
+  'printer': ['Outsourcing Completo', 'Locação de Equipamentos', 'Gestão de Impressão', 'Print as a Service'],
+  'it-vls': ['Venda', 'Locação', 'Serviços', 'Projeto Integrado de TI']
 };
 
 export function ProposalClientDataForm({ onSubmit, onBack, moduleType, initialData }: ProposalClientDataFormProps) {

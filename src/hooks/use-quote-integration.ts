@@ -10,7 +10,7 @@ export interface PricingProposal {
   clientName: string;
   date: string;
   totalPrice: number;
-  module: 'VM' | 'PABX/SIP' | 'Fiber Link' | 'Radio Internet' | 'Service Desk' | 'Printer Outsourcing' | 'IT Sales/Rental/Services';
+  module: 'VM' | 'PABX/SIP' | 'Fiber Link' | 'Radio Internet' | 'Service Desk' | 'Printer Outsourcing' | 'IT Sales/Rental/Services' | 'NOC';
   clientData?: {
     razaoSocial: string;
     nomeContato: string;
@@ -28,7 +28,7 @@ export function useQuoteIntegration() {
   
   const convertProposalToQuote = useCallback((proposal: PricingProposal): Quote => {
     // Gerar ID único para o orçamento
-    const quoteId = `QUO-${Date.now()}`;
+    const quoteId = `QUO-${Date.now()}-${Math.random().toString(36).slice(2, 7).toUpperCase()}`;
     
     // Determinar o gerente de contas
     const accountManager = proposal.clientData?.nomeGerente || 'Não informado';
@@ -85,7 +85,8 @@ export function useQuoteIntegration() {
       'Radio Internet': 'Internet via Rádio',
       'Service Desk': 'Service Desk',
       'Printer Outsourcing': 'Outsourcing de Impressão',
-      'IT Sales/Rental/Services': 'Venda/Locação/Serviços'
+      'IT Sales/Rental/Services': 'Venda/Locação/Serviços',
+      'NOC': 'NOC'
     };
     
     return moduleNames[module] || module;

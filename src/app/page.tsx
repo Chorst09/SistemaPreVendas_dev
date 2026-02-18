@@ -275,10 +275,10 @@ export default function App() { // Ou Home
                     </div>
                 </div>
             );
-            case 'calculator-ti-vls': return <ITPricingModule onNavigateToProposals={() => setActiveTab('proposals')} />;
-            case 'calculator-noc': return <NOCModuleWrapper />;
-            case 'calculator-servicedesk-advanced': return <ServiceDeskModuleWrapper />;
-            case 'calculator-printer': return <PrinterModuleWrapper />;
+            case 'calculator-ti-vls': return <ITPricingModule onNavigateToProposals={() => setActiveTab('quotes')} />;
+            case 'calculator-noc': return <NOCModuleWrapper onNavigateToQuotes={() => setActiveTab('quotes')} />;
+            case 'calculator-servicedesk-advanced': return <ServiceDeskModuleWrapper onNavigateToQuotes={() => setActiveTab('quotes')} />;
+            case 'calculator-printer': return <PrinterModuleWrapper onNavigateToQuotes={() => setActiveTab('quotes')} />;
 
 
             case 'bids-analysis': return <EditalAnalysisView

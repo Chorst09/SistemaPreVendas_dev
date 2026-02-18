@@ -5,7 +5,11 @@ import { NOCLandingPage } from './NOCLandingPage';
 import { NOCPricingSystem } from './NOCPricingSystem';
 import { ProposalClientDataForm, ProposalClientData } from '@/components/shared/ProposalClientDataForm';
 
-export function NOCModuleWrapper() {
+interface NOCModuleWrapperProps {
+  onNavigateToQuotes?: () => void;
+}
+
+export function NOCModuleWrapper({ onNavigateToQuotes }: NOCModuleWrapperProps = {}) {
   const [view, setView] = useState<'landing' | 'client-data' | 'pricing' | 'admin'>('landing');
   const [clientData, setClientData] = useState<ProposalClientData | null>(null);
 
@@ -32,7 +36,13 @@ export function NOCModuleWrapper() {
   }
 
   if (view === 'pricing' || view === 'admin') {
-    return <NOCPricingSystem onBack={() => setView('landing')} />;
+    return (
+      <NOCPricingSystem
+        onBack={() => setView('landing')}
+        proposalClientData={clientData}
+        onNavigateToQuotes={onNavigateToQuotes}
+      />
+    );
   }
 
   return null;

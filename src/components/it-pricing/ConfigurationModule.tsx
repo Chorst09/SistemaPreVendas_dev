@@ -7,17 +7,12 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Badge } from "@/components/ui/badge"
 import { Trash2, Plus, Settings, Building, Calculator, BarChart3, Users, Edit, Save } from "lucide-react"
 import type { TaxRegime } from "@/lib/types/tax-regimes"
 import type { CostsExpenses } from "@/lib/types/costs-expenses"
 import type { LaborCosts } from "@/lib/types/labor-costs"
 import type { CompanyData } from "@/lib/types/company-data"
-import { initialTaxRegimes } from "@/lib/types/tax-regimes"
-import { initialCostsExpenses } from "@/lib/types/costs-expenses"
-import { initialLaborCosts } from "@/lib/types/labor-costs"
-import { defaultCompanyData } from "@/lib/types/company-data"
 import { defaultICMSRates, stateNames, type ICMSInterstateRates } from "@/lib/types/pricing"
 import { useConfigurationStore } from "@/lib/stores/configuration-store"
 
@@ -26,17 +21,21 @@ export function ConfigurationModule() {
     taxRegimes, 
     costsExpenses, 
     laborCosts, 
+    companyData: storeCompanyData,
+    icmsRates: storeIcmsRates,
     setTaxRegimes, 
     setCostsExpenses, 
-    setLaborCosts 
+    setLaborCosts,
+    setCompanyData,
+    setIcmsRates,
   } = useConfigurationStore()
   
   // Estados locais para edição
   const [localTaxRegimes, setLocalTaxRegimes] = useState<TaxRegime[]>(taxRegimes || [])
   const [localCostsExpenses, setLocalCostsExpenses] = useState<CostsExpenses>(costsExpenses)
   const [localLaborCosts, setLocalLaborCosts] = useState<LaborCosts>(laborCosts)
-  const [companyData, setCompanyData] = useState<CompanyData>(defaultCompanyData)
-  const [icmsRates, setIcmsRates] = useState<ICMSInterstateRates>(defaultICMSRates)
+  const [companyData, setCompanyDataLocal] = useState<CompanyData>(storeCompanyData)
+  const [icmsRates, setIcmsRatesLocal] = useState<ICMSInterstateRates>(storeIcmsRates || defaultICMSRates)
   
   const [isEditingCosts, setIsEditingCosts] = useState(false)
   const [isEditingLabor, setIsEditingLabor] = useState(false)
@@ -63,14 +62,32 @@ export function ConfigurationModule() {
     }
   }, [laborCosts])
 
+  useEffect(() => {
+    if (storeCompanyData) {
+      setCompanyDataLocal(storeCompanyData)
+    }
+  }, [storeCompanyData])
+
+  useEffect(() => {
+    if (storeIcmsRates) {
+      setIcmsRatesLocal(storeIcmsRates)
+    }
+  }, [storeIcmsRates])
+
   const handleToggleActive = (id: string) => {
-    const updatedRegimes = (taxRegimes || []).map((regime) =>
-      regime.id === id ? { ...regime, active: !regime.active, updatedAt: new Date() } : regime,
-    )
+    const current = (taxRegimes || []).find((r) => r.id === id)
+    const willActivate = !(current?.active ?? false)
+
+    const updatedRegimes = (taxRegimes || []).map((regime) => {
+      if (regime.id === id) {
+        return { ...regime, active: willActivate, updatedAt: new Date() }
+      }
+      return willActivate ? { ...regime, active: false, updatedAt: new Date() } : regime
+    })
     setTaxRegimes(updatedRegimes)
   }
 
-  const handleUpdateRegime = (field: keyof TaxRegime, value: number, id: string) => {
+  const handleUpdateRegime = (field: keyof TaxRegime, value: any, id: string) => {
     const updatedRegimes = (taxRegimes || []).map((regime) =>
       regime.id === id ? { ...regime, [field]: value, updatedAt: new Date() } : regime,
     )
@@ -109,10 +126,12 @@ export function ConfigurationModule() {
   }
 
   const handleSaveCompany = () => {
+    setCompanyData(companyData)
     setIsEditingCompany(false)
   }
 
   const handleSaveICMS = () => {
+    setIcmsRates(icmsRates)
     setIsEditingICMS(false)
   }
 
@@ -177,6 +196,19 @@ export function ConfigurationModule() {
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-4 gap-4">
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium">Tipo</Label>
+                      <select
+                        value={regime.type}
+                        onChange={(e) => handleUpdateRegime("type", e.target.value, regime.id)}
+                        className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                      >
+                        <option value="presumido">Lucro Presumido</option>
+                        <option value="real">Lucro Real</option>
+                        <option value="simples">Simples Nacional</option>
+                        <option value="mei">MEI</option>
+                      </select>
+                    </div>
                     <div className="space-y-2">
                       <Label className="text-sm font-medium">PIS</Label>
                       <div className="flex items-center gap-1">
@@ -261,6 +293,39 @@ export function ConfigurationModule() {
                           value={regime.basePresuncaoServico} 
                           onChange={(e) => handleUpdateRegime('basePresuncaoServico', Number(e.target.value), regime.id)}
                           className="text-center" 
+                        />
+                        <span className="text-sm text-muted-foreground">%</span>
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium">Simples (Anexo I)</Label>
+                      <div className="flex items-center gap-1">
+                        <Input
+                          value={regime.anexoI}
+                          onChange={(e) => handleUpdateRegime('anexoI', Number(e.target.value), regime.id)}
+                          className="text-center"
+                        />
+                        <span className="text-sm text-muted-foreground">%</span>
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium">Simples (Anexo III)</Label>
+                      <div className="flex items-center gap-1">
+                        <Input
+                          value={regime.anexoIII}
+                          onChange={(e) => handleUpdateRegime('anexoIII', Number(e.target.value), regime.id)}
+                          className="text-center"
+                        />
+                        <span className="text-sm text-muted-foreground">%</span>
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium">MEI (Taxa)</Label>
+                      <div className="flex items-center gap-1">
+                        <Input
+                          value={regime.meiTaxa}
+                          onChange={(e) => handleUpdateRegime('meiTaxa', Number(e.target.value), regime.id)}
+                          className="text-center"
                         />
                         <span className="text-sm text-muted-foreground">%</span>
                       </div>
@@ -659,7 +724,7 @@ export function ConfigurationModule() {
                     <div className="flex items-center gap-1">
                       <Input
                         value={icmsRates[uf as keyof ICMSInterstateRates]}
-                        onChange={(e) => setIcmsRates({...icmsRates, [uf]: Number(e.target.value)})}
+                        onChange={(e) => setIcmsRatesLocal({...icmsRates, [uf]: Number(e.target.value)})}
                         readOnly={!isEditingICMS}
                         className="text-center text-sm"
                       />
@@ -698,7 +763,7 @@ export function ConfigurationModule() {
                   <Label className="text-sm font-medium">Razão Social / Nome Fantasia</Label>
                   <Input
                     value={companyData.name}
-                    onChange={(e) => setCompanyData({...companyData, name: e.target.value})}
+                    onChange={(e) => setCompanyDataLocal({...companyData, name: e.target.value})}
                     readOnly={!isEditingCompany}
                     placeholder="Nome da sua empresa"
                   />
@@ -707,7 +772,7 @@ export function ConfigurationModule() {
                   <Label className="text-sm font-medium">CNPJ</Label>
                   <Input
                     value={companyData.cnpj}
-                    onChange={(e) => setCompanyData({...companyData, cnpj: e.target.value})}
+                    onChange={(e) => setCompanyDataLocal({...companyData, cnpj: e.target.value})}
                     readOnly={!isEditingCompany}
                     placeholder="00.000.000/0001-00"
                   />
@@ -716,7 +781,7 @@ export function ConfigurationModule() {
                   <Label className="text-sm font-medium">Endereço</Label>
                   <Input
                     value={companyData.address}
-                    onChange={(e) => setCompanyData({...companyData, address: e.target.value})}
+                    onChange={(e) => setCompanyDataLocal({...companyData, address: e.target.value})}
                     readOnly={!isEditingCompany}
                     placeholder="Rua, número, bairro"
                   />
@@ -725,7 +790,7 @@ export function ConfigurationModule() {
                   <Label className="text-sm font-medium">Cidade - Estado</Label>
                   <Input
                     value={companyData.cityState}
-                    onChange={(e) => setCompanyData({...companyData, cityState: e.target.value})}
+                    onChange={(e) => setCompanyDataLocal({...companyData, cityState: e.target.value})}
                     readOnly={!isEditingCompany}
                     placeholder="Cidade - UF"
                   />
@@ -734,7 +799,7 @@ export function ConfigurationModule() {
                   <Label className="text-sm font-medium">Telefone</Label>
                   <Input
                     value={companyData.phone}
-                    onChange={(e) => setCompanyData({...companyData, phone: e.target.value})}
+                    onChange={(e) => setCompanyDataLocal({...companyData, phone: e.target.value})}
                     readOnly={!isEditingCompany}
                     placeholder="(00) 00000-0000"
                   />
@@ -743,7 +808,7 @@ export function ConfigurationModule() {
                   <Label className="text-sm font-medium">E-mail</Label>
                   <Input
                     value={companyData.email}
-                    onChange={(e) => setCompanyData({...companyData, email: e.target.value})}
+                    onChange={(e) => setCompanyDataLocal({...companyData, email: e.target.value})}
                     readOnly={!isEditingCompany}
                     placeholder="contato@empresa.com"
                   />

@@ -11,6 +11,7 @@ import { SupplyManagementModule } from "@/components/printer-outsourcing/SupplyM
 import { CostCalculationModule } from "@/components/printer-outsourcing/CostCalculationModule"
 import { PrinterPricingModule } from "@/components/printer-outsourcing/PrinterPricingModule"
 import { Printer as PrinterType, Suprimento } from "./types"
+import type { ProposalClientData } from "@/components/shared/ProposalClientDataForm"
 
 type ModuleType = "home" | "calculator" | "printers" | "supplies" | "costs" | "pricing" | "proposals" | "new-printer"
 
@@ -19,9 +20,10 @@ interface PrinterOutsourcingModuleProps {
     editingProposalId?: string | null
     onFinishEditing?: () => void
     onBack?: () => void
+    proposalClientData?: ProposalClientData | null
 }
 
-export function PrinterOutsourcingModule({ onNavigateToProposals, editingProposalId, onFinishEditing, onBack }: PrinterOutsourcingModuleProps = {}) {
+export function PrinterOutsourcingModule({ onNavigateToProposals, editingProposalId, onFinishEditing, onBack, proposalClientData }: PrinterOutsourcingModuleProps = {}) {
     const [currentModule, setCurrentModule] = useState<ModuleType>("home")
     const [selectedPrinter, setSelectedPrinter] = useState<PrinterType | null>(null)
 
@@ -145,6 +147,7 @@ export function PrinterOutsourcingModule({ onNavigateToProposals, editingProposa
             suprimentos={suprimentos}
             editingProposalId={editingProposalId}
             onFinishEditing={onFinishEditing}
+            proposalClientData={proposalClientData}
         />
     }
 

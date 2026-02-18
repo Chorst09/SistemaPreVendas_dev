@@ -1,8 +1,6 @@
 "use client"
 
-import { ShoppingCart, Calendar, Wrench } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
+import { Tag, CreditCard, Building2 } from "lucide-react"
 
 interface ModuleShortcutsProps {
   currentModule: 'sales' | 'rental' | 'services'
@@ -13,58 +11,43 @@ export function ModuleShortcuts({ currentModule, onModuleChange }: ModuleShortcu
   const modules = [
     {
       id: 'sales' as const,
-      name: 'Vendas',
-      icon: ShoppingCart,
-      color: 'from-teal-600 to-blue-600',
-      description: 'Sistema de Vendas Inteligente'
+      name: 'Venda',
+      icon: Tag,
     },
     {
       id: 'rental' as const,
       name: 'Locação',
-      icon: Calendar,
-      color: 'from-purple-600 to-pink-600',
-      description: 'Sistema de Locação Inteligente'
+      icon: CreditCard,
     },
     {
       id: 'services' as const,
       name: 'Serviços',
-      icon: Wrench,
-      color: 'from-green-600 to-teal-600',
-      description: 'Sistema de Serviços Inteligente'
+      icon: Building2,
     }
   ]
 
+  const baseButtonClass =
+    "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 transition-all h-9 px-3"
+
   return (
-    <Card className="mb-6">
-      <CardContent className="p-4">
-        <div className="flex items-center justify-center gap-4">
-          <span className="text-sm font-medium text-muted-foreground">Atalhos rápidos:</span>
-          <div className="flex gap-2">
-            {modules.map((module) => {
-              const Icon = module.icon
-              const isActive = currentModule === module.id
-              
-              return (
-                <Button
-                  key={module.id}
-                  onClick={() => onModuleChange(module.id)}
-                  variant={isActive ? "default" : "outline"}
-                  size="sm"
-                  className={`flex items-center gap-2 ${
-                    isActive 
-                      ? `bg-gradient-to-r ${module.color} text-white hover:opacity-90` 
-                      : "hover:bg-muted"
-                  }`}
-                  title={module.description}
-                >
-                  <Icon className="h-4 w-4" />
-                  {module.name}
-                </Button>
-              )
-            })}
-          </div>
-        </div>
-      </CardContent>
-    </Card>
+    <div className="mb-8 max-w-lg mx-auto">
+      <div className="flex space-x-2 glass-card p-1.5 rounded-lg shadow-inner tech-glow">
+        {modules.map((module) => {
+          const Icon = module.icon
+          const isActive = currentModule === module.id
+          return (
+            <button
+              key={module.id}
+              onClick={() => onModuleChange(module.id)}
+              type="button"
+              className={`${baseButtonClass} flex-1 ${isActive ? "btn-3d active" : "btn-3d-secondary"}`}
+            >
+              <Icon className="h-4 w-4 mr-2" />
+              {module.name}
+            </button>
+          )
+        })}
+      </div>
+    </div>
   )
 }

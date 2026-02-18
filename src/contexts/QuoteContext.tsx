@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useCallback, ReactNode, useEffect } from 'react';
 import { Quote } from '@/lib/types';
 import { initialQuotes } from '@/lib/data';
 import { PricingProposal, useQuoteIntegration } from '@/hooks/use-quote-integration';
@@ -14,7 +14,8 @@ interface QuoteContextType {
   getQuoteById: (id: string) => Quote | undefined;
 }
 
-const QuoteContext = createContext<QuoteContextType | undefined>(undefined);
+export const QuoteContext = createContext<QuoteContextType | undefined>(undefined);
+const QUOTES_STORAGE_KEY = 'quotes-storage-v1';
 
 interface QuoteProviderProps {
   children: ReactNode;
@@ -22,8 +23,32 @@ interface QuoteProviderProps {
 }
 
 export function QuoteProvider({ children, initialData = initialQuotes }: QuoteProviderProps) {
-  const [quotes, setQuotes] = useState<Quote[]>(initialData);
+  const [quotes, setQuotes] = useState<Quote[]>(() => {
+    if (typeof window === 'undefined') return initialData;
+
+    try {
+      const storedQuotes = localStorage.getItem(QUOTES_STORAGE_KEY);
+      if (storedQuotes) {
+        const parsed = JSON.parse(storedQuotes);
+        if (Array.isArray(parsed)) {
+          return parsed;
+        }
+      }
+    } catch (error) {
+      console.error('Erro ao carregar orçamentos salvos:', error);
+    }
+
+    return initialData;
+  });
   const { createQuoteFromProposal: createQuoteFromProposalHook } = useQuoteIntegration();
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(QUOTES_STORAGE_KEY, JSON.stringify(quotes));
+    } catch (error) {
+      console.error('Erro ao persistir orçamentos:', error);
+    }
+  }, [quotes]);
 
   const addQuote = useCallback((quote: Quote) => {
     setQuotes(prev => {

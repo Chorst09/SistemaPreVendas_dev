@@ -1,11 +1,12 @@
 "use client";
 
-import { useCallback } from 'react';
-import { useQuotes } from '@/contexts/QuoteContext';
-import { PricingProposal } from '@/hooks/use-quote-integration';
+import { useCallback, useContext } from 'react';
+import { QuoteContext } from '@/contexts/QuoteContext';
+import { PricingProposal, useQuoteIntegration } from '@/hooks/use-quote-integration';
 
 export function usePricingIntegration() {
-  const { createQuoteFromProposal } = useQuotes();
+  const quoteContext = useContext(QuoteContext);
+  const { createQuoteFromProposal: createQuoteFromProposalFallback } = useQuoteIntegration();
 
   const createQuoteFromPricingData = useCallback((
     proposalData: {
@@ -18,7 +19,7 @@ export function usePricingIntegration() {
     }
   ) => {
     const pricingProposal: PricingProposal = {
-      id: `${proposalData.module.toLowerCase().replace(/[^a-z0-9]/g, '-')}-${Date.now()}`,
+      id: `${proposalData.module.toLowerCase().replace(/[^a-z0-9]/g, '-')}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
       name: proposalData.name,
       clientName: proposalData.clientName,
       date: new Date().toISOString(),
@@ -29,14 +30,14 @@ export function usePricingIntegration() {
     };
 
     try {
-      const quote = createQuoteFromProposal(pricingProposal);
+      const quote = (quoteContext?.createQuoteFromProposal || createQuoteFromProposalFallback)(pricingProposal);
       console.log(`Orçamento criado para ${proposalData.module}:`, quote);
       return quote;
     } catch (error) {
       console.error(`Erro ao criar orçamento para ${proposalData.module}:`, error);
       throw error;
     }
-  }, [createQuoteFromProposal]);
+  }, [quoteContext, createQuoteFromProposalFallback]);
 
   return {
     createQuoteFromPricingData

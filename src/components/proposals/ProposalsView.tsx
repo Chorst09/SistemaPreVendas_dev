@@ -19,6 +19,158 @@ interface ProposalsViewProps {
   onDelete: (id: string) => void;
 }
 
+const DEFAULT_STATUS: Proposal['status'] = 'Rascunho';
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null;
+
+const toNumber = (value: unknown): number | null => {
+  if (typeof value === 'number' && Number.isFinite(value)) return value;
+  if (typeof value === 'string') {
+    const normalized = value.replace(/[^\d,.-]/g, '').replace(/\./g, '').replace(',', '.');
+    const parsed = Number(normalized);
+    if (Number.isFinite(parsed)) return parsed;
+  }
+  return null;
+};
+
+const getEntryId = (entry: unknown, fallbackIndex: number): string => {
+  if (!isRecord(entry)) return `local-${fallbackIndex}`;
+  const candidate = entry.id ?? entry.proposalId ?? entry.proposalNumber;
+  if (typeof candidate === 'string' && candidate.trim()) return candidate;
+  if (typeof candidate === 'number' && Number.isFinite(candidate)) return String(candidate);
+  return `local-${fallbackIndex}`;
+};
+
+const getRawStorageEntries = (parsed: unknown): unknown[] => {
+  if (Array.isArray(parsed)) return parsed;
+  if (isRecord(parsed)) return Object.values(parsed);
+  return [];
+};
+
+const normalizeLocalProposal = (entry: unknown, index: number): Proposal => {
+  const safeDate = new Date().toISOString().split('T')[0];
+  const fallbackId = getEntryId(entry, index);
+
+  if (!isRecord(entry)) {
+    return {
+      id: fallbackId,
+      title: `Proposta ${fallbackId}`,
+      client: 'Cliente não informado',
+      description: 'Proposta importada do armazenamento local.',
+      status: DEFAULT_STATUS,
+      value: 0,
+      date: safeDate,
+      expiryDate: safeDate,
+      accountManager: 'N/A',
+      distributorId: 'local',
+    };
+  }
+
+  const clientInfo = isRecord(entry.clientInfo) ? entry.clientInfo : {};
+  const accountManagerInfo = isRecord(entry.accountManagerInfo) ? entry.accountManagerInfo : {};
+  const quoteItems = Array.isArray(entry.quoteItems) ? entry.quoteItems : [];
+
+  const quoteItemsTotal = quoteItems.reduce((sum, item) => {
+    if (!isRecord(item)) return sum;
+    const itemTotal = toNumber(item.totalPrice) ?? toNumber(item.total) ?? toNumber(item.price) ?? 0;
+    return sum + itemTotal;
+  }, 0);
+
+  const value =
+    toNumber(entry.value) ??
+    toNumber(entry.totalValue) ??
+    toNumber(entry.totalPrice) ??
+    quoteItemsTotal ??
+    0;
+
+  const titleCandidate =
+    (typeof entry.title === 'string' && entry.title) ||
+    (typeof clientInfo.nomeProjeto === 'string' && clientInfo.nomeProjeto) ||
+    (typeof entry.proposalNumber === 'string' && `Proposta ${entry.proposalNumber}`) ||
+    `Proposta ${fallbackId}`;
+
+  const clientCandidate =
+    (typeof entry.client === 'string' && entry.client) ||
+    (typeof entry.clientName === 'string' && entry.clientName) ||
+    (typeof clientInfo.razaoSocial === 'string' && clientInfo.razaoSocial) ||
+    'Cliente não informado';
+
+  const accountManagerCandidate =
+    (typeof entry.accountManager === 'string' && entry.accountManager) ||
+    (typeof accountManagerInfo.nomeGerente === 'string' && accountManagerInfo.nomeGerente) ||
+    'N/A';
+
+  const dateCandidate = typeof entry.date === 'string' && entry.date ? entry.date : safeDate;
+  const expiryCandidate = typeof entry.expiryDate === 'string' && entry.expiryDate ? entry.expiryDate : safeDate;
+
+  const technicalSpecs =
+    typeof entry.technicalSpecs === 'string'
+      ? entry.technicalSpecs
+      : isRecord(entry.technicalSpecs) || Array.isArray(entry.technicalSpecs)
+        ? JSON.stringify(entry.technicalSpecs)
+        : undefined;
+
+  return {
+    id: fallbackId,
+    title: titleCandidate,
+    client: clientCandidate,
+    description:
+      (typeof entry.description === 'string' && entry.description) ||
+      'Proposta importada do módulo de precificação.',
+    status:
+      (typeof entry.status === 'string' &&
+      ['Rascunho', 'Enviada', 'Em Análise', 'Aprovada', 'Rejeitada'].includes(entry.status)
+        ? entry.status
+        : DEFAULT_STATUS) as Proposal['status'],
+    value,
+    date: dateCandidate,
+    expiryDate: expiryCandidate,
+    accountManager: accountManagerCandidate,
+    distributorId:
+      (typeof entry.distributorId === 'string' || typeof entry.distributorId === 'number')
+        ? entry.distributorId
+        : 'local',
+    proposalFile: typeof entry.proposalFile === 'string' ? entry.proposalFile : undefined,
+    technicalSpecs,
+    commercialTerms: typeof entry.commercialTerms === 'string' ? entry.commercialTerms : undefined,
+  };
+};
+
+const loadLocalProposals = (): Proposal[] => {
+  try {
+    const parsed = JSON.parse(localStorage.getItem('proposals') || '[]');
+    const entries = getRawStorageEntries(parsed);
+    return entries.map((entry, index) => normalizeLocalProposal(entry, index));
+  } catch {
+    return [];
+  }
+};
+
+const removeFromLocalStorageProposals = (proposalId: string): Proposal[] => {
+  try {
+    const parsed = JSON.parse(localStorage.getItem('proposals') || '[]');
+
+    if (Array.isArray(parsed)) {
+      const updated = parsed.filter((entry, index) => getEntryId(entry, index) !== proposalId);
+      localStorage.setItem('proposals', JSON.stringify(updated));
+      return updated.map((entry, index) => normalizeLocalProposal(entry, index));
+    }
+
+    if (isRecord(parsed)) {
+      const updatedEntries = Object.entries(parsed).filter(([, entry], index) => getEntryId(entry, index) !== proposalId);
+      const updatedObject = Object.fromEntries(updatedEntries);
+      localStorage.setItem('proposals', JSON.stringify(updatedObject));
+      return Object.values(updatedObject).map((entry, index) => normalizeLocalProposal(entry, index));
+    }
+
+    localStorage.setItem('proposals', '[]');
+    return [];
+  } catch {
+    return [];
+  }
+};
+
 const ProposalsView: React.FC<ProposalsViewProps> = ({ proposals, partners, onSave, onDelete }) => {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingProposal, setEditingProposal] = useState<Proposal | null>(null);
@@ -29,8 +181,7 @@ const ProposalsView: React.FC<ProposalsViewProps> = ({ proposals, partners, onSa
 
   // Carrega propostas do localStorage
   React.useEffect(() => {
-    const savedProposals = JSON.parse(localStorage.getItem('proposals') || '[]');
-    setLocalProposals(savedProposals);
+    setLocalProposals(loadLocalProposals());
   }, []);
 
   // Combina propostas do sistema com as do localStorage
@@ -329,10 +480,8 @@ const ProposalsView: React.FC<ProposalsViewProps> = ({ proposals, partners, onSa
                         onClick={() => {
                           // Se for proposta do localStorage, remove de lá também
                           if (proposal.distributorId === 'outsourcing') {
-                            const savedProposals = JSON.parse(localStorage.getItem('proposals') || '[]')
-                            const updatedProposals = savedProposals.filter((p: any) => p.id !== proposal.id)
-                            localStorage.setItem('proposals', JSON.stringify(updatedProposals))
-                            setLocalProposals(updatedProposals)
+                            const updatedProposals = removeFromLocalStorageProposals(proposal.id);
+                            setLocalProposals(updatedProposals);
                           }
                           onDelete(proposal.id)
                         }}

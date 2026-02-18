@@ -5,7 +5,11 @@ import { PrinterLandingPage } from './PrinterLandingPage';
 import { PrinterOutsourcingModule } from './PrinterOutsourcingModule';
 import { ProposalClientDataForm, ProposalClientData } from '@/components/shared/ProposalClientDataForm';
 
-export function PrinterModuleWrapper() {
+interface PrinterModuleWrapperProps {
+  onNavigateToQuotes?: () => void;
+}
+
+export function PrinterModuleWrapper({ onNavigateToQuotes }: PrinterModuleWrapperProps = {}) {
   const [view, setView] = useState<'landing' | 'client-data' | 'pricing' | 'admin'>('landing');
   const [clientData, setClientData] = useState<ProposalClientData | null>(null);
 
@@ -34,7 +38,8 @@ export function PrinterModuleWrapper() {
   if (view === 'pricing' || view === 'admin') {
     return (
       <PrinterOutsourcingModule
-        onNavigateToProposals={() => {}}
+        onNavigateToProposals={onNavigateToQuotes}
+        proposalClientData={clientData}
         onBack={() => setView('landing')}
       />
     );
