@@ -1,7 +1,6 @@
 // src/app/login/page.tsx
 'use client';
 
-import { useState, useEffect } from 'react';
 // Importação de useAuth removida
 // import { useAuth } from "@/hooks/use-auth";
 import { useRouter } from 'next/navigation';

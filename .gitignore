@@ -45,3 +45,7 @@ yarn-error.log*
 Thumbs.db
 .vercel
 .env*.local
+
+# Deploy
+.deploy-temp/
+ssl/
