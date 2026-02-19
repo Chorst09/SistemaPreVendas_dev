@@ -355,6 +355,113 @@ export function NOCPricingSystem({ onBack, proposalClientData, onNavigateToQuote
     }
   }, [toast, proposalClientData, data, createQuoteFromPricingData, onNavigateToQuotes]);
 
+  const handleGenerateBudget = useCallback(async () => {
+    try {
+      if (!data.calculations) {
+        toast({
+          title: 'Dados incompletos',
+          description: 'Preencha todas as abas antes de gerar o orçamento.',
+          variant: 'destructive'
+        });
+        return;
+      }
+
+      const mappedClientData: ClientData = proposalClientData
+        ? mapProposalClientDataToLegacyClientData(proposalClientData)
+        : {
+            razaoSocial: data.project.clientName || 'Cliente não informado',
+            nomeContato: data.project.clientName || 'Contato não informado',
+            telefoneCliente: '',
+            emailCliente: '',
+            nomeProjeto: data.project.projectName || 'Projeto NOC',
+            nomeGerente: '',
+            telefoneGerente: '',
+            emailGerente: '',
+          };
+
+      const contractMonths = Math.max(data.project.contractDuration || 12, 1);
+      const monthlyCosts = roundCurrency(data.calculations.monthlyTotalCost ?? 0);
+      const computedMonthlyPrice = roundCurrency(Math.max(data.calculations.finalMonthlyPrice ?? 0, monthlyCosts));
+      const totalProjectValue = roundCurrency(computedMonthlyPrice * contractMonths);
+
+      let generatedQuotes = createQuotesForNOCContracts({
+        data,
+        monthlyPrice: computedMonthlyPrice,
+        clientData: mappedClientData,
+        createQuoteFromPricingData
+      });
+
+      if (generatedQuotes.length === 0) {
+        const fallbackQuote = createQuoteFromPricingData({
+          name: `NOC - ${contractMonths} meses`,
+          clientName: mappedClientData.razaoSocial || data.project.clientName || 'Cliente NOC',
+          totalPrice: totalProjectValue,
+          module: 'NOC',
+          technicalSpecs: {
+            monthlyPrice: computedMonthlyPrice,
+            contractDurationMonths: contractMonths,
+            contractDurationLabel: `${contractMonths} meses`,
+          },
+          clientData: mappedClientData,
+        });
+        generatedQuotes = [fallbackQuote];
+      }
+
+      if (typeof window !== 'undefined') {
+        try {
+          const quotesKey = 'quotes-storage-v1';
+          const storedQuotes = localStorage.getItem(quotesKey);
+          const parsedQuotes = storedQuotes ? JSON.parse(storedQuotes) : [];
+          const quotesArray = Array.isArray(parsedQuotes) ? (parsedQuotes as Quote[]) : [];
+          const fallbackQuote: Quote = {
+            id: `QUO-${Date.now()}-${Math.random().toString(36).slice(2, 7).toUpperCase()}`,
+            client: mappedClientData.razaoSocial || data.project.clientName || 'Cliente não informado',
+            projectName: mappedClientData.nomeProjeto || data.project.projectName || 'Projeto NOC',
+            accountManager: mappedClientData.nomeGerente || 'Não informado',
+            status: 'Pendente',
+            total: Number.isFinite(totalProjectValue) ? totalProjectValue : 0,
+            monthlyPrice: computedMonthlyPrice,
+            contractDurationMonths: contractMonths,
+            date: new Date().toISOString(),
+            distributorId: 1,
+            quotationFile: '',
+            pricingFile: `noc-${contractMonths}m-${Date.now()}.json`,
+          };
+          const quotesToPersist: Quote[] = generatedQuotes.length > 0 ? generatedQuotes : [fallbackQuote];
+
+          quotesToPersist.forEach(quote => {
+            const alreadyExists = quotesArray.some((q: Quote) => q.id === quote.id);
+            if (!alreadyExists) {
+              quotesArray.push(quote);
+            }
+          });
+
+          localStorage.setItem(quotesKey, JSON.stringify(quotesArray));
+        } catch (storageError) {
+          console.error('NOCPricingSystem - Erro no fallback de persistência de orçamento:', storageError);
+        }
+      }
+
+      toast({
+        title: 'Orçamento gerado!',
+        description: 'O orçamento NOC foi salvo em Orçamentos.',
+        variant: 'default'
+      });
+
+      if (onNavigateToQuotes) {
+        setTimeout(() => onNavigateToQuotes(), 1200);
+      }
+    } catch (error) {
+      console.error('NOCPricingSystem.handleGenerateBudget - Erro ao gerar orçamento:', error);
+      toast({
+        title: 'Erro ao gerar orçamento',
+        description: 'Não foi possível gerar o orçamento. Tente novamente.',
+        variant: 'destructive'
+      });
+      throw error;
+    }
+  }, [toast, proposalClientData, data, createQuoteFromPricingData, onNavigateToQuotes]);
+
   // Exporta PDF
   const handleExportPDF = useCallback(() => {
     toast({
@@ -550,6 +657,7 @@ export function NOCPricingSystem({ onBack, proposalClientData, onNavigateToQuote
                 <ReportTab
                   data={data}
                   onSaveProposal={handleSaveProposal}
+                  onGenerateBudget={handleGenerateBudget}
                   onExportPDF={handleExportPDF}
                 />
               </TabsContent>

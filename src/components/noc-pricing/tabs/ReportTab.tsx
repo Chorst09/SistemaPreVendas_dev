@@ -13,10 +13,11 @@ import { Textarea } from '@/components/ui/textarea';
 interface ReportTabProps {
   data: NOCPricingData;
   onSaveProposal: (proposalData: any) => Promise<unknown> | unknown;
+  onGenerateBudget: () => Promise<unknown> | unknown;
   onExportPDF: () => void;
 }
 
-export function ReportTab({ data, onSaveProposal, onExportPDF }: ReportTabProps) {
+export function ReportTab({ data, onSaveProposal, onGenerateBudget, onExportPDF }: ReportTabProps) {
   const [proposalTitle, setProposalTitle] = useState(data.project.projectName || 'Proposta NOC');
   const [proposalDescription, setProposalDescription] = useState('');
   const [isSaving, setIsSaving] = useState(false);
@@ -50,6 +51,17 @@ export function ReportTab({ data, onSaveProposal, onExportPDF }: ReportTabProps)
       setProposalDescription('');
     } catch (error) {
       console.error('ReportTab.handleSaveProposal - Erro ao salvar proposta:', error);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleGenerateBudget = async () => {
+    setIsSaving(true);
+    try {
+      await onGenerateBudget();
+    } catch (error) {
+      console.error('ReportTab.handleGenerateBudget - Erro ao gerar orçamento:', error);
     } finally {
       setIsSaving(false);
     }
@@ -376,7 +388,7 @@ export function ReportTab({ data, onSaveProposal, onExportPDF }: ReportTabProps)
             />
           </div>
 
-          <div className="flex space-x-3">
+          <div className="flex flex-col sm:flex-row gap-3">
             <Button
               onClick={handleSaveProposal}
               disabled={isSaving || !proposalTitle}
@@ -391,6 +403,24 @@ export function ReportTab({ data, onSaveProposal, onExportPDF }: ReportTabProps)
                 <>
                   <Send className="h-4 w-4 mr-2" />
                   Salvar em Propostas
+                </>
+              )}
+            </Button>
+
+            <Button
+              onClick={handleGenerateBudget}
+              disabled={isSaving}
+              className="flex-1 bg-green-600 hover:bg-green-700 text-white"
+            >
+              {isSaving ? (
+                <>
+                  <CheckCircle className="h-4 w-4 mr-2 animate-spin" />
+                  Gerando...
+                </>
+              ) : (
+                <>
+                  <CheckCircle className="h-4 w-4 mr-2" />
+                  Gerar Orçamento
                 </>
               )}
             </Button>
