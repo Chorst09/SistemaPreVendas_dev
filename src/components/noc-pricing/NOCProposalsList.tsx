@@ -54,13 +54,18 @@ export function NOCProposalsList() {
     URL.revokeObjectURL(url);
   };
 
-  const getStatusColor = (status: string) => {
+  const getStatusBadgeClass = (status: string) => {
     switch (status) {
-      case 'draft': return 'outline';
-      case 'sent': return 'secondary';
-      case 'approved': return 'default';
-      case 'rejected': return 'destructive';
-      default: return 'outline';
+      case 'draft':
+        return 'border-blue-300/30 bg-slate-900/35 text-slate-200';
+      case 'sent':
+        return 'border-blue-300/35 bg-blue-800/45 text-blue-100';
+      case 'approved':
+        return 'border-cyan-300/40 bg-cyan-900/45 text-cyan-100';
+      case 'rejected':
+        return 'border-blue-300/45 bg-blue-950/65 text-blue-100';
+      default:
+        return 'border-blue-300/30 bg-slate-900/35 text-slate-200';
     }
   };
 
@@ -116,7 +121,7 @@ export function NOCProposalsList() {
                     </CardTitle>
                     <p className="text-sm text-gray-500 mt-1">{proposal.client}</p>
                   </div>
-                  <Badge variant={getStatusColor(proposal.status)}>
+                  <Badge variant="outline" className={getStatusBadgeClass(proposal.status)}>
                     {getStatusLabel(proposal.status)}
                   </Badge>
                 </div>

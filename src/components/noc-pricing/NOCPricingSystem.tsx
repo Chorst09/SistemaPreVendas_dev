@@ -237,34 +237,51 @@ export function NOCPricingSystem({ onBack, proposalClientData, onNavigateToQuote
     return 'default';
   };
 
-  // Obtém cor do badge
-  const getStatusColor = (status: string) => {
+  // Mapeia status para linguagem visual azul (sucesso/alerta/erro)
+  const getStatusBadgeClass = (status: string) => {
     switch (status) {
-      case 'error': return 'destructive';
-      case 'warning': return 'secondary';
-      case 'success': return 'default';
-      default: return 'outline';
+      case 'error':
+        return 'border-blue-300/40 bg-blue-900/50 text-blue-100';
+      case 'warning':
+        return 'border-blue-300/35 bg-blue-800/45 text-blue-100';
+      case 'success':
+        return 'border-cyan-300/40 bg-cyan-900/45 text-cyan-100';
+      default:
+        return 'border-blue-300/30 bg-slate-900/35 text-slate-200';
+    }
+  };
+
+  const getCompetitivenessBadgeClass = (competitiveness: string) => {
+    switch (competitiveness) {
+      case 'competitive':
+        return 'border-cyan-300/40 bg-cyan-900/45 text-cyan-100';
+      case 'low':
+        return 'border-blue-300/35 bg-blue-900/45 text-blue-100';
+      case 'high':
+        return 'border-blue-300/45 bg-blue-950/65 text-blue-100';
+      default:
+        return 'border-blue-300/30 bg-slate-900/35 text-slate-200';
     }
   };
 
   if (!isMounted) {
     return (
-      <div className="w-full max-w-7xl mx-auto p-6 flex items-center justify-center min-h-screen">
+      <div className="noc-theme w-full max-w-7xl mx-auto p-6 flex items-center justify-center min-h-screen rounded-2xl">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
 
   return (
-    <div className="w-full max-w-7xl mx-auto p-6 space-y-6">
-      <Card>
+    <div className="noc-theme w-full max-w-7xl mx-auto p-6 space-y-6 rounded-2xl">
+      <Card className="bg-slate-900/55 border-blue-400/20 backdrop-blur-md">
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
               <Activity className="h-6 w-6 text-blue-600" />
               <div>
                 <h1 className="text-2xl font-bold">Sistema de Precificação NOC</h1>
-                <p className="text-sm text-gray-500 font-normal">
+                <p className="text-sm text-gray-400 font-normal">
                   Network Operations Center - Monitoramento e Gestão de Infraestrutura
                 </p>
               </div>
@@ -309,17 +326,17 @@ export function NOCPricingSystem({ onBack, proposalClientData, onNavigateToQuote
 
         <CardContent>
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid grid-cols-5 lg:grid-cols-10 gap-2 h-auto">
+            <TabsList className="grid grid-cols-5 lg:grid-cols-10 gap-2 h-auto bg-slate-900/40 border border-blue-400/20 p-2 rounded-xl">
               {NOC_TABS.map(tab => {
                 const status = getTabStatus(tab.id);
                 return (
                   <TabsTrigger
                     key={tab.id}
                     value={tab.id}
-                    className="flex flex-col items-center space-y-1 p-2"
+                    className="flex flex-col items-center space-y-1 p-2 data-[state=active]:bg-blue-500/25 data-[state=active]:border data-[state=active]:border-blue-300/30"
                   >
                     <span className="text-xs">{tab.label}</span>
-                    <Badge variant={getStatusColor(status)} className="text-xs">
+                    <Badge variant="outline" className={`text-xs ${getStatusBadgeClass(status)}`}>
                       {status === 'success' ? '✓' : status === 'error' ? '✗' : '○'}
                     </Badge>
                   </TabsTrigger>
@@ -421,7 +438,7 @@ export function NOCPricingSystem({ onBack, proposalClientData, onNavigateToQuote
                           <CardTitle className="text-sm">Preço Final Mensal</CardTitle>
                         </CardHeader>
                         <CardContent>
-                          <p className="text-2xl font-bold text-green-600">
+                          <p className="text-2xl font-bold text-blue-300">
                             {data.project.currency} {data.calculations.finalMonthlyPrice.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                           </p>
                         </CardContent>
@@ -465,10 +482,10 @@ export function NOCPricingSystem({ onBack, proposalClientData, onNavigateToQuote
                           <CardTitle className="text-sm">Competitividade</CardTitle>
                         </CardHeader>
                         <CardContent>
-                          <Badge variant={
-                            data.calculations.competitiveness === 'competitive' ? 'default' :
-                            data.calculations.competitiveness === 'low' ? 'secondary' : 'destructive'
-                          }>
+                          <Badge
+                            variant="outline"
+                            className={getCompetitivenessBadgeClass(data.calculations.competitiveness)}
+                          >
                             {data.calculations.competitiveness === 'competitive' ? 'Competitivo' :
                              data.calculations.competitiveness === 'low' ? 'Abaixo do Mercado' : 'Acima do Mercado'}
                           </Badge>

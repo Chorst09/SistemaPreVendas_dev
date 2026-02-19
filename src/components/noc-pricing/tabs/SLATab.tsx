@@ -16,13 +16,26 @@ interface SLATabProps {
 
 export function SLATab({ data, onChange }: SLATabProps) {
   const getAvailabilityLevel = (availability: number) => {
-    if (availability >= 99.99) return { label: 'Crítico', color: 'destructive', downtime: '52 min/ano' };
-    if (availability >= 99.9) return { label: 'Alto', color: 'default', downtime: '8.7 horas/ano' };
-    if (availability >= 99.5) return { label: 'Médio', color: 'secondary', downtime: '43.8 horas/ano' };
-    return { label: 'Básico', color: 'outline', downtime: '87.6 horas/ano' };
+    if (availability >= 99.99) return { label: 'Crítico', tone: 'error', downtime: '52 min/ano' };
+    if (availability >= 99.9) return { label: 'Alto', tone: 'success', downtime: '8.7 horas/ano' };
+    if (availability >= 99.5) return { label: 'Médio', tone: 'warning', downtime: '43.8 horas/ano' };
+    return { label: 'Básico', tone: 'default', downtime: '87.6 horas/ano' };
   };
 
   const availabilityLevel = getAvailabilityLevel(data.availability);
+
+  const getStatusBadgeClass = (tone: string) => {
+    switch (tone) {
+      case 'error':
+        return 'border-blue-300/45 bg-blue-950/60 text-blue-100';
+      case 'warning':
+        return 'border-blue-300/35 bg-blue-800/45 text-blue-100';
+      case 'success':
+        return 'border-cyan-300/40 bg-cyan-900/45 text-cyan-100';
+      default:
+        return 'border-blue-300/30 bg-slate-900/35 text-slate-200';
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -34,7 +47,7 @@ export function SLATab({ data, onChange }: SLATabProps) {
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <Label>Disponibilidade Garantida (%)</Label>
-              <Badge variant={availabilityLevel.color as any}>
+              <Badge variant="outline" className={getStatusBadgeClass(availabilityLevel.tone)}>
                 {availabilityLevel.label}
               </Badge>
             </div>
@@ -214,7 +227,7 @@ export function SLATab({ data, onChange }: SLATabProps) {
             <div className="border rounded-lg p-4">
               <div className="text-sm text-gray-500 mb-1">Disponibilidade</div>
               <div className="text-2xl font-bold">{data.availability}%</div>
-              <Badge variant={availabilityLevel.color as any} className="mt-2">
+              <Badge variant="outline" className={`mt-2 ${getStatusBadgeClass(availabilityLevel.tone)}`}>
                 {availabilityLevel.label}
               </Badge>
             </div>
@@ -226,7 +239,7 @@ export function SLATab({ data, onChange }: SLATabProps) {
 
             <div className="border rounded-lg p-4">
               <div className="text-sm text-gray-500 mb-1">Resposta Crítica</div>
-              <div className="text-2xl font-bold text-red-600">{data.criticalIncidentResponse} min</div>
+              <div className="text-2xl font-bold text-blue-300">{data.criticalIncidentResponse} min</div>
             </div>
 
             <div className="border rounded-lg p-4">

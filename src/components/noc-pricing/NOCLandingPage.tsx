@@ -12,7 +12,7 @@ interface NOCLandingPageProps {
 
 export function NOCLandingPage({ onNewProposal, onAdminPanel }: NOCLandingPageProps) {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center p-6">
+    <div className="noc-theme min-h-screen flex items-center justify-center p-6">
       <div className="max-w-6xl w-full">
         {/* Hero Section */}
         <div className="text-center mb-12">
@@ -28,7 +28,7 @@ export function NOCLandingPage({ onNewProposal, onAdminPanel }: NOCLandingPagePr
               com Precificação Inteligente
             </span>
           </h1>
-          <p className="text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed">
+          <p className="text-xl text-slate-300 max-w-3xl mx-auto leading-relaxed">
             Nossa solução inovadora de precificação NOC foi projetada para profissionais de TI que
             exigem precisão e flexibilidade. Personalize sua estratégia de preços sem esforço e
             eleve o potencial do seu negócio.
@@ -37,7 +37,7 @@ export function NOCLandingPage({ onNewProposal, onAdminPanel }: NOCLandingPagePr
 
         {/* Features Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-          <Card className="bg-slate-800/50 border-slate-700/50 backdrop-blur-sm hover:bg-slate-800/70 transition-all">
+          <Card className="bg-slate-900/55 border-blue-400/20 backdrop-blur-sm hover:bg-slate-900/70 transition-all">
             <CardContent className="p-6 text-center">
               <div className="flex justify-center mb-4">
                 <div className="p-3 bg-blue-500/20 rounded-lg">
@@ -45,13 +45,13 @@ export function NOCLandingPage({ onNewProposal, onAdminPanel }: NOCLandingPagePr
                 </div>
               </div>
               <h3 className="text-lg font-semibold text-white mb-2">Precificação Inteligente</h3>
-              <p className="text-gray-400 text-sm">
+              <p className="text-slate-300 text-sm">
                 Algoritmos avançados para calcular preços competitivos e lucrativos
               </p>
             </CardContent>
           </Card>
 
-          <Card className="bg-slate-800/50 border-slate-700/50 backdrop-blur-sm hover:bg-slate-800/70 transition-all">
+          <Card className="bg-slate-900/55 border-blue-400/20 backdrop-blur-sm hover:bg-slate-900/70 transition-all">
             <CardContent className="p-6 text-center">
               <div className="flex justify-center mb-4">
                 <div className="p-3 bg-cyan-500/20 rounded-lg">
@@ -59,21 +59,21 @@ export function NOCLandingPage({ onNewProposal, onAdminPanel }: NOCLandingPagePr
                 </div>
               </div>
               <h3 className="text-lg font-semibold text-white mb-2">SLA Personalizável</h3>
-              <p className="text-gray-400 text-sm">
+              <p className="text-slate-300 text-sm">
                 Configure níveis de serviço adaptados às necessidades do cliente
               </p>
             </CardContent>
           </Card>
 
-          <Card className="bg-slate-800/50 border-slate-700/50 backdrop-blur-sm hover:bg-slate-800/70 transition-all">
+          <Card className="bg-slate-900/55 border-blue-400/20 backdrop-blur-sm hover:bg-slate-900/70 transition-all">
             <CardContent className="p-6 text-center">
               <div className="flex justify-center mb-4">
-                <div className="p-3 bg-purple-500/20 rounded-lg">
-                  <Clock className="h-8 w-8 text-purple-400" />
+                <div className="p-3 bg-blue-500/20 rounded-lg">
+                  <Clock className="h-8 w-8 text-blue-300" />
                 </div>
               </div>
               <h3 className="text-lg font-semibold text-white mb-2">Cobertura 24x7</h3>
-              <p className="text-gray-400 text-sm">
+              <p className="text-slate-300 text-sm">
                 Suporte para diferentes modelos de atendimento e escalas
               </p>
             </CardContent>
@@ -85,7 +85,7 @@ export function NOCLandingPage({ onNewProposal, onAdminPanel }: NOCLandingPagePr
           <Button
             onClick={onNewProposal}
             size="lg"
-            className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-12 py-6 text-lg font-semibold rounded-xl shadow-2xl shadow-orange-500/30 hover:shadow-orange-500/50 transition-all transform hover:scale-105"
+            className="bg-gradient-to-r from-blue-700 to-blue-500 hover:from-blue-600 hover:to-cyan-500 text-white px-12 py-6 text-lg font-semibold rounded-xl shadow-2xl shadow-blue-500/25 hover:shadow-blue-400/40 transition-all transform hover:scale-105"
           >
             <FileText className="h-6 w-6 mr-3" />
             Nova Proposta
@@ -95,7 +95,7 @@ export function NOCLandingPage({ onNewProposal, onAdminPanel }: NOCLandingPagePr
             onClick={onAdminPanel}
             size="lg"
             variant="outline"
-            className="border-2 border-slate-600 bg-slate-800/50 hover:bg-slate-700/50 text-white px-12 py-6 text-lg font-semibold rounded-xl backdrop-blur-sm transition-all"
+            className="border-2 border-blue-300/30 bg-slate-900/45 hover:bg-blue-900/30 text-slate-100 px-12 py-6 text-lg font-semibold rounded-xl backdrop-blur-sm transition-all"
           >
             <Users className="h-6 w-6 mr-3" />
             Painel Administrativo
@@ -114,7 +114,7 @@ export function NOCLandingPage({ onNewProposal, onAdminPanel }: NOCLandingPagePr
               <div className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-400 mb-2">
                 {stat.value}
               </div>
-              <div className="text-sm text-gray-400">{stat.label}</div>
+              <div className="text-sm text-slate-300">{stat.label}</div>
             </div>
           ))}
         </div>

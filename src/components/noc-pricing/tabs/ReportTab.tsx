@@ -69,12 +69,16 @@ export function ReportTab({ data, onSaveProposal, onExportPDF }: ReportTabProps)
     );
   }
 
-  const getCompetitivenessColor = (comp: string) => {
+  const getCompetitivenessBadgeClass = (comp: string) => {
     switch (comp) {
-      case 'competitive': return 'default';
-      case 'low': return 'secondary';
-      case 'high': return 'destructive';
-      default: return 'outline';
+      case 'competitive':
+        return 'border-cyan-300/40 bg-cyan-900/45 text-cyan-100';
+      case 'low':
+        return 'border-blue-300/35 bg-blue-900/45 text-blue-100';
+      case 'high':
+        return 'border-blue-300/45 bg-blue-950/65 text-blue-100';
+      default:
+        return 'border-blue-300/30 bg-slate-900/35 text-slate-200';
     }
   };
 
@@ -149,7 +153,7 @@ export function ReportTab({ data, onSaveProposal, onExportPDF }: ReportTabProps)
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Resposta Crítica:</span>
-                  <span className="font-medium text-red-600">{data.sla.criticalIncidentResponse} min</span>
+                  <span className="font-medium text-blue-300">{data.sla.criticalIncidentResponse} min</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Resolução:</span>
@@ -212,7 +216,7 @@ export function ReportTab({ data, onSaveProposal, onExportPDF }: ReportTabProps)
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-green-600">
+            <div className="text-3xl font-bold text-blue-300">
               {calculations.profitability.toFixed(1)}%
             </div>
             <p className="text-xs text-gray-500 mt-1">margem</p>
@@ -325,7 +329,7 @@ export function ReportTab({ data, onSaveProposal, onExportPDF }: ReportTabProps)
 
             <div className="text-center p-4 border rounded-lg">
               <div className="text-sm text-gray-600 mb-2">Competitividade</div>
-              <Badge variant={getCompetitivenessColor(calculations.competitiveness)} className="text-lg px-4 py-2">
+              <Badge variant="outline" className={`text-lg px-4 py-2 ${getCompetitivenessBadgeClass(calculations.competitiveness)}`}>
                 {getCompetitivenessLabel(calculations.competitiveness)}
               </Badge>
             </div>

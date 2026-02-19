@@ -8,7 +8,7 @@ import { initialQuotes } from '@/lib/data';
 export default function NOCPage() {
   return (
     <QuoteProvider initialData={initialQuotes}>
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-background">
         <NOCPricingSystem />
       </div>
     </QuoteProvider>

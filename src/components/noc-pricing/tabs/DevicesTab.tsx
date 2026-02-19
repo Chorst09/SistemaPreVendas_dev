@@ -96,13 +96,18 @@ export function DevicesTab({
     });
   };
 
-  const getCriticalityColor = (criticality: string) => {
+  const getCriticalityBadgeClass = (criticality: string) => {
     switch (criticality) {
-      case 'critical': return 'destructive';
-      case 'high': return 'secondary';
-      case 'medium': return 'default';
-      case 'low': return 'outline';
-      default: return 'outline';
+      case 'critical':
+        return 'border-blue-300/45 bg-blue-950/65 text-blue-100';
+      case 'high':
+        return 'border-blue-300/35 bg-blue-800/45 text-blue-100';
+      case 'medium':
+        return 'border-cyan-300/40 bg-cyan-900/45 text-cyan-100';
+      case 'low':
+        return 'border-blue-300/30 bg-slate-900/35 text-slate-200';
+      default:
+        return 'border-blue-300/30 bg-slate-900/35 text-slate-200';
     }
   };
 
@@ -170,7 +175,7 @@ export function DevicesTab({
                       <div className="flex-1">
                         <div className="flex items-center space-x-2">
                           <h4 className="font-medium">{device.name}</h4>
-                          <Badge variant={getCriticalityColor(device.criticality)}>
+                          <Badge variant="outline" className={getCriticalityBadgeClass(device.criticality)}>
                             {device.criticality}
                           </Badge>
                         </div>
