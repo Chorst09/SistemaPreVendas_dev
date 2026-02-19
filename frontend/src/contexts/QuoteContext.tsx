@@ -22,34 +22,92 @@ interface QuoteProviderProps {
 }
 
 export function QuoteProvider({ children, initialData = initialQuotes }: QuoteProviderProps) {
-  const [quotes, setQuotes] = useState<Quote[]>(initialData);
+  const [quotes, setQuotes] = useState<Quote[]>(() => {
+    // Tentar carregar do localStorage primeiro
+    if (typeof window !== 'undefined') {
+      try {
+        const stored = localStorage.getItem('quotes-storage');
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          console.log('QuoteProvider - Carregado do localStorage:', parsed.length, 'quotes');
+          return parsed;
+        }
+      } catch (error) {
+        console.error('QuoteProvider - Erro ao carregar do localStorage:', error);
+      }
+    }
+    return initialData;
+  });
+  
   const { createQuoteFromProposal: createQuoteFromProposalHook } = useQuoteIntegration();
 
   const addQuote = useCallback((quote: Quote) => {
     setQuotes(prev => {
       // Verificar se já existe um orçamento com o mesmo ID
       const existingIndex = prev.findIndex(q => q.id === quote.id);
+      let newQuotes;
+      
       if (existingIndex !== -1) {
         // Atualizar orçamento existente
-        const updated = [...prev];
-        updated[existingIndex] = quote;
-        return updated;
+        newQuotes = [...prev];
+        newQuotes[existingIndex] = quote;
+      } else {
+        // Adicionar novo orçamento
+        newQuotes = [...prev, quote];
       }
-      // Adicionar novo orçamento
-      return [...prev, quote];
+      
+      // Persistir no localStorage
+      if (typeof window !== 'undefined') {
+        try {
+          localStorage.setItem('quotes-storage', JSON.stringify(newQuotes));
+          console.log('QuoteProvider - Salvo no localStorage:', newQuotes.length, 'quotes');
+        } catch (error) {
+          console.error('QuoteProvider - Erro ao salvar no localStorage:', error);
+        }
+      }
+      
+      return newQuotes;
     });
     
-    console.log('Orçamento adicionado:', quote);
+    console.log('QuoteProvider - Orçamento adicionado:', quote);
   }, []);
 
   const updateQuote = useCallback((id: string, updatedQuote: Partial<Quote>) => {
-    setQuotes(prev => prev.map(quote => 
-      quote.id === id ? { ...quote, ...updatedQuote } : quote
-    ));
+    setQuotes(prev => {
+      const newQuotes = prev.map(quote => 
+        quote.id === id ? { ...quote, ...updatedQuote } : quote
+      );
+      
+      // Persistir no localStorage
+      if (typeof window !== 'undefined') {
+        try {
+          localStorage.setItem('quotes-storage', JSON.stringify(newQuotes));
+          console.log('QuoteProvider - Atualizado no localStorage');
+        } catch (error) {
+          console.error('QuoteProvider - Erro ao atualizar no localStorage:', error);
+        }
+      }
+      
+      return newQuotes;
+    });
   }, []);
 
   const deleteQuote = useCallback((id: string) => {
-    setQuotes(prev => prev.filter(quote => quote.id !== id));
+    setQuotes(prev => {
+      const newQuotes = prev.filter(quote => quote.id !== id);
+      
+      // Persistir no localStorage
+      if (typeof window !== 'undefined') {
+        try {
+          localStorage.setItem('quotes-storage', JSON.stringify(newQuotes));
+          console.log('QuoteProvider - Deletado do localStorage');
+        } catch (error) {
+          console.error('QuoteProvider - Erro ao deletar do localStorage:', error);
+        }
+      }
+      
+      return newQuotes;
+    });
   }, []);
 
   const createQuoteFromProposal = useCallback((proposal: PricingProposal): Quote => {
