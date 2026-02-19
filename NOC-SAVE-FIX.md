@@ -1,7 +1,7 @@
 # Correção: NOC Salvando em Orçamentos
 
 ## Problema Identificado
-O sistema de precificação NOC não estava salvando corretamente e não redirecionava para a aba de Orçamentos após salvar.
+O sistema de precificação NOC não estava salvando corretamente e não redirecionava para a aba de Orçamentos após salvar. Os orçamentos eram perdidos após recarregar a página.
 
 ## Solução Implementada
 
@@ -9,12 +9,18 @@ O sistema de precificação NOC não estava salvando corretamente e não redirec
 - Adicionado hook `useQuotes()` no componente `NOCPricingSystem`
 - Criação automática de orçamento (Quote) a partir da proposta NOC
 
-### 2. Dados do Orçamento Incluem
+### 2. Persistência no localStorage
+- **CRÍTICO**: Adicionado persistência automática no `QuoteContext`
+- Orçamentos agora são salvos no `localStorage` com chave `quotes-storage`
+- Carregamento automático ao iniciar a aplicação
+- Sincronização em todas as operações (add, update, delete)
+
+### 3. Dados do Orçamento Incluem
 - **Valor Mensal**: `calculations.finalMonthlyPrice`
 - **Prazo do Contrato**: `projectData.contractDuration` (em meses)
 - **Valor Total do Contrato**: `valorMensal × prazoDosContrato`
 
-### 3. Navegação Automática
+### 4. Navegação Automática
 - Após salvar com sucesso, redireciona para `/?tab=quotes`
 - Toast notification informa o usuário antes do redirecionamento
 - Delay de 1.5 segundos para o usuário ver a confirmação
@@ -87,11 +93,16 @@ O sistema de precificação NOC não estava salvando corretamente e não redirec
   - Adicionado `useQuotes` do QuoteContext
   - Modificado `handleSaveProposal` para criar Quote e redirecionar
 
-## Commit
+- `frontend/src/contexts/QuoteContext.tsx` ⭐ **CRÍTICO - FIX PRINCIPAL**
+  - Adicionado persistência no localStorage
+  - Carregamento automático de quotes salvos na inicialização
+  - Sincronização automática em todas as operações (add, update, delete)
 
-```
-Fix NOC pricing save to quotes with redirect - Add navigation and QuoteContext integration
-```
+## Commits
+
+1. `0178d12` - Fix NOC pricing save to quotes with redirect
+2. `55389ca` - Add documentation for NOC save to quotes fix
+3. `b93c03f` - Add localStorage persistence to QuoteContext ⭐ **FIX PRINCIPAL**
 
 ## Próximos Passos (Opcional)
 
