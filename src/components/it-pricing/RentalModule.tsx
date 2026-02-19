@@ -8,10 +8,9 @@ import { PricingItemsTable } from "./PricingItemsTable"
 import type { RentalItem } from "@/lib/types/pricing"
 import { createConfiguredPricingEngine } from "@/lib/utils/pricing-engine"
 import { useConfigurationStore } from "@/lib/stores/configuration-store"
-import { usePricingIntegration } from "@/hooks/use-pricing-integration"
-import { ProposalClientForm, type ClientData } from "@/components/calculators/ProposalClientForm"
 import type { ProposalClientData } from "@/components/shared/ProposalClientDataForm"
-import { mapProposalClientDataToLegacyClientData } from "@/components/shared/proposalClientDataMapper"
+import { useITBudgetStore } from "@/lib/stores/it-budget-store"
+import { BudgetDraftPanel } from "./BudgetDraftPanel"
 
 interface RentalModuleProps {
   onBack: () => void
@@ -25,10 +24,7 @@ export function RentalModule({ onBack, onModuleChange, onNavigateToProposals, pr
   const [contractPeriod, setContractPeriod] = useState(12)
   const [desiredMargin, setDesiredMargin] = useState(20)
   const [analysisTab, setAnalysisTab] = useState<"resumo" | "analise">("resumo")
-  const [showGoToProposal, setShowGoToProposal] = useState(false)
-  const [showClientForm, setShowClientForm] = useState(false)
-
-  const { createQuoteFromPricingData } = usePricingIntegration()
+  const { addItems } = useITBudgetStore()
 
   const activeTaxRegime = getActiveTaxRegime()
   const configuredPricingEngine = useMemo(
@@ -91,70 +87,20 @@ export function RentalModule({ onBack, onModuleChange, onNavigateToProposals, pr
     alert("Funcionalidade de otimização com IA em desenvolvimento!")
   }
 
-  const handleSaveProposal = () => {
-    if (proposalClientData) {
-      void handleClientFormSubmit(mapProposalClientDataToLegacyClientData(proposalClientData))
-      return
-    }
-    setShowClientForm(true)
-  }
-
-  const handleClientFormSubmit = async (clientData: ClientData) => {
-    try {
-      const pricingData = {
-        items: rentalItems.map((item) => ({
-          description: item.description,
-          quantity: item.quantity,
-          unitPrice: rentalCalc.itemCalculations[item.id]?.rbUnitario || 0,
-          totalPrice: (rentalCalc.itemCalculations[item.id]?.rbUnitario || 0) * (item.quantity || 0) * contractPeriod,
-          specifications: {
-            icmsCompra: item.icmsCompra,
-            icmsPr: item.icmsPr,
-            frete: item.frete,
-            totalAssetCost: rentalCalc.itemCalculations[item.id]?.totalAssetCost || 0,
-            difal: rentalCalc.itemCalculations[item.id]?.difal || 0,
-            monthlyCostTotal: rentalCalc.itemCalculations[item.id]?.monthlyCostTotal || 0,
-            impostosMensal: rentalCalc.itemCalculations[item.id]?.impostosValor || 0,
-            margemComissaoMensal: rentalCalc.itemCalculations[item.id]?.marginComissaoValor || 0,
-          },
-        })),
-        totalValue: finalSuggestedTotalPrice,
-        specifications: {
-          contractPeriod,
-          desiredMargin,
-          taxRegime: activeTaxRegime?.name || "N/A",
-        },
+  const handleAddToBudget = () => {
+    const items = rentalItems.map((item) => {
+      const unitPrice = rentalCalc.itemCalculations[item.id]?.rbUnitario || 0
+      return {
+        module: "rental" as const,
+        description: item.description,
+        quantity: item.quantity,
+        unitPrice,
+        totalPrice: unitPrice * (item.quantity || 0) * contractPeriod,
       }
+    })
 
-      await createQuoteFromPricingData({
-        name: `Locação de TI - ${clientData.nomeProjeto}`,
-        clientName: clientData.razaoSocial,
-        totalPrice: finalSuggestedTotalPrice,
-        module: "IT Sales/Rental/Services",
-        technicalSpecs: pricingData.specifications,
-        clientData: {
-          razaoSocial: clientData.razaoSocial,
-          nomeContato: clientData.nomeContato,
-          telefoneCliente: clientData.telefoneCliente,
-          emailCliente: clientData.emailCliente,
-          nomeProjeto: clientData.nomeProjeto,
-          nomeGerente: clientData.nomeGerente,
-          telefoneGerente: clientData.telefoneGerente,
-          emailGerente: clientData.emailGerente,
-        },
-      })
-
-      setShowClientForm(false)
-      alert("Proposta criada e enviada para Orçamentos com sucesso!")
-
-      if (onNavigateToProposals) {
-        setShowGoToProposal(true)
-        onNavigateToProposals()
-      }
-    } catch (error) {
-      console.error("Erro ao criar proposta:", error)
-      alert("Erro ao criar proposta. Tente novamente.")
-    }
+    addItems(items)
+    alert("Itens adicionados ao orçamento.")
   }
 
   return (
@@ -277,21 +223,12 @@ export function RentalModule({ onBack, onModuleChange, onNavigateToProposals, pr
                     </button>
                     <button
                       type="button"
-                      onClick={handleSaveProposal}
+                      onClick={handleAddToBudget}
                       className={`${baseButtonClass} btn-3d-success w-full h-10`}
                       disabled={isSaveDisabled}
                     >
                       ✅ Adicionar ao Orçamento
                     </button>
-                    {showGoToProposal && onNavigateToProposals && (
-                      <button
-                        type="button"
-                        onClick={onNavigateToProposals}
-                        className={`${baseButtonClass} btn-3d w-full h-10`}
-                      >
-                        📋 Ir para Orçamentos
-                      </button>
-                    )}
                   </div>
                 </TabsContent>
 
@@ -336,10 +273,9 @@ export function RentalModule({ onBack, onModuleChange, onNavigateToProposals, pr
           </div>
         </div>
 
-        <ProposalClientForm
-          isOpen={showClientForm}
-          onClose={() => setShowClientForm(false)}
-          onSubmit={handleClientFormSubmit}
+        <BudgetDraftPanel
+          proposalClientData={proposalClientData}
+          onNavigateToProposals={onNavigateToProposals}
         />
       </div>
     </div>

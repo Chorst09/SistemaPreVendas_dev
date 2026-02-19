@@ -258,12 +258,31 @@ export function NOCPricingSystem({ onBack, proposalClientData, onNavigateToQuote
         console.error('NOCPricingSystem - Falha ao salvar em Propostas (unified-proposals):', proposalError);
       }
 
-      const generatedQuotes = createQuotesForNOCContracts({
+      let generatedQuotes = createQuotesForNOCContracts({
         data,
         monthlyPrice: computedMonthlyPrice,
         clientData: mappedClientData,
         createQuoteFromPricingData
       });
+      if (generatedQuotes.length === 0) {
+        try {
+          const fallbackQuote = createQuoteFromPricingData({
+            name: `NOC - ${contractMonths} meses`,
+            clientName: mappedClientData.razaoSocial || data.project.clientName || 'Cliente NOC',
+            totalPrice: totalProjectValue,
+            module: 'NOC',
+            technicalSpecs: {
+              monthlyPrice: computedMonthlyPrice,
+              contractDurationMonths: contractMonths,
+              contractDurationLabel: `${contractMonths} meses`,
+            },
+            clientData: mappedClientData,
+          });
+          generatedQuotes = [fallbackQuote];
+        } catch (quoteError) {
+          console.error('NOCPricingSystem - Falha ao criar orçamento fallback:', quoteError);
+        }
+      }
       const primaryGeneratedQuote = generatedQuotes[0] || null;
 
       // Fallback defensivo: garante persistência no storage de orçamentos
@@ -280,6 +299,8 @@ export function NOCPricingSystem({ onBack, proposalClientData, onNavigateToQuote
             accountManager: mappedClientData.nomeGerente || 'Não informado',
             status: 'Pendente',
             total: Number.isFinite(totalProjectValue) ? totalProjectValue : 0,
+            monthlyPrice: computedMonthlyPrice,
+            contractDurationMonths: contractMonths,
             date: new Date().toISOString(),
             distributorId: 1,
             quotationFile: '',

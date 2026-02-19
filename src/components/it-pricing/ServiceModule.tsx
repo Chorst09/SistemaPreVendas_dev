@@ -8,10 +8,9 @@ import { PricingItemsTable } from "./PricingItemsTable"
 import type { ServiceItem } from "@/lib/types/pricing"
 import { createConfiguredPricingEngine } from "@/lib/utils/pricing-engine"
 import { useConfigurationStore } from "@/lib/stores/configuration-store"
-import { usePricingIntegration } from "@/hooks/use-pricing-integration"
-import { ProposalClientForm, type ClientData } from "@/components/calculators/ProposalClientForm"
 import type { ProposalClientData } from "@/components/shared/ProposalClientDataForm"
-import { mapProposalClientDataToLegacyClientData } from "@/components/shared/proposalClientDataMapper"
+import { useITBudgetStore } from "@/lib/stores/it-budget-store"
+import { BudgetDraftPanel } from "./BudgetDraftPanel"
 
 interface ServiceModuleProps {
   onBack: () => void
@@ -24,12 +23,9 @@ export function ServiceModule({ onBack, onModuleChange, onNavigateToProposals, p
   const { getActiveTaxRegime, costsExpenses, laborCosts } = useConfigurationStore()
   const [desiredMargin, setDesiredMargin] = useState(20)
   const [analysisTab, setAnalysisTab] = useState<"resumo" | "analise">("resumo")
-  const [showGoToProposal, setShowGoToProposal] = useState(false)
-  const [showClientForm, setShowClientForm] = useState(false)
   const [serviceItems, setServiceItems] = useState<ServiceItem[]>([])
   const [hasInitialized, setHasInitialized] = useState(false)
-
-  const { createQuoteFromPricingData } = usePricingIntegration()
+  const { addItems } = useITBudgetStore()
 
   const activeTaxRegime = getActiveTaxRegime()
   const configuredPricingEngine = useMemo(
@@ -87,67 +83,17 @@ export function ServiceModule({ onBack, onModuleChange, onNavigateToProposals, p
     alert("Funcionalidade de otimização com IA em desenvolvimento!")
   }
 
-  const handleSaveProposal = () => {
-    if (proposalClientData) {
-      void handleClientFormSubmit(mapProposalClientDataToLegacyClientData(proposalClientData))
-      return
-    }
-    setShowClientForm(true)
-  }
+  const handleAddToBudget = () => {
+    const items = serviceItems.map((item) => ({
+      module: "services" as const,
+      description: item.description,
+      quantity: 1,
+      unitPrice: servicesCalc.itemCalculations[item.id]?.sellPricePerHour || 0,
+      totalPrice: servicesCalc.itemCalculations[item.id]?.totalSellPrice || 0,
+    }))
 
-  const handleClientFormSubmit = async (clientData: ClientData) => {
-    try {
-      const pricingData = {
-        items: serviceItems.map((item) => ({
-          description: item.description,
-          quantity: 1,
-          unitPrice: servicesCalc.itemCalculations[item.id]?.sellPricePerHour || 0,
-          totalPrice: servicesCalc.itemCalculations[item.id]?.totalSellPrice || 0,
-          specifications: {
-            contractType: item.contractType,
-            baseSalary: item.baseSalary,
-            estimatedHours: item.estimatedHours,
-            hourlyCost: servicesCalc.itemCalculations[item.id]?.hourlyCost || 0,
-            sellPricePerHour: servicesCalc.itemCalculations[item.id]?.sellPricePerHour || 0,
-            totalCost: servicesCalc.itemCalculations[item.id]?.totalCost || 0,
-          },
-        })),
-        totalValue: finalSuggestedPrice,
-        specifications: {
-          desiredMargin,
-          taxRegime: activeTaxRegime?.name || "N/A",
-        },
-      }
-
-      await createQuoteFromPricingData({
-        name: `Serviços de TI - ${clientData.nomeProjeto}`,
-        clientName: clientData.razaoSocial,
-        totalPrice: finalSuggestedPrice,
-        module: "IT Sales/Rental/Services",
-        technicalSpecs: pricingData.specifications,
-        clientData: {
-          razaoSocial: clientData.razaoSocial,
-          nomeContato: clientData.nomeContato,
-          telefoneCliente: clientData.telefoneCliente,
-          emailCliente: clientData.emailCliente,
-          nomeProjeto: clientData.nomeProjeto,
-          nomeGerente: clientData.nomeGerente,
-          telefoneGerente: clientData.telefoneGerente,
-          emailGerente: clientData.emailGerente,
-        },
-      })
-
-      setShowClientForm(false)
-      alert("Proposta criada e enviada para Orçamentos com sucesso!")
-
-      if (onNavigateToProposals) {
-        setShowGoToProposal(true)
-        onNavigateToProposals()
-      }
-    } catch (error) {
-      console.error("Erro ao criar proposta:", error)
-      alert("Erro ao criar proposta. Tente novamente.")
-    }
+    addItems(items)
+    alert("Itens adicionados ao orçamento.")
   }
 
   return (
@@ -253,21 +199,12 @@ export function ServiceModule({ onBack, onModuleChange, onNavigateToProposals, p
                     </button>
                     <button
                       type="button"
-                      onClick={handleSaveProposal}
+                      onClick={handleAddToBudget}
                       className={`${baseButtonClass} btn-3d-success w-full h-10`}
                       disabled={isSaveDisabled}
                     >
                       ✅ Adicionar ao Orçamento
                     </button>
-                    {showGoToProposal && onNavigateToProposals && (
-                      <button
-                        type="button"
-                        onClick={onNavigateToProposals}
-                        className={`${baseButtonClass} btn-3d w-full h-10`}
-                      >
-                        📋 Ir para Orçamentos
-                      </button>
-                    )}
                   </div>
                 </TabsContent>
 
@@ -308,10 +245,9 @@ export function ServiceModule({ onBack, onModuleChange, onNavigateToProposals, p
           </div>
         </div>
 
-        <ProposalClientForm
-          isOpen={showClientForm}
-          onClose={() => setShowClientForm(false)}
-          onSubmit={handleClientFormSubmit}
+        <BudgetDraftPanel
+          proposalClientData={proposalClientData}
+          onNavigateToProposals={onNavigateToProposals}
         />
       </div>
     </div>

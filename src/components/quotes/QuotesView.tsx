@@ -234,7 +234,17 @@ const QuotesView: React.FC<QuotesViewProps> = ({ partners }) => {
                                         </TableCell>
                                         <TableCell className="hidden sm:table-cell">{distributor?.name || 'N/A'}</TableCell>
                                         <TableCell className="font-medium">
-                                            {quote.total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                                            <div>{quote.total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</div>
+                                            {typeof quote.monthlyPrice === 'number' && (
+                                                <div className="text-xs text-muted-foreground">
+                                                    Mensal: {formatCurrency(quote.monthlyPrice)}
+                                                </div>
+                                            )}
+                                            {typeof quote.contractDurationMonths === 'number' && (
+                                                <div className="text-xs text-muted-foreground">
+                                                    Prazo: {quote.contractDurationMonths} meses
+                                                </div>
+                                            )}
                                         </TableCell>
                                         <TableCell>{getStatusBadge(quote.status)}</TableCell>
                                         <TableCell className="text-center">
