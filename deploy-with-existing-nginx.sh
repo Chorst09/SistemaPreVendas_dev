@@ -35,6 +35,20 @@ rsync -a shared/ .deploy-temp/workspace/shared/
 rsync -a --exclude='node_modules' --exclude='.next' --exclude='.git' \
   frontend/ .deploy-temp/frontend/
 
+# Sincronizar código fonte atual da raiz para o frontend publicado
+if [ -d src ]; then
+  echo "🔄 Sincronizando src/ (raiz) -> frontend/src/..."
+  mkdir -p .deploy-temp/frontend/src
+  rsync -a --delete src/ .deploy-temp/frontend/src/
+fi
+
+# Sincronizar assets da raiz para o frontend publicado
+if [ -d public ]; then
+  echo "🔄 Sincronizando public/ (raiz) -> frontend/public/..."
+  mkdir -p .deploy-temp/frontend/public
+  rsync -a --delete public/ .deploy-temp/frontend/public/
+fi
+
 # Criar docker-compose SEM nginx (usaremos o nginx do host)
 cat > .deploy-temp/docker-compose.yml << 'EOF'
 version: '3.8'
