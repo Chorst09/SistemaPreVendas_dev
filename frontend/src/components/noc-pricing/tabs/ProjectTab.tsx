@@ -57,13 +57,21 @@ export function ProjectTab({ data, onChange }: ProjectTabProps) {
 
             <div className="space-y-2">
               <Label htmlFor="contractDuration">Duração do Contrato (meses) *</Label>
-              <Input
-                id="contractDuration"
-                type="number"
-                min="1"
-                value={data.contractDuration}
-                onChange={(e) => handleChange('contractDuration', parseInt(e.target.value) || 0)}
-              />
+              <Select
+                value={String(data.contractDuration || 12)}
+                onValueChange={(value) => handleChange('contractDuration', parseInt(value, 10) || 12)}
+              >
+                <SelectTrigger id="contractDuration">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="12">12 meses</SelectItem>
+                  <SelectItem value="24">24 meses</SelectItem>
+                  <SelectItem value="36">36 meses</SelectItem>
+                  <SelectItem value="48">48 meses</SelectItem>
+                  <SelectItem value="60">60 meses</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="space-y-2">

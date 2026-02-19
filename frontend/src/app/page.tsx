@@ -276,7 +276,7 @@ export default function App() { // Ou Home
                 </div>
             );
             case 'calculator-ti-vls': return <ITPricingModule onNavigateToProposals={() => setActiveTab('proposals')} />;
-            case 'calculator-noc': return <NOCModuleWrapper />;
+            case 'calculator-noc': return <NOCModuleWrapper onNavigateToQuotes={() => setActiveTab('quotes')} />;
             case 'calculator-servicedesk-advanced': return <ServiceDeskModuleWrapper />;
             case 'calculator-printer': return <PrinterModuleWrapper />;
 

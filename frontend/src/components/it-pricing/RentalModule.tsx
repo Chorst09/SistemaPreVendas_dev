@@ -10,28 +10,24 @@ import { Badge } from "@/components/ui/badge"
 import { ModuleShortcuts } from "./ModuleShortcuts"
 import type { RentalItem } from "@/lib/types/pricing"
 import { createConfiguredPricingEngine } from "@/lib/utils/pricing-engine"
-import { useProposalStore } from "@/lib/stores/proposal-store"
 import { useConfigurationStore } from "@/lib/stores/configuration-store"
-import { usePricingIntegration } from "@/hooks/use-pricing-integration"
-import { ProposalClientForm, type ClientData } from "@/components/calculators/ProposalClientForm"
+import type { ProposalClientData } from "@/components/shared/ProposalClientDataForm"
+import { useITBudgetStore } from "@/lib/stores/it-budget-store"
+import { BudgetDraftPanel } from "./BudgetDraftPanel"
 
 interface RentalModuleProps {
   onBack: () => void
   onModuleChange?: (module: 'sales' | 'rental' | 'services') => void
   onNavigateToProposals?: () => void
+  proposalClientData?: ProposalClientData | null
 }
 
-export function RentalModule({ onBack, onModuleChange, onNavigateToProposals }: RentalModuleProps) {
-  const { currentProposal, addBudgetToProposal } = useProposalStore()
+export function RentalModule({ onBack, onModuleChange, onNavigateToProposals, proposalClientData }: RentalModuleProps) {
   const { getActiveTaxRegime, costsExpenses, laborCosts } = useConfigurationStore()
   const [contractPeriod, setContractPeriod] = useState(12)
   const [desiredMargin, setDesiredMargin] = useState(20)
   const [analysisTab, setAnalysisTab] = useState<"resumo" | "analise">("resumo")
-  const [showGoToProposal, setShowGoToProposal] = useState(false)
-  const [showClientForm, setShowClientForm] = useState(false)
-  
-  // Hook de integração com orçamentos
-  const { createQuoteFromPricingData } = usePricingIntegration()
+  const { addItems } = useITBudgetStore()
 
   // Criar instância configurada do pricing engine
   const activeTaxRegime = getActiveTaxRegime()
@@ -152,64 +148,22 @@ export function RentalModule({ onBack, onModuleChange, onNavigateToProposals }: 
     alert("Funcionalidade de otimização com IA em desenvolvimento!")
   }
 
-  const handleSaveProposal = () => {
-    setShowClientForm(true)
-  }
-
-  const handleClientFormSubmit = async (clientData: ClientData) => {
-    try {
-      const pricingData = {
-        items: rentalItems.map(item => ({
-          description: item.description,
-          quantity: item.quantity,
-          unitPrice: item.unitValue,
-          totalPrice: item.monthlyActiveCost,
-          specifications: {
-            icmsCompra: item.icmsCompra,
-            icmsPR: item.icmsPR,
-            difal: item.difal,
-            freight: item.freight,
-            totalActiveCost: item.totalActiveCost,
-            monthlyActiveCost: item.monthlyActiveCost,
-            marginCommission: item.marginCommission
-          }
-        })),
-        totalValue: finalSuggestedPrice,
-        specifications: {
-          contractPeriod,
-          desiredMargin,
-          taxRegime: activeTaxRegime?.name || 'N/A'
-        }
+  const handleAddToBudget = () => {
+    const items = rentalItems.map((item) => {
+      const quantity = item.quantity || 0
+      const totalPrice = item.monthlyActiveCost || 0
+      const unitPrice = quantity > 0 ? totalPrice / quantity : totalPrice
+      return {
+        module: "rental" as const,
+        description: item.description,
+        quantity,
+        unitPrice,
+        totalPrice,
       }
+    })
 
-      await createQuoteFromPricingData({
-        name: `Locação de TI - ${clientData.nomeProjeto}`,
-        clientName: clientData.razaoSocial,
-        totalPrice: finalSuggestedPrice,
-        module: 'IT Sales/Rental/Services',
-        technicalSpecs: pricingData.specifications,
-        clientData: {
-          razaoSocial: clientData.razaoSocial,
-          nomeContato: clientData.nomeContato,
-          telefoneCliente: clientData.telefoneCliente,
-          emailCliente: clientData.emailCliente,
-          nomeProjeto: clientData.nomeProjeto,
-          nomeGerente: clientData.nomeGerente,
-          telefoneGerente: clientData.telefoneGerente,
-          emailGerente: clientData.emailGerente
-        }
-      })
-
-      setShowClientForm(false)
-      alert('Proposta criada e enviada para Orçamentos com sucesso!')
-      
-      if (onNavigateToProposals) {
-        setShowGoToProposal(true)
-      }
-    } catch (error) {
-      console.error('Erro ao criar proposta:', error)
-      alert('Erro ao criar proposta. Tente novamente.')
-    }
+    addItems(items)
+    alert("Itens adicionados ao orçamento.")
   }
 
   return (
@@ -608,17 +562,9 @@ export function RentalModule({ onBack, onModuleChange, onNavigateToProposals }: 
                   <Button onClick={handleOptimizePrice} className="w-full bg-[hsl(var(--accent-orange))] hover:bg-[hsl(var(--accent-orange)/0.9)] text-white py-3 text-lg">
                     💡 Otimizar Preço com IA
                   </Button>
-                  <Button onClick={handleSaveProposal} className="w-full bg-[hsl(var(--accent-green))] hover:bg-[hsl(var(--accent-green)/0.9)] text-white py-3 text-lg">
-                    ✅ Salvar Proposta
+                  <Button onClick={handleAddToBudget} className="w-full bg-[hsl(var(--accent-green))] hover:bg-[hsl(var(--accent-green)/0.9)] text-white py-3 text-lg">
+                    ✅ Adicionar ao Orçamento
                   </Button>
-                  {showGoToProposal && onNavigateToProposals && (
-                    <Button
-                      onClick={onNavigateToProposals}
-                      className="w-full bg-[hsl(var(--accent-cyan))] hover:bg-[hsl(var(--accent-cyan)/0.9)] text-white py-3 text-lg"
-                    >
-                      📋 Ir à Proposta
-                    </Button>
-                  )}
                 </div>
               </div>
             ) : (
@@ -663,11 +609,9 @@ export function RentalModule({ onBack, onModuleChange, onNavigateToProposals }: 
           </CardContent>
         </Card>
 
-        {/* Modal de Dados do Cliente */}
-        <ProposalClientForm
-          isOpen={showClientForm}
-          onClose={() => setShowClientForm(false)}
-          onSubmit={handleClientFormSubmit}
+        <BudgetDraftPanel
+          proposalClientData={proposalClientData}
+          onNavigateToProposals={onNavigateToProposals}
         />
       </div>
     </div>

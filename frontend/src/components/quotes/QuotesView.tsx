@@ -22,6 +22,7 @@ const QuotesView: React.FC<QuotesViewProps> = ({ partners }) => {
     const [editingQuote, setEditingQuote] = useState<Quote | null>(null);
     const [clientFilter, setClientFilter] = useState('');
     const [accountManagerFilter, setAccountManagerFilter] = useState('');
+    const formatCurrency = (value: number) => value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
     const handleOpenModal = (quote: Quote | null = null) => {
         setEditingQuote(quote);
@@ -129,7 +130,17 @@ const QuotesView: React.FC<QuotesViewProps> = ({ partners }) => {
                                         </TableCell>
                                         <TableCell className="hidden sm:table-cell">{distributor?.name || 'N/A'}</TableCell>
                                         <TableCell className="font-medium">
-                                            {quote.total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                                            <div>{formatCurrency(quote.total)}</div>
+                                            {typeof quote.monthlyPrice === 'number' && (
+                                                <div className="text-xs text-muted-foreground">
+                                                    Mensal: {formatCurrency(quote.monthlyPrice)}
+                                                </div>
+                                            )}
+                                            {typeof quote.contractDurationMonths === 'number' && (
+                                                <div className="text-xs text-muted-foreground">
+                                                    Prazo: {quote.contractDurationMonths} meses
+                                                </div>
+                                            )}
                                         </TableCell>
                                         <TableCell>{getStatusBadge(quote.status)}</TableCell>
                                         <TableCell className="text-center">
