@@ -13,9 +13,8 @@ import { ServiceModule } from "./ServiceModule"
 import { AdminModule } from "./AdminModule"
 import { ProposalCreation } from "./ProposalCreation"
 import { ProposalsManagement } from "./ProposalsManagement"
-import { ProposalClientDataForm, ProposalClientData } from "@/components/shared/ProposalClientDataForm"
 
-type ModuleType = "home" | "client-data" | "sales" | "rental" | "services" | "admin" | "proposal" | "proposals"
+type ModuleType = "home" | "sales" | "rental" | "services" | "admin" | "proposal" | "proposals"
 
 interface ITPricingModuleProps {
     onNavigateToProposals?: () => void
@@ -23,8 +22,6 @@ interface ITPricingModuleProps {
 
 export function ITPricingModule({ onNavigateToProposals }: ITPricingModuleProps = {}) {
     const [currentModule, setCurrentModule] = useState<ModuleType>("home")
-    const [pendingCalculatorModule, setPendingCalculatorModule] = useState<"sales" | "rental" | "services" | null>(null)
-    const [proposalClientData, setProposalClientData] = useState<ProposalClientData | null>(null)
 
     const handleBack = () => {
         setCurrentModule("home")
@@ -38,25 +35,16 @@ export function ITPricingModule({ onNavigateToProposals }: ITPricingModuleProps 
         setCurrentModule(module)
     }
 
-    const handleOpenCalculator = (module: "sales" | "rental" | "services") => {
-        setPendingCalculatorModule(module)
-        if (proposalClientData) {
-            setCurrentModule(module)
-            return
-        }
-        setCurrentModule("client-data")
-    }
-
     if (currentModule === "sales") {
-        return <SalesModule onBack={handleBack} onModuleChange={handleModuleChange} onNavigateToProposals={onNavigateToProposals} proposalClientData={proposalClientData} />
+        return <SalesModule onBack={handleBack} onModuleChange={handleModuleChange} onNavigateToProposals={onNavigateToProposals} />
     }
 
     if (currentModule === "rental") {
-        return <RentalModule onBack={handleBack} onModuleChange={handleModuleChange} onNavigateToProposals={onNavigateToProposals} proposalClientData={proposalClientData} />
+        return <RentalModule onBack={handleBack} onModuleChange={handleModuleChange} onNavigateToProposals={onNavigateToProposals} />
     }
 
     if (currentModule === "services") {
-        return <ServiceModule onBack={handleBack} onModuleChange={handleModuleChange} onNavigateToProposals={onNavigateToProposals} proposalClientData={proposalClientData} />
+        return <ServiceModule onBack={handleBack} onModuleChange={handleModuleChange} onNavigateToProposals={onNavigateToProposals} />
     }
 
     if (currentModule === "admin") {
@@ -64,31 +52,11 @@ export function ITPricingModule({ onNavigateToProposals }: ITPricingModuleProps 
     }
 
     if (currentModule === "proposal") {
-        return <ProposalCreation onBack={handleBack} onSelectModule={(module) => {
-            if (module === "sales" || module === "rental" || module === "services") {
-                handleOpenCalculator(module)
-                return
-            }
-            setCurrentModule(module as ModuleType)
-        }} />
+        return <ProposalCreation onBack={handleBack} onSelectModule={(module) => setCurrentModule(module as ModuleType)} />
     }
 
     if (currentModule === "proposals") {
         return <ProposalsManagement onBack={handleBack} />
-    }
-
-    if (currentModule === "client-data") {
-        return (
-            <ProposalClientDataForm
-                moduleType="it-vls"
-                onSubmit={(data) => {
-                    setProposalClientData(data)
-                    setCurrentModule(pendingCalculatorModule || "home")
-                }}
-                onBack={() => setCurrentModule("home")}
-                initialData={proposalClientData || undefined}
-            />
-        )
     }
 
     return (
@@ -110,21 +78,21 @@ export function ITPricingModule({ onNavigateToProposals }: ITPricingModuleProps 
                                 <Button
                                     variant="ghost"
                                     className="text-sm font-medium hover:text-primary transition-colors font-[var(--font-body)]"
-                                    onClick={() => handleOpenCalculator("sales")}
+                                    onClick={() => setCurrentModule("sales")}
                                 >
                                     Vendas
                                 </Button>
                                 <Button
                                     variant="ghost"
                                     className="text-sm font-medium hover:text-primary transition-colors font-[var(--font-body)]"
-                                    onClick={() => handleOpenCalculator("rental")}
+                                    onClick={() => setCurrentModule("rental")}
                                 >
                                     Locação
                                 </Button>
                                 <Button
                                     variant="ghost"
                                     className="text-sm font-medium hover:text-primary transition-colors font-[var(--font-body)]"
-                                    onClick={() => handleOpenCalculator("services")}
+                                    onClick={() => setCurrentModule("services")}
                                 >
                                     Serviços
                                 </Button>
@@ -224,7 +192,7 @@ export function ITPricingModule({ onNavigateToProposals }: ITPricingModuleProps 
                                         <Zap className="w-4 h-4 mr-2 text-[hsl(var(--accent-cyan))] group-hover:scale-110 transition-transform duration-300" /> Geração de cotações instantânea
                                     </li>
                                 </ul>
-                                <Button className="w-full bg-gradient-to-r from-[hsl(var(--accent-cyan))] to-[hsl(var(--primary-600))] hover:from-[hsl(var(--accent-cyan)/0.9)] hover:to-[hsl(var(--primary-500))] text-white hover-lift border-0 shadow-lg group-hover:shadow-[hsl(var(--accent-cyan)/0.4)] group-hover:shadow-2xl transition-all duration-300" onClick={() => handleOpenCalculator("sales")}>
+                                <Button className="w-full bg-gradient-to-r from-[hsl(var(--accent-cyan))] to-[hsl(var(--primary-600))] hover:from-[hsl(var(--accent-cyan)/0.9)] hover:to-[hsl(var(--primary-500))] text-white hover-lift border-0 shadow-lg group-hover:shadow-[hsl(var(--accent-cyan)/0.4)] group-hover:shadow-2xl transition-all duration-300" onClick={() => setCurrentModule("sales")}>
                                     <ShoppingCart className="w-4 h-4 mr-2" />
                                     Acessar Vendas
                                 </Button>
@@ -258,7 +226,7 @@ export function ITPricingModule({ onNavigateToProposals }: ITPricingModuleProps 
                                         <Zap className="w-4 h-4 mr-2 text-[hsl(var(--accent-orange))] group-hover:scale-110 transition-transform duration-300" /> Contratos inteligentes
                                     </li>
                                 </ul>
-                                <Button className="w-full bg-gradient-to-r from-[hsl(var(--accent-orange))] to-[hsl(var(--primary-600))] hover:from-[hsl(var(--accent-orange)/0.9)] hover:to-[hsl(var(--primary-500))] text-white hover-lift border-0 shadow-lg group-hover:shadow-[hsl(var(--accent-orange)/0.4)] group-hover:shadow-2xl transition-all duration-300" onClick={() => handleOpenCalculator("rental")}>
+                                <Button className="w-full bg-gradient-to-r from-[hsl(var(--accent-orange))] to-[hsl(var(--primary-600))] hover:from-[hsl(var(--accent-orange)/0.9)] hover:to-[hsl(var(--primary-500))] text-white hover-lift border-0 shadow-lg group-hover:shadow-[hsl(var(--accent-orange)/0.4)] group-hover:shadow-2xl transition-all duration-300" onClick={() => setCurrentModule("rental")}>
                                     <Calendar className="w-4 h-4 mr-2" />
                                     Acessar Locação
                                 </Button>
@@ -292,7 +260,7 @@ export function ITPricingModule({ onNavigateToProposals }: ITPricingModuleProps 
                                         <Zap className="w-4 h-4 mr-2 text-[hsl(var(--accent-green))] group-hover:scale-110 transition-transform duration-300" /> Propostas personalizadas
                                     </li>
                                 </ul>
-                                <Button className="w-full bg-gradient-to-r from-[hsl(var(--accent-green))] to-[hsl(var(--primary-600))] hover:from-[hsl(var(--accent-green)/0.9)] hover:to-[hsl(var(--primary-500))] text-white hover-lift border-0 shadow-lg group-hover:shadow-[hsl(var(--accent-green)/0.4)] group-hover:shadow-2xl transition-all duration-300" onClick={() => handleOpenCalculator("services")}>
+                                <Button className="w-full bg-gradient-to-r from-[hsl(var(--accent-green))] to-[hsl(var(--primary-600))] hover:from-[hsl(var(--accent-green)/0.9)] hover:to-[hsl(var(--primary-500))] text-white hover-lift border-0 shadow-lg group-hover:shadow-[hsl(var(--accent-green)/0.4)] group-hover:shadow-2xl transition-all duration-300" onClick={() => setCurrentModule("services")}>
                                     <Wrench className="w-4 h-4 mr-2" />
                                     Acessar Serviços
                                 </Button>
