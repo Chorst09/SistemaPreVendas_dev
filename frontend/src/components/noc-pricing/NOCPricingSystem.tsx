@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
@@ -25,6 +26,8 @@ import { ReportTab } from './tabs/ReportTab';
 // Import services
 import { UnifiedProposalService } from '@/lib/services/unified-proposal-service';
 import { useToast } from '@/hooks/use-toast';
+import { useQuotes } from '@/contexts/QuoteContext';
+import type { Quote } from '@/lib/types';
 
 // Tabs do sistema NOC
 const NOC_TABS = [
@@ -55,6 +58,8 @@ export function NOCPricingSystem({ onBack }: NOCPricingSystemProps = {}) {
   const dataManager = useMemo(() => new NOCDataManager(), []);
   const validationEngine = useMemo(() => new NOCValidationEngine(), []);
   const { toast } = useToast();
+  const { addQuote } = useQuotes();
+  const router = useRouter();
 
   // Previne erros de SSR
   useEffect(() => {
@@ -153,16 +158,39 @@ export function NOCPricingSystem({ onBack }: NOCPricingSystemProps = {}) {
       
       console.log('NOCPricingSystem.handleSaveProposal - Proposta salva:', proposal);
       
+      // Criar orçamento a partir da proposta NOC
+      const calculations = proposalData.calculations;
+      const projectData = proposalData.data.project;
+      
+      const quote: Quote = {
+        id: proposal.id,
+        client: projectData.clientName,
+        projectName: projectData.projectName,
+        accountManager: '', // Pode ser preenchido depois
+        status: 'Pendente',
+        total: calculations.finalMonthlyPrice * projectData.contractDuration, // Valor total do contrato
+        date: new Date().toISOString().split('T')[0],
+        distributorId: 1, // ID padrão, pode ser ajustado
+        quotationFile: undefined,
+        pricingFile: undefined
+      };
+      
+      // Adicionar ao contexto de orçamentos
+      addQuote(quote);
+      
+      console.log('NOCPricingSystem.handleSaveProposal - Orçamento criado:', quote);
+      
       toast({
         title: 'Proposta NOC Salva!',
-        description: `A proposta "${proposal.title}" foi salva com sucesso em Propostas.`,
+        description: `A proposta "${proposal.title}" foi salva com sucesso. Redirecionando para Orçamentos...`,
         variant: 'default'
       });
 
-      // Navegar para propostas após 2 segundos
+      // Navegar para orçamentos após 1.5 segundos
       setTimeout(() => {
-        console.log('NOCPricingSystem - Proposta NOC salva:', proposal.id);
-      }, 2000);
+        console.log('NOCPricingSystem - Redirecionando para orçamentos...');
+        router.push('/?tab=quotes');
+      }, 1500);
 
       return proposal;
     } catch (error) {
@@ -174,7 +202,7 @@ export function NOCPricingSystem({ onBack }: NOCPricingSystemProps = {}) {
       });
       throw error;
     }
-  }, [toast]);
+  }, [toast, addQuote, router]);
 
   // Exporta PDF
   const handleExportPDF = useCallback(() => {
