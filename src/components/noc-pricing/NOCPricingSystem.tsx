@@ -23,9 +23,11 @@ import { VariablesTab } from './tabs/VariablesTab';
 import { ReportTab } from './tabs/ReportTab';
 import type { ProposalClientData } from '@/components/shared/ProposalClientDataForm';
 import { mapProposalClientDataToLegacyClientData } from '@/components/shared/proposalClientDataMapper';
+import type { ClientData } from '@/components/calculators/ProposalClientForm';
 
 // Import services
 import { UnifiedProposalService } from '@/lib/services/unified-proposal-service';
+import { Quote } from '@/lib/types/base';
 import { useToast } from '@/hooks/use-toast';
 import { usePricingIntegration } from '@/hooks/use-pricing-integration';
 
@@ -42,6 +44,80 @@ const NOC_TABS = [
   { id: 'calculations', label: 'Cálculos', description: 'Resultados e análises' },
   { id: 'report', label: 'Relatório', description: 'Relatório final' }
 ];
+
+const NOC_CONTRACT_DURATION_OPTIONS = [12, 24, 36, 48, 60] as const;
+
+const roundCurrency = (value: number) => Math.round(value * 100) / 100;
+
+type CreateQuoteFn = ReturnType<typeof usePricingIntegration>['createQuoteFromPricingData'];
+
+interface CreateNOCQuotesParams {
+  data: NOCPricingData;
+  monthlyPrice: number;
+  clientData: ClientData;
+  createQuoteFromPricingData: CreateQuoteFn;
+}
+
+function buildNOCQuoteBasicSpecs(data: NOCPricingData) {
+  const calculations = data.calculations;
+  return {
+    monthlyCost: roundCurrency(calculations?.monthlyTotalCost ?? 0),
+    monthlyTeamCost: roundCurrency(calculations?.monthlyTeamCost ?? 0),
+    monthlyInfrastructureCost: roundCurrency(calculations?.monthlyInfrastructureCost ?? 0),
+    monthlyLicenseCost: roundCurrency(calculations?.monthlyLicenseCost ?? 0),
+    monthlyOperationalCost: roundCurrency(calculations?.monthlyOperationalCost ?? 0),
+    totalDevices: data.totalDevices,
+    totalMetrics: data.totalMetrics,
+    estimatedAlertsPerMonth: data.estimatedAlertsPerMonth,
+    sla: data.sla,
+    coverage: data.project.coverage,
+    serviceLevel: data.project.serviceLevel,
+    taxes: data.taxes,
+    variables: data.variables,
+    teamSize: data.teamSize,
+    monitoringTools: data.monitoring.tools,
+    monitoringAi: data.monitoring.aiEnabled,
+  };
+}
+
+function createQuotesForNOCContracts({
+  data,
+  monthlyPrice,
+  clientData,
+  createQuoteFromPricingData
+}: CreateNOCQuotesParams): Quote[] {
+  if (!monthlyPrice || monthlyPrice <= 0) return [];
+
+  const specs = buildNOCQuoteBasicSpecs(data);
+  const quotes: Quote[] = [];
+
+  for (const duration of NOC_CONTRACT_DURATION_OPTIONS) {
+    try {
+      const totalPrice = roundCurrency(monthlyPrice * duration);
+      const quote = createQuoteFromPricingData({
+        name: `NOC - ${duration} meses`,
+        clientName: clientData.razaoSocial || data.project.clientName || 'Cliente NOC',
+        totalPrice,
+        module: 'NOC',
+        technicalSpecs: {
+          ...specs,
+          monthlyPrice,
+          annualPrice: roundCurrency(monthlyPrice * 12),
+          contractDurationMonths: duration,
+          contractDurationLabel: `${duration} meses`,
+          contractStartDate: data.project.startDate,
+        },
+        clientData,
+      });
+
+      quotes.push(quote);
+    } catch (error) {
+      console.error(`NOCPricingSystem - Falha ao gerar orçamento NOC (${duration} meses):`, error);
+    }
+  }
+
+  return quotes;
+}
 
 interface NOCPricingSystemProps {
   onBack?: () => void;
@@ -155,7 +231,7 @@ export function NOCPricingSystem({ onBack, proposalClientData, onNavigateToQuote
     try {
       console.log('NOCPricingSystem.handleSaveProposal - Iniciando...', proposalData);
       
-      const mappedClientData = proposalClientData
+      const mappedClientData: ClientData = proposalClientData
         ? mapProposalClientDataToLegacyClientData(proposalClientData)
         : {
             razaoSocial: data.project.clientName || 'Cliente não informado',
@@ -169,10 +245,9 @@ export function NOCPricingSystem({ onBack, proposalClientData, onNavigateToQuote
           };
 
       const contractMonths = Math.max(data.project.contractDuration || 12, 1);
-      const finalMonthlyPrice = data.calculations?.finalMonthlyPrice || 0;
-      const fallbackMonthly = data.calculations?.monthlyTotalCost || 0;
-      const baseMonthlyPrice = finalMonthlyPrice > 0 ? finalMonthlyPrice : fallbackMonthly;
-      const totalProjectValue = baseMonthlyPrice * contractMonths;
+      const monthlyCosts = roundCurrency(data.calculations?.monthlyTotalCost ?? 0);
+      const computedMonthlyPrice = roundCurrency(Math.max(data.calculations?.finalMonthlyPrice ?? 0, monthlyCosts));
+      const totalProjectValue = roundCurrency(computedMonthlyPrice * contractMonths);
 
       let proposal: Awaited<ReturnType<typeof UnifiedProposalService.saveNOCProposal>> | null = null;
       let savedInUnifiedProposals = false;
@@ -183,26 +258,13 @@ export function NOCPricingSystem({ onBack, proposalClientData, onNavigateToQuote
         console.error('NOCPricingSystem - Falha ao salvar em Propostas (unified-proposals):', proposalError);
       }
 
-      let createdQuote: any = null;
-      try {
-        createdQuote = createQuoteFromPricingData({
-          name: `NOC - ${mappedClientData.nomeProjeto}`,
-          clientName: mappedClientData.razaoSocial,
-          totalPrice: totalProjectValue,
-          module: 'NOC',
-          technicalSpecs: {
-            contractMonths,
-            monthlyPrice: baseMonthlyPrice,
-            annualPrice: data.calculations?.finalAnnualPrice || baseMonthlyPrice * 12,
-            totalDevices: data.totalDevices,
-            serviceLevel: data.project.serviceLevel,
-            coverage: data.project.coverage,
-          },
-          clientData: mappedClientData,
-        });
-      } catch (quoteError) {
-        console.error('NOCPricingSystem - Falha ao criar orçamento via contexto:', quoteError);
-      }
+      const generatedQuotes = createQuotesForNOCContracts({
+        data,
+        monthlyPrice: computedMonthlyPrice,
+        clientData: mappedClientData,
+        createQuoteFromPricingData
+      });
+      const primaryGeneratedQuote = generatedQuotes[0] || null;
 
       // Fallback defensivo: garante persistência no storage de orçamentos
       if (typeof window !== 'undefined') {
@@ -210,8 +272,8 @@ export function NOCPricingSystem({ onBack, proposalClientData, onNavigateToQuote
           const quotesKey = 'quotes-storage-v1';
           const storedQuotes = localStorage.getItem(quotesKey);
           const parsedQuotes = storedQuotes ? JSON.parse(storedQuotes) : [];
-          const quotesArray = Array.isArray(parsedQuotes) ? parsedQuotes : [];
-          const quoteToPersist = createdQuote || {
+          const quotesArray = Array.isArray(parsedQuotes) ? (parsedQuotes as Quote[]) : [];
+          const fallbackQuote: Quote = {
             id: `QUO-${Date.now()}-${Math.random().toString(36).slice(2, 7).toUpperCase()}`,
             client: mappedClientData.razaoSocial || data.project.clientName || 'Cliente não informado',
             projectName: mappedClientData.nomeProjeto || data.project.projectName || 'Projeto NOC',
@@ -221,14 +283,18 @@ export function NOCPricingSystem({ onBack, proposalClientData, onNavigateToQuote
             date: new Date().toISOString(),
             distributorId: 1,
             quotationFile: '',
-            pricingFile: `noc-manual-${Date.now()}.json`,
+            pricingFile: `noc-${contractMonths}m-${Date.now()}.json`,
           };
-          const alreadyExists = quotesArray.some((q: any) => q?.id === quoteToPersist.id);
+          const quotesToPersist: Quote[] = generatedQuotes.length > 0 ? generatedQuotes : [fallbackQuote];
 
-          if (!alreadyExists) {
-            quotesArray.push(quoteToPersist);
-            localStorage.setItem(quotesKey, JSON.stringify(quotesArray));
-          }
+          quotesToPersist.forEach(quote => {
+            const alreadyExists = quotesArray.some((q: Quote) => q.id === quote.id);
+            if (!alreadyExists) {
+              quotesArray.push(quote);
+            }
+          });
+
+          localStorage.setItem(quotesKey, JSON.stringify(quotesArray));
         } catch (storageError) {
           console.error('NOCPricingSystem - Erro no fallback de persistência de orçamento:', storageError);
         }
@@ -256,7 +322,7 @@ export function NOCPricingSystem({ onBack, proposalClientData, onNavigateToQuote
         onNavigateToQuotes();
       }
 
-      return proposal || createdQuote;
+      return proposal || primaryGeneratedQuote;
     } catch (error) {
       console.error('NOCPricingSystem.handleSaveProposal - Error saving proposal:', error);
       toast({
