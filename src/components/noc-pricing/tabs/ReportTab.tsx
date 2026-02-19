@@ -12,7 +12,7 @@ import { Textarea } from '@/components/ui/textarea';
 
 interface ReportTabProps {
   data: NOCPricingData;
-  onSaveProposal: (proposalData: any) => void;
+  onSaveProposal: (proposalData: any) => Promise<unknown> | unknown;
   onExportPDF: () => void;
 }
 
@@ -94,14 +94,14 @@ export function ReportTab({ data, onSaveProposal, onExportPDF }: ReportTabProps)
   return (
     <div className="space-y-6">
       {/* Header do Relatório */}
-      <Card className="border-blue-200 bg-blue-50">
+      <Card className="border-blue-300/30 bg-slate-900/60">
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle className="text-2xl text-blue-900">Relatório Final - NOC</CardTitle>
-              <p className="text-blue-700 mt-1">{data.project.projectName}</p>
+              <CardTitle className="text-2xl text-blue-100">Relatório Final - NOC</CardTitle>
+              <p className="text-blue-200 mt-1">{data.project.projectName}</p>
             </div>
-            <Badge variant="default" className="text-lg px-4 py-2">
+            <Badge variant="outline" className="text-lg px-4 py-2 border-cyan-300/40 bg-cyan-900/40 text-cyan-100">
               {data.project.serviceLevel.toUpperCase()}
             </Badge>
           </div>
@@ -109,7 +109,7 @@ export function ReportTab({ data, onSaveProposal, onExportPDF }: ReportTabProps)
       </Card>
 
       {/* Resumo Executivo */}
-      <Card>
+      <Card className="border-blue-300/20 bg-slate-900/55">
         <CardHeader>
           <CardTitle className="flex items-center space-x-2">
             <FileText className="h-5 w-5" />
@@ -122,19 +122,19 @@ export function ReportTab({ data, onSaveProposal, onExportPDF }: ReportTabProps)
               <h4 className="font-semibold mb-2">Informações do Projeto</h4>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Cliente:</span>
+                  <span className="text-blue-200">Cliente:</span>
                   <span className="font-medium">{data.project.clientName}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Duração:</span>
+                  <span className="text-blue-200">Duração:</span>
                   <span className="font-medium">{data.project.contractDuration} meses</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Cobertura:</span>
+                  <span className="text-blue-200">Cobertura:</span>
                   <span className="font-medium">{data.project.coverage}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Nível de Serviço:</span>
+                  <span className="text-blue-200">Nível de Serviço:</span>
                   <span className="font-medium capitalize">{data.project.serviceLevel}</span>
                 </div>
               </div>
@@ -144,19 +144,19 @@ export function ReportTab({ data, onSaveProposal, onExportPDF }: ReportTabProps)
               <h4 className="font-semibold mb-2">SLA Garantido</h4>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Disponibilidade:</span>
+                  <span className="text-blue-200">Disponibilidade:</span>
                   <span className="font-medium">{data.sla.availability}%</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Resposta Padrão:</span>
+                  <span className="text-blue-200">Resposta Padrão:</span>
                   <span className="font-medium">{data.sla.responseTime} min</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Resposta Crítica:</span>
+                  <span className="text-blue-200">Resposta Crítica:</span>
                   <span className="font-medium text-blue-300">{data.sla.criticalIncidentResponse} min</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Resolução:</span>
+                  <span className="text-blue-200">Resolução:</span>
                   <span className="font-medium">{data.sla.resolutionTime}h</span>
                 </div>
               </div>
@@ -167,7 +167,7 @@ export function ReportTab({ data, onSaveProposal, onExportPDF }: ReportTabProps)
 
       {/* Métricas Principais */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card>
+        <Card className="border-blue-300/20 bg-slate-900/55">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium flex items-center space-x-2">
               <Server className="h-4 w-4 text-blue-600" />
@@ -176,11 +176,11 @@ export function ReportTab({ data, onSaveProposal, onExportPDF }: ReportTabProps)
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold">{data.totalDevices}</div>
-            <p className="text-xs text-gray-500 mt-1">{data.totalMetrics} métricas</p>
+            <p className="text-xs text-blue-300/70 mt-1">{data.totalMetrics} métricas</p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border-blue-300/20 bg-slate-900/55">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium flex items-center space-x-2">
               <Users className="h-4 w-4 text-green-600" />
@@ -189,11 +189,11 @@ export function ReportTab({ data, onSaveProposal, onExportPDF }: ReportTabProps)
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold">{data.teamSize}</div>
-            <p className="text-xs text-gray-500 mt-1">profissionais</p>
+            <p className="text-xs text-blue-300/70 mt-1">profissionais</p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border-blue-300/20 bg-slate-900/55">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium flex items-center space-x-2">
               <DollarSign className="h-4 w-4 text-orange-600" />
@@ -204,11 +204,11 @@ export function ReportTab({ data, onSaveProposal, onExportPDF }: ReportTabProps)
             <div className="text-2xl font-bold">
               {data.project.currency} {calculations.costPerDevice.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
             </div>
-            <p className="text-xs text-gray-500 mt-1">por mês</p>
+            <p className="text-xs text-blue-300/70 mt-1">por mês</p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border-blue-300/20 bg-slate-900/55">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium flex items-center space-x-2">
               <TrendingUp className="h-4 w-4 text-purple-600" />
@@ -219,47 +219,47 @@ export function ReportTab({ data, onSaveProposal, onExportPDF }: ReportTabProps)
             <div className="text-3xl font-bold text-blue-300">
               {calculations.profitability.toFixed(1)}%
             </div>
-            <p className="text-xs text-gray-500 mt-1">margem</p>
+            <p className="text-xs text-blue-300/70 mt-1">margem</p>
           </CardContent>
         </Card>
       </div>
 
       {/* Análise Financeira */}
-      <Card>
+      <Card className="border-blue-300/20 bg-slate-900/55">
         <CardHeader>
           <CardTitle>Análise Financeira</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-4">
-              <h4 className="font-semibold text-blue-900">Custos Mensais</h4>
+              <h4 className="font-semibold text-blue-100">Custos Mensais</h4>
               <div className="space-y-2">
-                <div className="flex justify-between p-3 bg-blue-50 rounded">
-                  <span className="text-blue-700">Equipe</span>
-                  <span className="font-medium text-blue-900">
+                <div className="flex justify-between p-3 bg-slate-900/45 border border-blue-300/20 rounded">
+                  <span className="text-blue-200">Equipe</span>
+                  <span className="font-medium text-blue-100">
                     {data.project.currency} {calculations.monthlyTeamCost.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                   </span>
                 </div>
-                <div className="flex justify-between p-3 bg-blue-50 rounded">
-                  <span className="text-blue-700">Infraestrutura</span>
-                  <span className="font-medium text-blue-900">
+                <div className="flex justify-between p-3 bg-slate-900/45 border border-blue-300/20 rounded">
+                  <span className="text-blue-200">Infraestrutura</span>
+                  <span className="font-medium text-blue-100">
                     {data.project.currency} {calculations.monthlyInfrastructureCost.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                   </span>
                 </div>
-                <div className="flex justify-between p-3 bg-blue-50 rounded">
-                  <span className="text-blue-700">Licenças</span>
-                  <span className="font-medium text-blue-900">
+                <div className="flex justify-between p-3 bg-slate-900/45 border border-blue-300/20 rounded">
+                  <span className="text-blue-200">Licenças</span>
+                  <span className="font-medium text-blue-100">
                     {data.project.currency} {calculations.monthlyLicenseCost.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                   </span>
                 </div>
-                <div className="flex justify-between p-3 bg-blue-50 rounded">
-                  <span className="text-blue-700">Operacional</span>
-                  <span className="font-medium text-blue-900">
+                <div className="flex justify-between p-3 bg-slate-900/45 border border-blue-300/20 rounded">
+                  <span className="text-blue-200">Operacional</span>
+                  <span className="font-medium text-blue-100">
                     {data.project.currency} {calculations.monthlyOperationalCost.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                   </span>
                 </div>
-                <div className="flex justify-between p-3 bg-blue-100 rounded font-bold">
-                  <span className="text-blue-800">Total Mensal</span>
+                <div className="flex justify-between p-3 bg-blue-900/45 border border-blue-300/30 rounded font-bold">
+                  <span className="text-blue-100">Total Mensal</span>
                   <span className="text-blue-600">
                     {data.project.currency} {calculations.monthlyTotalCost.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                   </span>
@@ -268,35 +268,35 @@ export function ReportTab({ data, onSaveProposal, onExportPDF }: ReportTabProps)
             </div>
 
             <div className="space-y-4">
-              <h4 className="font-semibold text-blue-900">Precificação</h4>
+              <h4 className="font-semibold text-blue-100">Precificação</h4>
               <div className="space-y-2">
-                <div className="flex justify-between p-3 bg-blue-50 rounded">
-                  <span className="text-blue-700">Custo Base</span>
-                  <span className="font-medium text-blue-900">
+                <div className="flex justify-between p-3 bg-slate-900/45 border border-blue-300/20 rounded">
+                  <span className="text-blue-200">Custo Base</span>
+                  <span className="font-medium text-blue-100">
                     {data.project.currency} {calculations.monthlyTotalCost.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                   </span>
                 </div>
-                <div className="flex justify-between p-3 bg-blue-50 rounded">
-                  <span className="text-blue-700">Com Margens</span>
-                  <span className="font-medium text-blue-900">
+                <div className="flex justify-between p-3 bg-slate-900/45 border border-blue-300/20 rounded">
+                  <span className="text-blue-200">Com Margens</span>
+                  <span className="font-medium text-blue-100">
                     {data.project.currency} {calculations.priceWithMargin.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                   </span>
                 </div>
-                <div className="flex justify-between p-3 bg-blue-50 rounded">
-                  <span className="text-blue-700">Com Impostos</span>
-                  <span className="font-medium text-blue-900">
+                <div className="flex justify-between p-3 bg-slate-900/45 border border-blue-300/20 rounded">
+                  <span className="text-blue-200">Com Impostos</span>
+                  <span className="font-medium text-blue-100">
                     {data.project.currency} {calculations.priceWithTaxes.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                   </span>
                 </div>
-                <div className="flex justify-between p-3 bg-green-100 rounded font-bold">
-                  <span className="text-green-800">Preço Final Mensal</span>
-                  <span className="text-green-600">
+                <div className="flex justify-between p-3 bg-blue-900/45 border border-blue-300/25 rounded font-bold">
+                  <span className="text-blue-100">Preço Final Mensal</span>
+                  <span className="text-blue-300">
                     {data.project.currency} {calculations.finalMonthlyPrice.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                   </span>
                 </div>
-                <div className="flex justify-between p-3 bg-green-50 rounded">
-                  <span className="text-green-700">Preço Anual</span>
-                  <span className="font-medium text-green-700">
+                <div className="flex justify-between p-3 bg-slate-900/45 border border-blue-300/20 rounded">
+                  <span className="text-blue-200">Preço Anual</span>
+                  <span className="font-medium text-blue-200">
                     {data.project.currency} {calculations.finalAnnualPrice.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                   </span>
                 </div>
@@ -307,37 +307,37 @@ export function ReportTab({ data, onSaveProposal, onExportPDF }: ReportTabProps)
       </Card>
 
       {/* Análise de Mercado */}
-      <Card>
+      <Card className="border-blue-300/20 bg-slate-900/55">
         <CardHeader>
           <CardTitle>Análise de Competitividade</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="text-center p-4 border rounded-lg">
-              <div className="text-sm text-gray-600 mb-2">Seu Preço/Dispositivo</div>
+            <div className="text-center p-4 border border-blue-300/20 bg-slate-900/45 rounded-lg">
+              <div className="text-sm text-blue-200 mb-2">Seu Preço/Dispositivo</div>
               <div className="text-2xl font-bold">
                 {data.project.currency} {calculations.costPerDevice.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
               </div>
             </div>
 
-            <div className="text-center p-4 border rounded-lg">
-              <div className="text-sm text-gray-600 mb-2">Média de Mercado</div>
+            <div className="text-center p-4 border border-blue-300/20 bg-slate-900/45 rounded-lg">
+              <div className="text-sm text-blue-200 mb-2">Média de Mercado</div>
               <div className="text-2xl font-bold text-blue-600">
                 {data.project.currency} {calculations.marketAverage.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
               </div>
             </div>
 
-            <div className="text-center p-4 border rounded-lg">
-              <div className="text-sm text-gray-600 mb-2">Competitividade</div>
+            <div className="text-center p-4 border border-blue-300/20 bg-slate-900/45 rounded-lg">
+              <div className="text-sm text-blue-200 mb-2">Competitividade</div>
               <Badge variant="outline" className={`text-lg px-4 py-2 ${getCompetitivenessBadgeClass(calculations.competitiveness)}`}>
                 {getCompetitivenessLabel(calculations.competitiveness)}
               </Badge>
             </div>
           </div>
 
-          <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <h4 className="font-semibold text-blue-900 mb-2">Análise</h4>
-            <p className="text-sm text-blue-800">
+          <div className="mt-4 p-4 bg-slate-900/45 border border-blue-300/20 rounded-lg">
+            <h4 className="font-semibold text-blue-100 mb-2">Análise</h4>
+            <p className="text-sm text-blue-200">
               {calculations.competitiveness === 'competitive' && 
                 'Seu preço está alinhado com o mercado, oferecendo boa competitividade.'}
               {calculations.competitiveness === 'low' && 
@@ -350,7 +350,7 @@ export function ReportTab({ data, onSaveProposal, onExportPDF }: ReportTabProps)
       </Card>
 
       {/* Salvar Proposta */}
-      <Card>
+      <Card className="border-blue-300/20 bg-slate-900/55">
         <CardHeader>
           <CardTitle>Salvar como Proposta</CardTitle>
         </CardHeader>
@@ -361,6 +361,7 @@ export function ReportTab({ data, onSaveProposal, onExportPDF }: ReportTabProps)
               value={proposalTitle}
               onChange={(e) => setProposalTitle(e.target.value)}
               placeholder="Ex: Proposta NOC - Empresa XYZ"
+              className="bg-slate-900/40 border-blue-300/20 text-blue-100 placeholder:text-blue-300/60"
             />
           </div>
 
@@ -371,6 +372,7 @@ export function ReportTab({ data, onSaveProposal, onExportPDF }: ReportTabProps)
               onChange={(e) => setProposalDescription(e.target.value)}
               placeholder="Adicione uma descrição para esta proposta..."
               rows={4}
+              className="bg-slate-900/40 border-blue-300/20 text-blue-100 placeholder:text-blue-300/60"
             />
           </div>
 
@@ -404,7 +406,7 @@ export function ReportTab({ data, onSaveProposal, onExportPDF }: ReportTabProps)
           </div>
 
           {/* Debug: Verificar localStorage */}
-          <div className="mt-4 p-3 bg-gray-100 rounded text-xs">
+          <div className="mt-4 p-3 bg-slate-900/45 border border-blue-300/20 rounded text-xs">
             <div className="font-semibold mb-2">Debug - LocalStorage:</div>
             <Button
               size="sm"
@@ -432,12 +434,12 @@ export function ReportTab({ data, onSaveProposal, onExportPDF }: ReportTabProps)
       </Card>
 
       {/* Recomendações */}
-      <Card className="border-green-200 bg-green-50">
+      <Card className="border-blue-300/30 bg-slate-900/55">
         <CardHeader>
-          <CardTitle className="text-green-900">Recomendações</CardTitle>
+          <CardTitle className="text-blue-100">Recomendações</CardTitle>
         </CardHeader>
         <CardContent>
-          <ul className="space-y-2 text-sm text-green-800">
+          <ul className="space-y-2 text-sm text-blue-200">
             <li className="flex items-start space-x-2">
               <CheckCircle className="h-4 w-4 mt-0.5 flex-shrink-0" />
               <span>Revise os custos operacionais periodicamente para manter a competitividade</span>

@@ -155,7 +155,6 @@ export function NOCPricingSystem({ onBack, proposalClientData, onNavigateToQuote
     try {
       console.log('NOCPricingSystem.handleSaveProposal - Iniciando...', proposalData);
       
-      const proposal = await UnifiedProposalService.saveNOCProposal(proposalData);
       const mappedClientData = proposalClientData
         ? mapProposalClientDataToLegacyClientData(proposalClientData)
         : {
@@ -170,43 +169,94 @@ export function NOCPricingSystem({ onBack, proposalClientData, onNavigateToQuote
           };
 
       const contractMonths = Math.max(data.project.contractDuration || 12, 1);
-      const totalProjectValue = (data.calculations?.finalMonthlyPrice || 0) * contractMonths;
+      const finalMonthlyPrice = data.calculations?.finalMonthlyPrice || 0;
+      const fallbackMonthly = data.calculations?.monthlyTotalCost || 0;
+      const baseMonthlyPrice = finalMonthlyPrice > 0 ? finalMonthlyPrice : fallbackMonthly;
+      const totalProjectValue = baseMonthlyPrice * contractMonths;
 
-      if (totalProjectValue > 0) {
-        createQuoteFromPricingData({
+      let proposal: Awaited<ReturnType<typeof UnifiedProposalService.saveNOCProposal>> | null = null;
+      let savedInUnifiedProposals = false;
+      try {
+        proposal = await UnifiedProposalService.saveNOCProposal(proposalData);
+        savedInUnifiedProposals = true;
+      } catch (proposalError) {
+        console.error('NOCPricingSystem - Falha ao salvar em Propostas (unified-proposals):', proposalError);
+      }
+
+      let createdQuote: any = null;
+      try {
+        createdQuote = createQuoteFromPricingData({
           name: `NOC - ${mappedClientData.nomeProjeto}`,
           clientName: mappedClientData.razaoSocial,
           totalPrice: totalProjectValue,
           module: 'NOC',
           technicalSpecs: {
             contractMonths,
-            monthlyPrice: data.calculations?.finalMonthlyPrice || 0,
-            annualPrice: data.calculations?.finalAnnualPrice || 0,
+            monthlyPrice: baseMonthlyPrice,
+            annualPrice: data.calculations?.finalAnnualPrice || baseMonthlyPrice * 12,
             totalDevices: data.totalDevices,
             serviceLevel: data.project.serviceLevel,
             coverage: data.project.coverage,
           },
           clientData: mappedClientData,
         });
+      } catch (quoteError) {
+        console.error('NOCPricingSystem - Falha ao criar orçamento via contexto:', quoteError);
+      }
+
+      // Fallback defensivo: garante persistência no storage de orçamentos
+      if (typeof window !== 'undefined') {
+        try {
+          const quotesKey = 'quotes-storage-v1';
+          const storedQuotes = localStorage.getItem(quotesKey);
+          const parsedQuotes = storedQuotes ? JSON.parse(storedQuotes) : [];
+          const quotesArray = Array.isArray(parsedQuotes) ? parsedQuotes : [];
+          const quoteToPersist = createdQuote || {
+            id: `QUO-${Date.now()}-${Math.random().toString(36).slice(2, 7).toUpperCase()}`,
+            client: mappedClientData.razaoSocial || data.project.clientName || 'Cliente não informado',
+            projectName: mappedClientData.nomeProjeto || data.project.projectName || 'Projeto NOC',
+            accountManager: mappedClientData.nomeGerente || 'Não informado',
+            status: 'Pendente',
+            total: Number.isFinite(totalProjectValue) ? totalProjectValue : 0,
+            date: new Date().toISOString(),
+            distributorId: 1,
+            quotationFile: '',
+            pricingFile: `noc-manual-${Date.now()}.json`,
+          };
+          const alreadyExists = quotesArray.some((q: any) => q?.id === quoteToPersist.id);
+
+          if (!alreadyExists) {
+            quotesArray.push(quoteToPersist);
+            localStorage.setItem(quotesKey, JSON.stringify(quotesArray));
+          }
+        } catch (storageError) {
+          console.error('NOCPricingSystem - Erro no fallback de persistência de orçamento:', storageError);
+        }
       }
       
       console.log('NOCPricingSystem.handleSaveProposal - Proposta salva:', proposal);
-      
-      toast({
-        title: 'Proposta NOC Salva!',
-        description: `A proposta "${proposal.title}" foi salva em Propostas e Orçamentos.`,
-        variant: 'default'
-      });
 
-      // Navegar para propostas após 2 segundos
-      setTimeout(() => {
-        console.log('NOCPricingSystem - Proposta NOC salva:', proposal.id);
-        if (onNavigateToQuotes) {
-          onNavigateToQuotes();
-        }
-      }, 2000);
+      if (savedInUnifiedProposals && proposal) {
+        toast({
+          title: 'Proposta NOC Salva!',
+          description: `A proposta "${proposal.title}" foi salva em Propostas e Orçamentos.`,
+          variant: 'default'
+        });
+      } else {
+        toast({
+          title: 'Orçamento salvo em Orçamentos',
+          description: 'A proposta NOC não foi persistida em Propostas, mas o orçamento foi salvo.',
+          variant: 'default'
+        });
+      }
 
-      return proposal;
+      // Navega para Orçamentos imediatamente após salvar
+      console.log('NOCPricingSystem - Finalização do salvamento NOC:', proposal?.id || 'sem-id-proposta');
+      if (onNavigateToQuotes) {
+        onNavigateToQuotes();
+      }
+
+      return proposal || createdQuote;
     } catch (error) {
       console.error('NOCPricingSystem.handleSaveProposal - Error saving proposal:', error);
       toast({
