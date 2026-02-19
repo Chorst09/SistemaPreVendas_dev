@@ -29,6 +29,10 @@ export function useQuoteIntegration() {
   const convertProposalToQuote = useCallback((proposal: PricingProposal): Quote => {
     // Gerar ID único para o orçamento
     const quoteId = `QUO-${Date.now()}-${Math.random().toString(36).slice(2, 7).toUpperCase()}`;
+    const technicalSpecs = proposal.technicalSpecs as {
+      monthlyPrice?: number;
+      contractDurationMonths?: number;
+    } | undefined;
     
     // Determinar o gerente de contas
     const accountManager = proposal.clientData?.nomeGerente || 'Não informado';
@@ -41,6 +45,8 @@ export function useQuoteIntegration() {
       accountManager: accountManager,
       status: 'Pendente',
       total: proposal.totalPrice,
+      monthlyPrice: technicalSpecs?.monthlyPrice,
+      contractDurationMonths: technicalSpecs?.contractDurationMonths,
       date: proposal.date,
       distributorId: 1, // Distribuidor padrão - pode ser configurado
       quotationFile: '', // Será preenchido quando o arquivo for gerado

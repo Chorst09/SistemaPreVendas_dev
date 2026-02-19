@@ -79,6 +79,8 @@ export interface Quote extends BaseEntity {
   accountManager?: string
   status: QuoteStatus
   total: number
+  monthlyPrice?: number
+  contractDurationMonths?: number
   date: string
   distributorId: ID
   quotationFile?: string

@@ -116,7 +116,9 @@ const QuotesView: React.FC<QuotesViewProps> = ({ partners }) => {
                 <div class="row"><span class="label">Status</span><span>${escapeHtml(quote.status)}</span></div>
                 <div class="row"><span class="label">Data</span><span>${escapeHtml(formatDate(quote.date))}</span></div>
                 <hr />
-                <div class="row total"><span>Total</span><span>${escapeHtml(formatCurrency(quote.total))}</span></div>
+                ${typeof quote.monthlyPrice === 'number' ? `<div class="row"><span class="label">Valor Mensal</span><span>${escapeHtml(formatCurrency(quote.monthlyPrice))}</span></div>` : ''}
+                ${typeof quote.contractDurationMonths === 'number' ? `<div class="row"><span class="label">Prazo do Contrato</span><span>${escapeHtml(quote.contractDurationMonths)} meses</span></div>` : ''}
+                <div class="row total"><span>Valor Total do Contrato</span><span>${escapeHtml(formatCurrency(quote.total))}</span></div>
               </div>
             </body>
           </html>
@@ -167,7 +169,13 @@ const QuotesView: React.FC<QuotesViewProps> = ({ partners }) => {
                                 <div><span className="font-semibold">Gerente de Contas:</span> {viewingQuote.accountManager || 'Não informado'}</div>
                                 <div><span className="font-semibold">Status:</span> {viewingQuote.status}</div>
                                 <div><span className="font-semibold">Data:</span> {formatDate(viewingQuote.date)}</div>
-                                <div><span className="font-semibold">Total:</span> {formatCurrency(viewingQuote.total)}</div>
+                                {typeof viewingQuote.monthlyPrice === 'number' && (
+                                    <div><span className="font-semibold">Valor Mensal:</span> {formatCurrency(viewingQuote.monthlyPrice)}</div>
+                                )}
+                                {typeof viewingQuote.contractDurationMonths === 'number' && (
+                                    <div><span className="font-semibold">Prazo do Contrato:</span> {viewingQuote.contractDurationMonths} meses</div>
+                                )}
+                                <div><span className="font-semibold">Valor Total do Contrato:</span> {formatCurrency(viewingQuote.total)}</div>
                                 <div><span className="font-semibold">Arquivo Cotação:</span> {viewingQuote.quotationFile || 'Não anexado'}</div>
                                 <div><span className="font-semibold">Arquivo Precificação:</span> {viewingQuote.pricingFile || 'Não anexado'}</div>
                                 <div className="flex justify-end gap-2 pt-4">

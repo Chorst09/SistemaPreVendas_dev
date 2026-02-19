@@ -316,10 +316,10 @@ export function NOCPricingSystem({ onBack, proposalClientData, onNavigateToQuote
         });
       }
 
-      // Navega para Orçamentos imediatamente após salvar
+      // Navega para Orçamentos após notificação
       console.log('NOCPricingSystem - Finalização do salvamento NOC:', proposal?.id || 'sem-id-proposta');
       if (onNavigateToQuotes) {
-        onNavigateToQuotes();
+        setTimeout(() => onNavigateToQuotes(), 1200);
       }
 
       return proposal || primaryGeneratedQuote;
