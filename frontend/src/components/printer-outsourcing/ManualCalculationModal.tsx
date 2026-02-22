@@ -98,8 +98,8 @@ export function ManualCalculationModal({ onClose, onSave }: ManualCalculationMod
   };
 
   const calcularCustoPorPagina = () => {
-    // Para modalidade franquia, volume mensal é obrigatório
-    if (modalidadeLocacao === 'franquia' && volumeMensal === 0) {
+    // O volume mensal é necessário para projetar custos mensais/contrato
+    if (volumeMensal === 0) {
       return { 
         total: 0, 
         totalMono: 0, 
@@ -107,7 +107,8 @@ export function ManualCalculationModal({ onClose, onSave }: ManualCalculationMod
         detalhes: {},
         custoMensal: 0,
         custoAnual: 0,
-        custoTotalContrato: 0
+        custoTotalContrato: 0,
+        custoVariavelMensal: 0
       };
     }
 
@@ -185,17 +186,19 @@ export function ManualCalculationModal({ onClose, onSave }: ManualCalculationMod
     let custoAnual = 0;
     let custoTotalContrato = 0;
 
+    let custoVariavelMensal = 0;
+
     if (modalidadeLocacao === 'franquia') {
       // Franquia: valor fixo mensal
       custoMensal = valorFranquia;
       custoAnual = custoMensal * 12;
-      custoTotalContrato = custoAnual * (prazoContrato / 12);
+      custoTotalContrato = custoMensal * prazoContrato;
     } else {
-      // Por página: apenas locação da impressora (custo por página será aplicado no uso)
-      // Não calculamos custo mensal total pois depende do volume real de impressão
-      custoMensal = valorLocacaoImpressora;
+      // Por página: locação fixa + custo variável conforme volume estimado
+      custoVariavelMensal = custoTotalPorPagina * volumeMensal;
+      custoMensal = valorLocacaoImpressora + custoVariavelMensal;
       custoAnual = custoMensal * 12;
-      custoTotalContrato = custoAnual * (prazoContrato / 12);
+      custoTotalContrato = custoMensal * prazoContrato;
     }
 
     return {
@@ -217,7 +220,8 @@ export function ManualCalculationModal({ onClose, onSave }: ManualCalculationMod
       },
       custoMensal,
       custoAnual,
-      custoTotalContrato
+      custoTotalContrato,
+      custoVariavelMensal
     };
   };
 
@@ -228,12 +232,13 @@ export function ManualCalculationModal({ onClose, onSave }: ManualCalculationMod
       return;
     }
 
+    if (volumeMensal === 0) {
+      alert('Preencha o volume mensal estimado para calcular os custos.');
+      return;
+    }
+
     // Validação específica para modalidade franquia
     if (modalidadeLocacao === 'franquia') {
-      if (volumeMensal === 0) {
-        alert('Preencha o volume mensal para modalidade de franquia');
-        return;
-      }
       if (valorFranquia === 0) {
         alert('Preencha o valor da franquia mensal');
         return;
@@ -299,8 +304,8 @@ export function ManualCalculationModal({ onClose, onSave }: ManualCalculationMod
           /* Tela de Seleção de Modalidade */
           <div className="space-y-6 py-6">
             <div className="text-center mb-6">
-              <h3 className="text-lg font-semibold mb-2">Escolha a Modalidade de Locação</h3>
-              <p className="text-sm text-gray-600">
+              <h3 className="text-lg font-semibold mb-2 text-slate-100">Escolha a Modalidade de Locação</h3>
+              <p className="text-sm text-slate-300">
                 Selecione como deseja calcular o custo da impressora
               </p>
             </div>
@@ -308,25 +313,25 @@ export function ManualCalculationModal({ onClose, onSave }: ManualCalculationMod
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Modalidade Franquia */}
               <Card
-                className="cursor-pointer hover:shadow-lg transition-all border-2 hover:border-blue-500"
+                className="cursor-pointer hover:shadow-lg transition-all border-2 border-slate-700 bg-slate-900/40 hover:border-blue-400"
                 onClick={() => {
                   setModalidadeLocacao('franquia');
                   setShowModalidadeSelection(false);
                 }}
               >
                 <CardHeader className="text-center">
-                  <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Package className="h-8 w-8 text-blue-600" />
+                  <div className="w-16 h-16 bg-blue-500/15 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Package className="h-8 w-8 text-blue-300" />
                   </div>
-                  <CardTitle className="text-blue-900">Franquia Mensal</CardTitle>
+                  <CardTitle className="text-blue-100">Franquia Mensal</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  <p className="text-sm text-gray-600 text-center">
+                  <p className="text-sm text-slate-300 text-center">
                     Valor fixo mensal incluindo impressora e franquia de páginas
                   </p>
-                  <div className="bg-blue-50 p-3 rounded-lg space-y-2">
-                    <h4 className="font-semibold text-sm text-blue-900">Inclui:</h4>
-                    <ul className="text-xs text-blue-700 space-y-1">
+                  <div className="bg-blue-900/30 border border-blue-700/40 p-3 rounded-lg space-y-2">
+                    <h4 className="font-semibold text-sm text-blue-100">Inclui:</h4>
+                    <ul className="text-xs text-blue-100 space-y-1">
                       <li>✓ Locação do equipamento</li>
                       <li>✓ Franquia de páginas mensais</li>
                       <li>✓ Valor fixo e previsível</li>
@@ -334,7 +339,7 @@ export function ManualCalculationModal({ onClose, onSave }: ManualCalculationMod
                     </ul>
                   </div>
                   <div className="text-center pt-2">
-                    <Badge variant="secondary" className="bg-blue-100 text-blue-800">
+                    <Badge variant="secondary" className="bg-blue-900/40 text-blue-100 border border-blue-700/40">
                       Recomendado para volumes estáveis
                     </Badge>
                   </div>
@@ -343,25 +348,25 @@ export function ManualCalculationModal({ onClose, onSave }: ManualCalculationMod
 
               {/* Modalidade Por Página */}
               <Card
-                className="cursor-pointer hover:shadow-lg transition-all border-2 hover:border-green-500"
+                className="cursor-pointer hover:shadow-lg transition-all border-2 border-slate-700 bg-slate-900/40 hover:border-green-400"
                 onClick={() => {
                   setModalidadeLocacao('por-pagina');
                   setShowModalidadeSelection(false);
                 }}
               >
                 <CardHeader className="text-center">
-                  <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Calculator className="h-8 w-8 text-green-600" />
+                  <div className="w-16 h-16 bg-green-500/15 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Calculator className="h-8 w-8 text-green-300" />
                   </div>
-                  <CardTitle className="text-green-900">Por Página Impressa</CardTitle>
+                  <CardTitle className="text-green-100">Por Página Impressa</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  <p className="text-sm text-gray-600 text-center">
+                  <p className="text-sm text-slate-300 text-center">
                     Locação da impressora + custo por página impressa
                   </p>
-                  <div className="bg-green-50 p-3 rounded-lg space-y-2">
-                    <h4 className="font-semibold text-sm text-green-900">Inclui:</h4>
-                    <ul className="text-xs text-green-700 space-y-1">
+                  <div className="bg-green-900/30 border border-green-700/40 p-3 rounded-lg space-y-2">
+                    <h4 className="font-semibold text-sm text-green-100">Inclui:</h4>
+                    <ul className="text-xs text-green-100 space-y-1">
                       <li>✓ Locação do equipamento (valor fixo)</li>
                       <li>✓ Custo por página impressa</li>
                       <li>✓ Custos mono e color separados</li>
@@ -369,7 +374,7 @@ export function ManualCalculationModal({ onClose, onSave }: ManualCalculationMod
                     </ul>
                   </div>
                   <div className="text-center pt-2">
-                    <Badge variant="secondary" className="bg-green-100 text-green-800">
+                    <Badge variant="secondary" className="bg-green-900/40 text-green-100 border border-green-700/40">
                       Recomendado para volumes variáveis
                     </Badge>
                   </div>
@@ -567,13 +572,13 @@ export function ManualCalculationModal({ onClose, onSave }: ManualCalculationMod
                 <CardContent>
                   <div className="space-y-2">
                     {suprimentos.map((sup) => (
-                      <div key={sup.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                      <div key={sup.id} className="flex items-center justify-between p-3 bg-slate-900/60 border border-slate-700 rounded-lg">
                         <div className="flex-1">
                           <div className="flex items-center space-x-2">
                             <Badge variant="outline">{sup.tipo}</Badge>
                             <span className="font-medium">{sup.descricao}</span>
                           </div>
-                          <div className="text-sm text-gray-600 mt-1">
+                          <div className="text-sm text-slate-300 mt-1">
                             Rendimento: {sup.rendimento.toLocaleString()} páginas | 
                             Custo: R$ {sup.custo.toFixed(2)} | 
                             Custo/página: R$ {(sup.custo / sup.rendimento).toFixed(4)}
@@ -605,26 +610,26 @@ export function ManualCalculationModal({ onClose, onSave }: ManualCalculationMod
                   <div
                     className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
                       modalidadeLocacao === 'franquia'
-                        ? 'border-blue-500 bg-blue-50'
-                        : 'border-gray-200 hover:border-gray-300'
+                        ? 'border-blue-400 bg-blue-900/35 shadow-md shadow-blue-950/40'
+                        : 'border-slate-700 bg-slate-900/40 hover:border-slate-500'
                     }`}
                     onClick={() => setModalidadeLocacao('franquia')}
                   >
-                    <h4 className="font-semibold mb-2">Franquia Mensal</h4>
-                    <p className="text-sm text-gray-600">
+                    <h4 className="font-semibold mb-2 text-slate-100">Franquia Mensal</h4>
+                    <p className="text-sm text-slate-300">
                       Valor fixo mensal incluindo impressora e franquia de páginas
                     </p>
                   </div>
                   <div
                     className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
                       modalidadeLocacao === 'por-pagina'
-                        ? 'border-green-500 bg-green-50'
-                        : 'border-gray-200 hover:border-gray-300'
+                        ? 'border-green-400 bg-green-900/35 shadow-md shadow-green-950/40'
+                        : 'border-slate-700 bg-slate-900/40 hover:border-slate-500'
                     }`}
                     onClick={() => setModalidadeLocacao('por-pagina')}
                   >
-                    <h4 className="font-semibold mb-2">Por Página Impressa</h4>
-                    <p className="text-sm text-gray-600">
+                    <h4 className="font-semibold mb-2 text-slate-100">Por Página Impressa</h4>
+                    <p className="text-sm text-slate-300">
                       Locação da impressora + custo por página impressa
                     </p>
                   </div>
@@ -637,21 +642,19 @@ export function ManualCalculationModal({ onClose, onSave }: ManualCalculationMod
                 <CardTitle className="text-sm">Parâmetros de Cálculo</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className={`grid ${modalidadeLocacao === 'por-pagina' ? 'grid-cols-2' : 'grid-cols-3'} gap-4`}>
-                  {modalidadeLocacao === 'franquia' && (
-                    <div>
-                      <Label>Volume Mensal (páginas) *</Label>
-                      <Input
-                        type="number"
-                        value={volumeMensal || ''}
-                        onChange={(e) => setVolumeMensal(Number(e.target.value))}
-                        placeholder="Ex: 5000"
-                      />
-                      <p className="text-xs text-gray-500 mt-1">
-                        Volume estimado de impressão por mês
-                      </p>
-                    </div>
-                  )}
+                <div className="grid grid-cols-3 gap-4">
+                  <div>
+                    <Label>Volume Mensal (páginas) *</Label>
+                    <Input
+                      type="number"
+                      value={volumeMensal || ''}
+                      onChange={(e) => setVolumeMensal(Number(e.target.value))}
+                      placeholder="Ex: 5000"
+                    />
+                    <p className="text-xs text-slate-400 mt-1">
+                      Volume estimado de impressão por mês
+                    </p>
+                  </div>
                   <div>
                     <Label>Prazo do Contrato (meses)</Label>
                     <Select value={prazoContrato.toString()} onValueChange={(v) => setPrazoContrato(Number(v))}>
@@ -680,7 +683,7 @@ export function ManualCalculationModal({ onClose, onSave }: ManualCalculationMod
                 </div>
 
                 {modalidadeLocacao === 'franquia' ? (
-                  <div className="grid grid-cols-2 gap-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                  <div className="grid grid-cols-2 gap-4 p-4 bg-slate-900/60 rounded-lg border border-blue-500/40">
                     <div>
                       <Label>Franquia Mensal (páginas)</Label>
                       <Input
@@ -689,7 +692,7 @@ export function ManualCalculationModal({ onClose, onSave }: ManualCalculationMod
                         onChange={(e) => setFranquiaMensal(Number(e.target.value))}
                         placeholder="Ex: 5000"
                       />
-                      <p className="text-xs text-blue-600 mt-1">
+                      <p className="text-xs text-blue-200 mt-1">
                         Quantidade de páginas incluídas na franquia
                       </p>
                     </div>
@@ -702,13 +705,13 @@ export function ManualCalculationModal({ onClose, onSave }: ManualCalculationMod
                         onChange={(e) => setValorFranquia(Number(e.target.value))}
                         placeholder="Ex: 500.00"
                       />
-                      <p className="text-xs text-blue-600 mt-1">
+                      <p className="text-xs text-blue-200 mt-1">
                         Valor fixo mensal da franquia
                       </p>
                     </div>
                   </div>
                 ) : (
-                  <div className="p-4 bg-green-50 rounded-lg border border-green-200">
+                  <div className="p-4 bg-slate-900/60 rounded-lg border border-green-500/40">
                     <Label>Valor Locação da Impressora (R$/mês) *</Label>
                     <Input
                       type="number"
@@ -718,7 +721,7 @@ export function ManualCalculationModal({ onClose, onSave }: ManualCalculationMod
                       placeholder="Ex: 150.00"
                       className="mt-2"
                     />
-                    <p className="text-xs text-green-600 mt-1">
+                    <p className="text-xs text-green-200 mt-1">
                       Valor mensal da locação do equipamento (sem páginas)
                     </p>
                   </div>
@@ -732,51 +735,51 @@ export function ManualCalculationModal({ onClose, onSave }: ManualCalculationMod
             {((modalidadeLocacao === 'franquia' && volumeMensal > 0) || modalidadeLocacao === 'por-pagina') && suprimentos.length > 0 ? (
               <>
                 {/* Modalidade de Locação */}
-                <Card className={modalidadeLocacao === 'franquia' ? 'border-blue-200 bg-blue-50' : 'border-green-200 bg-green-50'}>
+                <Card className={modalidadeLocacao === 'franquia' ? 'border-blue-500/40 bg-slate-900/60' : 'border-green-500/40 bg-slate-900/60'}>
                   <CardHeader>
-                    <CardTitle className={modalidadeLocacao === 'franquia' ? 'text-blue-900' : 'text-green-900'}>
+                    <CardTitle className={modalidadeLocacao === 'franquia' ? 'text-blue-100' : 'text-green-100'}>
                       Modalidade: {modalidadeLocacao === 'franquia' ? 'Franquia Mensal' : 'Por Página Impressa'}
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
                     {modalidadeLocacao === 'franquia' ? (
                       <div className="text-center">
-                        <div className="text-4xl font-bold text-blue-600">
+                        <div className="text-4xl font-bold text-blue-300">
                           R$ {valorFranquia.toFixed(2)}
                         </div>
-                        <p className="text-sm text-blue-700 mt-2">
+                        <p className="text-sm text-blue-200 mt-2">
                           Valor fixo mensal (inclui {franquiaMensal.toLocaleString()} páginas)
                         </p>
                       </div>
                     ) : (
                       <div className="space-y-3">
-                        <div className="text-center p-3 bg-white rounded-lg">
-                          <div className="text-2xl font-bold text-green-600">
+                        <div className="text-center p-3 bg-slate-950/70 border border-slate-700 rounded-lg">
+                          <div className="text-2xl font-bold text-green-300">
                             R$ {valorLocacaoImpressora.toFixed(2)}
                           </div>
-                          <p className="text-sm text-green-700 mt-1">Locação da Impressora/mês</p>
+                          <p className="text-sm text-green-200 mt-1">Locação da Impressora/mês</p>
                         </div>
                         {calculo.isColorida ? (
                           <div className="grid grid-cols-2 gap-3">
-                            <div className="text-center p-3 bg-white rounded-lg">
-                              <div className="text-xl font-bold text-blue-600">
+                            <div className="text-center p-3 bg-slate-950/70 border border-slate-700 rounded-lg">
+                              <div className="text-xl font-bold text-blue-300">
                                 R$ {calculo.totalMono.toFixed(4)}
                               </div>
-                              <p className="text-xs text-blue-700 mt-1">por página Mono</p>
+                              <p className="text-xs text-blue-200 mt-1">por página Mono</p>
                             </div>
-                            <div className="text-center p-3 bg-white rounded-lg">
-                              <div className="text-xl font-bold text-green-600">
+                            <div className="text-center p-3 bg-slate-950/70 border border-slate-700 rounded-lg">
+                              <div className="text-xl font-bold text-green-300">
                                 R$ {calculo.totalColor.toFixed(4)}
                               </div>
-                              <p className="text-xs text-green-700 mt-1">por página Color</p>
+                              <p className="text-xs text-green-200 mt-1">por página Color</p>
                             </div>
                           </div>
                         ) : (
-                          <div className="text-center p-3 bg-white rounded-lg">
-                            <div className="text-2xl font-bold text-blue-600">
+                          <div className="text-center p-3 bg-slate-950/70 border border-slate-700 rounded-lg">
+                            <div className="text-2xl font-bold text-blue-300">
                               R$ {calculo.totalMono.toFixed(4)}
                             </div>
-                            <p className="text-sm text-blue-700 mt-1">por página P&B</p>
+                            <p className="text-sm text-blue-200 mt-1">por página P&B</p>
                           </div>
                         )}
                       </div>
@@ -787,30 +790,30 @@ export function ManualCalculationModal({ onClose, onSave }: ManualCalculationMod
                 {/* Custos por Página (sempre mostrar para referência) */}
                 {calculo.isColorida && (
                   <div className="grid grid-cols-2 gap-4">
-                    <Card className="border-blue-200 bg-blue-50">
+                    <Card className="border-blue-500/40 bg-slate-900/60">
                       <CardHeader>
-                        <CardTitle className="text-sm text-blue-900">Custo Suprimentos Mono</CardTitle>
+                        <CardTitle className="text-sm text-blue-100">Custo Suprimentos Mono</CardTitle>
                       </CardHeader>
                       <CardContent>
                         <div className="text-center">
-                          <div className="text-2xl font-bold text-blue-600">
+                          <div className="text-2xl font-bold text-blue-300">
                             R$ {calculo.totalMono.toFixed(4)}
                           </div>
-                          <p className="text-xs text-blue-700 mt-1">por página P&B</p>
+                          <p className="text-xs text-blue-200 mt-1">por página P&B</p>
                         </div>
                       </CardContent>
                     </Card>
 
-                    <Card className="border-green-200 bg-green-50">
+                    <Card className="border-green-500/40 bg-slate-900/60">
                       <CardHeader>
-                        <CardTitle className="text-sm text-green-900">Custo Suprimentos Color</CardTitle>
+                        <CardTitle className="text-sm text-green-100">Custo Suprimentos Color</CardTitle>
                       </CardHeader>
                       <CardContent>
                         <div className="text-center">
-                          <div className="text-2xl font-bold text-green-600">
+                          <div className="text-2xl font-bold text-green-300">
                             R$ {calculo.totalColor.toFixed(4)}
                           </div>
-                          <p className="text-xs text-green-700 mt-1">por página Color</p>
+                          <p className="text-xs text-green-200 mt-1">por página Color</p>
                         </div>
                       </CardContent>
                     </Card>
@@ -825,42 +828,42 @@ export function ManualCalculationModal({ onClose, onSave }: ManualCalculationMod
                     <div className="space-y-3">
                       {calculo.isColorida ? (
                         <>
-                          <div className="flex justify-between p-2 bg-blue-50 rounded">
-                            <span className="text-blue-900">Suprimentos Mono (P&B)</span>
-                            <span className="font-bold text-blue-600">
+                          <div className="flex justify-between p-2 bg-blue-900/25 border border-blue-700/40 rounded">
+                            <span className="text-blue-100">Suprimentos Mono (P&B)</span>
+                            <span className="font-bold text-blue-200">
                               R$ {calculo.detalhes.suprimentosMono?.toFixed(4) || '0.0000'}
                             </span>
                           </div>
-                          <div className="flex justify-between p-2 bg-cyan-50 rounded">
-                            <span className="text-cyan-900">Suprimentos Color (CMY)</span>
-                            <span className="font-bold text-cyan-600">
+                          <div className="flex justify-between p-2 bg-cyan-900/25 border border-cyan-700/40 rounded">
+                            <span className="text-cyan-100">Suprimentos Color (CMY)</span>
+                            <span className="font-bold text-cyan-200">
                               R$ {calculo.detalhes.suprimentosColor?.toFixed(4) || '0.0000'}
                             </span>
                           </div>
                         </>
                       ) : (
-                        <div className="flex justify-between p-2 bg-blue-50 rounded">
-                          <span className="text-blue-900">Suprimentos</span>
-                          <span className="font-bold text-blue-600">
+                        <div className="flex justify-between p-2 bg-blue-900/25 border border-blue-700/40 rounded">
+                          <span className="text-blue-100">Suprimentos</span>
+                          <span className="font-bold text-blue-200">
                             R$ {calculo.detalhes.suprimentosMono?.toFixed(4) || '0.0000'}
                           </span>
                         </div>
                       )}
-                      <div className="flex justify-between p-2 bg-purple-50 rounded">
-                        <span className="text-purple-900">Depreciação</span>
-                        <span className="font-bold text-purple-600">
+                      <div className="flex justify-between p-2 bg-purple-900/25 border border-purple-700/40 rounded">
+                        <span className="text-purple-100">Depreciação</span>
+                        <span className="font-bold text-purple-200">
                           R$ {calculo.detalhes.depreciacao?.toFixed(4) || '0.0000'}
                         </span>
                       </div>
-                      <div className="flex justify-between p-2 bg-yellow-50 rounded">
-                        <span className="text-yellow-900">Energia</span>
-                        <span className="font-bold text-yellow-600">
+                      <div className="flex justify-between p-2 bg-amber-900/25 border border-amber-700/40 rounded">
+                        <span className="text-amber-100">Energia</span>
+                        <span className="font-bold text-amber-200">
                           R$ {calculo.detalhes.energia?.toFixed(4) || '0.0000'}
                         </span>
                       </div>
-                      <div className="flex justify-between p-2 bg-orange-50 rounded">
-                        <span className="text-orange-900">Manutenção</span>
-                        <span className="font-bold text-orange-600">
+                      <div className="flex justify-between p-2 bg-orange-900/25 border border-orange-700/40 rounded">
+                        <span className="text-orange-100">Manutenção</span>
+                        <span className="font-bold text-orange-200">
                           R$ {calculo.detalhes.manutencao?.toFixed(4) || '0.0000'}
                         </span>
                       </div>
@@ -874,35 +877,35 @@ export function ManualCalculationModal({ onClose, onSave }: ManualCalculationMod
                   </CardHeader>
                   <CardContent>
                     {modalidadeLocacao === 'por-pagina' && (
-                      <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg">
-                        <p className="text-xs text-green-800">
-                          <strong>Nota:</strong> Os valores abaixo representam apenas a locação da impressora. 
-                          O custo das páginas impressas será cobrado separadamente conforme o uso real.
+                      <div className="mb-4 p-3 bg-green-900/25 border border-green-700/40 rounded-lg">
+                        <p className="text-xs text-green-100">
+                          <strong>Nota:</strong> Os valores abaixo usam o volume mensal estimado e consideram
+                          a locação fixa + custo variável por página.
                         </p>
                       </div>
                     )}
                     <div className="grid grid-cols-3 gap-4">
-                      <div className="text-center p-4 bg-gray-50 rounded-lg">
-                        <p className="text-xs text-gray-600 mb-1">
+                      <div className="text-center p-4 bg-slate-900/60 border border-slate-700 rounded-lg">
+                        <p className="text-xs text-slate-300 mb-1">
                           {modalidadeLocacao === 'por-pagina' ? 'Locação Mensal' : 'Custo Mensal'}
                         </p>
-                        <p className="text-xl font-bold text-gray-900">
+                        <p className="text-xl font-bold text-slate-100">
                           R$ {calculo.custoMensal?.toFixed(2) || '0.00'}
                         </p>
                       </div>
-                      <div className="text-center p-4 bg-gray-50 rounded-lg">
-                        <p className="text-xs text-gray-600 mb-1">
+                      <div className="text-center p-4 bg-slate-900/60 border border-slate-700 rounded-lg">
+                        <p className="text-xs text-slate-300 mb-1">
                           {modalidadeLocacao === 'por-pagina' ? 'Locação Anual' : 'Custo Anual'}
                         </p>
-                        <p className="text-xl font-bold text-gray-900">
+                        <p className="text-xl font-bold text-slate-100">
                           R$ {calculo.custoAnual?.toFixed(2) || '0.00'}
                         </p>
                       </div>
-                      <div className="text-center p-4 bg-gray-50 rounded-lg">
-                        <p className="text-xs text-gray-600 mb-1">
+                      <div className="text-center p-4 bg-slate-900/60 border border-slate-700 rounded-lg">
+                        <p className="text-xs text-slate-300 mb-1">
                           {modalidadeLocacao === 'por-pagina' ? 'Locação Total' : 'Custo Total'} ({prazoContrato} meses)
                         </p>
-                        <p className="text-xl font-bold text-gray-900">
+                        <p className="text-xl font-bold text-slate-100">
                           R$ {calculo.custoTotalContrato?.toFixed(2) || '0.00'}
                         </p>
                       </div>
@@ -913,8 +916,8 @@ export function ManualCalculationModal({ onClose, onSave }: ManualCalculationMod
             ) : (
               <Card>
                 <CardContent className="py-12 text-center">
-                  <Calculator className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-500">
+                  <Calculator className="h-12 w-12 text-slate-400 mx-auto mb-4" />
+                  <p className="text-slate-400">
                     {modalidadeLocacao === 'franquia' 
                       ? 'Preencha os dados da impressora, adicione suprimentos e defina o volume mensal para ver o resultado'
                       : 'Preencha os dados da impressora e adicione suprimentos para ver o resultado'

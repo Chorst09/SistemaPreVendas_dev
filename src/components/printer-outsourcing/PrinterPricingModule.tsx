@@ -84,6 +84,7 @@ export function PrinterPricingModule({ printer, onBack, onUpdatePrinter }: Print
   const [periodosLocacao, setPeriodosLocacao] = useState<any>({})
   const [breakdown, setBreakdown] = useState<any>({})
   const [dre, setDre] = useState<any>({})
+  const TAXA_FINANCEIRA_MENSAL = 1.17
 
   // Regimes tributários disponíveis
   const regimesTributarios = [
@@ -140,10 +141,10 @@ export function PrinterPricingModule({ printer, onBack, onUpdatePrinter }: Print
 
   // Função para calcular preços
   const calcularPrecos = () => {
-    // Custo base com impostos de entrada
-    const custoComIcms = custoBase / (1 - (icmsCompra / 100))
-    const custoComIpi = custoComIcms * (1 + (ipiCompra / 100))
-    const custoTotalEntrada = custoComIpi
+    // Base líquida de aquisição (considerando crédito de ICMS e acréscimo de IPI)
+    const custoComIpi = custoBase * (1 + (ipiCompra / 100))
+    const creditoIcmsCompra = custoBase * (icmsCompra / 100)
+    const custoTotalEntrada = Math.max(custoComIpi - creditoIcmsCompra, 0)
 
     // Cálculo de impostos de saída baseado no regime
     let aliquotaImpostos = 0
@@ -159,11 +160,15 @@ export function PrinterPricingModule({ printer, onBack, onUpdatePrinter }: Print
         break
     }
 
-    // Cálculo do preço de venda
-    const custoComOperacionais = custoTotalEntrada * (1 + (custosOperacionais / 100))
-    const custoComComissao = custoComOperacionais * (1 + (comissaoVenda / 100))
-    const custoComMargem = custoComComissao * (1 + (margemDesejada / 100))
-    const precoVenda = custoComMargem / (1 - (aliquotaImpostos / 100))
+    const aliquotaImpostosRate = aliquotaImpostos / 100
+    const comissaoRate = comissaoVenda / 100
+    const operacionalRate = custosOperacionais / 100
+    const margemRate = margemDesejada / 100
+    const composicaoComercialRate = comissaoRate + operacionalRate + margemRate
+
+    // Preço de venda unitário com mark-up divisor (evita subprecificação por composição em cascata)
+    const divisorVenda = 1 - aliquotaImpostosRate - composicaoComercialRate
+    const precoVenda = divisorVenda > 0 ? (custoTotalEntrada / divisorVenda) : 0
 
     setPrecoVendaSugerido(precoVenda)
 
@@ -172,20 +177,17 @@ export function PrinterPricingModule({ printer, onBack, onUpdatePrinter }: Print
     const periodosCalc: any = {}
 
     periodos.forEach(meses => {
-      // Fator de desconto baseado no período (quanto maior o período, menor o valor mensal)
-      let fatorDesconto = 1.0
-      switch (meses) {
-        case 12: fatorDesconto = 1.0; break    // 100% - sem desconto
-        case 24: fatorDesconto = 0.92; break   // 8% desconto
-        case 36: fatorDesconto = 0.85; break   // 15% desconto
-        case 48: fatorDesconto = 0.80; break   // 20% desconto
-        case 60: fatorDesconto = 0.75; break   // 25% desconto
-      }
+      // PMT do investimento (custo do ativo) + mark-up tributário/comercial na parcela
+      const taxa = TAXA_FINANCEIRA_MENSAL / 100
+      const pmtBase = taxa > 0
+        ? (custoTotalEntrada * taxa) / (1 - Math.pow(1 + taxa, -meses))
+        : (custoTotalEntrada / meses)
 
-      const valorTotal = precoVenda * fatorDesconto
-      const valorMensal = valorTotal / meses
-      const paybackMeses = (custoTotalEntrada / valorMensal)
-      const roi = ((valorTotal - custoTotalEntrada) / custoTotalEntrada) * 100
+      const divisorLocacao = 1 - aliquotaImpostosRate - composicaoComercialRate
+      const valorMensal = divisorLocacao > 0 ? (pmtBase / divisorLocacao) : 0
+      const valorTotal = valorMensal * meses
+      const paybackMeses = valorMensal > 0 ? (custoTotalEntrada / valorMensal) : 0
+      const roi = custoTotalEntrada > 0 ? (((valorTotal - custoTotalEntrada) / custoTotalEntrada) * 100) : 0
 
       periodosCalc[meses] = {
         valorMensal,
@@ -198,14 +200,19 @@ export function PrinterPricingModule({ printer, onBack, onUpdatePrinter }: Print
     setPeriodosLocacao(periodosCalc)
 
     // Breakdown detalhado
+    const impostosSaidaUnit = precoVenda * aliquotaImpostosRate
+    const comissaoUnit = precoVenda * comissaoRate
+    const operacionalUnit = precoVenda * operacionalRate
+    const lucroLiquidoUnit = precoVenda - custoTotalEntrada - impostosSaidaUnit - comissaoUnit - operacionalUnit
+
     setBreakdown({
       custoBase,
       custoTotalEntrada,
-      custoComOperacionais,
-      custoComComissao,
-      custoComMargem,
-      impostosSaida: precoVenda * (aliquotaImpostos / 100),
-      margemLiquida: precoVenda - custoComMargem,
+      impostosSaidaUnit,
+      comissaoUnit,
+      operacionalUnit,
+      lucroLiquidoUnit,
+      composicaoComercialRate,
       aliquotaImpostos
     })
 
@@ -213,12 +220,12 @@ export function PrinterPricingModule({ printer, onBack, onUpdatePrinter }: Print
     const periodo36 = periodosCalc[36]
     if (periodo36) {
       const receitaBruta = periodo36.valorTotal
-      const impostos = receitaBruta * (aliquotaImpostos / 100)
+      const impostos = receitaBruta * aliquotaImpostosRate
       const receitaLiquida = receitaBruta - impostos
       const custoMercadoria = custoTotalEntrada
+      const despesasOperacionais = receitaBruta * operacionalRate
+      const despesasComissao = receitaBruta * comissaoRate
       const lucroBruto = receitaLiquida - custoMercadoria
-      const despesasOperacionais = custoComOperacionais - custoTotalEntrada
-      const despesasComissao = custoComComissao - custoComOperacionais
       const lucroOperacional = lucroBruto - despesasOperacionais - despesasComissao
       const lucroLiquido = lucroOperacional
 
@@ -232,8 +239,8 @@ export function PrinterPricingModule({ printer, onBack, onUpdatePrinter }: Print
         despesasComissao,
         lucroOperacional,
         lucroLiquido,
-        margemBruta: (lucroBruto / receitaBruta) * 100,
-        margemLiquida: (lucroLiquido / receitaBruta) * 100
+        margemBruta: receitaBruta > 0 ? (lucroBruto / receitaBruta) * 100 : 0,
+        margemLiquida: receitaBruta > 0 ? (lucroLiquido / receitaBruta) * 100 : 0
       })
     }
   }
@@ -288,6 +295,8 @@ export function PrinterPricingModule({ printer, onBack, onUpdatePrinter }: Print
         comissaoVenda,
         custosOperacionais,
         precoVendaSugerido,
+        custoPaginaMono,
+        custoPaginaColor,
         periodosLocacao,
         calculadoEm: new Date().toISOString()
       }
@@ -304,6 +313,8 @@ export function PrinterPricingModule({ printer, onBack, onUpdatePrinter }: Print
         comissaoVenda,
         custosOperacionais,
         precoVendaSugerido,
+        custoPaginaMono,
+        custoPaginaColor,
         periodosLocacao,
         calculadoEm: new Date().toISOString()
       }
@@ -890,13 +901,13 @@ export function PrinterPricingModule({ printer, onBack, onUpdatePrinter }: Print
                   <div>
                     <span className="text-gray-600">Margem Bruta:</span>
                     <div className="font-bold text-lg">
-                      {formatPercent(((precoVendaSugerido - breakdown.custoTotalEntrada) / precoVendaSugerido) * 100)}
+                      {formatPercent(precoVendaSugerido > 0 ? (((precoVendaSugerido - (breakdown.custoTotalEntrada || 0)) / precoVendaSugerido) * 100) : 0)}
                     </div>
                   </div>
                   <div>
                     <span className="text-gray-600">Margem Líquida:</span>
                     <div className="font-bold text-lg">
-                      {formatPercent(((breakdown.margemLiquida || 0) / precoVendaSugerido) * 100)}
+                      {formatPercent(precoVendaSugerido > 0 ? (((breakdown.lucroLiquidoUnit || 0) / precoVendaSugerido) * 100) : 0)}
                     </div>
                   </div>
                   <div>

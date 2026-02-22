@@ -11,17 +11,17 @@ import { Badge } from "@/components/ui/badge"
 import { usePricingIntegration } from "@/hooks/use-pricing-integration"
 import { useProposalEditing } from "@/hooks/use-proposal-editing"
 import { ProposalClientForm, type ClientData } from "@/components/calculators/ProposalClientForm"
+import type { ProposalClientData } from "@/components/shared/ProposalClientDataForm"
+import { mapProposalClientDataToLegacyClientData } from "@/components/shared/proposalClientDataMapper"
 import { Printer as PrinterType } from "./types"
 import { ManualCalculationModal } from "./ManualCalculationModal"
-import PDFGenerator from "@/components/pdf-generation/generators/PDFGenerator"
 import SimplePDFGenerator from "@/components/pdf-generation/simple/SimplePDFGenerator"
 import ProposalConfirmation from "@/components/pdf-generation/viewers/ProposalConfirmation"
 import { 
   mapFormClientDataToPDF, 
-  createProposalData, 
-  validatePDFData 
+  createProposalData
 } from "@/lib/pdf/utils/data-mappers"
-import { ProposalData, ClientData as PDFClientData, PDFError } from "@/lib/pdf/types/index"
+import { ProposalData, ClientData as PDFClientData } from "@/lib/pdf/types/index"
 
 interface PrinterItem {
     id: string
@@ -46,9 +46,10 @@ interface PrinterCalculatorModuleProps {
     suprimentos: any[]
     editingProposalId?: string | null // For editing existing proposals
     onFinishEditing?: () => void // Callback when editing is finished
+    proposalClientData?: ProposalClientData | null
 }
 
-export function PrinterCalculatorModule({ onBack, onNavigateToProposals, printers: availablePrinters, suprimentos: availableSuprimentos, editingProposalId, onFinishEditing }: PrinterCalculatorModuleProps) {
+export function PrinterCalculatorModule({ onBack, onNavigateToProposals, printers: availablePrinters, suprimentos: availableSuprimentos, editingProposalId, onFinishEditing, proposalClientData }: PrinterCalculatorModuleProps) {
     const [printers, setPrinters] = useState<PrinterItem[]>([])
     const [showClientForm, setShowClientForm] = useState(false)
     const [showQuoteView, setShowQuoteView] = useState(false)
@@ -141,7 +142,7 @@ export function PrinterCalculatorModule({ onBack, onNavigateToProposals, printer
 
         const custoUnitario = novoCusto > 0 ? novoCusto : custosBase[novoTipo as keyof typeof custosBase] || 0.08
         const custoMensal = novoVolume * custoUnitario
-        const custoAnual = custoMensal * 12
+        const custoAnual = custoMensal * novoPrazo
 
         const novoItem: PrinterItem = {
             id: Date.now().toString(),
@@ -164,16 +165,29 @@ export function PrinterCalculatorModule({ onBack, onNavigateToProposals, printer
     }
 
     const handleManualCalculationSave = (dados: any) => {
+        const modalidadeLocacao = dados.modalidadeLocacao as 'franquia' | 'por-pagina'
+        const volumeMensal = Number(dados.volumeMensal || 0)
+        const custoPorPagina = Number(dados.calculo.total || 0)
+        const valorLocacaoImpressora = Number(dados.valorLocacaoImpressora || 0)
+        const valorFranquia = Number(dados.valorFranquia || 0)
+        const prazoContrato = Number(dados.prazoContrato || 0)
+
+        const custoMensalCalculado = modalidadeLocacao === 'por-pagina'
+            ? valorLocacaoImpressora + (volumeMensal * custoPorPagina)
+            : valorFranquia
+
+        const custoTotalContratoCalculado = custoMensalCalculado * prazoContrato
+
         const novoItem: PrinterItem = {
             id: Date.now().toString(),
             modelo: dados.impressora.modelo,
             marca: dados.impressora.marca,
             tipo: dados.impressora.tipo,
-            volumeMensal: dados.volumeMensal,
-            custoPorPagina: dados.calculo.total,
-            custoMensal: dados.calculo.custoMensal,
-            custoAnual: dados.calculo.custoAnual,
-            prazoContrato: dados.prazoContrato,
+            volumeMensal,
+            custoPorPagina,
+            custoMensal: custoMensalCalculado,
+            custoAnual: custoTotalContratoCalculado,
+            prazoContrato,
             isFromCatalog: false,
             // Armazenar dados detalhados para referência
             detalhesCalculo: {
@@ -183,7 +197,10 @@ export function PrinterCalculatorModule({ onBack, onNavigateToProposals, printer
                 detalhamento: dados.calculo.detalhes,
                 custoPorPaginaMono: dados.custoPorPaginaMono,
                 custoPorPaginaColor: dados.custoPorPaginaColor,
-                isColorida: dados.isColorida
+                isColorida: dados.isColorida,
+                modalidadeLocacao,
+                valorLocacaoImpressora,
+                valorFranquia
             }
         }
 
@@ -218,10 +235,14 @@ export function PrinterCalculatorModule({ onBack, onNavigateToProposals, printer
             return
         }
 
-        // Calcular custo por página baseado no valor mensal e volume
-        const custoPorPagina = periodoSelecionado.valorMensal / volumeImpressora
-        const custoMensal = periodoSelecionado.valorMensal
-        const custoAnual = periodoSelecionado.valorTotal
+        const isColorida = impressora.tipo.includes('Colorida')
+        const custoPaginaSuprimentos = isColorida
+            ? Number(impressora.precificacao.custoPaginaColor || 0)
+            : Number(impressora.precificacao.custoPaginaMono || 0)
+        const custoVariavelMensal = custoPaginaSuprimentos * volumeImpressora
+        const custoMensal = periodoSelecionado.valorMensal + custoVariavelMensal
+        const custoPorPagina = volumeImpressora > 0 ? (custoMensal / volumeImpressora) : 0
+        const custoAnual = custoMensal * prazoImpressora
 
         const novoItem: PrinterItem = {
             id: Date.now().toString(),
@@ -263,19 +284,41 @@ export function PrinterCalculatorModule({ onBack, onNavigateToProposals, printer
                     const impressora = availablePrinters.find(imp => imp.id === p.printerId)
                     if (impressora?.precificacao?.periodosLocacao[valor]) {
                         const periodo = impressora.precificacao.periodosLocacao[valor]
+                        const isColorida = impressora.tipo.includes('Colorida')
+                        const custoPaginaSuprimentos = isColorida
+                            ? Number(impressora.precificacao.custoPaginaColor || 0)
+                            : Number(impressora.precificacao.custoPaginaMono || 0)
+                        const custoVariavelMensal = custoPaginaSuprimentos * updated.volumeMensal
                         updated.valorMensalLocacao = periodo.valorMensal
-                        updated.custoPorPagina = periodo.valorMensal / updated.volumeMensal
-                        updated.custoMensal = periodo.valorMensal
-                        updated.custoAnual = periodo.valorTotal
+                        updated.custoMensal = periodo.valorMensal + custoVariavelMensal
+                        updated.custoPorPagina = updated.volumeMensal > 0 ? (updated.custoMensal / updated.volumeMensal) : 0
+                        updated.custoAnual = updated.custoMensal * updated.prazoContrato
                     }
                 }
-                // Recalcular custos quando volume ou custo por página mudar (para itens manuais)
-                else if (campo === 'volumeMensal' || campo === 'custoPorPagina') {
+                // Recalcular custos quando volume, custo por página ou prazo mudar
+                else if (campo === 'volumeMensal' || campo === 'custoPorPagina' || campo === 'prazoContrato') {
                     if (p.isFromCatalog && p.valorMensalLocacao) {
-                        // Para itens do catálogo, recalcular custo por página baseado no valor fixo
-                        updated.custoPorPagina = p.valorMensalLocacao / updated.volumeMensal
-                        updated.custoMensal = p.valorMensalLocacao
-                        updated.custoAnual = p.valorMensalLocacao * updated.prazoContrato
+                        // Para itens do catálogo: locação fixa + custo variável por página
+                        const impressora = p.printerId ? availablePrinters.find(imp => imp.id === p.printerId) : null
+                        const isColorida = Boolean(impressora?.tipo?.includes('Colorida'))
+                        const custoPaginaSuprimentos = impressora?.precificacao
+                            ? (isColorida
+                                ? Number(impressora.precificacao.custoPaginaColor || 0)
+                                : Number(impressora.precificacao.custoPaginaMono || 0))
+                            : 0
+
+                        const custoVariavelMensal = custoPaginaSuprimentos * updated.volumeMensal
+                        updated.custoMensal = p.valorMensalLocacao + custoVariavelMensal
+                        updated.custoPorPagina = updated.volumeMensal > 0 ? (updated.custoMensal / updated.volumeMensal) : 0
+                        updated.custoAnual = updated.custoMensal * updated.prazoContrato
+                    } else if (p.detalhesCalculo?.modalidadeLocacao === 'por-pagina') {
+                        const locacaoFixa = Number(p.detalhesCalculo?.valorLocacaoImpressora || 0)
+                        updated.custoMensal = locacaoFixa + (updated.volumeMensal * updated.custoPorPagina)
+                        updated.custoAnual = updated.custoMensal * updated.prazoContrato
+                    } else if (p.detalhesCalculo?.modalidadeLocacao === 'franquia') {
+                        const franquiaFixa = Number(p.detalhesCalculo?.valorFranquia || updated.custoMensal || 0)
+                        updated.custoMensal = franquiaFixa
+                        updated.custoAnual = updated.custoMensal * updated.prazoContrato
                     } else {
                         // Para itens manuais, calcular normalmente
                         updated.custoMensal = updated.volumeMensal * updated.custoPorPagina
@@ -296,16 +339,16 @@ export function PrinterCalculatorModule({ onBack, onNavigateToProposals, printer
     }), { volumeTotal: 0, custoMensal: 0, custoAnual: 0 })
 
     const handleSaveProposal = () => {
-        alert('Botão Gerar Proposta Final foi clicado!')
-        console.log('Botão Gerar Proposta Final clicado!')
-        console.log('Número de impressoras:', printers.length)
-        
         if (printers.length === 0) {
             alert("Adicione pelo menos um item de impressão para criar a proposta.")
             return
         }
-        
-        console.log('Abrindo formulário do cliente')
+
+        if (proposalClientData) {
+            void handleClientFormSubmit(mapProposalClientDataToLegacyClientData(proposalClientData))
+            return
+        }
+
         setShowClientForm(true)
     }
 
@@ -570,99 +613,7 @@ export function PrinterCalculatorModule({ onBack, onNavigateToProposals, printer
                             Adicionar Mais Equipamentos
                         </Button>
                         <button 
-                            onClick={async () => {
-                                try {
-                                    // Coleta dados do cliente de forma simples
-                                    const clientName = prompt('Nome da Empresa:') || 'Empresa Cliente'
-                                    const projectName = prompt('Nome do Projeto:') || 'Projeto de Outsourcing'
-                                    const contactName = prompt('Nome do Contato:') || 'Contato'
-                                    const accountManager = prompt('Gerente de Contas:') || 'Gerente'
-                                    
-                                    if (!clientName) {
-                                        alert('Nome da empresa é obrigatório!')
-                                        return
-                                    }
-                                    
-                                    // Gera o PDF com os dados coletados
-                                    const simpleGenerator = new SimplePDFGenerator()
-                                    const pdfData = {
-                                        clientName: clientName,
-                                        projectName: projectName,
-                                        totalMonthly: totais.custoMensal,
-                                        totalAnnual: totais.custoAnual,
-                                        equipments: printers.map(p => ({
-                                            model: p.modelo || 'Modelo',
-                                            brand: p.marca || 'Marca',
-                                            type: p.tipo,
-                                            monthlyVolume: p.volumeMensal,
-                                            monthlyCost: p.custoMensal
-                                        }))
-                                    }
-                                    
-                                    const result = await simpleGenerator.generateSimplePDF(pdfData)
-                                    
-                                    // Converte o blob para base64 para salvar
-                                    const reader = new FileReader()
-                                    reader.readAsDataURL(result.blob)
-                                    reader.onloadend = () => {
-                                        const base64PDF = reader.result as string
-                                        
-                                        // Cria a proposta para salvar no sistema
-                                        const newProposal = {
-                                            id: `PROP-${Date.now()}`,
-                                            title: `${projectName} - ${clientName}`,
-                                            client: clientName,
-                                            description: `Proposta de Outsourcing de Impressão - ${printers.length} equipamento(s)`,
-                                            status: 'Rascunho' as const,
-                                            value: totais.custoAnual,
-                                            date: new Date().toISOString().split('T')[0],
-                                            expiryDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 30 dias
-                                            accountManager: accountManager,
-                                            distributorId: 'outsourcing',
-                                            proposalFile: base64PDF,
-                                            technicalSpecs: JSON.stringify({
-                                                equipments: printers,
-                                                totals: totais,
-                                                projectName: projectName,
-                                                contactName: contactName,
-                                                generatedAt: new Date().toISOString(),
-                                                module: 'Printer Outsourcing'
-                                            }),
-                                            commercialTerms: `Valor Mensal: R$ ${totais.custoMensal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}\\nValor Anual: R$ ${totais.custoAnual.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}\\nEquipamentos: ${printers.length}\\nContrato: 12 meses`
-                                        }
-                                        
-                                        // Salva no localStorage (simulando o sistema de propostas)
-                                        const existingProposals = JSON.parse(localStorage.getItem('proposals') || '[]')
-                                        existingProposals.push(newProposal)
-                                        localStorage.setItem('proposals', JSON.stringify(existingProposals))
-                                        
-                                        // Abre o PDF em nova aba
-                                        window.open(result.url, '_blank')
-                                        
-                                        // Oferece opções ao usuário
-                                        const action = confirm('✅ Proposta salva com sucesso!\\n\\n✓ Salva na aba "Propostas"\\n✓ PDF disponível para visualização\\n\\nDeseja fazer o download do PDF agora?')
-                                        
-                                        if (action) {
-                                            const link = document.createElement('a')
-                                            link.href = result.url
-                                            link.download = `Proposta-${clientName.replace(/\s+/g, '-')}-${new Date().toLocaleDateString('pt-BR').replace(/\//g, '-')}.pdf`
-                                            document.body.appendChild(link)
-                                            link.click()
-                                            document.body.removeChild(link)
-                                        }
-                                        
-                                        // Pergunta se quer ir para a aba de propostas
-                                        const goToProposals = confirm('Deseja ir para a aba "Propostas" para ver sua proposta salva?')
-                                        if (goToProposals && onNavigateToProposals) {
-                                            onNavigateToProposals()
-                                        }
-                                    }
-                                    
-                                } catch (error) {
-                                    console.error('Erro ao gerar proposta:', error)
-                                    alert('❌ Erro ao gerar proposta: ' + error.message)
-                                }
-                            }}
+                            onClick={handleSaveProposal}
                             style={{
                                 backgroundColor: '#ff6b35',
                                 color: 'white',
@@ -684,7 +635,7 @@ export function PrinterCalculatorModule({ onBack, onNavigateToProposals, printer
                                 e.target.style.transform = 'translateY(0)'
                             }}
                         >
-                            📄 GERAR PROPOSTA FINAL
+                            📄 SALVAR EM ORÇAMENTOS
                         </button>
                     </div>
                 </div>
@@ -1132,7 +1083,7 @@ export function PrinterCalculatorModule({ onBack, onNavigateToProposals, printer
                                     </p>
                                 </div>
                                 <div className="text-center p-4 bg-purple-50 rounded-lg">
-                                    <p className="text-sm text-muted-foreground">Custo Anual Total</p>
+                                    <p className="text-sm text-muted-foreground">Custo Total dos Contratos</p>
                                     <p className="text-2xl font-bold text-purple-600">
                                         R$ {totais.custoAnual.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                                     </p>
@@ -1142,45 +1093,12 @@ export function PrinterCalculatorModule({ onBack, onNavigateToProposals, printer
                             {printers.length > 0 && (
                                 <div className="mt-6 text-center space-y-4">
                                     <Button 
-                                        onClick={async () => {
-                                            try {
-                                                console.log('Teste completo do fluxo iniciado')
-                                                
-                                                // Dados de teste
-                                                const testClientData = {
-                                                    razaoSocial: 'Teste Empresa',
-                                                    nomeContato: 'João Teste',
-                                                    telefoneCliente: '11999999999',
-                                                    emailCliente: 'teste@teste.com',
-                                                    nomeProjeto: 'Projeto Teste',
-                                                    nomeGerente: 'Maria Gerente',
-                                                    telefoneGerente: '11888888888',
-                                                    emailGerente: 'gerente@teste.com'
-                                                }
-                                                
-                                                console.log('Chamando handleClientFormSubmit diretamente...')
-                                                await handleClientFormSubmit(testClientData)
-                                                console.log('Teste completo finalizado!')
-                                            } catch (error) {
-                                                console.error('Erro no teste completo:', error)
-                                                alert(`Erro no teste completo: ${error.message}`)
-                                            }
-                                        }}
-                                        variant="outline" 
-                                        size="sm"
-                                    >
-                                        Teste Completo
-                                    </Button>
-                                    <Button 
-                                        onClick={() => {
-                                            console.log('Botão clicado diretamente!')
-                                            handleSaveProposal()
-                                        }} 
+                                        onClick={handleSaveProposal} 
                                         size="lg" 
                                         className="px-8"
                                     >
                                         <Save className="h-4 w-4 mr-2" />
-                                        {isEditing ? 'Atualizar Proposta' : 'Salvar Proposta'}
+                                        {isEditing ? 'Atualizar Proposta' : 'Salvar em Orçamentos'}
                                     </Button>
                                 </div>
                             )}
@@ -1219,16 +1137,8 @@ export function PrinterCalculatorModule({ onBack, onNavigateToProposals, printer
             </div>
 
             {/* Modal de Dados do Cliente */}
-            {showClientForm && (
-                <ProposalClientForm
-                    onSubmit={handleClientFormSubmit}
-                    onCancel={() => setShowClientForm(false)}
-                    initialData={editingClientData}
-                />
-            )}
-            
             <ProposalClientForm
-                isOpen={false}
+                isOpen={showClientForm}
                 onClose={() => {
                     console.log('Modal fechado')
                     setShowClientForm(false)

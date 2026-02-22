@@ -142,7 +142,7 @@ export function PrinterCalculatorModule({ onBack, onNavigateToProposals, printer
 
         const custoUnitario = novoCusto > 0 ? novoCusto : custosBase[novoTipo as keyof typeof custosBase] || 0.08
         const custoMensal = novoVolume * custoUnitario
-        const custoAnual = custoMensal * 12
+        const custoAnual = custoMensal * novoPrazo
 
         const novoItem: PrinterItem = {
             id: Date.now().toString(),
@@ -165,16 +165,29 @@ export function PrinterCalculatorModule({ onBack, onNavigateToProposals, printer
     }
 
     const handleManualCalculationSave = (dados: any) => {
+        const modalidadeLocacao = dados.modalidadeLocacao as 'franquia' | 'por-pagina'
+        const volumeMensal = Number(dados.volumeMensal || 0)
+        const custoPorPagina = Number(dados.calculo.total || 0)
+        const valorLocacaoImpressora = Number(dados.valorLocacaoImpressora || 0)
+        const valorFranquia = Number(dados.valorFranquia || 0)
+        const prazoContrato = Number(dados.prazoContrato || 0)
+
+        const custoMensalCalculado = modalidadeLocacao === 'por-pagina'
+            ? valorLocacaoImpressora + (volumeMensal * custoPorPagina)
+            : valorFranquia
+
+        const custoTotalContratoCalculado = custoMensalCalculado * prazoContrato
+
         const novoItem: PrinterItem = {
             id: Date.now().toString(),
             modelo: dados.impressora.modelo,
             marca: dados.impressora.marca,
             tipo: dados.impressora.tipo,
-            volumeMensal: dados.volumeMensal,
-            custoPorPagina: dados.calculo.total,
-            custoMensal: dados.calculo.custoMensal,
-            custoAnual: dados.calculo.custoAnual,
-            prazoContrato: dados.prazoContrato,
+            volumeMensal,
+            custoPorPagina,
+            custoMensal: custoMensalCalculado,
+            custoAnual: custoTotalContratoCalculado,
+            prazoContrato,
             isFromCatalog: false,
             // Armazenar dados detalhados para referência
             detalhesCalculo: {
@@ -184,7 +197,10 @@ export function PrinterCalculatorModule({ onBack, onNavigateToProposals, printer
                 detalhamento: dados.calculo.detalhes,
                 custoPorPaginaMono: dados.custoPorPaginaMono,
                 custoPorPaginaColor: dados.custoPorPaginaColor,
-                isColorida: dados.isColorida
+                isColorida: dados.isColorida,
+                modalidadeLocacao,
+                valorLocacaoImpressora,
+                valorFranquia
             }
         }
 
@@ -219,10 +235,14 @@ export function PrinterCalculatorModule({ onBack, onNavigateToProposals, printer
             return
         }
 
-        // Calcular custo por página baseado no valor mensal e volume
-        const custoPorPagina = periodoSelecionado.valorMensal / volumeImpressora
-        const custoMensal = periodoSelecionado.valorMensal
-        const custoAnual = periodoSelecionado.valorTotal
+        const isColorida = impressora.tipo.includes('Colorida')
+        const custoPaginaSuprimentos = isColorida
+            ? Number(impressora.precificacao.custoPaginaColor || 0)
+            : Number(impressora.precificacao.custoPaginaMono || 0)
+        const custoVariavelMensal = custoPaginaSuprimentos * volumeImpressora
+        const custoMensal = periodoSelecionado.valorMensal + custoVariavelMensal
+        const custoPorPagina = volumeImpressora > 0 ? (custoMensal / volumeImpressora) : 0
+        const custoAnual = custoMensal * prazoImpressora
 
         const novoItem: PrinterItem = {
             id: Date.now().toString(),
@@ -264,19 +284,41 @@ export function PrinterCalculatorModule({ onBack, onNavigateToProposals, printer
                     const impressora = availablePrinters.find(imp => imp.id === p.printerId)
                     if (impressora?.precificacao?.periodosLocacao[valor]) {
                         const periodo = impressora.precificacao.periodosLocacao[valor]
+                        const isColorida = impressora.tipo.includes('Colorida')
+                        const custoPaginaSuprimentos = isColorida
+                            ? Number(impressora.precificacao.custoPaginaColor || 0)
+                            : Number(impressora.precificacao.custoPaginaMono || 0)
+                        const custoVariavelMensal = custoPaginaSuprimentos * updated.volumeMensal
                         updated.valorMensalLocacao = periodo.valorMensal
-                        updated.custoPorPagina = periodo.valorMensal / updated.volumeMensal
-                        updated.custoMensal = periodo.valorMensal
-                        updated.custoAnual = periodo.valorTotal
+                        updated.custoMensal = periodo.valorMensal + custoVariavelMensal
+                        updated.custoPorPagina = updated.volumeMensal > 0 ? (updated.custoMensal / updated.volumeMensal) : 0
+                        updated.custoAnual = updated.custoMensal * updated.prazoContrato
                     }
                 }
-                // Recalcular custos quando volume ou custo por página mudar (para itens manuais)
-                else if (campo === 'volumeMensal' || campo === 'custoPorPagina') {
+                // Recalcular custos quando volume, custo por página ou prazo mudar
+                else if (campo === 'volumeMensal' || campo === 'custoPorPagina' || campo === 'prazoContrato') {
                     if (p.isFromCatalog && p.valorMensalLocacao) {
-                        // Para itens do catálogo, recalcular custo por página baseado no valor fixo
-                        updated.custoPorPagina = p.valorMensalLocacao / updated.volumeMensal
-                        updated.custoMensal = p.valorMensalLocacao
-                        updated.custoAnual = p.valorMensalLocacao * updated.prazoContrato
+                        // Para itens do catálogo: locação fixa + custo variável por página
+                        const impressora = p.printerId ? availablePrinters.find(imp => imp.id === p.printerId) : null
+                        const isColorida = Boolean(impressora?.tipo?.includes('Colorida'))
+                        const custoPaginaSuprimentos = impressora?.precificacao
+                            ? (isColorida
+                                ? Number(impressora.precificacao.custoPaginaColor || 0)
+                                : Number(impressora.precificacao.custoPaginaMono || 0))
+                            : 0
+
+                        const custoVariavelMensal = custoPaginaSuprimentos * updated.volumeMensal
+                        updated.custoMensal = p.valorMensalLocacao + custoVariavelMensal
+                        updated.custoPorPagina = updated.volumeMensal > 0 ? (updated.custoMensal / updated.volumeMensal) : 0
+                        updated.custoAnual = updated.custoMensal * updated.prazoContrato
+                    } else if (p.detalhesCalculo?.modalidadeLocacao === 'por-pagina') {
+                        const locacaoFixa = Number(p.detalhesCalculo?.valorLocacaoImpressora || 0)
+                        updated.custoMensal = locacaoFixa + (updated.volumeMensal * updated.custoPorPagina)
+                        updated.custoAnual = updated.custoMensal * updated.prazoContrato
+                    } else if (p.detalhesCalculo?.modalidadeLocacao === 'franquia') {
+                        const franquiaFixa = Number(p.detalhesCalculo?.valorFranquia || updated.custoMensal || 0)
+                        updated.custoMensal = franquiaFixa
+                        updated.custoAnual = updated.custoMensal * updated.prazoContrato
                     } else {
                         // Para itens manuais, calcular normalmente
                         updated.custoMensal = updated.volumeMensal * updated.custoPorPagina
@@ -1041,7 +1083,7 @@ export function PrinterCalculatorModule({ onBack, onNavigateToProposals, printer
                                     </p>
                                 </div>
                                 <div className="text-center p-4 bg-purple-50 rounded-lg">
-                                    <p className="text-sm text-muted-foreground">Custo Anual Total</p>
+                                    <p className="text-sm text-muted-foreground">Custo Total dos Contratos</p>
                                     <p className="text-2xl font-bold text-purple-600">
                                         R$ {totais.custoAnual.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                                     </p>

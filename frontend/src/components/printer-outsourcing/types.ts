@@ -22,6 +22,8 @@ export interface Printer {
     comissaoVenda: number
     custosOperacionais: number
     precoVendaSugerido: number
+    custoPaginaMono?: number
+    custoPaginaColor?: number
     periodosLocacao: {
       [key: number]: {
         valorMensal: number

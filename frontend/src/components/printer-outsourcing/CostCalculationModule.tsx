@@ -62,7 +62,8 @@ export function CostCalculationModule({ printers, suprimentos }: CostCalculation
 
       // Totais
       const custoTotalPB = custoTonerPB + custoFotoconductorPagina + custoManutencaoPagina + custoEnergiaPagina + custoDepreciacaoPagina
-      const custoTotalColor = custoTonerColor + custoFotoconductorPagina + custoManutencaoPagina + custoEnergiaPagina + custoDepreciacaoPagina
+      // Em impressão colorida, normalmente há consumo de toner preto + CMY
+      const custoTotalColor = custoTonerPB + custoTonerColor + custoFotoconductorPagina + custoManutencaoPagina + custoEnergiaPagina + custoDepreciacaoPagina
 
       custos.push({
         printerId: printer.id,
