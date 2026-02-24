@@ -69,21 +69,21 @@ const TAB_CONFIG = [
     weight: 1
   },
   { 
-    id: 'team', 
-    label: 'Equipe', 
-    shortLabel: 'Equipe',
-    description: 'Definição da equipe, cargos, salários e benefícios',
-    component: LazyTabModules.TeamTab,
-    dependencies: ['data'],
-    weight: 2
-  },
-  { 
     id: 'scale', 
     label: 'Escala', 
     shortLabel: 'Escala',
     description: 'Configuração de horários de atendimento e escalas de trabalho',
     component: LazyTabModules.ScaleTab,
-    dependencies: ['team'],
+    dependencies: ['data'],
+    weight: 2
+  },
+  { 
+    id: 'team', 
+    label: 'Equipe', 
+    shortLabel: 'Equipe',
+    description: 'Definição da equipe, cargos, salários e benefícios',
+    component: LazyTabModules.TeamTab,
+    dependencies: ['scale'],
     weight: 2
   },
   { 

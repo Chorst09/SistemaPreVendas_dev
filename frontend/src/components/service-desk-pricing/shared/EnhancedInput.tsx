@@ -75,21 +75,21 @@ export function EnhancedInput({
           className={cn(
             icon && 'pl-10',
             (hasError || hasSuccess) && 'pr-10',
-            hasError && 'border-red-500 focus-visible:ring-red-500',
-            hasSuccess && 'border-green-500 focus-visible:ring-green-500',
+            hasError && 'border-red-500 dark:border-red-400 focus-visible:ring-red-500 dark:focus-visible:ring-red-400',
+            hasSuccess && 'border-green-500 dark:border-green-400 focus-visible:ring-green-500 dark:focus-visible:ring-green-400',
             className
           )}
           {...props}
         />
         
         {hasError && (
-          <div className="absolute right-3 top-1/2 -translate-y-1/2 text-red-500">
+          <div className="absolute right-3 top-1/2 -translate-y-1/2 text-red-500 dark:text-red-400">
             <AlertCircle className="h-4 w-4" />
           </div>
         )}
         
         {hasSuccess && (
-          <div className="absolute right-3 top-1/2 -translate-y-1/2 text-green-500">
+          <div className="absolute right-3 top-1/2 -translate-y-1/2 text-green-500 dark:text-green-400">
             <CheckCircle2 className="h-4 w-4" />
           </div>
         )}
@@ -99,14 +99,14 @@ export function EnhancedInput({
         <div className="flex items-start gap-1.5">
           {error && (
             <>
-              <AlertCircle className="h-3.5 w-3.5 text-red-500 mt-0.5 flex-shrink-0" />
-              <p className="text-sm text-red-500">{error}</p>
+              <AlertCircle className="h-3.5 w-3.5 text-red-500 dark:text-red-400 mt-0.5 flex-shrink-0" />
+              <p className="text-sm text-red-500 dark:text-red-400">{error}</p>
             </>
           )}
           {success && !error && (
             <>
-              <CheckCircle2 className="h-3.5 w-3.5 text-green-500 mt-0.5 flex-shrink-0" />
-              <p className="text-sm text-green-500">{success}</p>
+              <CheckCircle2 className="h-3.5 w-3.5 text-green-500 dark:text-green-400 mt-0.5 flex-shrink-0" />
+              <p className="text-sm text-green-500 dark:text-green-400">{success}</p>
             </>
           )}
           {helperText && !error && !success && (
