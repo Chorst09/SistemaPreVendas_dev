@@ -41,39 +41,33 @@ export class EnhancedValidationEngine extends ServiceDeskValidationEngine {
 
     // Get basic transition validation
     const basicValidation = this.validateTransition(fromTab, toTab, data);
-    errors.push(...basicValidation.errors);
+    
+    // Apenas adicionar warnings, não errors para permitir navegação
+    warnings.push(...basicValidation.errors.map(e => ({
+      field: e.field,
+      message: e.message,
+      suggestion: e.suggestion
+    })));
     warnings.push(...basicValidation.warnings);
 
-    // Enhanced validations
+    // Enhanced validations - apenas warnings, não bloqueantes
     this.validateCurrentTabCompleteness(fromTab, data, errors, warnings, suggestions);
     this.validateDependencyChain(toTab, data, errors, warnings, blockingIssues);
     this.validateDataConsistency(fromTab, toTab, data, warnings, suggestions);
     this.validateBusinessRules(fromTab, toTab, data, errors, warnings, suggestions);
 
-    // Check for blocking issues
-    const hasBlockingErrors = errors.some(error => 
-      ['REQUIRED_FIELD', 'DEPENDENCY_NOT_MET', 'INVALID_VALUE'].includes(error.code)
-    );
+    // Permitir navegação sempre, mas mostrar avisos
+    const hasBlockingErrors = false; // Desabilitar bloqueio de navegação
 
-    if (hasBlockingErrors) {
-      blockingIssues.push('critical_errors');
-    }
-
-    // Determine if confirmation is required
-    const requiresConfirmation = this.shouldRequireConfirmation(
-      fromTab, 
-      toTab, 
-      errors, 
-      warnings, 
-      userPreferences
-    );
+    // Determinar se confirmação é necessária apenas para avisos importantes
+    const requiresConfirmation = warnings.length > 3 && userPreferences?.strictValidation;
 
     return {
-      canNavigate: !hasBlockingErrors,
-      errors,
+      canNavigate: true, // Sempre permitir navegação
+      errors: [], // Não bloquear com errors
       warnings,
       requiresConfirmation,
-      blockingIssues,
+      blockingIssues: [], // Não bloquear
       suggestions
     };
   }
