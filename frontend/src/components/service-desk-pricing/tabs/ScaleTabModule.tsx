@@ -346,6 +346,27 @@ export function ScaleTabModule({
     setSchedules(data || []);
   }, [data]);
 
+  // Listen for schedule generation event
+  useEffect(() => {
+    const handleScheduleGenerated = (event: any) => {
+      const { schedule, dimensioning } = event.detail;
+      
+      // Add generated schedule to existing schedules
+      const updatedSchedules = [...schedules, schedule];
+      setSchedules(updatedSchedules);
+      
+      // Show success message
+      if (typeof window !== 'undefined' && window.alert) {
+        setTimeout(() => {
+          alert(`Escala gerada automaticamente!\n\nCobertura: ${dimensioning.coverageType}\nTotal de agentes: ${dimensioning.total}\n\nConfira os turnos abaixo e ajuste se necessário.`);
+        }, 100);
+      }
+    };
+
+    window.addEventListener('scheduleGenerated', handleScheduleGenerated);
+    return () => window.removeEventListener('scheduleGenerated', handleScheduleGenerated);
+  }, [schedules]);
+
   useEffect(() => {
     const analysis = calculationEngine.calculateCoverageAnalysis(schedules);
     setCoverageAnalysis(analysis);

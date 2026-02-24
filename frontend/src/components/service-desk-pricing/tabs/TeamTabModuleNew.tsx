@@ -64,6 +64,13 @@ export function TeamTabModuleNew({
   const [editingMember, setEditingMember] = useState<TeamMemberNew | null>(null);
   const [jobPositions, setJobPositions] = useState<JobPosition[]>([]);
   const [hasChanges, setHasChanges] = useState(false);
+  const [requiredQuantities, setRequiredQuantities] = useState({
+    n1: 0,
+    n2: 0,
+    n3: 0,
+    folguistas: 0,
+    total: 0
+  });
   
   const [memberForm, setMemberForm] = useState({
     jobPositionId: '',
@@ -71,6 +78,24 @@ export function TeamTabModuleNew({
     workingHours: 8 as 8 | 6,
     notes: ''
   });
+
+  // Listen for schedule generation to get required quantities
+  useEffect(() => {
+    const handleScheduleGenerated = (event: any) => {
+      const { dimensioning } = event.detail;
+      
+      setRequiredQuantities({
+        n1: dimensioning.n1,
+        n2: dimensioning.n2,
+        n3: dimensioning.n3,
+        folguistas: dimensioning.folguistas,
+        total: dimensioning.total
+      });
+    };
+
+    window.addEventListener('scheduleGenerated', handleScheduleGenerated);
+    return () => window.removeEventListener('scheduleGenerated', handleScheduleGenerated);
+  }, []);
 
   // Load default job positions
   useEffect(() => {
@@ -218,25 +243,31 @@ export function TeamTabModuleNew({
   const handleAddTemplate = (template: 'n1' | 'n2' | 'full') => {
     let newMembers: TeamMemberNew[] = [];
     
+    // Use required quantities if available, otherwise use defaults
+    const n1Qty = requiredQuantities.n1 > 0 ? requiredQuantities.n1 : 4;
+    const n2Qty = requiredQuantities.n2 > 0 ? requiredQuantities.n2 : 2;
+    const n3Qty = requiredQuantities.n3 > 0 ? requiredQuantities.n3 : 1;
+    const folguistasQty = requiredQuantities.folguistas > 0 ? requiredQuantities.folguistas : 2;
+    
     switch (template) {
       case 'n1':
         newMembers = [{
           id: `member-${Date.now()}`,
           jobPositionId: 'pos-1',
-          quantity: 4,
+          quantity: n1Qty,
           workingHours: 8,
           isActive: true,
-          notes: 'Equipe N1 padrão'
+          notes: `Equipe N1 - ${n1Qty} agentes conforme dimensionamento`
         }];
         break;
       case 'n2':
         newMembers = [{
           id: `member-${Date.now()}`,
           jobPositionId: 'pos-2',
-          quantity: 2,
+          quantity: n2Qty,
           workingHours: 8,
           isActive: true,
-          notes: 'Equipe N2 padrão'
+          notes: `Equipe N2 - ${n2Qty} agentes conforme dimensionamento`
         }];
         break;
       case 'full':
@@ -244,28 +275,56 @@ export function TeamTabModuleNew({
           {
             id: `member-${Date.now()}-1`,
             jobPositionId: 'pos-1',
-            quantity: 4,
+            quantity: n1Qty,
             workingHours: 8,
             isActive: true,
-            notes: 'Equipe N1'
+            notes: `Equipe N1 - ${n1Qty} agentes`
           },
           {
             id: `member-${Date.now()}-2`,
             jobPositionId: 'pos-2',
-            quantity: 2,
+            quantity: n2Qty,
             workingHours: 8,
             isActive: true,
-            notes: 'Equipe N2'
-          },
-          {
+            notes: `Equipe N2 - ${n2Qty} agentes`
+          }
+        ];
+        
+        // Add N3 if required
+        if (n3Qty > 0) {
+          newMembers.push({
             id: `member-${Date.now()}-3`,
+            jobPositionId: 'pos-3',
+            quantity: n3Qty,
+            workingHours: 8,
+            isActive: true,
+            notes: `Equipe N3 - ${n3Qty} agentes`
+          });
+        }
+        
+        // Add folguistas if required
+        if (folguistasQty > 0) {
+          newMembers.push({
+            id: `member-${Date.now()}-4`,
+            jobPositionId: 'pos-1', // Folguistas are usually N1 level
+            quantity: folguistasQty,
+            workingHours: 8,
+            isActive: true,
+            notes: `Folguistas - ${folguistasQty} agentes para cobertura de folgas`
+          });
+        }
+        
+        // Add leader if team is large enough
+        if (requiredQuantities.total >= 10) {
+          newMembers.push({
+            id: `member-${Date.now()}-5`,
             jobPositionId: 'pos-4',
             quantity: 1,
             workingHours: 8,
             isActive: true,
             notes: 'Líder Técnico'
-          }
-        ];
+          });
+        }
         break;
     }
 
@@ -331,6 +390,41 @@ export function TeamTabModuleNew({
         />
       </div>
 
+      {/* Required Quantities from Schedule */}
+      {requiredQuantities.total > 0 && (
+        <Alert className="bg-blue-50 border-blue-200">
+          <AlertCircle className="h-4 w-4 text-blue-600" />
+          <AlertDescription className="text-blue-900">
+            <div className="font-semibold mb-2">Dimensionamento da Escala Gerada:</div>
+            <div className="grid grid-cols-5 gap-4 text-sm">
+              <div>
+                <div className="font-bold text-lg">{requiredQuantities.n1}</div>
+                <div className="text-xs">Agentes N1</div>
+              </div>
+              <div>
+                <div className="font-bold text-lg">{requiredQuantities.n2}</div>
+                <div className="text-xs">Agentes N2</div>
+              </div>
+              <div>
+                <div className="font-bold text-lg">{requiredQuantities.n3}</div>
+                <div className="text-xs">Agentes N3</div>
+              </div>
+              <div>
+                <div className="font-bold text-lg">{requiredQuantities.folguistas}</div>
+                <div className="text-xs">Folguistas</div>
+              </div>
+              <div>
+                <div className="font-bold text-lg text-blue-600">{requiredQuantities.total}</div>
+                <div className="text-xs">Total Necessário</div>
+              </div>
+            </div>
+            <div className="mt-2 text-xs">
+              Use os templates rápidos abaixo para preencher automaticamente com base neste dimensionamento.
+            </div>
+          </AlertDescription>
+        </Alert>
+      )}
+
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="grid w-full grid-cols-2">
@@ -362,7 +456,7 @@ export function TeamTabModuleNew({
                 className="w-full"
               >
                 <Plus className="h-4 w-4 mr-2" />
-                Equipe N1 (4 pessoas)
+                Equipe N1 ({requiredQuantities.n1 > 0 ? requiredQuantities.n1 : 4} pessoas)
               </Button>
               <Button
                 variant="outline"
@@ -370,7 +464,7 @@ export function TeamTabModuleNew({
                 className="w-full"
               >
                 <Plus className="h-4 w-4 mr-2" />
-                Equipe N2 (2 pessoas)
+                Equipe N2 ({requiredQuantities.n2 > 0 ? requiredQuantities.n2 : 2} pessoas)
               </Button>
               <Button
                 variant="outline"
@@ -378,7 +472,7 @@ export function TeamTabModuleNew({
                 className="w-full"
               >
                 <Plus className="h-4 w-4 mr-2" />
-                Equipe Completa
+                Equipe Completa {requiredQuantities.total > 0 ? `(${requiredQuantities.total} pessoas)` : ''}
               </Button>
               <Button
                 onClick={handleAddMember}

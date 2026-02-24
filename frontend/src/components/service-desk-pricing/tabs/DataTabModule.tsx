@@ -86,26 +86,167 @@ export function DataTabModule({
   }, [localData, onUpdate]);
 
   const handleGenerateSchedule = useCallback(() => {
-    // Navegar para a aba de Escala e gerar automaticamente
-    // Primeiro, salvar os dados atuais
+    // 1. Calculate dimensioning using Erlang C
+    const monthlyCalls = (localData.userQuantity || 0) * (localData.incidentsPerUser || 0);
+    const dailyCalls = Math.round(monthlyCalls / 22); // 22 working days
+    const hourlyCalls = dailyCalls / 8; // Assuming 8 hour workday
+    
+    // Simplified Erlang C calculation
+    const tma = 15; // Average handling time in minutes
+    const occupancy = 0.85; // 85% occupancy target
+    const sla = (localData.slaTarget || 80) / 100;
+    
+    // Calculate required agents (simplified formula)
+    const trafficIntensity = (hourlyCalls * tma) / 60; // Erlangs
+    const baseAgents = Math.ceil(trafficIntensity / occupancy);
+    
+    // Distribution: 60% N1, 30% N2, 10% N3
+    const n1Count = Math.max(Math.ceil(baseAgents * 0.6), 2);
+    const n2Count = Math.max(Math.ceil(baseAgents * 0.3), 1);
+    const n3Count = Math.max(Math.ceil(baseAgents * 0.1), 1);
+    const totalAgents = n1Count + n2Count + n3Count;
+    
+    // 2. Calculate folguistas based on coverage type
+    let folguistaFactor = 0.20; // Default 20% for 8x5
+    if (localData.coverageType === '12x5') {
+      folguistaFactor = 0.25; // 25% for extended hours
+    } else if (localData.coverageType === '24x7') {
+      folguistaFactor = 0.40; // 40% for 24x7
+    }
+    
+    const folguistas = Math.ceil(totalAgents * folguistaFactor);
+    const totalWithFolguistas = totalAgents + folguistas;
+    
+    // 3. Generate shifts based on coverage type
+    const shifts: any[] = [];
+    
+    if (localData.coverageType === '8x5') {
+      // Business hours: 8am-6pm, Mon-Fri
+      shifts.push({
+        id: `shift-${Date.now()}-1`,
+        name: 'Turno Comercial',
+        startTime: '08:00',
+        endTime: '18:00',
+        daysOfWeek: [1, 2, 3, 4, 5],
+        teamMembers: [],
+        isSpecialShift: false,
+        multiplier: 1.0,
+        requiredN1: n1Count,
+        requiredN2: n2Count,
+        requiredN3: n3Count,
+        requiredFolguistas: folguistas
+      });
+    } else if (localData.coverageType === '12x5') {
+      // Extended hours: 7am-7pm, Mon-Fri
+      shifts.push({
+        id: `shift-${Date.now()}-1`,
+        name: 'Turno Manhã/Tarde',
+        startTime: '07:00',
+        endTime: '19:00',
+        daysOfWeek: [1, 2, 3, 4, 5],
+        teamMembers: [],
+        isSpecialShift: false,
+        multiplier: 1.0,
+        requiredN1: n1Count,
+        requiredN2: n2Count,
+        requiredN3: n3Count,
+        requiredFolguistas: folguistas
+      });
+    } else if (localData.coverageType === '24x7') {
+      // 24x7 coverage: 3 shifts of 8 hours
+      const shiftsPerDay = Math.ceil(n1Count / 3);
+      const n2PerShift = Math.ceil(n2Count / 3);
+      
+      shifts.push(
+        {
+          id: `shift-${Date.now()}-1`,
+          name: 'Turno Madrugada (00h-08h)',
+          startTime: '00:00',
+          endTime: '08:00',
+          daysOfWeek: [0, 1, 2, 3, 4, 5, 6],
+          teamMembers: [],
+          isSpecialShift: true,
+          multiplier: 1.5, // Night shift premium
+          requiredN1: shiftsPerDay,
+          requiredN2: n2PerShift,
+          requiredN3: 0,
+          requiredFolguistas: Math.ceil(folguistas / 3)
+        },
+        {
+          id: `shift-${Date.now()}-2`,
+          name: 'Turno Manhã (08h-16h)',
+          startTime: '08:00',
+          endTime: '16:00',
+          daysOfWeek: [0, 1, 2, 3, 4, 5, 6],
+          teamMembers: [],
+          isSpecialShift: false,
+          multiplier: 1.0,
+          requiredN1: shiftsPerDay,
+          requiredN2: n2PerShift,
+          requiredN3: n3Count, // N3 works during business hours
+          requiredFolguistas: Math.ceil(folguistas / 3)
+        },
+        {
+          id: `shift-${Date.now()}-3`,
+          name: 'Turno Tarde (16h-00h)',
+          startTime: '16:00',
+          endTime: '23:59',
+          daysOfWeek: [0, 1, 2, 3, 4, 5, 6],
+          teamMembers: [],
+          isSpecialShift: true,
+          multiplier: 1.3, // Evening shift premium
+          requiredN1: shiftsPerDay,
+          requiredN2: n2PerShift,
+          requiredN3: 0,
+          requiredFolguistas: Math.ceil(folguistas / 3)
+        }
+      );
+    }
+    
+    // 4. Create schedule object
+    const generatedSchedule = {
+      id: `schedule-${Date.now()}`,
+      name: `Escala ${localData.coverageType}`,
+      shifts: shifts,
+      coverage: {
+        minimumStaff: totalAgents,
+        preferredStaff: totalWithFolguistas,
+        skillRequirements: [],
+        availabilityHours: []
+      },
+      specialRates: [],
+      dimensioning: {
+        n1: n1Count,
+        n2: n2Count,
+        n3: n3Count,
+        folguistas: folguistas,
+        total: totalWithFolguistas,
+        coverageType: localData.coverageType
+      }
+    };
+    
+    // 5. Save data and dispatch event
     onUpdate(localData);
     
-    // Mostrar toast de sucesso
     if (typeof window !== 'undefined') {
-      // Criar um evento customizado para notificar outras abas
-      const event = new CustomEvent('generateSchedule', {
+      const event = new CustomEvent('scheduleGenerated', {
         detail: {
-          userQuantity: localData.userQuantity,
-          incidentsPerUser: localData.incidentsPerUser,
-          coverageType: localData.coverageType,
-          slaTarget: localData.slaTarget
+          schedule: generatedSchedule,
+          dimensioning: {
+            n1: n1Count,
+            n2: n2Count,
+            n3: n3Count,
+            folguistas: folguistas,
+            total: totalWithFolguistas
+          },
+          projectData: localData
         }
       });
       window.dispatchEvent(event);
     }
     
-    // Mostrar mensagem de sucesso
-    alert('Dados salvos! Navegue para a aba "Escala" para ver a escala gerada automaticamente.');
+    // Show success message
+    alert(`Escala gerada com sucesso!\n\nDimensionamento:\n- N1: ${n1Count} agentes\n- N2: ${n2Count} agentes\n- N3: ${n3Count} agentes\n- Folguistas: ${folguistas} agentes\n- Total: ${totalWithFolguistas} agentes\n\nNavegue para a aba "Escala" para conferir.`);
   }, [localData, onUpdate]);
 
   // Cálculos automáticos
