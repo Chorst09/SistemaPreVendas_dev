@@ -27,27 +27,27 @@ interface MetricCardProps {
 
 const variantStyles = {
   default: {
-    card: 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600',
+    card: 'bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600',
     icon: 'text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-800',
     value: 'text-gray-900 dark:text-gray-100',
   },
   primary: {
-    card: 'border-blue-200 dark:border-blue-800 hover:border-blue-300 dark:hover:border-blue-700 bg-blue-50/30 dark:bg-blue-950/40',
+    card: 'bg-white dark:bg-gray-900 border-blue-200 dark:border-blue-800 hover:border-blue-300 dark:hover:border-blue-700',
     icon: 'text-blue-600 dark:text-blue-300 bg-blue-100 dark:bg-blue-900',
     value: 'text-blue-900 dark:text-blue-100',
   },
   success: {
-    card: 'border-green-200 dark:border-green-800 hover:border-green-300 dark:hover:border-green-700 bg-green-50/30 dark:bg-green-950/40',
+    card: 'bg-white dark:bg-gray-900 border-green-200 dark:border-green-800 hover:border-green-300 dark:hover:border-green-700',
     icon: 'text-green-600 dark:text-green-300 bg-green-100 dark:bg-green-900',
     value: 'text-green-900 dark:text-green-100',
   },
   warning: {
-    card: 'border-yellow-200 dark:border-yellow-800 hover:border-yellow-300 dark:hover:border-yellow-700 bg-yellow-50/30 dark:bg-yellow-950/40',
+    card: 'bg-white dark:bg-gray-900 border-yellow-200 dark:border-yellow-800 hover:border-yellow-300 dark:hover:border-yellow-700',
     icon: 'text-yellow-600 dark:text-yellow-300 bg-yellow-100 dark:bg-yellow-900',
     value: 'text-yellow-900 dark:text-yellow-100',
   },
   danger: {
-    card: 'border-red-200 dark:border-red-800 hover:border-red-300 dark:hover:border-red-700 bg-red-50/30 dark:bg-red-950/40',
+    card: 'bg-white dark:bg-gray-900 border-red-200 dark:border-red-800 hover:border-red-300 dark:hover:border-red-700',
     icon: 'text-red-600 dark:text-red-300 bg-red-100 dark:bg-red-900',
     value: 'text-red-900 dark:text-red-100',
   },

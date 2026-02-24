@@ -27,11 +27,11 @@ interface FormSectionProps {
 }
 
 const variantStyles = {
-  default: 'border-l-gray-300 dark:border-l-gray-600',
-  primary: 'border-l-blue-500 dark:border-l-blue-400 bg-blue-50/30 dark:bg-blue-950/40',
-  success: 'border-l-green-500 dark:border-l-green-400 bg-green-50/30 dark:bg-green-950/40',
-  warning: 'border-l-yellow-500 dark:border-l-yellow-400 bg-yellow-50/30 dark:bg-yellow-950/40',
-  danger: 'border-l-red-500 dark:border-l-red-400 bg-red-50/30 dark:bg-red-950/40',
+  default: 'border-l-gray-300 dark:border-l-gray-600 bg-white dark:bg-gray-900',
+  primary: 'border-l-blue-500 dark:border-l-blue-400 bg-white dark:bg-gray-900',
+  success: 'border-l-green-500 dark:border-l-green-400 bg-white dark:bg-gray-900',
+  warning: 'border-l-yellow-500 dark:border-l-yellow-400 bg-white dark:bg-gray-900',
+  danger: 'border-l-red-500 dark:border-l-red-400 bg-white dark:bg-gray-900',
 };
 
 export function FormSection({
