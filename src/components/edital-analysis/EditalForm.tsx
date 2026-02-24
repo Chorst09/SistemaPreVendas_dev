@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { X, Plus, FileText, Trash2, Upload, Brain, FileUp } from 'lucide-react';
 import { Edital, EditalDocument, EditalProduct, EditalFile } from '@/lib/types';
+import { EditalStatus, EditalDocumentType, EditalDocumentStatus, EditalProductStatus } from '@/lib/types/enums';
 
 interface EditalFormProps {
   edital?: Edital;
@@ -18,8 +19,14 @@ interface EditalFormProps {
   onCancel: () => void;
 }
 
+type EditalFormState = Omit<Edital, 'id' | 'files' | 'attachments' | 'status'> & {
+  files: EditalFile[];
+  attachments: string[];
+  status: EditalStatus;
+};
+
 const EditalForm: React.FC<EditalFormProps> = ({ edital, onSubmit, onCancel }) => {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<EditalFormState>(() => ({
     title: edital?.title || '',
     publicationNumber: edital?.publicationNumber || '',
     publishingBody: edital?.publishingBody || '',
@@ -28,25 +35,25 @@ const EditalForm: React.FC<EditalFormProps> = ({ edital, onSubmit, onCancel }) =
     submissionDeadline: edital?.submissionDeadline || '',
     estimatedValue: edital?.estimatedValue || 0,
     category: edital?.category || '',
-    status: edital?.status || 'Aberto',
+    status: edital?.status ?? EditalStatus.OPEN,
     description: edital?.description || '',
     requirements: edital?.requirements || '',
-    documents: edital?.documents || [],
-    products: edital?.products || [],
-    files: edital?.files || [],
-    attachments: edital?.attachments || [],
+    documents: edital?.documents ?? [],
+    products: edital?.products ?? [],
+    files: edital?.files ?? [],
+    attachments: edital?.attachments ?? [],
     notes: edital?.notes || ''
-  });
+  }));
 
   const [newAttachment, setNewAttachment] = useState('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [newDocument, setNewDocument] = useState<Omit<EditalDocument, 'id'>>({
     name: '',
-    type: 'Obrigatório',
+    type: EditalDocumentType.MANDATORY,
     description: '',
     deadline: '',
-    status: 'Pendente',
+    status: EditalDocumentStatus.PENDING,
     notes: ''
   });
 
@@ -59,7 +66,7 @@ const EditalForm: React.FC<EditalFormProps> = ({ edital, onSubmit, onCancel }) =
     brand: '',
     model: '',
     supplier: '',
-    status: 'Disponível'
+    status: EditalProductStatus.AVAILABLE
   });
 
   const categories = [
@@ -67,9 +74,9 @@ const EditalForm: React.FC<EditalFormProps> = ({ edital, onSubmit, onCancel }) =
     'Administrativo', 'Transporte', 'Meio Ambiente', 'Outros'
   ];
 
-  const documentTypes = ['Obrigatório', 'Opcional', 'Complementar'];
-  const documentStatuses = ['Pendente', 'Em Preparação', 'Pronto', 'Enviado'];
-  const productStatuses = ['Disponível', 'Em Cotação', 'Indisponível'];
+  const documentTypes = Object.values(EditalDocumentType);
+  const documentStatuses = Object.values(EditalDocumentStatus);
+  const productStatuses = Object.values(EditalProductStatus);
   const units = [
     'unidade', 'kg', 'litro', 'metro', 'hora', 'dia', 'mês', 'ano',
     'resma', 'caixa', 'pacote', 'conjunto', 'licença', 'usuário'
@@ -86,8 +93,8 @@ const EditalForm: React.FC<EditalFormProps> = ({ edital, onSubmit, onCancel }) =
     if (!selectedFile) return;
 
     const fileType = selectedFile.name.split('.').pop()?.toLowerCase() || 'other';
-    const validTypes = ['pdf', 'doc', 'docx', 'xls', 'xlsx'];
-    const type = validTypes.includes(fileType) ? fileType as any : 'other';
+    const validTypes = ['pdf', 'doc', 'docx', 'xls', 'xlsx'] as const;
+    const type = validTypes.includes(fileType as any) ? fileType as any : 'other';
 
     const newFile: EditalFile = {
       id: `FILE-${Date.now()}`,
@@ -99,7 +106,7 @@ const EditalForm: React.FC<EditalFormProps> = ({ edital, onSubmit, onCancel }) =
 
     setFormData(prev => ({
       ...prev,
-      files: [...prev.files, newFile]
+      files: [...(prev.files ?? []), newFile]
     }));
 
     setSelectedFile(null);
@@ -160,7 +167,7 @@ const EditalForm: React.FC<EditalFormProps> = ({ edital, onSubmit, onCancel }) =
 
       setFormData(prev => ({
         ...prev,
-        files: prev.files.map(file => 
+        files: (prev.files ?? []).map(file => 
           file.id === fileId 
             ? { ...file, aiAnalysis } 
             : file
@@ -176,7 +183,7 @@ const EditalForm: React.FC<EditalFormProps> = ({ edital, onSubmit, onCancel }) =
   const removeFile = (fileId: string) => {
     setFormData(prev => ({
       ...prev,
-      files: prev.files.filter(file => file.id !== fileId)
+      files: (prev.files ?? []).filter(file => file.id !== fileId)
     }));
   };
 
@@ -191,14 +198,14 @@ const EditalForm: React.FC<EditalFormProps> = ({ edital, onSubmit, onCancel }) =
       submissionDeadline: formData.submissionDeadline,
       estimatedValue: formData.estimatedValue,
       category: formData.category,
-      status: formData.status as 'Aberto' | 'Em Análise' | 'Fechado' | 'Vencido' | 'Cancelado',
+      status: formData.status,
       description: formData.description,
       requirements: formData.requirements,
       documents: formData.documents,
       products: formData.products,
-      files: formData.files.length > 0 ? formData.files : undefined,
+      files: formData.files && formData.files.length > 0 ? formData.files : undefined,
       notes: formData.notes || undefined,
-      attachments: formData.attachments.length > 0 ? formData.attachments : undefined
+      attachments: formData.attachments && formData.attachments.length > 0 ? formData.attachments : undefined
     });
   };
 
@@ -233,10 +240,10 @@ const EditalForm: React.FC<EditalFormProps> = ({ edital, onSubmit, onCancel }) =
 
       setNewDocument({
         name: '',
-        type: 'Obrigatório',
+        type: EditalDocumentType.MANDATORY,
         description: '',
         deadline: '',
-        status: 'Pendente',
+        status: EditalDocumentStatus.PENDING,
         notes: ''
       });
     }
@@ -273,7 +280,7 @@ const EditalForm: React.FC<EditalFormProps> = ({ edital, onSubmit, onCancel }) =
         brand: '',
         model: '',
         supplier: '',
-        status: 'Disponível'
+        status: EditalProductStatus.AVAILABLE
       });
     }
   };
@@ -367,17 +374,17 @@ const EditalForm: React.FC<EditalFormProps> = ({ edital, onSubmit, onCancel }) =
                   <Label htmlFor="status">Status *</Label>
                   <Select 
                     value={formData.status} 
-                    onValueChange={(value) => setFormData(prev => ({ ...prev, status: value as 'Aberto' | 'Em Análise' | 'Fechado' | 'Vencido' | 'Cancelado' }))}
+                    onValueChange={(value) => setFormData(prev => ({ ...prev, status: value as EditalStatus }))}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Selecione o status" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Aberto">Aberto</SelectItem>
-                      <SelectItem value="Em Análise">Em Análise</SelectItem>
-                      <SelectItem value="Fechado">Fechado</SelectItem>
-                      <SelectItem value="Vencido">Vencido</SelectItem>
-                      <SelectItem value="Cancelado">Cancelado</SelectItem>
+                      <SelectItem value={EditalStatus.OPEN}>{EditalStatus.OPEN}</SelectItem>
+                      <SelectItem value={EditalStatus.UNDER_REVIEW}>{EditalStatus.UNDER_REVIEW}</SelectItem>
+                      <SelectItem value={EditalStatus.CLOSED}>{EditalStatus.CLOSED}</SelectItem>
+                      <SelectItem value={EditalStatus.EXPIRED}>{EditalStatus.EXPIRED}</SelectItem>
+                      <SelectItem value={EditalStatus.CANCELLED}>{EditalStatus.CANCELLED}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -470,7 +477,7 @@ const EditalForm: React.FC<EditalFormProps> = ({ edital, onSubmit, onCancel }) =
                   </div>
                   <div>
                     <Label>Tipo *</Label>
-                    <Select value={newDocument.type} onValueChange={(value) => setNewDocument(prev => ({ ...prev, type: value as any }))}>
+                    <Select value={newDocument.type} onValueChange={(value) => setNewDocument(prev => ({ ...prev, type: value as EditalDocumentType }))}>
                       <SelectTrigger>
                         <SelectValue placeholder="Tipo" />
                       </SelectTrigger>
@@ -485,7 +492,7 @@ const EditalForm: React.FC<EditalFormProps> = ({ edital, onSubmit, onCancel }) =
                   </div>
                   <div>
                     <Label>Status *</Label>
-                    <Select value={newDocument.status} onValueChange={(value) => setNewDocument(prev => ({ ...prev, status: value as any }))}>
+                    <Select value={newDocument.status} onValueChange={(value) => setNewDocument(prev => ({ ...prev, status: value as EditalDocumentStatus }))}>
                       <SelectTrigger>
                         <SelectValue placeholder="Status" />
                       </SelectTrigger>
@@ -611,7 +618,7 @@ const EditalForm: React.FC<EditalFormProps> = ({ edital, onSubmit, onCancel }) =
                   </div>
                   <div>
                     <Label>Status</Label>
-                    <Select value={newProduct.status} onValueChange={(value) => setNewProduct(prev => ({ ...prev, status: value as any }))}>
+                    <Select value={newProduct.status} onValueChange={(value) => setNewProduct(prev => ({ ...prev, status: value as EditalProductStatus }))}>
                       <SelectTrigger>
                         <SelectValue placeholder="Status" />
                       </SelectTrigger>

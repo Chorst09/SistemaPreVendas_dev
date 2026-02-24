@@ -285,7 +285,7 @@ export function ColorMigrationPanel() {
                     <Button
                       key={mode}
                       variant={migrationConfig.fallbackMode === mode ? "default" : "outline"}
-                      size="sm"
+                     
                       onClick={() => 
                         setMigrationConfig(prev => ({ ...prev, fallbackMode: mode as any }))
                       }
@@ -304,7 +304,7 @@ export function ColorMigrationPanel() {
                     <Button
                       key={level}
                       variant={migrationConfig.validationLevel === level ? "default" : "outline"}
-                      size="sm"
+                     
                       onClick={() => 
                         setMigrationConfig(prev => ({ ...prev, validationLevel: level as any }))
                       }
@@ -362,7 +362,7 @@ export function ColorMigrationPanel() {
                                   Local: {error.location}
                                 </div>
                               )}
-                              <Badge variant="outline" size="sm" className="mt-1">
+                              <Badge variant="outline" className="mt-1">
                                 {error.type}
                               </Badge>
                             </div>

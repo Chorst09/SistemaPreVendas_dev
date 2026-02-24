@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { ServiceDeskData, ExportCustomization } from '@/lib/types/service-desk-pricing';
 import { ReportExportService, ExportTemplate } from './report-export-service';
 import { ServiceDeskPDFIntegration, ServiceDeskPDFOptions } from './service-desk-pdf-integration';

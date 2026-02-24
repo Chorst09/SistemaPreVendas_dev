@@ -107,37 +107,37 @@ export function ProgressIndicator({
     switch (progressStatus) {
       case 'completed':
         return {
-          color: 'text-green-600',
-          bgColor: 'bg-green-50 border-green-200',
-          icon: <Award className="w-5 h-5 text-green-600" />,
+          color: 'text-green-500',
+          accent: 'pill-soft-success',
+          icon: <Award className="w-5 h-5 text-green-400" />,
           message: 'Projeto concluído!'
         };
       case 'near-completion':
         return {
-          color: 'text-blue-600',
-          bgColor: 'bg-blue-50 border-blue-200',
-          icon: <Target className="w-5 h-5 text-blue-600" />,
+          color: 'text-blue-400',
+          accent: 'pill-soft',
+          icon: <Target className="w-5 h-5 text-blue-400" />,
           message: 'Quase finalizado'
         };
       case 'good-progress':
         return {
-          color: 'text-green-600',
-          bgColor: 'bg-green-50 border-green-200',
-          icon: <TrendingUp className="w-5 h-5 text-green-600" />,
+          color: 'text-green-400',
+          accent: 'pill-soft-success',
+          icon: <TrendingUp className="w-5 h-5 text-green-400" />,
           message: 'Bom progresso'
         };
       case 'started':
         return {
-          color: 'text-yellow-600',
-          bgColor: 'bg-yellow-50 border-yellow-200',
-          icon: <Clock className="w-5 h-5 text-yellow-600" />,
+          color: 'text-yellow-400',
+          accent: 'pill-soft-warning',
+          icon: <Clock className="w-5 h-5 text-yellow-400" />,
           message: 'Em andamento'
         };
       default:
         return {
-          color: 'text-gray-600',
-          bgColor: 'bg-gray-50 border-gray-200',
-          icon: <Clock className="w-5 h-5 text-gray-600" />,
+          color: 'text-muted-foreground',
+          accent: 'pill-soft',
+          icon: <Clock className="w-5 h-5 text-muted-foreground" />,
           message: 'Iniciando'
         };
     }
@@ -156,7 +156,7 @@ export function ProgressIndicator({
   const milestones = getMilestones();
 
   return (
-    <Card className={`${statusDisplay.bgColor} ${className}`}>
+    <Card variant="surface" className={`card-surface ${className}`}>
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
@@ -165,7 +165,7 @@ export function ProgressIndicator({
               Progresso do Projeto
             </span>
           </div>
-          <Badge variant="outline" className={statusDisplay.color}>
+          <Badge variant="secondary" className={`${statusDisplay.accent} text-xs`}>
             {progress.overallProgress}%
           </Badge>
         </CardTitle>
@@ -217,64 +217,64 @@ export function ProgressIndicator({
           <div className="space-y-3">
             <h4 className="text-sm font-medium text-muted-foreground">Status Detalhado</h4>
             
-            <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-3 gap-3">
               {/* Completed */}
-              <div className="flex items-center space-x-2 p-2 bg-green-50 rounded-md">
-                <CheckCircle className="w-4 h-4 text-green-500" />
+              <div className="flex items-center space-x-2 p-2 rounded-md bg-green-500/10 border border-green-400/25">
+                <CheckCircle className="w-4 h-4 text-green-400" />
                 <div>
-                  <div className="text-sm font-medium text-green-700">
+                  <div className="text-sm font-medium text-green-100">
                     {progress.completedTabs}
                   </div>
-                  <div className="text-xs text-green-600">Concluídas</div>
+                  <div className="text-xs text-green-200/90">Concluídas</div>
                 </div>
               </div>
 
               {/* With Warnings */}
               {progress.tabsWithWarnings > 0 && (
-                <div className="flex items-center space-x-2 p-2 bg-yellow-50 rounded-md">
-                  <AlertTriangle className="w-4 h-4 text-yellow-500" />
+                <div className="flex items-center space-x-2 p-2 rounded-md bg-amber-400/10 border border-amber-300/25">
+                  <AlertTriangle className="w-4 h-4 text-amber-300" />
                   <div>
-                    <div className="text-sm font-medium text-yellow-700">
+                    <div className="text-sm font-medium text-amber-100">
                       {progress.tabsWithWarnings}
                     </div>
-                    <div className="text-xs text-yellow-600">Com Avisos</div>
+                    <div className="text-xs text-amber-200/90">Com Avisos</div>
                   </div>
                 </div>
               )}
 
               {/* With Errors */}
               {progress.tabsWithErrors > 0 && (
-                <div className="flex items-center space-x-2 p-2 bg-red-50 rounded-md">
-                  <AlertCircle className="w-4 h-4 text-red-500" />
+                <div className="flex items-center space-x-2 p-2 rounded-md bg-red-500/10 border border-red-400/30">
+                  <AlertCircle className="w-4 h-4 text-red-400" />
                   <div>
-                    <div className="text-sm font-medium text-red-700">
+                    <div className="text-sm font-medium text-red-100">
                       {progress.tabsWithErrors}
                     </div>
-                    <div className="text-xs text-red-600">Com Erros</div>
+                    <div className="text-xs text-red-200/90">Com Erros</div>
                   </div>
                 </div>
               )}
 
               {/* Pending */}
               {progress.pendingTabs > 0 && (
-                <div className="flex items-center space-x-2 p-2 bg-gray-50 rounded-md">
-                  <Clock className="w-4 h-4 text-gray-500" />
+                <div className="flex items-center space-x-2 p-2 rounded-md bg-slate-500/10 border border-border/40">
+                  <Clock className="w-4 h-4 text-slate-300" />
                   <div>
-                    <div className="text-sm font-medium text-gray-700">
+                    <div className="text-sm font-medium text-slate-100">
                       {progress.pendingTabs}
                     </div>
-                    <div className="text-xs text-gray-600">Pendentes</div>
+                    <div className="text-xs text-slate-200/90">Pendentes</div>
                   </div>
                 </div>
               )}
             </div>
 
             {/* Current Tab Indicator */}
-            <div className="p-2 bg-blue-50 rounded-md border border-blue-200">
+            <div className="p-2 rounded-md border border-primary/30 bg-primary/10">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">
-                  <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
-                  <span className="text-sm font-medium text-blue-700">
+                  <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
+                  <span className="text-sm font-medium text-primary-foreground/80">
                     Trabalhando em: {tabs.find(t => t.id === activeTab)?.label || 'Desconhecido'}
                   </span>
                 </div>
@@ -283,7 +283,7 @@ export function ProgressIndicator({
                     variant="ghost"
                     size="sm"
                     onClick={() => onNavigateToTab(activeTab)}
-                    className="h-6 px-2 text-xs text-blue-600 hover:bg-blue-100"
+                    className="h-6 px-2 text-xs text-primary hover:bg-primary/15"
                   >
                     Focar
                   </Button>
@@ -292,10 +292,10 @@ export function ProgressIndicator({
               {validationStatus[activeTab] && (
                 <div className="mt-1 ml-4">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs text-blue-600">
+                    <span className="text-xs text-primary/80">
                       Progresso da aba atual
                     </span>
-                    <span className="text-xs text-blue-600">
+                    <span className="text-xs text-primary/80">
                       {Math.round(validationStatus[activeTab].completionPercentage)}%
                     </span>
                   </div>
@@ -312,41 +312,41 @@ export function ProgressIndicator({
               <div className="space-y-2">
                 <h4 className="text-sm font-medium text-muted-foreground">Ações Rápidas</h4>
                 <div className="flex flex-wrap gap-2">
-                  {onNavigateToFirstError && progress.tabsWithErrors > 0 && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={onNavigateToFirstError}
-                      className="flex items-center space-x-2 text-red-600 border-red-300 hover:bg-red-50"
-                    >
-                      <AlertCircle className="w-3 h-3" />
-                      <span className="text-xs">Corrigir Erros ({progress.tabsWithErrors})</span>
-                    </Button>
-                  )}
+                {onNavigateToFirstError && progress.tabsWithErrors > 0 && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={onNavigateToFirstError}
+                    className="flex items-center space-x-2 text-red-200 border-red-300/60 hover:bg-red-500/10"
+                  >
+                    <AlertCircle className="w-3 h-3" />
+                    <span className="text-xs">Corrigir Erros ({progress.tabsWithErrors})</span>
+                  </Button>
+                )}
 
-                  {onNavigateToFirstIncomplete && progress.pendingTabs > 0 && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={onNavigateToFirstIncomplete}
-                      className="flex items-center space-x-2 text-yellow-600 border-yellow-300 hover:bg-yellow-50"
-                    >
-                      <Clock className="w-3 h-3" />
-                      <span className="text-xs">Completar ({progress.pendingTabs})</span>
-                    </Button>
-                  )}
+                {onNavigateToFirstIncomplete && progress.pendingTabs > 0 && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={onNavigateToFirstIncomplete}
+                    className="flex items-center space-x-2 text-amber-200 border-amber-300/60 hover:bg-amber-400/10"
+                  >
+                    <Clock className="w-3 h-3" />
+                    <span className="text-xs">Completar ({progress.pendingTabs})</span>
+                  </Button>
+                )}
 
-                  {progress.overallProgress >= 100 && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => onNavigateToTab?.('final-analysis')}
-                      className="flex items-center space-x-2 text-green-600 border-green-300 hover:bg-green-50"
-                    >
-                      <Award className="w-3 h-3" />
-                      <span className="text-xs">Ver Análise Final</span>
-                    </Button>
-                  )}
+                {progress.overallProgress >= 100 && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => onNavigateToTab?.('final-analysis')}
+                    className="flex items-center space-x-2 text-green-200 border-green-300/60 hover:bg-green-500/10"
+                  >
+                    <Award className="w-3 h-3" />
+                    <span className="text-xs">Ver Análise Final</span>
+                  </Button>
+                )}
                 </div>
               </div>
             )}

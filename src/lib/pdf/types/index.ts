@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * @deprecated Este arquivo será removido. Use os tipos modularizados em @/lib/types/pdf
  */

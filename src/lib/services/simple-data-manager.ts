@@ -86,25 +86,33 @@ export class SimpleDataManager {
         taxRegime: TaxRegime.SIMPLES_NACIONAL
       },
       variables: {
-        inflation: 6.5,
-        salaryAdjustment: 8.0,
-        marketGrowth: 5.0,
-        competitionFactor: 1.0,
-        economicScenario: 'stable',
-        customVariables: []
+        inflation: {
+          annualRate: 6.5,
+          monthlyRate: 0.52,
+          projectionPeriod: 12,
+          source: 'baseline',
+          lastUpdate: now
+        },
+        salaryAdjustments: {
+          annualAdjustment: 8.0,
+          adjustmentDate: now,
+          adjustmentType: 'market',
+          minimumAdjustment: 0,
+          maximumAdjustment: 15
+        },
+        marketFactors: [],
+        scenarios: []
       },
       otherCosts: [],
       budget: {
-        totalCost: 0,
-        totalRevenue: 0,
-        margin: 0,
-        breakdown: {
-          personnel: 0,
-          infrastructure: 0,
-          software: 0,
-          taxes: 0,
-          other: 0
-        }
+        teamCosts: { salaries: 0, benefits: 0, total: 0, breakdown: [] },
+        infrastructureCosts: 0,
+        otherCosts: 0,
+        taxes: { federal: 0, state: 0, municipal: 0, total: 0, breakdown: [] },
+        totalCosts: 0,
+        margin: { type: 'percentage', value: 20, minimumMargin: 10, targetMargin: 20, maximumMargin: 40 },
+        totalPrice: 0,
+        monthlyBreakdown: []
       },
       forecast: {
         id: crypto.randomUUID(),

@@ -453,6 +453,12 @@ export interface TeamMemberNew {
   workingHours: 8 | 6; // 8 or 6 hours
   isActive: boolean;
   notes?: string;
+  role?: string;
+  salary?: number;
+  benefits?: BenefitPackage;
+  workload?: number;
+  skills?: string[];
+  costPerHour?: number;
   // Legacy fields for backward compatibility
   name?: string;
   startDate?: Date;

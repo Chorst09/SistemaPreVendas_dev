@@ -242,9 +242,9 @@ export class RetryMechanism {
    */
   private isRetryableError(error: Error): boolean {
     // Check if it's a ServiceDeskError with retryable type
-    if (error instanceof Error && 'type' in error) {
-      const serviceDeskError = error as ServiceDeskError
-      return this.config.retryableErrors.includes(serviceDeskError.type)
+    if (error && (error as any).type) {
+      const type = (error as any).type as ServiceDeskErrorType
+      return this.config.retryableErrors.includes(type)
     }
     
     // Check common error patterns
@@ -273,8 +273,8 @@ export class RetryMechanism {
    * Get error type from generic error
    */
   private getErrorType(error: Error): ServiceDeskErrorType {
-    if (error instanceof Error && 'type' in error) {
-      return (error as ServiceDeskError).type
+    if (error && (error as any).type) {
+      return (error as any).type as ServiceDeskErrorType
     }
     
     const message = error.message.toLowerCase()

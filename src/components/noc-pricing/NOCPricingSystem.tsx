@@ -28,6 +28,7 @@ import type { ClientData } from '@/components/calculators/ProposalClientForm';
 // Import services
 import { UnifiedProposalService } from '@/lib/services/unified-proposal-service';
 import { Quote } from '@/lib/types/base';
+import { QuoteStatus } from '@/lib/types/enums';
 import { useToast } from '@/hooks/use-toast';
 import { usePricingIntegration } from '@/hooks/use-pricing-integration';
 
@@ -297,7 +298,7 @@ export function NOCPricingSystem({ onBack, proposalClientData, onNavigateToQuote
             client: mappedClientData.razaoSocial || data.project.clientName || 'Cliente não informado',
             projectName: mappedClientData.nomeProjeto || data.project.projectName || 'Projeto NOC',
             accountManager: mappedClientData.nomeGerente || 'Não informado',
-            status: 'Pendente',
+            status: QuoteStatus.PENDING,
             total: Number.isFinite(totalProjectValue) ? totalProjectValue : 0,
             monthlyPrice: computedMonthlyPrice,
             contractDurationMonths: contractMonths,
@@ -418,7 +419,7 @@ export function NOCPricingSystem({ onBack, proposalClientData, onNavigateToQuote
             client: mappedClientData.razaoSocial || data.project.clientName || 'Cliente não informado',
             projectName: mappedClientData.nomeProjeto || data.project.projectName || 'Projeto NOC',
             accountManager: mappedClientData.nomeGerente || 'Não informado',
-            status: 'Pendente',
+            status: QuoteStatus.PENDING,
             total: Number.isFinite(totalProjectValue) ? totalProjectValue : 0,
             monthlyPrice: computedMonthlyPrice,
             contractDurationMonths: contractMonths,

@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Slider } from '@/components/ui/slider';
 import { Input } from '@/components/ui/input';
@@ -10,9 +11,11 @@ import { Badge } from '@/components/ui/badge';
 import { 
   Users, Clock, DollarSign, 
   Calculator, Zap, CheckCircle, AlertCircle,
-  BarChart3, PieChart, Activity, Target
+  BarChart3, PieChart, Activity, Target, ArrowLeft
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useQuotes } from '@/contexts/QuoteContext';
+import { useToast } from '@/hooks/use-toast';
 
 interface CalculationResult {
   n1Agents: number;
@@ -27,7 +30,15 @@ interface CalculationResult {
   efficiency: 'low' | 'optimal' | 'high';
 }
 
-export function ModernServiceDeskCalculator() {
+interface ModernServiceDeskCalculatorProps {
+  onBack?: () => void;
+  onNavigateToQuotes?: () => void;
+}
+
+export function ModernServiceDeskCalculator({ onBack, onNavigateToQuotes }: ModernServiceDeskCalculatorProps) {
+  const router = useRouter();
+  const { addQuote } = useQuotes();
+  const { toast } = useToast();
   // Input States
   const [users, setUsers] = useState(100);
   const [ticketsPerUser, setTicketsPerUser] = useState(1.5);
@@ -107,18 +118,92 @@ export function ModernServiceDeskCalculator() {
     }
   };
 
+  // Save calculation as quote
+  const handleSave = useCallback(() => {
+    try {
+      const quote = {
+        id: `sd-${Date.now()}`,
+        client: 'Cliente Service Desk',
+        projectName: `Service Desk - ${users} usuários`,
+        status: 'draft' as const,
+        total: results.annualCost,
+        monthlyPrice: results.monthlyCost,
+        contractDurationMonths: 12,
+        date: new Date().toISOString(),
+        distributorId: 'default',
+        // Store calculation details in a custom field (if supported) or in notes
+        metadata: {
+          type: 'service-desk',
+          users,
+          ticketsPerUser,
+          monthlyTickets: users * ticketsPerUser,
+          avgHandleTime,
+          targetServiceLevel,
+          targetResponseTime,
+          coverage,
+          n1Distribution,
+          costPerAgent,
+          n1Agents: results.n1Agents,
+          n2Agents: results.n2Agents,
+          totalAgents: results.totalAgents,
+          costPerTicket: results.costPerTicket,
+          costPerUser: results.costPerUser,
+          occupancyRate: results.occupancyRate,
+          serviceLevel: results.serviceLevel,
+          efficiency: results.efficiency
+        }
+      };
+
+      addQuote(quote as any);
+
+      toast({
+        title: 'Dimensionamento salvo!',
+        description: 'O cálculo foi salvo como orçamento com sucesso.',
+        variant: 'default'
+      });
+
+      // Navigate to quotes after a brief delay
+      setTimeout(() => {
+        if (onNavigateToQuotes) {
+          onNavigateToQuotes();
+        } else {
+          router.push('/dashboard?tab=quotes');
+        }
+      }, 1500);
+    } catch (error) {
+      console.error('Error saving quote:', error);
+      toast({
+        title: 'Erro ao salvar',
+        description: 'Não foi possível salvar o dimensionamento. Tente novamente.',
+        variant: 'destructive'
+      });
+    }
+  }, [users, ticketsPerUser, avgHandleTime, targetServiceLevel, targetResponseTime, coverage, n1Distribution, costPerAgent, results, addQuote, toast, onNavigateToQuotes, router]);
+
   return (
     <div className="w-full max-w-7xl mx-auto p-6 space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold flex items-center gap-3">
-            <Calculator className="h-8 w-8 text-blue-600" />
-            Calculadora Service Desk
-          </h1>
-          <p className="text-muted-foreground mt-1">
-            Dimensione sua equipe em tempo real com cálculos baseados em Erlang C
-          </p>
+        <div className="flex items-center gap-4">
+          {onBack && (
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={onBack}
+              className="flex-shrink-0"
+            >
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+          )}
+          <div>
+            <h1 className="text-3xl font-bold flex items-center gap-3">
+              <Calculator className="h-8 w-8 text-blue-600" />
+              Calculadora Service Desk
+            </h1>
+            <p className="text-muted-foreground mt-1">
+              Dimensione sua equipe em tempo real com cálculos baseados em Erlang C
+            </p>
+          </div>
         </div>
         <Badge variant="outline" className="text-lg px-4 py-2">
           <Zap className="h-4 w-4 mr-2" />
@@ -473,7 +558,7 @@ export function ModernServiceDeskCalculator() {
 
               {/* Action Buttons */}
               <div className="space-y-2 pt-4">
-                <Button className="w-full" size="lg">
+                <Button className="w-full" size="lg" onClick={handleSave}>
                   <CheckCircle className="h-4 w-4 mr-2" />
                   Salvar Dimensionamento
                 </Button>

@@ -185,7 +185,7 @@ export function PartnerDetails({ partner }: PartnerDetailsProps) {
                 <div className="flex items-center space-x-4 text-xs text-muted-foreground">
                   <div className="flex items-center space-x-1">
                     <Phone className="h-3 w-3" />
-                    <span>{vendedor.telefone}</span>
+                    <span>{vendedor.phone}</span>
                   </div>
                   <div className="flex items-center space-x-1">
                     <Mail className="h-3 w-3" />

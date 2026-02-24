@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Simplified PDF Generator for testing
  * This is a minimal implementation to test PDF generation

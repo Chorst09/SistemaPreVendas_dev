@@ -1,8 +1,9 @@
+import { ProposalData, ClientData, CompanyInfo } from "./core"
+import { PDFError } from "./errors"
 /**
  * Tipos para componentes de PDF
  */
 
-import { ProposalData, ClientData, CompanyInfo, PDFError } from './core'
 
 // Props dos componentes PDF
 export interface PDFGeneratorProps {

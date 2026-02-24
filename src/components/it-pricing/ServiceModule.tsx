@@ -57,7 +57,7 @@ export function ServiceModule({ onBack, onModuleChange, onNavigateToProposals, p
           id: "1",
           description: "Consultoria de TI",
           contractType: "clt",
-          baseSalary: laborCosts?.geral?.salarioBase ?? 0,
+          baseSalary: laborCosts?.salarioBasePadrao ?? 0,
           estimatedHours: 20,
         },
       ])

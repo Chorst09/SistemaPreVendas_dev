@@ -60,28 +60,6 @@
   margin-top: 4px;
 }
 
-.checkboxContainer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 8px 0;
-}
-
-.customCheckbox {
-  width: 20px;
-  height: 20px;
-  border-radius: 4px;
-  border: 2px solid #475569;
-  background: transparent;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.customCheckbox:checked {
-  background: #06b6d4;
-  border-color: #06b6d4;
-}
-
 .sectionTitle {
   color: #06b6d4;
   font-size: 1.125rem;

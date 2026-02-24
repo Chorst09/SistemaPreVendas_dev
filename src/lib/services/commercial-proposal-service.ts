@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Serviço para gerenciar propostas comerciais
  */

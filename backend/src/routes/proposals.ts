@@ -1,5 +1,5 @@
 import express from 'express';
-import { ProposalSchema } from '../../../shared/schemas/index.js';
+import { ProposalSchema } from '../../../shared/schemas';
 
 const router = express.Router();
 

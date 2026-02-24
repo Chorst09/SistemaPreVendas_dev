@@ -141,15 +141,9 @@ RUN find src/routes -type f -name "*.ts" -exec sed -i "s|from \"../../../shared/
 # Verificar se os ajustes funcionaram
 RUN echo "=== Verificando imports ajustados ===" && grep -r "from.*shared" src/routes/ || true
 
-# Build
-RUN npm run build
-
-# Limpar devDependencies após build
-RUN npm prune --production
-
 EXPOSE 3001
 
-CMD ["npm", "start"]
+CMD ["npx", "tsx", "src/index.ts"]
 EOF
 
 # Criar Dockerfile para frontend

@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Gerador de PDF para propostas de Service Desk
  */

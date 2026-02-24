@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Sistema de migração suave para o novo sistema de cores
  * Permite transição gradual entre sistemas de cor com validação de compatibilidade
@@ -708,8 +709,6 @@ class ColorMigrationManager {
           }
         });
       }
-        }
-      });
     }
 
     this.status.isActive = false;

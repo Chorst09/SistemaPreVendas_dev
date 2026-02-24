@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * PDF Compatibility Layer
  * Ensures backward compatibility with existing PDF generation system

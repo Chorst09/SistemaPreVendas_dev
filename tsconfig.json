@@ -30,12 +30,40 @@
   },
   "include": [
     "next-env.d.ts",
-    "**/*.ts",
-    "**/*.tsx",
-    ".next/types/**/*.ts",
-    ".next/dev/types/**/*.ts"
+    "src/components/service-desk-pricing/**/*",
+    "src/lib/**/*",
+    "shared/**/*",
+    "backend/**/*"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    ".next",
+    "frontend/**",
+    "tests/**",
+    "src/components/pdf-generation/**",
+    "src/components/partners/**",
+    "src/components/printer-outsourcing/**",
+    "src/components/price-records/**",
+    "src/components/calculators/**",
+    "src/components/it-pricing/**",
+    "src/lib/types/pdf/**",
+    "src/lib/services/service-desk-pdf-integration.ts",
+    "src/lib/services/service-desk-template-service.ts",
+    "src/lib/services/service-desk-memory-manager.ts",
+    "src/lib/services/simple-data-manager.ts",
+    "src/lib/utils/__tests__/**",
+    "src/lib/services/service-desk-calculation-engine.ts",
+    "src/components/service-desk-pricing/__tests__/**",
+    "src/components/service-desk-pricing/tabs/__tests__/**",
+    "src/components/service-desk-pricing/reports/**",
+    "src/components/service-desk-pricing/templates/**",
+    "src/components/service-desk-pricing/validation/**",
+    "src/components/ui/enhanced-pagination.tsx",
+    "src/components/ui/enhanced-virtual-scroll.tsx",
+    "src/components/ui/memory-optimized-table.tsx",
+    "src/hooks/use-quote-integration.ts",
+    "src/hooks/use-real-time-validation.ts",
+    "src/lib/data.ts",
+    "src/lib/services/__tests__/**"
   ]
 }

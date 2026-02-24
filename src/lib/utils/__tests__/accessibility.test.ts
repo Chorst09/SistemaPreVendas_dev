@@ -169,7 +169,7 @@ describe('Accessibility Utils', () => {
   describe('validateColorPalette', () => {
     it('should log results in development environment', () => {
       const originalEnv = process.env.NODE_ENV;
-      process.env.NODE_ENV = 'development';
+      (process.env as any).NODE_ENV = 'development';
       
       const consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
       const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
@@ -185,12 +185,12 @@ describe('Accessibility Utils', () => {
       consoleWarnSpy.mockRestore();
       consoleGroupSpy.mockRestore();
       consoleGroupEndSpy.mockRestore();
-      process.env.NODE_ENV = originalEnv;
+      (process.env as any).NODE_ENV = originalEnv;
     });
 
     it('should not log in production environment', () => {
       const originalEnv = process.env.NODE_ENV;
-      process.env.NODE_ENV = 'production';
+      (process.env as any).NODE_ENV = 'production';
       
       const consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
       const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
@@ -202,7 +202,7 @@ describe('Accessibility Utils', () => {
       
       consoleLogSpy.mockRestore();
       consoleWarnSpy.mockRestore();
-      process.env.NODE_ENV = originalEnv;
+      (process.env as any).NODE_ENV = originalEnv;
     });
   });
 });

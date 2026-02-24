@@ -140,7 +140,7 @@ export function PricingItemsTable({
           id: Date.now().toString(),
           description: "",
           estimatedHours: 8,
-          baseSalary: laborCosts?.geral?.salarioBase ?? 0,
+          baseSalary: laborCosts?.salarioBasePadrao ?? 0,
           contractType: "clt",
         },
       ])

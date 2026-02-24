@@ -31,6 +31,30 @@ import {
 } from 'lucide-react';
 import { ValidationError, ValidationWarning, TabValidationStatus } from '@/lib/types/service-desk-pricing';
 
+const FIELD_LABELS: Record<string, string> = {
+  data: 'Dados do Projeto',
+  team: 'Equipe',
+  scale: 'Escala',
+  taxes: 'Impostos',
+  variables: 'Variáveis',
+  'other-costs': 'Outros Custos',
+  budget: 'Orçamento',
+  forecast: 'Forecast',
+  result: 'Resultado',
+  negotiation: 'Negociação',
+  'final-analysis': 'Análise Final',
+  reports: 'Relatórios',
+  navigation: 'Navegação',
+  dependency: 'Dependência',
+  critical_errors: 'Campos obrigatórios',
+};
+
+function formatFieldLabel(field?: string) {
+  if (!field) return '';
+  const normalized = field.toLowerCase();
+  return FIELD_LABELS[normalized] || field.replace(/_/g, ' ');
+}
+
 export interface ValidationTransitionProps {
   isOpen: boolean;
   onClose: () => void;

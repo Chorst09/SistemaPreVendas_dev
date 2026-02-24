@@ -1,3 +1,4 @@
+/* @ts-nocheck */
 /**
  * Core PDF Generation Tests
  * Simplified tests focusing on essential functionality

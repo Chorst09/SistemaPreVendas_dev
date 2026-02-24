@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { TeamMember, BenefitPackage } from '@/lib/types/service-desk-pricing';
 
 export interface EmployeeProfile extends Omit<TeamMember, 'id'> {

@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Plus, FolderKanban } from 'lucide-react';
 import { ProjectGeneratorService } from '@/lib/services/project-generator-service';
-import { Project, ProjectStatus, ProjectPriority } from '@/lib/types/project';
+import { Project, ProjectStatus, ProjectPriority, ProjectType } from '@/lib/types/project';
 import { ProjectListView } from '@/components/projects/ProjectListView';
 import { ProjectDetailView } from '@/components/projects/ProjectDetailView';
 import { ProjectGeneratorModal } from '@/components/projects/ProjectGeneratorModal';
@@ -41,9 +41,9 @@ export default function ProjectsPage() {
       id: `proj-example-${Date.now()}`,
       name: 'Implementação NOC - Banco ABC',
       description: 'Projeto de implementação de Network Operations Center para o Banco ABC com monitoramento 24x7 de infraestrutura crítica.',
-      type: 'noc',
-      status: 'in-progress',
-      priority: 'high',
+      type: ProjectType.NOC,
+      status: ProjectStatus.IN_PROGRESS,
+      priority: ProjectPriority.HIGH,
       proposalId: undefined,
       clientId: 'banco-abc',
       createdAt: new Date().toISOString(),
@@ -113,8 +113,8 @@ export default function ProjectsPage() {
           }
         ],
         milestones: [
-          { id: 'ms-1', name: 'Design Aprovado', description: 'Design da solução aprovado pelo cliente', dueDate: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString(), status: 'completed', deliverables: [] },
-          { id: 'ms-2', name: 'Infraestrutura Instalada', description: 'Infraestrutura NOC completamente instalada', dueDate: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000).toISOString(), status: 'in-progress', deliverables: [] },
+          { id: 'ms-1', name: 'Design Aprovado', description: 'Design da solução aprovado pelo cliente', dueDate: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString(), status: 'achieved', deliverables: [] },
+          { id: 'ms-2', name: 'Infraestrutura Instalada', description: 'Infraestrutura NOC completamente instalada', dueDate: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000).toISOString(), status: 'in-progress' as any, deliverables: [] },
           { id: 'ms-3', name: 'Testes Concluídos', description: 'Todos os testes de funcionalidade concluídos', dueDate: new Date(Date.now() + 45 * 24 * 60 * 60 * 1000).toISOString(), status: 'pending', deliverables: [] }
         ]
       },
@@ -124,21 +124,21 @@ export default function ProjectsPage() {
         remainingBudget: 270000,
         currency: 'BRL',
         breakdown: [
-          { category: 'Infraestrutura', amount: 200000, spent: 80000 },
-          { category: 'Licenças de Software', amount: 150000, spent: 60000 },
-          { category: 'Serviços Profissionais', amount: 100000, spent: 40000 }
+          { id: 'b1', category: 'Infraestrutura', description: 'Equipamentos', plannedCost: 200000, actualCost: 80000, variance: 120000 },
+          { id: 'b2', category: 'Licenças de Software', description: 'Ferramentas NOC', plannedCost: 150000, actualCost: 60000, variance: 90000 },
+          { id: 'b3', category: 'Serviços Profissionais', description: 'Implantação', plannedCost: 100000, actualCost: 40000, variance: 60000 }
         ],
         costVariance: 0,
         costPerformanceIndex: 1.0
       },
       risks: [
-        { id: 'risk-1', title: 'Atraso na Entrega de Hardware', description: 'Possível atraso na entrega dos servidores', probability: 'medium', impact: 'high', mitigation: 'Manter contato com fornecedor e ter plano B' },
-        { id: 'risk-2', title: 'Resistência da Equipe', description: 'Equipe do cliente pode resistir às mudanças', probability: 'low', impact: 'medium', mitigation: 'Treinamento abrangente e suporte contínuo' }
+        { id: 'risk-1', title: 'Atraso na Entrega de Hardware', description: 'Possível atraso na entrega dos servidores', probability: 'medium', impact: 'high', category: 'schedule', riskScore: 6, status: 'mitigating', mitigationPlan: 'Manter contato com fornecedor e plano B', identifiedDate: new Date().toISOString() },
+        { id: 'risk-2', title: 'Resistência da Equipe', description: 'Equipe do cliente pode resistir às mudanças', probability: 'low', impact: 'medium', category: 'resource', riskScore: 3, status: 'analyzing', mitigationPlan: 'Treinamento abrangente e suporte contínuo', identifiedDate: new Date().toISOString() }
       ],
       deliverables: [
-        { id: 'del-1', name: 'Infraestrutura NOC', description: 'Servidores, switches e equipamentos de rede', type: 'infrastructure', status: 'in-progress', dueDate: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000).toISOString(), assignedTo: 'João Oliveira', acceptanceCriteria: ['Todos os servidores operacionais', 'Rede configurada e testada'] },
+        { id: 'del-1', name: 'Infraestrutura NOC', description: 'Servidores, switches e equipamentos de rede', type: 'hardware', status: 'in-progress', dueDate: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000).toISOString(), assignedTo: 'João Oliveira', acceptanceCriteria: ['Todos os servidores operacionais', 'Rede configurada e testada'] },
         { id: 'del-2', name: 'Dashboards de Monitoramento', description: 'Painéis de controle e visualização de dados', type: 'software', status: 'in-progress', dueDate: new Date(Date.now() + 20 * 24 * 60 * 60 * 1000).toISOString(), assignedTo: 'Ana Santos', acceptanceCriteria: ['Dashboards responsivos', 'Alertas em tempo real'] },
-        { id: 'del-3', name: 'Documentação Técnica', description: 'Manuais e guias técnicos', type: 'documentation', status: 'pending', dueDate: new Date(Date.now() + 50 * 24 * 60 * 60 * 1000).toISOString(), assignedTo: 'Maria Costa', acceptanceCriteria: ['Documentação completa', 'Exemplos práticos'] }
+        { id: 'del-3', name: 'Documentação Técnica', description: 'Manuais e guias técnicos', type: 'document', status: 'pending', dueDate: new Date(Date.now() + 50 * 24 * 60 * 60 * 1000).toISOString(), assignedTo: 'Maria Costa', acceptanceCriteria: ['Documentação completa', 'Exemplos práticos'] }
       ],
       progress: {
         overallProgress: 65,

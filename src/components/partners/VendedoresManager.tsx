@@ -16,7 +16,7 @@ import * as z from 'zod';
 const vendedorSchema = z.object({
   fornecedor: z.string().min(1, 'Nome do fornecedor é obrigatório'),
   vendedor: z.string().min(1, 'Nome do vendedor é obrigatório'),
-  telefone: z.string().min(1, 'Telefone é obrigatório'),
+  phone: z.string().min(1, 'Telefone é obrigatório'),
   email: z.string().email('Email inválido'),
 });
 
@@ -35,7 +35,7 @@ export function VendedoresManager({ vendedores, onChange }: VendedoresManagerPro
     defaultValues: {
       fornecedor: '',
       vendedor: '',
-      telefone: '',
+      phone: '',
       email: '',
     },
   });
@@ -48,7 +48,7 @@ export function VendedoresManager({ vendedores, onChange }: VendedoresManagerPro
       form.reset({
         fornecedor: vendedor.fornecedor,
         vendedor: vendedor.vendedor,
-        telefone: vendedor.telefone,
+        phone: vendedor.phone,
         email: vendedor.email,
       });
     } else {
@@ -56,7 +56,7 @@ export function VendedoresManager({ vendedores, onChange }: VendedoresManagerPro
       form.reset({
         fornecedor: '',
         vendedor: '',
-        telefone: '',
+        phone: '',
         email: '',
       });
     }
@@ -96,11 +96,10 @@ export function VendedoresManager({ vendedores, onChange }: VendedoresManagerPro
       const newVendedor: VendedorResponsavel = {
         id: Date.now().toString(),
         name: values.vendedor,
-        phone: values.telefone,
+        phone: values.phone,
         email: values.email,
         fornecedor: values.fornecedor,
-        vendedor: values.vendedor,
-        telefone: values.telefone,
+        vendedor: values.vendedor
       };
       
       const novosVendedores = [...vendedores, newVendedor];
@@ -114,7 +113,7 @@ export function VendedoresManager({ vendedores, onChange }: VendedoresManagerPro
     form.reset({
       fornecedor: '',
       vendedor: '',
-      telefone: '',
+      phone: '',
       email: '',
     });
     
@@ -207,7 +206,7 @@ export function VendedoresManager({ vendedores, onChange }: VendedoresManagerPro
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <FormField
                     control={form.control}
-                    name="telefone"
+                    name="phone"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Telefone</FormLabel>
@@ -248,7 +247,7 @@ export function VendedoresManager({ vendedores, onChange }: VendedoresManagerPro
                         form.reset({
                           fornecedor: '',
                           vendedor: '',
-                          telefone: '',
+                          phone: '',
                           email: '',
                         });
                       }}
@@ -304,7 +303,7 @@ export function VendedoresManager({ vendedores, onChange }: VendedoresManagerPro
                   <div className="flex items-center space-x-6 ml-8 text-sm">
                     <div className="flex items-center space-x-2">
                       <Phone className="h-4 w-4 text-green-600" />
-                      <span className="font-medium text-white">{vendedor.telefone}</span>
+                      <span className="font-medium text-white">{vendedor.phone}</span>
                     </div>
                     <div className="flex items-center space-x-2">
                       <Mail className="h-4 w-4 text-purple-600" />

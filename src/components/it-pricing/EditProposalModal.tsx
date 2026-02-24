@@ -60,9 +60,9 @@ export function EditProposalModal({ proposal, isOpen, onClose }: EditProposalMod
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     
-    const updatedData = {
+    const updatedData: Partial<ProposalData> = {
       ...formData,
-      deliveryDate: formData.deliveryDate ? new Date(formData.deliveryDate) : undefined,
+      deliveryDate: formData.deliveryDate || undefined,
       clientCNPJ: formData.clientCNPJ || undefined
     }
 

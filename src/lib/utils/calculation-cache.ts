@@ -45,8 +45,8 @@ export class CalculationCache {
   set<T>(key: string, value: T, ttl = this.defaultTTL): void {
     // Remove oldest entries if cache is full
     if (this.cache.size >= this.maxSize) {
-      const oldestKey = this.cache.keys().next().value;
-      this.cache.delete(oldestKey);
+      const oldestKey = this.cache.keys().next().value as string | undefined;
+      if (oldestKey) this.cache.delete(oldestKey);
     }
 
     this.cache.set(key, {
@@ -59,6 +59,14 @@ export class CalculationCache {
   // Clear cache
   clear(): void {
     this.cache.clear();
+  }
+
+  invalidateByPrefix(prefix: string): void {
+    for (const key of Array.from(this.cache.keys())) {
+      if (key.includes(prefix)) {
+        this.cache.delete(key);
+      }
+    }
   }
 
   // Clear expired entries
@@ -184,12 +192,8 @@ export class ServiceDeskCalculationCache {
 
     const cachesToInvalidate = relatedCaches[changedTab] || [];
     
-    for (const [key] of this.cache.cache.entries()) {
-      for (const cacheType of cachesToInvalidate) {
-        if (key.includes(cacheType)) {
-          this.cache.cache.delete(key);
-        }
-      }
-    }
+    cachesToInvalidate.forEach(cacheType => {
+      this.cache.invalidateByPrefix(cacheType);
+    });
   }
 }

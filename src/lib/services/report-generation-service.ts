@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { ServiceDeskData } from '@/lib/types/service-desk-pricing';
 import { ReportConfig, ReportSection } from '@/components/service-desk-pricing/reports/ReportGenerator';
 

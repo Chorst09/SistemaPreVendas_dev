@@ -5,12 +5,11 @@ import { connectDB } from '@/lib/prisma';
 // GET /api/projects/[id] - Get specific project
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectDB();
-    
-    const projectId = params.id;
+    const { id: projectId } = await context.params;
     
     // TODO: Get userId from session/auth
     const userId = 'temp-user-id'; // Replace with actual auth
@@ -30,12 +29,12 @@ export async function GET(
 // PUT /api/projects/[id] - Update project
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectDB();
     
-    const projectId = params.id;
+    const { id: projectId } = await context.params;
     const data = await request.json();
     
     // TODO: Get userId from session/auth
@@ -56,12 +55,12 @@ export async function PUT(
 // DELETE /api/projects/[id] - Delete project
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectDB();
     
-    const projectId = params.id;
+    const { id: projectId } = await context.params;
     
     // TODO: Get userId from session/auth
     const userId = 'temp-user-id'; // Replace with actual auth

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import { ShoppingCart, Calendar, Wrench, BarChart3, Users, Settings, Zap, Shield, TrendingUp, FileText } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -13,6 +13,8 @@ import { ServiceModule } from "./ServiceModule"
 import { AdminModule } from "./AdminModule"
 import { ProposalCreation } from "./ProposalCreation"
 import { ProposalsManagement } from "./ProposalsManagement"
+import { useProposalStore } from "@/lib/stores/proposal-store"
+import type { ProposalClientData } from "@/components/shared/ProposalClientDataForm"
 
 type ModuleType = "home" | "sales" | "rental" | "services" | "admin" | "proposal" | "proposals"
 
@@ -22,8 +24,35 @@ interface ITPricingModuleProps {
 
 export function ITPricingModule({ onNavigateToProposals }: ITPricingModuleProps = {}) {
     const [currentModule, setCurrentModule] = useState<ModuleType>("home")
+    const [useProposalDataForCalculator, setUseProposalDataForCalculator] = useState(false)
+    const currentProposal = useProposalStore((state) => state.currentProposal)
+
+    const proposalClientData = useMemo<ProposalClientData | null>(() => {
+        if (!useProposalDataForCalculator || !currentProposal) {
+            return null
+        }
+
+        return {
+            clientName: currentProposal.clientName,
+            clientEmail: currentProposal.clientEmail,
+            clientPhone: currentProposal.clientPhone,
+            companyName: currentProposal.clientCompany,
+            cnpj: currentProposal.clientCNPJ || "",
+            address: currentProposal.clientAddress || "",
+            projectName: currentProposal.projectName,
+            projectType: currentProposal.projectType || "",
+            projectDescription: currentProposal.projectDescription || "",
+            deliveryDate: currentProposal.deliveryDate || "",
+            estimatedBudget: currentProposal.estimatedBudget || "",
+            managerName: currentProposal.managerName,
+            managerEmail: currentProposal.managerEmail,
+            managerPhone: currentProposal.managerPhone,
+            department: currentProposal.managerDepartment || "",
+        }
+    }, [currentProposal, useProposalDataForCalculator])
 
     const handleBack = () => {
+        setUseProposalDataForCalculator(false)
         setCurrentModule("home")
     }
 
@@ -36,15 +65,15 @@ export function ITPricingModule({ onNavigateToProposals }: ITPricingModuleProps 
     }
 
     if (currentModule === "sales") {
-        return <SalesModule onBack={handleBack} onModuleChange={handleModuleChange} onNavigateToProposals={onNavigateToProposals} />
+        return <SalesModule onBack={handleBack} onModuleChange={handleModuleChange} onNavigateToProposals={onNavigateToProposals} proposalClientData={proposalClientData} />
     }
 
     if (currentModule === "rental") {
-        return <RentalModule onBack={handleBack} onModuleChange={handleModuleChange} onNavigateToProposals={onNavigateToProposals} />
+        return <RentalModule onBack={handleBack} onModuleChange={handleModuleChange} onNavigateToProposals={onNavigateToProposals} proposalClientData={proposalClientData} />
     }
 
     if (currentModule === "services") {
-        return <ServiceModule onBack={handleBack} onModuleChange={handleModuleChange} onNavigateToProposals={onNavigateToProposals} />
+        return <ServiceModule onBack={handleBack} onModuleChange={handleModuleChange} onNavigateToProposals={onNavigateToProposals} proposalClientData={proposalClientData} />
     }
 
     if (currentModule === "admin") {
@@ -52,7 +81,19 @@ export function ITPricingModule({ onNavigateToProposals }: ITPricingModuleProps 
     }
 
     if (currentModule === "proposal") {
-        return <ProposalCreation onBack={handleBack} onSelectModule={(module) => setCurrentModule(module as ModuleType)} />
+        return (
+            <ProposalCreation
+                onBack={handleBack}
+                onSelectModule={(module) => {
+                    if (module === "sales" || module === "rental" || module === "services") {
+                        setUseProposalDataForCalculator(true)
+                    } else {
+                        setUseProposalDataForCalculator(false)
+                    }
+                    setCurrentModule(module as ModuleType)
+                }}
+            />
+        )
     }
 
     if (currentModule === "proposals") {
@@ -78,21 +119,30 @@ export function ITPricingModule({ onNavigateToProposals }: ITPricingModuleProps 
                                 <Button
                                     variant="ghost"
                                     className="text-sm font-medium hover:text-primary transition-colors font-[var(--font-body)]"
-                                    onClick={() => setCurrentModule("sales")}
+                                    onClick={() => {
+                                        setUseProposalDataForCalculator(false)
+                                        setCurrentModule("sales")
+                                    }}
                                 >
                                     Vendas
                                 </Button>
                                 <Button
                                     variant="ghost"
                                     className="text-sm font-medium hover:text-primary transition-colors font-[var(--font-body)]"
-                                    onClick={() => setCurrentModule("rental")}
+                                    onClick={() => {
+                                        setUseProposalDataForCalculator(false)
+                                        setCurrentModule("rental")
+                                    }}
                                 >
                                     Locação
                                 </Button>
                                 <Button
                                     variant="ghost"
                                     className="text-sm font-medium hover:text-primary transition-colors font-[var(--font-body)]"
-                                    onClick={() => setCurrentModule("services")}
+                                    onClick={() => {
+                                        setUseProposalDataForCalculator(false)
+                                        setCurrentModule("services")
+                                    }}
                                 >
                                     Serviços
                                 </Button>

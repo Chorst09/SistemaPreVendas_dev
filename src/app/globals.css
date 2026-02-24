@@ -224,6 +224,52 @@
     background: linear-gradient(135deg, hsl(var(--card)), hsl(var(--muted) / 0.8));
   }
 
+  /* Novas superfícies para cards (suporte claro/escuro) */
+  .card-surface {
+    background:
+      radial-gradient(120% 120% at 10% 20%, hsl(var(--primary) / 0.12), transparent 35%),
+      radial-gradient(90% 90% at 80% 0%, hsl(var(--accent-cyan) / 0.08), transparent 45%),
+      linear-gradient(145deg, hsl(var(--card) / 0.94), hsl(var(--background) / 0.9));
+    border: 1px solid hsl(var(--border) / 0.55);
+    box-shadow: 0 18px 45px -20px hsl(var(--primary) / 0.35);
+  }
+
+  .card-surface-strong {
+    background:
+      radial-gradient(100% 100% at 20% 0%, hsl(var(--accent-orange) / 0.12), transparent 50%),
+      linear-gradient(160deg, hsl(var(--background) / 0.95), hsl(var(--card) / 0.92));
+    border: 1px solid hsl(var(--primary) / 0.35);
+    box-shadow: 0 22px 55px -24px hsl(var(--primary) / 0.45);
+  }
+
+  .pill-soft {
+    background: hsl(var(--primary) / 0.12);
+    color: hsl(var(--primary));
+    border: 1px solid hsl(var(--primary) / 0.25);
+    box-shadow: 0 1px 2px hsl(var(--background) / 0.35);
+  }
+
+  .pill-soft-success {
+    background: hsl(var(--accent-green) / 0.14);
+    color: hsl(var(--accent-green) / 1);
+    border: 1px solid hsl(var(--accent-green) / 0.35);
+    box-shadow: 0 1px 2px hsl(var(--background) / 0.35);
+  }
+
+  .pill-soft-warning {
+    background: hsl(var(--accent-yellow) / 0.18);
+    color: hsl(var(--accent-yellow) / 1);
+    border: 1px solid hsl(var(--accent-yellow) / 0.35);
+    box-shadow: 0 1px 2px hsl(var(--background) / 0.35);
+  }
+
+  .pill-soft-danger {
+    background: hsl(var(--destructive) / 0.12);
+    color: hsl(var(--destructive));
+    border: 1px solid hsl(var(--destructive) / 0.35);
+    box-shadow: 0 1px 2px hsl(var(--background) / 0.35);
+  }
+
   .gradient-accent {
     background: linear-gradient(135deg, hsl(var(--accent-orange)), hsl(var(--accent-yellow)));
   }
@@ -902,7 +948,7 @@
 }
 
 /* Paleta dark específica do módulo NOC (baseada no print de referência) */
-.dark .noc-theme {
+.noc-theme {
   background:
     radial-gradient(900px circle at 15% -10%, rgba(89, 174, 255, 0.18), transparent 55%),
     radial-gradient(1100px circle at 95% 5%, rgba(91, 146, 219, 0.2), transparent 58%),
@@ -911,7 +957,7 @@
   overflow: hidden;
 }
 
-.dark .noc-theme::before {
+.noc-theme::before {
   content: "";
   position: absolute;
   inset: 0;
@@ -922,119 +968,132 @@
   background-size: 56px 56px;
 }
 
-.dark .noc-theme > * {
+.noc-theme > * {
   position: relative;
   z-index: 1;
 }
 
-.dark .noc-theme .bg-blue-50 {
+.noc-theme .bg-blue-50 {
   background-color: rgba(26, 59, 102, 0.5) !important;
 }
 
-.dark .noc-theme .bg-blue-100 {
+.noc-theme .bg-blue-100 {
   background-color: rgba(34, 78, 136, 0.55) !important;
 }
 
-.dark .noc-theme .bg-yellow-50,
-.dark .noc-theme .bg-orange-50,
-.dark .noc-theme .bg-red-50 {
+.noc-theme .bg-yellow-50,
+.noc-theme .bg-orange-50,
+.noc-theme .bg-red-50 {
   background-color: rgba(30, 61, 108, 0.46) !important;
 }
 
-.dark .noc-theme .bg-yellow-100,
-.dark .noc-theme .bg-orange-100,
-.dark .noc-theme .bg-red-100 {
+.noc-theme .bg-yellow-100,
+.noc-theme .bg-orange-100,
+.noc-theme .bg-red-100 {
   background-color: rgba(38, 79, 140, 0.58) !important;
 }
 
-.dark .noc-theme .bg-green-100 {
+.noc-theme .bg-green-100 {
   background-color: rgba(23, 86, 63, 0.5) !important;
 }
 
-.dark .noc-theme .bg-gray-50 {
+.noc-theme .bg-gray-50 {
   background-color: rgba(27, 46, 74, 0.42) !important;
 }
 
-.dark .noc-theme .bg-purple-50 {
+.noc-theme .bg-gray-100,
+.noc-theme .bg-white {
+  background-color: rgba(37, 62, 98, 0.5) !important;
+}
+
+.noc-theme .bg-purple-50 {
   background-color: rgba(43, 65, 110, 0.45) !important;
 }
 
-.dark .noc-theme .text-gray-500,
-.dark .noc-theme .text-gray-600 {
+.noc-theme .text-gray-500,
+.noc-theme .text-gray-600,
+.noc-theme .text-gray-700 {
   color: rgb(176 201 234) !important;
 }
 
-.dark .noc-theme .text-blue-700,
-.dark .noc-theme .text-blue-800,
-.dark .noc-theme .text-blue-900,
-.dark .noc-theme .text-purple-800,
-.dark .noc-theme .text-purple-900,
-.dark .noc-theme .text-green-900 {
+.noc-theme .text-gray-900,
+.noc-theme .text-gray-800,
+.noc-theme .text-slate-900,
+.noc-theme .text-black {
+  color: rgb(227 239 255) !important;
+}
+
+.noc-theme .text-blue-700,
+.noc-theme .text-blue-800,
+.noc-theme .text-blue-900,
+.noc-theme .text-purple-800,
+.noc-theme .text-purple-900,
+.noc-theme .text-green-900 {
   color: rgb(220 235 255) !important;
 }
 
-.dark .noc-theme .text-blue-600,
-.dark .noc-theme .text-purple-600,
-.dark .noc-theme .text-green-600,
-.dark .noc-theme .text-orange-600 {
+.noc-theme .text-blue-600,
+.noc-theme .text-purple-600,
+.noc-theme .text-green-600,
+.noc-theme .text-orange-600 {
   color: rgb(119 192 255) !important;
 }
 
-.dark .noc-theme .border-blue-200,
-.dark .noc-theme .border-blue-300,
-.dark .noc-theme .border-gray-300,
-.dark .noc-theme .border-gray-400,
-.dark .noc-theme .border-green-500,
-.dark .noc-theme .border-green-200,
-.dark .noc-theme .border-yellow-200,
-.dark .noc-theme .border-orange-200,
-.dark .noc-theme .border-red-200,
-.dark .noc-theme .border-purple-200 {
+.noc-theme .border-blue-200,
+.noc-theme .border-blue-300,
+.noc-theme .border-gray-300,
+.noc-theme .border-gray-400,
+.noc-theme .border-green-500,
+.noc-theme .border-green-200,
+.noc-theme .border-yellow-200,
+.noc-theme .border-orange-200,
+.noc-theme .border-red-200,
+.noc-theme .border-purple-200 {
   border-color: rgba(129, 179, 240, 0.35) !important;
 }
 
-.dark .noc-theme .text-yellow-600,
-.dark .noc-theme .text-yellow-700,
-.dark .noc-theme .text-yellow-800,
-.dark .noc-theme .text-yellow-900,
-.dark .noc-theme .text-orange-700,
-.dark .noc-theme .text-orange-800,
-.dark .noc-theme .text-orange-900,
-.dark .noc-theme .text-red-600,
-.dark .noc-theme .text-red-700,
-.dark .noc-theme .text-red-800,
-.dark .noc-theme .text-red-900,
-.dark .noc-theme .text-green-700,
-.dark .noc-theme .text-green-800 {
+.noc-theme .text-yellow-600,
+.noc-theme .text-yellow-700,
+.noc-theme .text-yellow-800,
+.noc-theme .text-yellow-900,
+.noc-theme .text-orange-700,
+.noc-theme .text-orange-800,
+.noc-theme .text-orange-900,
+.noc-theme .text-red-600,
+.noc-theme .text-red-700,
+.noc-theme .text-red-800,
+.noc-theme .text-red-900,
+.noc-theme .text-green-700,
+.noc-theme .text-green-800 {
   color: rgb(191 218 250) !important;
 }
 
-.dark .noc-theme .hover\:bg-gray-50:hover,
-.dark .noc-theme .hover\:bg-gray-100:hover {
+.noc-theme .hover\:bg-gray-50:hover,
+.noc-theme .hover\:bg-gray-100:hover {
   background-color: rgba(42, 73, 116, 0.5) !important;
 }
 
 /* Padronização final de ações/status do NOC em azul (inclui botões destructive) */
-.dark .noc-theme .bg-destructive {
+.noc-theme .bg-destructive {
   background-color: rgba(32, 73, 128, 0.75) !important;
 }
 
-.dark .noc-theme .hover\:bg-destructive\/90:hover {
+.noc-theme .hover\:bg-destructive\/90:hover {
   background-color: rgba(52, 106, 178, 0.85) !important;
 }
 
-.dark .noc-theme .text-destructive-foreground {
+.noc-theme .text-destructive-foreground {
   color: rgb(231 242 255) !important;
 }
 
-.dark .noc-theme .hover\:shadow-destructive\/25:hover {
+.noc-theme .hover\:shadow-destructive\/25:hover {
   box-shadow: 0 8px 24px rgba(92, 168, 255, 0.22) !important;
 }
 
-.dark .noc-theme .bg-secondary {
+.noc-theme .bg-secondary {
   background-color: rgba(32, 73, 128, 0.42) !important;
 }
 
-.dark .noc-theme .text-secondary-foreground {
+.noc-theme .text-secondary-foreground {
   color: rgb(215 233 255) !important;
 }

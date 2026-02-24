@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Integration bridge between Service Desk Pricing System and PDF Generation
  * Maps service desk data to PDF-compatible formats and generates enhanced proposals

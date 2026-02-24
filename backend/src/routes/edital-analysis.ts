@@ -1,5 +1,5 @@
 import express from 'express';
-import { EditalAnalysisSchema } from '../../../shared/schemas/index.js';
+import { EditalAnalysisSchema } from '../../../shared/schemas';
 
 const router = express.Router();
 

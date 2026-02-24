@@ -79,22 +79,22 @@ export function SimpleTabButton({
   };
 
   const baseClasses = `
-    inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium 
-    ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 
+    group inline-flex items-center justify-between whitespace-nowrap rounded-full text-xs font-semibold
+    ring-offset-background transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 
     focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none 
-    disabled:opacity-50 h-9 px-3 flex items-center space-x-2 min-w-0 max-w-48
+    h-10 px-4 min-w-[9rem] max-w-[12rem] shadow-sm backdrop-blur-sm
   `;
 
   const variantClasses = isActive 
-    ? 'bg-primary text-primary-foreground hover:bg-primary/90'
-    : 'border border-input bg-background hover:bg-accent hover:text-accent-foreground';
+    ? 'bg-gradient-to-r from-primary/90 via-primary/80 to-[hsl(var(--accent-cyan))]/80 text-primary-foreground shadow-lg shadow-primary/25'
+    : 'bg-background/80 border border-border/60 hover:border-primary/40 hover:bg-primary/5 text-foreground/90';
 
   const statusClasses = `
-    ${isActive ? 'ring-2 ring-primary ring-offset-2' : ''}
+    ${isActive ? 'ring-2 ring-primary/70 ring-offset-2' : ''}
     ${!canAccess ? 'opacity-50 cursor-not-allowed' : ''}
-    ${status === 'invalid' ? 'border-red-300 hover:border-red-400' : ''}
-    ${status === 'warning' ? 'border-yellow-300 hover:border-yellow-400' : ''}
-    ${status === 'valid' ? 'border-green-300 hover:border-green-400' : ''}
+    ${status === 'invalid' ? 'border-red-300/70 hover:border-red-400/80' : ''}
+    ${status === 'warning' ? 'border-yellow-300/70 hover:border-yellow-400/80' : ''}
+    ${status === 'valid' ? 'border-green-300/70 hover:border-green-400/80' : ''}
   `;
 
   return (
@@ -103,13 +103,16 @@ export function SimpleTabButton({
       onClick={onClick}
       disabled={!canAccess}
       title={tooltip}
+      aria-pressed={isActive}
       className={`${baseClasses} ${variantClasses} ${statusClasses}`}
     >
-      <span className="flex items-center space-x-1">
-        <span className="text-xs font-medium">{index + 1}</span>
-        {getStatusIcon()}
+      <span className="flex items-center space-x-2 text-foreground/80">
+        <span className="text-[11px] font-semibold pill-soft px-2 py-0.5 rounded-full border border-border/60">
+          {index + 1}
+        </span>
+        <span className="shrink-0">{getStatusIcon()}</span>
       </span>
-      <span className="truncate text-xs">
+      <span className="truncate text-[11px]">
         {shortLabel || label}
       </span>
       {getStatusBadge()}

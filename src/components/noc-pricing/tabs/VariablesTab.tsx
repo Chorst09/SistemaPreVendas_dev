@@ -57,10 +57,10 @@ export function VariablesTab({ data, onChange }: VariablesTabProps) {
             </div>
           </div>
 
-          <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+          <div className="bg-slate-900/50 border border-blue-300/25 rounded-lg p-4">
             <div className="text-center">
-              <div className="text-sm text-green-700 mb-1">Margem Total</div>
-              <div className="text-3xl font-bold text-green-600">{totalMargin.toFixed(1)}%</div>
+              <div className="text-sm text-blue-200 mb-1">Margem Total</div>
+              <div className="text-3xl font-bold text-blue-300">{totalMargin.toFixed(1)}%</div>
             </div>
           </div>
         </CardContent>
@@ -106,15 +106,15 @@ export function VariablesTab({ data, onChange }: VariablesTabProps) {
         </CardHeader>
         <CardContent>
           <div className="space-y-3 text-sm">
-            <div className="flex justify-between p-3 bg-gray-50 rounded">
+            <div className="flex justify-between p-3 bg-slate-900/45 border border-blue-300/20 rounded">
               <span>Margem de Lucro Típica (NOC)</span>
               <span className="font-medium">15% - 30%</span>
             </div>
-            <div className="flex justify-between p-3 bg-gray-50 rounded">
+            <div className="flex justify-between p-3 bg-slate-900/45 border border-blue-300/20 rounded">
               <span>Margem de Risco Recomendada</span>
               <span className="font-medium">5% - 15%</span>
             </div>
-            <div className="flex justify-between p-3 bg-gray-50 rounded">
+            <div className="flex justify-between p-3 bg-slate-900/45 border border-blue-300/20 rounded">
               <span>Margem Total Competitiva</span>
               <span className="font-medium">20% - 40%</span>
             </div>

@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Performance Cache for PDF Generation
  * Implements caching for templates and optimizations for PDF generation

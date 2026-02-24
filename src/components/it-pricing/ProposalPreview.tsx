@@ -98,7 +98,7 @@ export function ProposalPreview({ proposal, isOpen, onClose }: ProposalPreviewPr
               <div><strong>Tipo:</strong> {proposal.projectType}</div>
               <div><strong>Descrição:</strong> {proposal.projectDescription}</div>
               {proposal.deliveryDate && (
-                <div><strong>Prazo de Entrega:</strong> {formatDate(proposal.deliveryDate)}</div>
+                <div><strong>Prazo de Entrega:</strong> {formatDate(new Date(proposal.deliveryDate))}</div>
               )}
             </CardContent>
           </Card>

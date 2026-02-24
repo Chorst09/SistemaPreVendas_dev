@@ -1,6 +1,6 @@
 import express from 'express';
-import { ServiceDeskDimensionSchema } from '../../../shared/schemas/index.js';
-import { calculateErlangC } from '../../../shared/utils/index.js';
+import { ServiceDeskDimensionSchema } from '../../../shared/schemas';
+import { calculateErlangC } from '../../../shared/utils';
 
 const router = express.Router();
 

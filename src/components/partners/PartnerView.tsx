@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { PlusCircle, Edit, Trash2, Package, Search, Eye, FileText, Building, Globe } from "lucide-react";
+import { PlusCircle, Edit, Trash2, Package, Search, Eye, FileText, Building, Globe, User, Lock } from "lucide-react";
 import PartnerForm from "./PartnerForm"; // Assumindo que você tem este componente
 import { Partner } from "@/lib/types"; // Assumindo que você tem este tipo
 
@@ -579,7 +579,7 @@ const PartnerView: React.FC<PartnerViewProps> = ({ partnerType }) => {
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                                       </svg>
                                     </div>
-                                    <span className="font-medium text-gray-800">{vendedor.telefone}</span>
+                                    <span className="font-medium text-gray-800">{vendedor.phone}</span>
                                   </div>
                                   <div className="flex items-center gap-3">
                                     <div className="bg-purple-100 p-1.5 rounded-lg">

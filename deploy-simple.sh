@@ -21,6 +21,13 @@ rsync -a --exclude='node_modules' --exclude='.next' --exclude='dist' --exclude='
 rsync -a --exclude='node_modules' --exclude='.next' --exclude='dist' --exclude='.git' \
   frontend/ .deploy-temp/frontend/
 
+# Sincronizar shared da raiz para o backend (imports relativos em runtime/build)
+if [ -d shared ]; then
+  echo "🔄 Sincronizando shared/ (raiz) -> backend/shared/..."
+  mkdir -p .deploy-temp/backend/shared
+  rsync -a --delete shared/ .deploy-temp/backend/shared/
+fi
+
 # Sincronizar código fonte atual da raiz para o frontend publicado
 if [ -d src ]; then
   echo "🔄 Sincronizando src/ (raiz) -> frontend/src/..."
@@ -122,7 +129,7 @@ FROM node:20-alpine
 WORKDIR /app
 
 COPY package*.json ./
-RUN npm ci --only=production
+RUN npm install --legacy-peer-deps
 
 COPY . .
 RUN npm run build
@@ -137,13 +144,13 @@ cat > .deploy-temp/frontend/Dockerfile << 'EOF'
 FROM node:20-alpine AS deps
 WORKDIR /app
 COPY package*.json ./
-RUN npm ci
+RUN npm install --legacy-peer-deps
 
 FROM node:20-alpine AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-RUN npm run build
+RUN npx prisma generate && npm run build
 
 FROM node:20-alpine AS runner
 WORKDIR /app

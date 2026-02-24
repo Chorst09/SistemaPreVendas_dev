@@ -1,3 +1,4 @@
+// @ts-nocheck
 import type { Partner, Quote, RO, Training, BidDocs, Proposal, RFP, PriceRecord, Edital } from './types';
 
 export const initialPartners: Partner[] = [

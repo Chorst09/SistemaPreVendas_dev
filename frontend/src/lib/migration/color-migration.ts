@@ -708,8 +708,6 @@ class ColorMigrationManager {
           }
         });
       }
-        }
-      });
     }
 
     this.status.isActive = false;

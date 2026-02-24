@@ -228,19 +228,19 @@ export function CostsTab({ data, onChange }: CostsTabProps) {
 
           {/* Totais de Infraestrutura */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t">
-            <div className="text-center p-3 bg-blue-50 rounded-lg">
+            <div className="text-center p-3 bg-slate-900/45 border border-blue-300/20 rounded-lg">
               <p className="text-xs text-gray-600 mb-1">Servidores</p>
               <p className="text-lg font-bold text-blue-600">
                 R$ {(data.serverCosts || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
               </p>
             </div>
-            <div className="text-center p-3 bg-purple-50 rounded-lg">
+            <div className="text-center p-3 bg-slate-900/45 border border-blue-300/20 rounded-lg">
               <p className="text-xs text-gray-600 mb-1">Storage</p>
               <p className="text-lg font-bold text-purple-600">
                 R$ {(data.storageCosts || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
               </p>
             </div>
-            <div className="text-center p-3 bg-green-50 rounded-lg">
+            <div className="text-center p-3 bg-slate-900/45 border border-blue-300/20 rounded-lg">
               <p className="text-xs text-gray-600 mb-1">Rede</p>
               <p className="text-lg font-bold text-green-600">
                 R$ {(data.networkCosts || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
@@ -317,13 +317,13 @@ export function CostsTab({ data, onChange }: CostsTabProps) {
 
           {/* Totais de Software */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t">
-            <div className="text-center p-3 bg-green-50 rounded-lg">
+            <div className="text-center p-3 bg-slate-900/45 border border-blue-300/20 rounded-lg">
               <p className="text-xs text-gray-600 mb-1">Licenças de Monitoramento</p>
               <p className="text-lg font-bold text-green-600">
                 R$ {(data.monitoringLicenses || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
               </p>
             </div>
-            <div className="text-center p-3 bg-cyan-50 rounded-lg">
+            <div className="text-center p-3 bg-slate-900/45 border border-blue-300/20 rounded-lg">
               <p className="text-xs text-gray-600 mb-1">Integrações</p>
               <p className="text-lg font-bold text-cyan-600">
                 R$ {(data.integrationCosts || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
@@ -411,25 +411,25 @@ export function CostsTab({ data, onChange }: CostsTabProps) {
         <CardContent>
           <div className="space-y-4">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="text-center p-3 bg-blue-50 rounded-lg">
+              <div className="text-center p-3 bg-slate-900/45 border border-blue-300/20 rounded-lg">
                 <p className="text-xs text-gray-600 mb-1">Infraestrutura</p>
                 <p className="text-lg font-bold text-blue-600">
                   R$ {totalInfrastructure.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                 </p>
               </div>
-              <div className="text-center p-3 bg-green-50 rounded-lg">
+              <div className="text-center p-3 bg-slate-900/45 border border-blue-300/20 rounded-lg">
                 <p className="text-xs text-gray-600 mb-1">Software</p>
                 <p className="text-lg font-bold text-green-600">
                   R$ {totalSoftware.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                 </p>
               </div>
-              <div className="text-center p-3 bg-purple-50 rounded-lg">
+              <div className="text-center p-3 bg-slate-900/45 border border-blue-300/20 rounded-lg">
                 <p className="text-xs text-gray-600 mb-1">Facilities</p>
                 <p className="text-lg font-bold text-purple-600">
                   R$ {((data.facilityCosts || 0) + (data.utilitiesCosts || 0)).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                 </p>
               </div>
-              <div className="text-center p-3 bg-orange-50 rounded-lg">
+              <div className="text-center p-3 bg-slate-900/45 border border-blue-300/20 rounded-lg">
                 <p className="text-xs text-gray-600 mb-1">Outros</p>
                 <p className="text-lg font-bold text-orange-600">
                   R$ {((data.trainingCosts || 0) + (data.certificationCosts || 0) + (data.contingencyCosts || 0)).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}

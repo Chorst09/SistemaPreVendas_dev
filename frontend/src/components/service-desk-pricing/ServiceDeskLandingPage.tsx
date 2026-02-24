@@ -7,10 +7,11 @@ import { Headset, FileText, Users, Zap, BarChart3, Award } from 'lucide-react';
 
 interface ServiceDeskLandingPageProps {
   onNewProposal: () => void;
+  onModernCalculator: () => void;
   onAdminPanel: () => void;
 }
 
-export function ServiceDeskLandingPage({ onNewProposal, onAdminPanel }: ServiceDeskLandingPageProps) {
+export function ServiceDeskLandingPage({ onNewProposal, onModernCalculator, onAdminPanel }: ServiceDeskLandingPageProps) {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center p-6">
       <div className="max-w-6xl w-full">
@@ -83,12 +84,21 @@ export function ServiceDeskLandingPage({ onNewProposal, onAdminPanel }: ServiceD
         {/* CTA Buttons */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
           <Button
+            onClick={onModernCalculator}
+            size="lg"
+            className="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white px-12 py-6 text-lg font-semibold rounded-xl shadow-2xl shadow-purple-500/30 hover:shadow-purple-500/50 transition-all transform hover:scale-105"
+          >
+            <Zap className="h-6 w-6 mr-3" />
+            Calculadora Moderna
+          </Button>
+
+          <Button
             onClick={onNewProposal}
             size="lg"
             className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-12 py-6 text-lg font-semibold rounded-xl shadow-2xl shadow-orange-500/30 hover:shadow-orange-500/50 transition-all transform hover:scale-105"
           >
             <FileText className="h-6 w-6 mr-3" />
-            Nova Proposta
+            Proposta Completa
           </Button>
 
           <Button
@@ -98,7 +108,7 @@ export function ServiceDeskLandingPage({ onNewProposal, onAdminPanel }: ServiceD
             className="border-2 border-slate-600 bg-slate-800/50 hover:bg-slate-700/50 text-white px-12 py-6 text-lg font-semibold rounded-xl backdrop-blur-sm transition-all"
           >
             <Award className="h-6 w-6 mr-3" />
-            Painel Administrativo
+            Painel Admin
           </Button>
         </div>
 
