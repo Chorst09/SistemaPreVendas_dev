@@ -25,22 +25,22 @@
     
     /* Sistema de cores baseado no design moderno - LIGHT MODE */
     --background: 0 0% 100%;         /* Fundo principal branco */
-    --foreground: 220 45% 15%;       /* Texto principal escuro */
+    --foreground: 220 45% 10%;       /* Texto principal MUITO escuro */
     --card: 0 0% 100%;               /* Cards brancos */
-    --card-foreground: 220 45% 15%;  /* Texto dos cards escuro */
+    --card-foreground: 220 45% 10%;  /* Texto dos cards MUITO escuro */
     --popover: 0 0% 100%;
-    --popover-foreground: 220 45% 15%;
+    --popover-foreground: 220 45% 10%;
     --primary: 195 100% 50%;         /* Azul ciano como primária */
     --primary-foreground: 0 0% 100%; /* Texto sobre primária branco */
     --secondary: 220 15% 95%;        /* Cinza claro para secundário */
-    --secondary-foreground: 220 45% 15%;
+    --secondary-foreground: 220 45% 10%;
     --muted: 220 15% 96%;            /* Elementos menos importantes */
-    --muted-foreground: 220 15% 40%; /* Texto muted */
+    --muted-foreground: 220 15% 35%; /* Texto muted mais escuro */
     --accent: 20 100% 60%;           /* Laranja para acentos */
     --accent-foreground: 0 0% 100%;
     --destructive: 0 84% 60%;        /* Vermelho para erros */
     --destructive-foreground: 0 0% 100%;
-    --border: 220 15% 90%;           /* Bordas sutis */
+    --border: 220 15% 85%;           /* Bordas um pouco mais visíveis */
     --input: 220 15% 96%;            /* Inputs com fundo claro */
     --ring: 195 100% 50%;            /* Focus ring ciano */
     
@@ -114,17 +114,17 @@
   /* Modo claro alternativo */
   .light {
     --background: 220 25% 98%;
-    --foreground: 220 45% 15%;
+    --foreground: 220 45% 10%;       /* Texto MUITO escuro */
     --card: 220 25% 95%;
-    --card-foreground: 220 45% 15%;
+    --card-foreground: 220 45% 10%;  /* Texto MUITO escuro */
     --popover: 220 25% 95%;
-    --popover-foreground: 220 45% 15%;
+    --popover-foreground: 220 45% 10%;
     --primary: 195 100% 45%;
     --primary-foreground: 220 25% 98%;
     --secondary: 220 25% 90%;
-    --secondary-foreground: 220 45% 15%;
+    --secondary-foreground: 220 45% 10%;
     --muted: 220 25% 92%;
-    --muted-foreground: 220 25% 40%;
+    --muted-foreground: 220 25% 35%; /* Texto muted mais escuro */
     --accent: 20 100% 55%;
     --accent-foreground: 220 25% 98%;
     --destructive: 0 84% 55%;
