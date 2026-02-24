@@ -13,8 +13,8 @@
     --primary-500: 220 25% 50%;
     --primary-600: 220 30% 40%;
     --primary-700: 220 35% 30%;
-    --primary-800: 220 40% 20%;
-    --primary-900: 220 45% 15%;
+    --primary-800: 220 40% 80%;      /* Light mode: claro */
+    --primary-900: 220 45% 85%;      /* Light mode: muito claro */
     
     /* Accent Colors */
     --accent-cyan: 195 100% 50%;     /* #00D4FF - Azul ciano dos gráficos */
@@ -23,25 +23,25 @@
     --accent-green: 150 80% 45%;     /* #00B366 - Verde para status positivo */
     --accent-purple: 270 70% 60%;    /* #8B5CF6 - Roxo para elementos especiais */
     
-    /* Sistema de cores baseado no design moderno */
-    --background: 220 45% 15%;       /* Fundo principal escuro */
-    --foreground: 220 15% 95%;       /* Texto principal claro */
-    --card: 220 40% 18%;             /* Cards com tom ligeiramente mais claro */
-    --card-foreground: 220 15% 95%;  /* Texto dos cards */
-    --popover: 220 40% 18%;
-    --popover-foreground: 220 15% 95%;
+    /* Sistema de cores baseado no design moderno - LIGHT MODE */
+    --background: 0 0% 100%;         /* Fundo principal branco */
+    --foreground: 220 45% 15%;       /* Texto principal escuro */
+    --card: 0 0% 100%;               /* Cards brancos */
+    --card-foreground: 220 45% 15%;  /* Texto dos cards escuro */
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 45% 15%;
     --primary: 195 100% 50%;         /* Azul ciano como primária */
-    --primary-foreground: 220 45% 15%; /* Texto sobre primária */
-    --secondary: 220 35% 25%;        /* Cinza azulado para secundário */
-    --secondary-foreground: 220 15% 95%;
-    --muted: 220 35% 22%;            /* Elementos menos importantes */
-    --muted-foreground: 220 15% 70%; /* Texto muted */
+    --primary-foreground: 0 0% 100%; /* Texto sobre primária branco */
+    --secondary: 220 15% 95%;        /* Cinza claro para secundário */
+    --secondary-foreground: 220 45% 15%;
+    --muted: 220 15% 96%;            /* Elementos menos importantes */
+    --muted-foreground: 220 15% 40%; /* Texto muted */
     --accent: 20 100% 60%;           /* Laranja para acentos */
-    --accent-foreground: 220 15% 95%;
+    --accent-foreground: 0 0% 100%;
     --destructive: 0 84% 60%;        /* Vermelho para erros */
-    --destructive-foreground: 220 15% 95%;
-    --border: 220 35% 25%;           /* Bordas sutis */
-    --input: 220 35% 22%;            /* Inputs com fundo escuro */
+    --destructive-foreground: 0 0% 100%;
+    --border: 220 15% 90%;           /* Bordas sutis */
+    --input: 220 15% 96%;            /* Inputs com fundo claro */
     --ring: 195 100% 50%;            /* Focus ring ciano */
     
     /* Chart Colors - Paleta moderna para gráficos baseada no design */
@@ -68,7 +68,10 @@
   }
 
   .dark {
-    /* Modo escuro já é o padrão baseado na imagem */
+    /* Modo escuro */
+    --primary-800: 220 40% 20%;      /* Dark mode: escuro */
+    --primary-900: 220 45% 15%;      /* Dark mode: muito escuro */
+    
     --background: 220 45% 15%;
     --foreground: 220 15% 95%;
     --card: 220 40% 18%;
