@@ -485,26 +485,26 @@ export function NOCPricingSystem({ onBack, proposalClientData, onNavigateToQuote
   const getStatusBadgeClass = (status: string) => {
     switch (status) {
       case 'error':
-        return 'border-blue-300/40 bg-blue-900/50 text-blue-100';
+        return 'border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-950 text-red-900 dark:text-red-100';
       case 'warning':
-        return 'border-blue-300/35 bg-blue-800/45 text-blue-100';
+        return 'border-yellow-200 dark:border-yellow-800 bg-yellow-50 dark:bg-yellow-950 text-yellow-900 dark:text-yellow-100';
       case 'success':
-        return 'border-cyan-300/40 bg-cyan-900/45 text-cyan-100';
+        return 'border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-950 text-green-900 dark:text-green-100';
       default:
-        return 'border-blue-300/30 bg-slate-900/35 text-slate-200';
+        return 'border-blue-200 dark:border-blue-800 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100';
     }
   };
 
   const getCompetitivenessBadgeClass = (competitiveness: string) => {
     switch (competitiveness) {
       case 'competitive':
-        return 'border-cyan-300/40 bg-cyan-900/45 text-cyan-100';
+        return 'border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-950 text-green-900 dark:text-green-100';
       case 'low':
-        return 'border-blue-300/35 bg-blue-900/45 text-blue-100';
+        return 'border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-950 text-blue-900 dark:text-blue-100';
       case 'high':
-        return 'border-blue-300/45 bg-blue-950/65 text-blue-100';
+        return 'border-orange-200 dark:border-orange-800 bg-orange-50 dark:bg-orange-950 text-orange-900 dark:text-orange-100';
       default:
-        return 'border-blue-300/30 bg-slate-900/35 text-slate-200';
+        return 'border-blue-200 dark:border-blue-800 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100';
     }
   };
 
@@ -518,7 +518,7 @@ export function NOCPricingSystem({ onBack, proposalClientData, onNavigateToQuote
 
   return (
     <div className="noc-theme w-full max-w-7xl mx-auto p-6 space-y-6 rounded-2xl">
-      <Card className="bg-slate-900/55 border-blue-400/20 backdrop-blur-md">
+      <Card className="bg-white dark:bg-gray-900 border-blue-200 dark:border-blue-800 backdrop-blur-md">
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
@@ -570,7 +570,7 @@ export function NOCPricingSystem({ onBack, proposalClientData, onNavigateToQuote
 
         <CardContent>
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid grid-cols-5 lg:grid-cols-10 gap-2 h-auto bg-slate-900/40 border border-blue-400/20 p-2 rounded-xl">
+            <TabsList className="grid grid-cols-5 lg:grid-cols-10 gap-2 h-auto bg-gray-100 dark:bg-gray-800 border border-blue-200 dark:border-blue-800 p-2 rounded-xl">
               {NOC_TABS.map(tab => {
                 const status = getTabStatus(tab.id);
                 return (

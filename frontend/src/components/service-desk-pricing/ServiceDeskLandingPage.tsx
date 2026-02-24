@@ -38,7 +38,7 @@ export function ServiceDeskLandingPage({ onNewProposal, onModernCalculator, onAd
 
         {/* Features Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-          <Card className="bg-slate-800/50 border-slate-700/50 backdrop-blur-sm hover:bg-slate-800/70 transition-all">
+          <Card className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 backdrop-blur-sm hover:bg-gray-50 dark:hover:bg-gray-800 transition-all">
             <CardContent className="p-6 text-center">
               <div className="flex justify-center mb-4">
                 <div className="p-3 bg-purple-500/20 rounded-lg">
@@ -52,21 +52,21 @@ export function ServiceDeskLandingPage({ onNewProposal, onModernCalculator, onAd
             </CardContent>
           </Card>
 
-          <Card className="bg-slate-800/50 border-slate-700/50 backdrop-blur-sm hover:bg-slate-800/70 transition-all">
+          <Card className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 backdrop-blur-sm hover:bg-gray-50 dark:hover:bg-gray-800 transition-all">
             <CardContent className="p-6 text-center">
               <div className="flex justify-center mb-4">
                 <div className="p-3 bg-pink-500/20 rounded-lg">
                   <Zap className="h-8 w-8 text-pink-400" />
                 </div>
               </div>
-              <h3 className="text-lg font-semibold text-white mb-2">Atendimento Ágil</h3>
-              <p className="text-gray-400 text-sm">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Atendimento Ágil</h3>
+              <p className="text-gray-600 dark:text-gray-400 text-sm">
                 Otimize processos e reduza tempo de resposta aos chamados
               </p>
             </CardContent>
           </Card>
 
-          <Card className="bg-slate-800/50 border-slate-700/50 backdrop-blur-sm hover:bg-slate-800/70 transition-all">
+          <Card className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 backdrop-blur-sm hover:bg-gray-50 dark:hover:bg-gray-800 transition-all">
             <CardContent className="p-6 text-center">
               <div className="flex justify-center mb-4">
                 <div className="p-3 bg-cyan-500/20 rounded-lg">
@@ -105,7 +105,7 @@ export function ServiceDeskLandingPage({ onNewProposal, onModernCalculator, onAd
             onClick={onAdminPanel}
             size="lg"
             variant="outline"
-            className="border-2 border-slate-600 bg-slate-800/50 hover:bg-slate-700/50 text-white px-12 py-6 text-lg font-semibold rounded-xl backdrop-blur-sm transition-all"
+            className="border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-900 dark:text-white px-12 py-6 text-lg font-semibold rounded-xl backdrop-blur-sm transition-all"
           >
             <Award className="h-6 w-6 mr-3" />
             Painel Admin
