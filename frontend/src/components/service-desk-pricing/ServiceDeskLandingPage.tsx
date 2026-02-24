@@ -13,7 +13,7 @@ interface ServiceDeskLandingPageProps {
 
 export function ServiceDeskLandingPage({ onNewProposal, onModernCalculator, onAdminPanel }: ServiceDeskLandingPageProps) {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center p-6">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-purple-50 dark:from-slate-900 dark:via-purple-900 dark:to-slate-900 flex items-center justify-center p-6">
       <div className="max-w-6xl w-full">
         {/* Hero Section */}
         <div className="text-center mb-12">
@@ -22,14 +22,14 @@ export function ServiceDeskLandingPage({ onNewProposal, onModernCalculator, onAd
               <Headset className="h-16 w-16 text-purple-400" />
             </div>
           </div>
-          <h1 className="text-5xl md:text-6xl font-bold text-white mb-6">
+          <h1 className="text-5xl md:text-6xl font-bold text-gray-900 dark:text-white mb-6">
             Potencialize Seu Negócio
             <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600 dark:from-purple-400 dark:to-pink-400">
               com Precificação Inteligente
             </span>
           </h1>
-          <p className="text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed">
+          <p className="text-xl text-gray-700 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed">
             Nossa solução inovadora de precificação Service Desk foi projetada para profissionais de TI que
             exigem precisão e flexibilidade. Personalize sua estratégia de preços sem esforço e
             eleve o potencial do seu negócio.
@@ -121,7 +121,7 @@ export function ServiceDeskLandingPage({ onNewProposal, onModernCalculator, onAd
             { label: 'Resolução 1º Nível', value: '85%' }
           ].map((stat, index) => (
             <div key={index} className="text-center">
-              <div className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400 mb-2">
+              <div className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600 dark:from-purple-400 dark:to-pink-400 mb-2">
                 {stat.value}
               </div>
               <div className="text-sm text-gray-400">{stat.label}</div>

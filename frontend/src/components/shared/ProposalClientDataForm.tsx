@@ -81,134 +81,134 @@ export function ProposalClientDataForm({ onSubmit, onBack, moduleType, initialDa
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50 dark:from-slate-900 dark:via-blue-900 dark:to-slate-900 p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
           <Button
             onClick={onBack}
             variant="outline"
-            className="mb-4 bg-slate-800/50 border-slate-600 text-white hover:bg-slate-700/50"
+            className="mb-4 bg-white dark:bg-slate-800/50 border-gray-300 dark:border-slate-600 text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-slate-700/50"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Voltar
           </Button>
-          <h1 className="text-4xl font-bold text-white mb-2">Dados da Proposta</h1>
-          <p className="text-gray-300">Preencha as informações para criar uma nova proposta</p>
+          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-2">Dados da Proposta</h1>
+          <p className="text-gray-600 dark:text-gray-700 dark:text-gray-300">Preencha as informações para criar uma nova proposta</p>
         </div>
 
         <form onSubmit={handleSubmit}>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
             {/* Dados do Cliente */}
-            <Card className="bg-slate-800/50 border-slate-700/50 backdrop-blur-sm">
+            <Card className="bg-white dark:bg-slate-800/50 border-gray-200 dark:border-slate-700/50 backdrop-blur-sm">
               <CardHeader>
-                <CardTitle className="flex items-center space-x-2 text-white">
+                <CardTitle className="flex items-center space-x-2 text-gray-900 dark:text-gray-900 dark:text-white">
                   <div className="p-2 bg-blue-500/20 rounded-lg">
                     <User className="h-5 w-5 text-blue-400" />
                   </div>
                   <div>
                     <div className="text-lg">Dados do Cliente</div>
-                    <div className="text-xs text-gray-400 font-normal">Informações do cliente para a proposta</div>
+                    <div className="text-xs text-gray-600 dark:text-gray-600 dark:text-gray-400 font-normal">Informações do cliente para a proposta</div>
                   </div>
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label className="text-gray-300">Nome do Cliente *</Label>
+                  <Label className="text-gray-700 dark:text-gray-700 dark:text-gray-300">Nome do Cliente *</Label>
                   <Input
                     value={formData.clientName}
                     onChange={(e) => handleChange('clientName', e.target.value)}
                     placeholder="CARLOS HORST"
-                    className="bg-slate-900/50 border-slate-600 text-white"
+                    className="bg-white dark:bg-slate-900/50 border-gray-300 dark:border-slate-600 text-gray-900 dark:text-white"
                     required
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label className="text-gray-300">E-mail *</Label>
+                  <Label className="text-gray-700 dark:text-gray-300">E-mail *</Label>
                   <Input
                     type="email"
                     value={formData.clientEmail}
                     onChange={(e) => handleChange('clientEmail', e.target.value)}
                     placeholder="cliente@empresa.com"
-                    className="bg-slate-900/50 border-slate-600 text-white"
+                    className="bg-white dark:bg-slate-900/50 border-gray-300 dark:border-slate-600 text-gray-900 dark:text-white"
                     required
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label className="text-gray-300">Telefone *</Label>
+                  <Label className="text-gray-700 dark:text-gray-300">Telefone *</Label>
                   <Input
                     value={formData.clientPhone}
                     onChange={(e) => handleChange('clientPhone', e.target.value)}
                     placeholder="(11) 99999-9999"
-                    className="bg-slate-900/50 border-slate-600 text-white"
+                    className="bg-white dark:bg-slate-900/50 border-gray-300 dark:border-slate-600 text-gray-900 dark:text-white"
                     required
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label className="text-gray-300">Empresa *</Label>
+                  <Label className="text-gray-700 dark:text-gray-300">Empresa *</Label>
                   <Input
                     value={formData.companyName}
                     onChange={(e) => handleChange('companyName', e.target.value)}
                     placeholder="Nome da empresa"
-                    className="bg-slate-900/50 border-slate-600 text-white"
+                    className="bg-white dark:bg-slate-900/50 border-gray-300 dark:border-slate-600 text-gray-900 dark:text-white"
                     required
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label className="text-gray-300">CNPJ</Label>
+                  <Label className="text-gray-700 dark:text-gray-300">CNPJ</Label>
                   <Input
                     value={formData.cnpj}
                     onChange={(e) => handleChange('cnpj', e.target.value)}
                     placeholder="00.000.000/0000-00"
-                    className="bg-slate-900/50 border-slate-600 text-white"
+                    className="bg-white dark:bg-slate-900/50 border-gray-300 dark:border-slate-600 text-gray-900 dark:text-white"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label className="text-gray-300">Endereço</Label>
+                  <Label className="text-gray-700 dark:text-gray-300">Endereço</Label>
                   <Input
                     value={formData.address}
                     onChange={(e) => handleChange('address', e.target.value)}
                     placeholder="Endereço completo da empresa"
-                    className="bg-slate-900/50 border-slate-600 text-white"
+                    className="bg-white dark:bg-slate-900/50 border-gray-300 dark:border-slate-600 text-gray-900 dark:text-white"
                   />
                 </div>
               </CardContent>
             </Card>
 
             {/* Dados do Projeto */}
-            <Card className="bg-slate-800/50 border-slate-700/50 backdrop-blur-sm">
+            <Card className="bg-white dark:bg-slate-800/50 border-gray-200 dark:border-slate-700/50 backdrop-blur-sm">
               <CardHeader>
-                <CardTitle className="flex items-center space-x-2 text-white">
+                <CardTitle className="flex items-center space-x-2 text-gray-900 dark:text-white">
                   <div className="p-2 bg-purple-500/20 rounded-lg">
                     <Briefcase className="h-5 w-5 text-purple-400" />
                   </div>
                   <div>
                     <div className="text-lg">Dados do Projeto</div>
-                    <div className="text-xs text-gray-400 font-normal">Informações sobre o projeto a ser desenvolvido</div>
+                    <div className="text-xs text-gray-600 dark:text-gray-400 font-normal">Informações sobre o projeto a ser desenvolvido</div>
                   </div>
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label className="text-gray-300">Nome do Projeto *</Label>
+                  <Label className="text-gray-700 dark:text-gray-300">Nome do Projeto *</Label>
                   <Input
                     value={formData.projectName}
                     onChange={(e) => handleChange('projectName', e.target.value)}
                     placeholder="CARLOS HORST"
-                    className="bg-slate-900/50 border-slate-600 text-white"
+                    className="bg-white dark:bg-slate-900/50 border-gray-300 dark:border-slate-600 text-gray-900 dark:text-white"
                     required
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label className="text-gray-300">Tipo de Projeto *</Label>
+                  <Label className="text-gray-700 dark:text-gray-300">Tipo de Projeto *</Label>
                   <Select value={formData.projectType} onValueChange={(value) => handleChange('projectType', value)}>
-                    <SelectTrigger className="bg-slate-900/50 border-slate-600 text-white">
+                    <SelectTrigger className="bg-slate-900/50 border-slate-600 text-gray-900 dark:text-white">
                       <SelectValue placeholder="Selecione o tipo" />
                     </SelectTrigger>
                     <SelectContent>
@@ -220,91 +220,91 @@ export function ProposalClientDataForm({ onSubmit, onBack, moduleType, initialDa
                 </div>
 
                 <div className="space-y-2">
-                  <Label className="text-gray-300">Descrição do Projeto *</Label>
+                  <Label className="text-gray-700 dark:text-gray-300">Descrição do Projeto *</Label>
                   <Textarea
                     value={formData.projectDescription}
                     onChange={(e) => handleChange('projectDescription', e.target.value)}
                     placeholder="Descreva detalhadamente o projeto"
-                    className="bg-slate-900/50 border-slate-600 text-white min-h-[100px]"
+                    className="bg-white dark:bg-slate-900/50 border-gray-300 dark:border-slate-600 text-gray-900 dark:text-white min-h-[100px]"
                     required
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label className="text-gray-300">Prazo de Entrega</Label>
+                  <Label className="text-gray-700 dark:text-gray-300">Prazo de Entrega</Label>
                   <Input
                     type="date"
                     value={formData.deliveryDate}
                     onChange={(e) => handleChange('deliveryDate', e.target.value)}
-                    className="bg-slate-900/50 border-slate-600 text-white"
+                    className="bg-white dark:bg-slate-900/50 border-gray-300 dark:border-slate-600 text-gray-900 dark:text-white"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label className="text-gray-300">Orçamento Estimado (R$)</Label>
+                  <Label className="text-gray-700 dark:text-gray-300">Orçamento Estimado (R$)</Label>
                   <Input
                     type="number"
                     step="0.01"
                     value={formData.estimatedBudget}
                     onChange={(e) => handleChange('estimatedBudget', e.target.value)}
                     placeholder="0,00"
-                    className="bg-slate-900/50 border-slate-600 text-white"
+                    className="bg-white dark:bg-slate-900/50 border-gray-300 dark:border-slate-600 text-gray-900 dark:text-white"
                   />
                 </div>
               </CardContent>
             </Card>
 
             {/* Gerente de Contas */}
-            <Card className="bg-slate-800/50 border-slate-700/50 backdrop-blur-sm">
+            <Card className="bg-white dark:bg-slate-800/50 border-gray-200 dark:border-slate-700/50 backdrop-blur-sm">
               <CardHeader>
-                <CardTitle className="flex items-center space-x-2 text-white">
+                <CardTitle className="flex items-center space-x-2 text-gray-900 dark:text-white">
                   <div className="p-2 bg-green-500/20 rounded-lg">
                     <UserCheck className="h-5 w-5 text-green-400" />
                   </div>
                   <div>
                     <div className="text-lg">Gerente de Contas</div>
-                    <div className="text-xs text-gray-400 font-normal">Responsável pela conta do cliente</div>
+                    <div className="text-xs text-gray-600 dark:text-gray-400 font-normal">Responsável pela conta do cliente</div>
                   </div>
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label className="text-gray-300">Nome do Gerente *</Label>
+                  <Label className="text-gray-700 dark:text-gray-300">Nome do Gerente *</Label>
                   <Input
                     value={formData.managerName}
                     onChange={(e) => handleChange('managerName', e.target.value)}
                     placeholder="Nome completo do gerente"
-                    className="bg-slate-900/50 border-slate-600 text-white"
+                    className="bg-white dark:bg-slate-900/50 border-gray-300 dark:border-slate-600 text-gray-900 dark:text-white"
                     required
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label className="text-gray-300">E-mail do Gerente *</Label>
+                  <Label className="text-gray-700 dark:text-gray-300">E-mail do Gerente *</Label>
                   <Input
                     type="email"
                     value={formData.managerEmail}
                     onChange={(e) => handleChange('managerEmail', e.target.value)}
                     placeholder="gerente@empresa.com"
-                    className="bg-slate-900/50 border-slate-600 text-white"
+                    className="bg-white dark:bg-slate-900/50 border-gray-300 dark:border-slate-600 text-gray-900 dark:text-white"
                     required
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label className="text-gray-300">Telefone do Gerente</Label>
+                  <Label className="text-gray-700 dark:text-gray-300">Telefone do Gerente</Label>
                   <Input
                     value={formData.managerPhone}
                     onChange={(e) => handleChange('managerPhone', e.target.value)}
                     placeholder="(11) 99999-9999"
-                    className="bg-slate-900/50 border-slate-600 text-white"
+                    className="bg-white dark:bg-slate-900/50 border-gray-300 dark:border-slate-600 text-gray-900 dark:text-white"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label className="text-gray-300">Departamento</Label>
+                  <Label className="text-gray-700 dark:text-gray-300">Departamento</Label>
                   <Select value={formData.department} onValueChange={(value) => handleChange('department', value)}>
-                    <SelectTrigger className="bg-slate-900/50 border-slate-600 text-white">
+                    <SelectTrigger className="bg-slate-900/50 border-slate-600 text-gray-900 dark:text-white">
                       <SelectValue placeholder="Selecione o departamento" />
                     </SelectTrigger>
                     <SelectContent>

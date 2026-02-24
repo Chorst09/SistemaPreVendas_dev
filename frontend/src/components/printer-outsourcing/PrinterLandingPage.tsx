@@ -12,7 +12,7 @@ interface PrinterLandingPageProps {
 
 export function PrinterLandingPage({ onNewProposal, onAdminPanel }: PrinterLandingPageProps) {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-green-900 to-slate-900 flex items-center justify-center p-6">
+    <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-green-50 dark:from-slate-900 dark:via-green-900 dark:to-slate-900 flex items-center justify-center p-6">
       <div className="max-w-6xl w-full">
         {/* Hero Section */}
         <div className="text-center mb-12">
@@ -21,14 +21,14 @@ export function PrinterLandingPage({ onNewProposal, onAdminPanel }: PrinterLandi
               <Printer className="h-16 w-16 text-green-400" />
             </div>
           </div>
-          <h1 className="text-5xl md:text-6xl font-bold text-white mb-6">
+          <h1 className="text-5xl md:text-6xl font-bold text-gray-900 dark:text-white mb-6">
             Potencialize Seu Negócio
             <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-400">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-emerald-600 dark:from-green-400 dark:to-emerald-400">
               com Precificação Inteligente
             </span>
           </h1>
-          <p className="text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed">
+          <p className="text-xl text-gray-700 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed">
             Nossa solução inovadora de precificação de Outsourcing de Impressão foi projetada para profissionais de TI que
             exigem precisão e flexibilidade. Personalize sua estratégia de preços sem esforço e
             eleve o potencial do seu negócio.
@@ -111,7 +111,7 @@ export function PrinterLandingPage({ onNewProposal, onAdminPanel }: PrinterLandi
             { label: 'Uptime Garantido', value: '99.5%' }
           ].map((stat, index) => (
             <div key={index} className="text-center">
-              <div className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-400 mb-2">
+              <div className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-emerald-600 dark:from-green-400 dark:to-emerald-400 mb-2">
                 {stat.value}
               </div>
               <div className="text-sm text-gray-400">{stat.label}</div>
