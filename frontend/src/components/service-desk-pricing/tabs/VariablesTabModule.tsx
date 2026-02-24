@@ -438,7 +438,7 @@ export function VariablesTabModule({
   return (
     <div className="space-y-6">
       {/* Header with validation status */}
-      <Card>
+      <Card className="bg-card">
         <CardHeader>
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
@@ -516,7 +516,7 @@ export function VariablesTabModule({
 
         <TabsContent value="inflation" className="space-y-6">
           {/* Inflation Configuration */}
-          <Card>
+          <Card className="bg-card">
             <CardHeader>
               <CardTitle>Configuração de Inflação</CardTitle>
             </CardHeader>
@@ -590,7 +590,7 @@ export function VariablesTabModule({
 
         <TabsContent value="salary" className="space-y-6">
           {/* Salary Adjustments Configuration */}
-          <Card>
+          <Card className="bg-card">
             <CardHeader>
               <CardTitle>Configuração de Reajustes Salariais</CardTitle>
             </CardHeader>
@@ -675,7 +675,7 @@ export function VariablesTabModule({
 
         <TabsContent value="factors" className="space-y-6">
           {/* Market Factors */}
-          <Card>
+          <Card className="bg-card">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle>Fatores de Mercado</CardTitle>
@@ -762,7 +762,7 @@ export function VariablesTabModule({
 
         <TabsContent value="scenarios" className="space-y-6">
           {/* Scenarios */}
-          <Card>
+          <Card className="bg-card">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle>Cenários de Análise</CardTitle>
@@ -854,7 +854,7 @@ export function VariablesTabModule({
 
       {/* Impact Analysis */}
       {impactAnalysis && (
-        <Card>
+        <Card className="bg-card">
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
               <Calculator className="h-5 w-5" />
@@ -1037,7 +1037,7 @@ export function VariablesTabModule({
 
       {/* Scenario Comparison */}
       {scenarioComparison && scenarioComparison.scenarios.length > 0 && (
-        <Card>
+        <Card className="bg-card">
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
               <BarChart3 className="h-5 w-5" />
@@ -1224,7 +1224,7 @@ function MarketFactorCard({ factor, onEdit, onRemove }: MarketFactorCardProps) {
   };
 
   return (
-    <Card>
+    <Card className="bg-card">
       <CardContent className="pt-6">
         <div className="flex items-start justify-between">
           <div className="flex-1">
@@ -1383,7 +1383,7 @@ function ScenarioCard({ scenario, onEdit, onRemove }: ScenarioCardProps) {
   };
 
   return (
-    <Card>
+    <Card className="bg-card">
       <CardContent className="pt-6">
         <div className="flex items-start justify-between">
           <div className="flex-1">
@@ -1507,7 +1507,7 @@ function ScenarioForm({
         {scenario.adjustments && scenario.adjustments.length > 0 ? (
           <div className="space-y-3">
             {scenario.adjustments.map((adjustment, index) => (
-              <Card key={index}>
+              <Card className="bg-card" key={index}>
                 <CardContent className="p-4">
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="space-y-2">

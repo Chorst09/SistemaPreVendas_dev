@@ -226,7 +226,7 @@ export function AnalyticsDashboard({ isOpen, onClose }: AnalyticsDashboardProps)
                 <div className="space-y-6">
                   {/* Key Metrics */}
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <Card>
+                    <Card className="bg-card">
                       <CardHeader className="pb-2">
                         <CardTitle className="text-sm font-medium flex items-center">
                           <Activity className="h-4 w-4 mr-2" />
@@ -243,7 +243,7 @@ export function AnalyticsDashboard({ isOpen, onClose }: AnalyticsDashboardProps)
                       </CardContent>
                     </Card>
 
-                    <Card>
+                    <Card className="bg-card">
                       <CardHeader className="pb-2">
                         <CardTitle className="text-sm font-medium flex items-center">
                           <Clock className="h-4 w-4 mr-2" />
@@ -260,7 +260,7 @@ export function AnalyticsDashboard({ isOpen, onClose }: AnalyticsDashboardProps)
                       </CardContent>
                     </Card>
 
-                    <Card>
+                    <Card className="bg-card">
                       <CardHeader className="pb-2">
                         <CardTitle className="text-sm font-medium flex items-center">
                           <MemoryStick className="h-4 w-4 mr-2" />
@@ -277,7 +277,7 @@ export function AnalyticsDashboard({ isOpen, onClose }: AnalyticsDashboardProps)
                       </CardContent>
                     </Card>
 
-                    <Card>
+                    <Card className="bg-card">
                       <CardHeader className="pb-2">
                         <CardTitle className="text-sm font-medium flex items-center">
                           <AlertTriangle className="h-4 w-4 mr-2" />
@@ -297,7 +297,7 @@ export function AnalyticsDashboard({ isOpen, onClose }: AnalyticsDashboardProps)
 
                   {/* Usage Overview */}
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <Card>
+                    <Card className="bg-card">
                       <CardHeader>
                         <CardTitle className="flex items-center">
                           <Users className="h-5 w-5 mr-2" />
@@ -330,7 +330,7 @@ export function AnalyticsDashboard({ isOpen, onClose }: AnalyticsDashboardProps)
                       </CardContent>
                     </Card>
 
-                    <Card>
+                    <Card className="bg-card">
                       <CardHeader>
                         <CardTitle className="flex items-center">
                           <Target className="h-5 w-5 mr-2" />
@@ -367,7 +367,7 @@ export function AnalyticsDashboard({ isOpen, onClose }: AnalyticsDashboardProps)
                   </div>
 
                   {/* Tab Usage */}
-                  <Card>
+                  <Card className="bg-card">
                     <CardHeader>
                       <CardTitle>Uso por Aba</CardTitle>
                     </CardHeader>
@@ -405,7 +405,7 @@ export function AnalyticsDashboard({ isOpen, onClose }: AnalyticsDashboardProps)
               {analytics && (
                 <div className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <Card>
+                    <Card className="bg-card">
                       <CardHeader>
                         <CardTitle className="text-sm">Tempo de Resposta</CardTitle>
                       </CardHeader>
@@ -437,7 +437,7 @@ export function AnalyticsDashboard({ isOpen, onClose }: AnalyticsDashboardProps)
                       </CardContent>
                     </Card>
 
-                    <Card>
+                    <Card className="bg-card">
                       <CardHeader>
                         <CardTitle className="text-sm">Uso de Recursos</CardTitle>
                       </CardHeader>
@@ -469,7 +469,7 @@ export function AnalyticsDashboard({ isOpen, onClose }: AnalyticsDashboardProps)
                       </CardContent>
                     </Card>
 
-                    <Card>
+                    <Card className="bg-card">
                       <CardHeader>
                         <CardTitle className="text-sm">Cálculos</CardTitle>
                       </CardHeader>
@@ -496,7 +496,7 @@ export function AnalyticsDashboard({ isOpen, onClose }: AnalyticsDashboardProps)
                     </Card>
                   </div>
 
-                  <Card>
+                  <Card className="bg-card">
                     <CardHeader>
                       <CardTitle>Métricas de Rede</CardTitle>
                     </CardHeader>
@@ -554,7 +554,7 @@ export function AnalyticsDashboard({ isOpen, onClose }: AnalyticsDashboardProps)
               {analytics && (
                 <div className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <Card>
+                    <Card className="bg-card">
                       <CardHeader>
                         <CardTitle>Uso de Funcionalidades</CardTitle>
                       </CardHeader>
@@ -596,7 +596,7 @@ export function AnalyticsDashboard({ isOpen, onClose }: AnalyticsDashboardProps)
                       </CardContent>
                     </Card>
 
-                    <Card>
+                    <Card className="bg-card">
                       <CardHeader>
                         <CardTitle>Templates</CardTitle>
                       </CardHeader>
@@ -623,7 +623,7 @@ export function AnalyticsDashboard({ isOpen, onClose }: AnalyticsDashboardProps)
                     </Card>
                   </div>
 
-                  <Card>
+                  <Card className="bg-card">
                     <CardHeader>
                       <CardTitle>Distribuição de Uso por Horário</CardTitle>
                     </CardHeader>
@@ -660,7 +660,7 @@ export function AnalyticsDashboard({ isOpen, onClose }: AnalyticsDashboardProps)
               {analytics && (
                 <div className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <Card>
+                    <Card className="bg-card">
                       <CardHeader className="pb-2">
                         <CardTitle className="text-sm">Total de Erros</CardTitle>
                       </CardHeader>
@@ -671,7 +671,7 @@ export function AnalyticsDashboard({ isOpen, onClose }: AnalyticsDashboardProps)
                       </CardContent>
                     </Card>
 
-                    <Card>
+                    <Card className="bg-card">
                       <CardHeader className="pb-2">
                         <CardTitle className="text-sm">Taxa de Erro</CardTitle>
                       </CardHeader>
@@ -682,7 +682,7 @@ export function AnalyticsDashboard({ isOpen, onClose }: AnalyticsDashboardProps)
                       </CardContent>
                     </Card>
 
-                    <Card>
+                    <Card className="bg-card">
                       <CardHeader className="pb-2">
                         <CardTitle className="text-sm">Erros Críticos</CardTitle>
                       </CardHeader>
@@ -693,7 +693,7 @@ export function AnalyticsDashboard({ isOpen, onClose }: AnalyticsDashboardProps)
                       </CardContent>
                     </Card>
 
-                    <Card>
+                    <Card className="bg-card">
                       <CardHeader className="pb-2">
                         <CardTitle className="text-sm">Não Resolvidos</CardTitle>
                       </CardHeader>
@@ -706,7 +706,7 @@ export function AnalyticsDashboard({ isOpen, onClose }: AnalyticsDashboardProps)
                   </div>
 
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <Card>
+                    <Card className="bg-card">
                       <CardHeader>
                         <CardTitle>Erros por Tipo</CardTitle>
                       </CardHeader>
@@ -722,7 +722,7 @@ export function AnalyticsDashboard({ isOpen, onClose }: AnalyticsDashboardProps)
                       </CardContent>
                     </Card>
 
-                    <Card>
+                    <Card className="bg-card">
                       <CardHeader>
                         <CardTitle>Distribuição por Severidade</CardTitle>
                       </CardHeader>
@@ -765,7 +765,7 @@ export function AnalyticsDashboard({ isOpen, onClose }: AnalyticsDashboardProps)
               {analytics && (
                 <div className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <Card>
+                    <Card className="bg-card">
                       <CardHeader className="pb-2">
                         <CardTitle className="text-sm">Projetos Concluídos</CardTitle>
                       </CardHeader>
@@ -776,7 +776,7 @@ export function AnalyticsDashboard({ isOpen, onClose }: AnalyticsDashboardProps)
                       </CardContent>
                     </Card>
 
-                    <Card>
+                    <Card className="bg-card">
                       <CardHeader className="pb-2">
                         <CardTitle className="text-sm">Duração Média</CardTitle>
                       </CardHeader>
@@ -787,7 +787,7 @@ export function AnalyticsDashboard({ isOpen, onClose }: AnalyticsDashboardProps)
                       </CardContent>
                     </Card>
 
-                    <Card>
+                    <Card className="bg-card">
                       <CardHeader className="pb-2">
                         <CardTitle className="text-sm">Tempo até Valor</CardTitle>
                       </CardHeader>
@@ -798,7 +798,7 @@ export function AnalyticsDashboard({ isOpen, onClose }: AnalyticsDashboardProps)
                       </CardContent>
                     </Card>
 
-                    <Card>
+                    <Card className="bg-card">
                       <CardHeader className="pb-2">
                         <CardTitle className="text-sm">ROI</CardTitle>
                       </CardHeader>
@@ -811,7 +811,7 @@ export function AnalyticsDashboard({ isOpen, onClose }: AnalyticsDashboardProps)
                   </div>
 
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <Card>
+                    <Card className="bg-card">
                       <CardHeader>
                         <CardTitle>Métricas de Qualidade</CardTitle>
                       </CardHeader>
@@ -843,7 +843,7 @@ export function AnalyticsDashboard({ isOpen, onClose }: AnalyticsDashboardProps)
                       </CardContent>
                     </Card>
 
-                    <Card>
+                    <Card className="bg-card">
                       <CardHeader>
                         <CardTitle>Valor para o Usuário</CardTitle>
                       </CardHeader>

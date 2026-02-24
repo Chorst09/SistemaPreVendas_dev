@@ -534,7 +534,7 @@ export function OtherCostsTabModule({
   return (
     <div className="space-y-6">
       {/* Header with validation status */}
-      <Card>
+      <Card className="bg-card">
         <CardHeader>
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
@@ -608,7 +608,7 @@ export function OtherCostsTabModule({
 
       {/* Cost Summary */}
       {costSummary && (
-        <Card>
+        <Card className="bg-card">
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center space-x-2">
@@ -676,7 +676,7 @@ export function OtherCostsTabModule({
       )}
 
       {/* Category Filters */}
-      <Card>
+      <Card className="bg-card">
         <CardHeader>
           <CardTitle className="flex items-center space-x-2">
             <PieChart className="h-5 w-5" />
@@ -711,7 +711,7 @@ export function OtherCostsTabModule({
       </Card>
 
       {/* Costs Management */}
-      <Card>
+      <Card className="bg-card">
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle>
@@ -899,7 +899,7 @@ function CostCard({ cost, onEdit, onRemove, onDuplicate, monthlyCost }: CostCard
   const frequencyConfig = costFrequencyConfig[cost.frequency];
 
   return (
-    <Card>
+    <Card className="bg-card">
       <CardContent className="pt-6">
         <div className="flex items-start justify-between">
           <div className="flex-1">
@@ -1022,7 +1022,7 @@ function CostForm({
   return (
     <div className="space-y-6">
       {/* Basic Information */}
-      <Card>
+      <Card className="bg-card">
         <CardHeader>
           <CardTitle>Informações Básicas</CardTitle>
         </CardHeader>
@@ -1154,7 +1154,7 @@ function CostForm({
       </Card>
 
       {/* Period Configuration */}
-      <Card>
+      <Card className="bg-card">
         <CardHeader>
           <CardTitle>Período de Vigência</CardTitle>
         </CardHeader>
@@ -1224,7 +1224,7 @@ function CostForm({
       </Card>
 
       {/* Cost Preview */}
-      <Card>
+      <Card className="bg-card">
         <CardHeader>
           <CardTitle className="flex items-center space-x-2">
             <TrendingUp className="h-5 w-5" />

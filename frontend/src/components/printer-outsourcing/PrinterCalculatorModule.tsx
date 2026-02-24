@@ -1107,7 +1107,7 @@ export function PrinterCalculatorModule({ onBack, onNavigateToProposals, printer
                 )}
 
                 {/* Informações adicionais */}
-                <Card>
+                <Card className="bg-card">
                     <CardHeader>
                         <CardTitle>Informações sobre Outsourcing de Impressão</CardTitle>
                     </CardHeader>

@@ -803,7 +803,7 @@ export function FinalAnalysisTabModule({
         {/* Dashboard Tab */}
         <TabsContent value="dashboard" className="space-y-6">
           {/* Executive Summary */}
-          <Card>
+          <Card className="bg-card">
             <CardHeader>
               <CardTitle className="flex items-center">
                 <Briefcase className="w-5 h-5 mr-2" />
@@ -895,7 +895,7 @@ export function FinalAnalysisTabModule({
               const TrendIcon = getTrendIcon(kpi.trend);
               
               return (
-                <Card key={index}>
+                <Card className="bg-card" key={index}>
                   <CardContent className="p-4">
                     <div className="flex items-center justify-between mb-2">
                       <Icon className="w-5 h-5 text-muted-foreground" />
@@ -918,7 +918,7 @@ export function FinalAnalysisTabModule({
         <TabsContent value="kpis" className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* KPIs List */}
-            <Card>
+            <Card className="bg-card">
               <CardHeader>
                 <CardTitle>Indicadores de Performance</CardTitle>
               </CardHeader>
@@ -975,7 +975,7 @@ export function FinalAnalysisTabModule({
             </Card>
 
             {/* KPIs Chart */}
-            <Card>
+            <Card className="bg-card">
               <CardHeader>
                 <CardTitle>Comparação com Metas</CardTitle>
               </CardHeader>
@@ -1006,7 +1006,7 @@ export function FinalAnalysisTabModule({
 
         {/* Recommendations Tab */}
         <TabsContent value="recommendations" className="space-y-6">
-          <Card>
+          <Card className="bg-card">
             <CardHeader>
               <CardTitle className="flex items-center">
                 <Star className="w-5 h-5 mr-2" />
@@ -1074,7 +1074,7 @@ export function FinalAnalysisTabModule({
         <TabsContent value="benchmarks" className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Benchmarks List */}
-            <Card>
+            <Card className="bg-card">
               <CardHeader>
                 <CardTitle>Comparação com Mercado</CardTitle>
               </CardHeader>
@@ -1120,7 +1120,7 @@ export function FinalAnalysisTabModule({
             </Card>
 
             {/* Benchmarks Chart */}
-            <Card>
+            <Card className="bg-card">
               <CardHeader>
                 <CardTitle>Posicionamento no Mercado</CardTitle>
               </CardHeader>
@@ -1152,7 +1152,7 @@ export function FinalAnalysisTabModule({
 
         {/* Approvals Tab */}
         <TabsContent value="approvals" className="space-y-6">
-          <Card>
+          <Card className="bg-card">
             <CardHeader>
               <CardTitle className="flex items-center">
                 <CheckCircle className="w-5 h-5 mr-2" />

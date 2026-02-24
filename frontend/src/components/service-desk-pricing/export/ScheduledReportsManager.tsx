@@ -309,7 +309,7 @@ export function ScheduledReportsManager({ open, onOpenChange }: ScheduledReports
                 {scheduledReports.map((report) => {
                   const template = templates.find(t => t.id === report.templateId);
                   return (
-                    <Card key={report.id}>
+                    <Card className="bg-card" key={report.id}>
                       <CardHeader className="pb-3">
                         <div className="flex items-start justify-between">
                           <div className="space-y-1">

@@ -504,7 +504,7 @@ export function TaxesTabModule({ data, onUpdate, onAutoSave, validation, isLoadi
 
       {/* Regional Information */}
       {regionalInfo && (
-        <Card>
+        <Card className="bg-card">
           <CardHeader>
             <CardTitle className="text-lg">Informações Regionais</CardTitle>
           </CardHeader>
@@ -549,7 +549,7 @@ export function TaxesTabModule({ data, onUpdate, onAutoSave, validation, isLoadi
 
         <TabsContent value="basic" className="space-y-6">
           {/* Basic Configuration */}
-          <Card>
+          <Card className="bg-card">
             <CardHeader>
               <CardTitle>Configuração Básica</CardTitle>
             </CardHeader>
@@ -582,7 +582,7 @@ export function TaxesTabModule({ data, onUpdate, onAutoSave, validation, isLoadi
           </Card>
 
           {/* Federal Taxes */}
-          <Card>
+          <Card className="bg-card">
             <CardHeader>
               <CardTitle>Impostos Federais</CardTitle>
             </CardHeader>
@@ -641,7 +641,7 @@ export function TaxesTabModule({ data, onUpdate, onAutoSave, validation, isLoadi
           </Card>
 
           {/* State and Municipal Taxes */}
-          <Card>
+          <Card className="bg-card">
             <CardHeader>
               <CardTitle>Impostos Estaduais e Municipais</CardTitle>
             </CardHeader>
@@ -678,7 +678,7 @@ export function TaxesTabModule({ data, onUpdate, onAutoSave, validation, isLoadi
 
         <TabsContent value="custom" className="space-y-6">
           {/* Custom Taxes */}
-          <Card>
+          <Card className="bg-card">
             <CardHeader>
               <div className="flex justify-between items-center">
                 <CardTitle>Impostos Customizados</CardTitle>
@@ -760,7 +760,7 @@ export function TaxesTabModule({ data, onUpdate, onAutoSave, validation, isLoadi
               ) : (
                 <div className="space-y-4">
                   {data.customTaxes.map((tax, index) => (
-                    <Card key={index}>
+                    <Card className="bg-card" key={index}>
                       <CardContent className="p-4">
                         <div className="flex justify-between items-start">
                           <div className="flex-1">
@@ -794,7 +794,7 @@ export function TaxesTabModule({ data, onUpdate, onAutoSave, validation, isLoadi
 
         <TabsContent value="preview" className="space-y-6">
           {/* Tax Calculation Preview */}
-          <Card>
+          <Card className="bg-card">
             <CardHeader>
               <CardTitle>Prévia de Cálculo de Impostos</CardTitle>
               <p className="text-sm text-muted-foreground">

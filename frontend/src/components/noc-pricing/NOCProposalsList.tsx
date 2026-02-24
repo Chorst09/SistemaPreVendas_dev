@@ -76,7 +76,7 @@ export function NOCProposalsList() {
 
   if (proposals.length === 0) {
     return (
-      <Card>
+      <Card className="bg-card">
         <CardContent className="flex flex-col items-center justify-center py-12">
           <FileText className="h-16 w-16 text-gray-400 mb-4" />
           <h3 className="text-lg font-semibold mb-2">Nenhuma Proposta NOC</h3>

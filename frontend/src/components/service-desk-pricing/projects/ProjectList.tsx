@@ -200,7 +200,7 @@ export function ProjectList({
           ))}
         </div>
       ) : projects.length === 0 ? (
-        <Card>
+        <Card className="bg-card">
           <CardContent className="p-12">
             <div className="text-center">
               <div className="h-12 w-12 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">

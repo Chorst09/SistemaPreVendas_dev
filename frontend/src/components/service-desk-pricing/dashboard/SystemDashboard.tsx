@@ -361,7 +361,7 @@ export function SystemDashboard({ data, userId }: SystemDashboardProps) {
         </TabsContent>
 
         <TabsContent value="projects" className="space-y-6">
-          <Card>
+          <Card className="bg-card">
             <CardHeader>
               <CardTitle>Projetos Ativos</CardTitle>
             </CardHeader>
@@ -404,7 +404,7 @@ export function SystemDashboard({ data, userId }: SystemDashboardProps) {
         </TabsContent>
 
         <TabsContent value="reports" className="space-y-6">
-          <Card>
+          <Card className="bg-card">
             <CardHeader>
               <CardTitle>Relatórios Recentes</CardTitle>
             </CardHeader>

@@ -54,7 +54,7 @@ export function MonitoringTab({ data, onChange }: MonitoringTabProps) {
 
   return (
     <div className="space-y-6">
-      <Card>
+      <Card className="bg-card">
         <CardHeader>
           <CardTitle>Ferramentas de Monitoramento</CardTitle>
         </CardHeader>
@@ -110,7 +110,7 @@ export function MonitoringTab({ data, onChange }: MonitoringTabProps) {
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className="bg-card">
         <CardHeader>
           <CardTitle>Configurações de Alertas</CardTitle>
         </CardHeader>
@@ -148,7 +148,7 @@ export function MonitoringTab({ data, onChange }: MonitoringTabProps) {
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className="bg-card">
         <CardHeader>
           <CardTitle>Dashboards e Relatórios</CardTitle>
         </CardHeader>
@@ -187,7 +187,7 @@ export function MonitoringTab({ data, onChange }: MonitoringTabProps) {
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className="bg-card">
         <CardHeader>
           <CardTitle>Automação e IA</CardTitle>
         </CardHeader>

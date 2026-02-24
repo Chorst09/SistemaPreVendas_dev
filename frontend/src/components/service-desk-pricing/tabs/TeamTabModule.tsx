@@ -618,7 +618,7 @@ export function TeamTabModule({
   return (
     <div className="space-y-6">
       {/* Header with validation status */}
-      <Card>
+      <Card className="bg-card">
         <CardHeader>
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
@@ -667,7 +667,7 @@ export function TeamTabModule({
 
       {/* Team Summary */}
       {costCalculations && (
-        <Card>
+        <Card className="bg-card">
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center space-x-2">
@@ -740,7 +740,7 @@ export function TeamTabModule({
       )}
 
       {/* Team Actions */}
-      <Card>
+      <Card className="bg-card">
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle>Membros da Equipe</CardTitle>
@@ -916,7 +916,7 @@ function TeamMemberCard({ member, onEdit, onRemove, onDuplicate, costCalculation
   };
 
   return (
-    <Card>
+    <Card className="bg-card">
       <CardContent className="pt-6">
         <div className="flex items-start justify-between">
           <div className="flex-1">
@@ -1012,7 +1012,7 @@ function MemberForm({
   return (
     <div className="space-y-6">
       {/* Basic Information */}
-      <Card>
+      <Card className="bg-card">
         <CardHeader>
           <CardTitle>Informações Básicas</CardTitle>
         </CardHeader>
@@ -1140,7 +1140,7 @@ function MemberForm({
       </Card>
 
       {/* Benefits Configuration */}
-      <Card>
+      <Card className="bg-card">
         <CardHeader>
           <CardTitle>Benefícios</CardTitle>
         </CardHeader>

@@ -667,7 +667,7 @@ export function NOCPricingSystem({ onBack, proposalClientData, onNavigateToQuote
                   <h3 className="text-lg font-semibold mb-4">Cálculos e Resultados</h3>
                   {data.calculations ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      <Card>
+                      <Card className="bg-card">
                         <CardHeader>
                           <CardTitle className="text-sm">Custo Mensal Total</CardTitle>
                         </CardHeader>
@@ -678,7 +678,7 @@ export function NOCPricingSystem({ onBack, proposalClientData, onNavigateToQuote
                         </CardContent>
                       </Card>
 
-                      <Card>
+                      <Card className="bg-card">
                         <CardHeader>
                           <CardTitle className="text-sm">Preço Final Mensal</CardTitle>
                         </CardHeader>
@@ -689,7 +689,7 @@ export function NOCPricingSystem({ onBack, proposalClientData, onNavigateToQuote
                         </CardContent>
                       </Card>
 
-                      <Card>
+                      <Card className="bg-card">
                         <CardHeader>
                           <CardTitle className="text-sm">Custo por Dispositivo</CardTitle>
                         </CardHeader>
@@ -700,7 +700,7 @@ export function NOCPricingSystem({ onBack, proposalClientData, onNavigateToQuote
                         </CardContent>
                       </Card>
 
-                      <Card>
+                      <Card className="bg-card">
                         <CardHeader>
                           <CardTitle className="text-sm">Rentabilidade</CardTitle>
                         </CardHeader>
@@ -711,7 +711,7 @@ export function NOCPricingSystem({ onBack, proposalClientData, onNavigateToQuote
                         </CardContent>
                       </Card>
 
-                      <Card>
+                      <Card className="bg-card">
                         <CardHeader>
                           <CardTitle className="text-sm">ROI</CardTitle>
                         </CardHeader>
@@ -722,7 +722,7 @@ export function NOCPricingSystem({ onBack, proposalClientData, onNavigateToQuote
                         </CardContent>
                       </Card>
 
-                      <Card>
+                      <Card className="bg-card">
                         <CardHeader>
                           <CardTitle className="text-sm">Competitividade</CardTitle>
                         </CardHeader>

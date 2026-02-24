@@ -214,7 +214,7 @@ export function JobPositionsManager({
 
   if (isLoading) {
     return (
-      <Card>
+      <Card className="bg-card">
         <CardContent className="flex items-center justify-center py-12">
           <div className="text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
@@ -261,7 +261,7 @@ export function JobPositionsManager({
 
       {/* Create/Edit Form */}
       {(isCreating || editingPosition) && (
-        <Card>
+        <Card className="bg-card">
           <CardHeader>
             <CardTitle>
               {isCreating ? 'Novo Cargo' : 'Editar Cargo'}
@@ -417,7 +417,7 @@ export function JobPositionsManager({
       </div>
 
       {positions.length === 0 && (
-        <Card>
+        <Card className="bg-card">
           <CardContent className="text-center py-12">
             <Briefcase className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
             <h3 className="text-lg font-semibold mb-2">Nenhum cargo cadastrado</h3>
@@ -435,7 +435,7 @@ export function JobPositionsManager({
 
       {/* Summary */}
       {positions.length > 0 && (
-        <Card>
+        <Card className="bg-card">
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
               <Users className="h-5 w-5" />

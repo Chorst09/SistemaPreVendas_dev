@@ -24,7 +24,7 @@ export function TaxesTab({ data, onChange }: TaxesTabProps) {
 
   return (
     <div className="space-y-6">
-      <Card>
+      <Card className="bg-card">
         <CardHeader>
           <CardTitle>Impostos</CardTitle>
         </CardHeader>
@@ -81,7 +81,7 @@ export function TaxesTab({ data, onChange }: TaxesTabProps) {
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className="bg-card">
         <CardHeader>
           <CardTitle>Carga Tributária Total</CardTitle>
         </CardHeader>

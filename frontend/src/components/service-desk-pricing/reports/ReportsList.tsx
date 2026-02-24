@@ -150,7 +150,7 @@ export function ReportsList({ onViewReport, onShareReport }: ReportsListProps) {
 
   if (isLoading) {
     return (
-      <Card>
+      <Card className="bg-card">
         <CardContent className="flex items-center justify-center py-12">
           <div className="text-center">
             <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
@@ -190,7 +190,7 @@ export function ReportsList({ onViewReport, onShareReport }: ReportsListProps) {
       )}
 
       {/* Filters and Search */}
-      <Card>
+      <Card className="bg-card">
         <CardContent className="pt-6">
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex-1">
@@ -235,7 +235,7 @@ export function ReportsList({ onViewReport, onShareReport }: ReportsListProps) {
 
       {/* Reports List */}
       {filteredAndSortedReports.length === 0 ? (
-        <Card>
+        <Card className="bg-card">
           <CardContent className="text-center py-12">
             <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
             <h3 className="text-lg font-semibold mb-2">Nenhum relatório encontrado</h3>
@@ -361,7 +361,7 @@ export function ReportsList({ onViewReport, onShareReport }: ReportsListProps) {
 
       {/* Summary Stats */}
       {reports.length > 0 && (
-        <Card>
+        <Card className="bg-card">
           <CardHeader>
             <CardTitle>Estatísticas</CardTitle>
           </CardHeader>

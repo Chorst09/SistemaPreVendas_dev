@@ -361,7 +361,7 @@ export function UnifiedExportInterface({ open, onOpenChange, data }: UnifiedExpo
                 {/* Project Summary */}
                 <div className="space-y-4">
                   <h3 className="text-lg font-medium">Resumo do Projeto</h3>
-                  <Card>
+                  <Card className="bg-card">
                     <CardContent className="pt-4">
                       <div className="space-y-3 text-sm">
                         <div className="flex justify-between">
@@ -393,7 +393,7 @@ export function UnifiedExportInterface({ open, onOpenChange, data }: UnifiedExpo
                     </CardContent>
                   </Card>
 
-                  <Card>
+                  <Card className="bg-card">
                     <CardHeader className="pb-3">
                       <CardTitle className="text-sm">Templates Disponíveis</CardTitle>
                     </CardHeader>
@@ -445,7 +445,7 @@ export function UnifiedExportInterface({ open, onOpenChange, data }: UnifiedExpo
               ) : (
                 <div className="space-y-3">
                   {exportHistory.map((history) => (
-                    <Card key={history.id}>
+                    <Card className="bg-card" key={history.id}>
                       <CardContent className="pt-4">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-3">
@@ -479,25 +479,25 @@ export function UnifiedExportInterface({ open, onOpenChange, data }: UnifiedExpo
               
               {exportStats && (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                  <Card>
+                  <Card className="bg-card">
                     <CardContent className="pt-4">
                       <div className="text-2xl font-bold">{exportStats.totalExports}</div>
                       <div className="text-xs text-muted-foreground">Total de Exportações</div>
                     </CardContent>
                   </Card>
-                  <Card>
+                  <Card className="bg-card">
                     <CardContent className="pt-4">
                       <div className="text-2xl font-bold">{formatFileSize(exportStats.totalSize)}</div>
                       <div className="text-xs text-muted-foreground">Tamanho Total</div>
                     </CardContent>
                   </Card>
-                  <Card>
+                  <Card className="bg-card">
                     <CardContent className="pt-4">
                       <div className="text-2xl font-bold">{exportStats.mostUsedFormat.toUpperCase()}</div>
                       <div className="text-xs text-muted-foreground">Formato Mais Usado</div>
                     </CardContent>
                   </Card>
-                  <Card>
+                  <Card className="bg-card">
                     <CardContent className="pt-4">
                       <div className="text-2xl font-bold">{formatFileSize(exportStats.averageSize)}</div>
                       <div className="text-xs text-muted-foreground">Tamanho Médio</div>
@@ -528,7 +528,7 @@ export function UnifiedExportInterface({ open, onOpenChange, data }: UnifiedExpo
                   {recommendations.map((rec, index) => {
                     const template = templates.find(t => t.id === rec.templateId);
                     return (
-                      <Card key={index}>
+                      <Card className="bg-card" key={index}>
                         <CardContent className="pt-4">
                           <div className="flex items-start justify-between">
                             <div className="flex items-start gap-3">

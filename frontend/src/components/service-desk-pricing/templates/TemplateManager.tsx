@@ -471,7 +471,7 @@ export function TemplateManager({
 
             {/* Create Template Tab */}
             <TabsContent value="create" className="space-y-4">
-              <Card>
+              <Card className="bg-card">
                 <CardHeader>
                   <CardTitle>Criar Novo Template</CardTitle>
                 </CardHeader>
@@ -554,7 +554,7 @@ export function TemplateManager({
             {/* Import/Export Tab */}
             <TabsContent value="import-export" className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Card>
+                <Card className="bg-card">
                   <CardHeader>
                     <CardTitle className="flex items-center space-x-2">
                       <Download className="h-5 w-5" />
@@ -576,7 +576,7 @@ export function TemplateManager({
                   </CardContent>
                 </Card>
 
-                <Card>
+                <Card className="bg-card">
                   <CardHeader>
                     <CardTitle className="flex items-center space-x-2">
                       <Upload className="h-5 w-5" />
@@ -617,7 +617,7 @@ export function TemplateManager({
             {/* Analytics Tab */}
             <TabsContent value="analytics" className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <Card>
+                <Card className="bg-card">
                   <CardHeader>
                     <CardTitle className="text-sm">Total de Templates</CardTitle>
                   </CardHeader>
@@ -626,7 +626,7 @@ export function TemplateManager({
                   </CardContent>
                 </Card>
 
-                <Card>
+                <Card className="bg-card">
                   <CardHeader>
                     <CardTitle className="text-sm">Templates Públicos</CardTitle>
                   </CardHeader>
@@ -637,7 +637,7 @@ export function TemplateManager({
                   </CardContent>
                 </Card>
 
-                <Card>
+                <Card className="bg-card">
                   <CardHeader>
                     <CardTitle className="text-sm">Mais Usado</CardTitle>
                   </CardHeader>
@@ -655,7 +655,7 @@ export function TemplateManager({
                 </Card>
               </div>
 
-              <Card>
+              <Card className="bg-card">
                 <CardHeader>
                   <CardTitle>Templates por Categoria</CardTitle>
                 </CardHeader>

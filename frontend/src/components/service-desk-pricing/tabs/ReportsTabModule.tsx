@@ -116,7 +116,7 @@ export function ReportsTabModule({
   return (
     <div className="space-y-6">
       {/* Header */}
-      <Card>
+      <Card className="bg-card">
         <CardHeader>
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
@@ -191,7 +191,7 @@ export function ReportsTabModule({
 
       {/* Quick Stats */}
       {recentReports.length > 0 && (
-        <Card>
+        <Card className="bg-card">
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
               <History className="h-5 w-5" />
@@ -310,7 +310,7 @@ function TemplatesManager({ templates, onUseTemplate }: any) {
       </div>
 
       {templates.length === 0 ? (
-        <Card>
+        <Card className="bg-card">
           <CardContent className="text-center py-12">
             <Layout className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
             <h3 className="text-lg font-semibold mb-2">Nenhum template salvo</h3>

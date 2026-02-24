@@ -501,7 +501,7 @@ export function ScaleTabModule({
   return (
     <div className="space-y-6">
       {/* Header with Coverage Analysis */}
-      <Card>
+      <Card className="bg-card">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Clock className="h-5 w-5" />
@@ -714,7 +714,7 @@ export function ScaleTabModule({
       </Card>
 
       {/* Calendar View */}
-      <Card>
+      <Card className="bg-card">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Clock className="h-5 w-5" />
@@ -727,7 +727,7 @@ export function ScaleTabModule({
       </Card>
 
       {/* Schedule Management */}
-      <Card>
+      <Card className="bg-card">
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle>Escalas de Trabalho</CardTitle>
@@ -820,7 +820,7 @@ export function ScaleTabModule({
                     </div>
 
                     {/* Coverage Requirements */}
-                    <Card>
+                    <Card className="bg-card">
                       <CardHeader>
                         <CardTitle className="text-lg">Requisitos de Cobertura</CardTitle>
                       </CardHeader>
@@ -855,7 +855,7 @@ export function ScaleTabModule({
                     </Card>
 
                     {/* Shifts */}
-                    <Card>
+                    <Card className="bg-card">
                       <CardHeader>
                         <div className="flex items-center justify-between">
                           <CardTitle className="text-lg">Turnos de Trabalho</CardTitle>
@@ -1008,7 +1008,7 @@ export function ScaleTabModule({
                     </Card>
 
                     {/* Special Rates */}
-                    <Card>
+                    <Card className="bg-card">
                       <CardHeader>
                         <div className="flex items-center justify-between">
                           <CardTitle className="text-lg">Taxas Especiais</CardTitle>
@@ -1094,7 +1094,7 @@ export function ScaleTabModule({
       </Card>
 
       {/* Advanced Coverage Validation */}
-      <Card>
+      <Card className="bg-card">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <AlertTriangle className="h-5 w-5" />
@@ -1321,7 +1321,7 @@ export function ScaleTabModule({
       </Card>
 
       {/* Automatic Suggestions */}
-      <Card>
+      <Card className="bg-card">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <CheckCircle className="h-5 w-5" />
@@ -1448,7 +1448,7 @@ export function ScaleTabModule({
 
       {/* Intelligent Gap Detection and Auto-Fix */}
       {coverageAnalysis?.gaps && coverageAnalysis.gaps.length > 0 && (
-        <Card>
+        <Card className="bg-card">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-orange-600 dark:text-orange-400">
               <AlertTriangle className="h-5 w-5" />
@@ -1669,7 +1669,7 @@ export function ScaleTabModule({
 
       {/* Coverage Alerts */}
       {coverageAlerts.length > 0 && (
-        <Card>
+        <Card className="bg-card">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <AlertTriangle className="h-5 w-5 text-orange-500" />

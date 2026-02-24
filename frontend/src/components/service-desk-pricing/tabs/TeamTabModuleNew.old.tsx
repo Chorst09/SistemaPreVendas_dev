@@ -593,7 +593,7 @@ export function TeamTabModuleNew({
   return (
     <div className="space-y-6">
       {/* Header */}
-      <Card>
+      <Card className="bg-card">
         <CardHeader>
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
@@ -670,7 +670,7 @@ export function TeamTabModuleNew({
         <TabsContent value="team" className="space-y-6">
           {/* Add/Edit Member Form */}
           {(isAddingMember || editingMember) && (
-            <Card>
+            <Card className="bg-card">
               <CardHeader>
                 <CardTitle>
                   {editingMember ? 'Editar Cargo' : 'Adicionar Cargo'}
@@ -762,7 +762,7 @@ export function TeamTabModuleNew({
 
           {/* Dimensioning Info */}
           {fullData?.project?.dimensioning && fullData?.project?.generalInfo && (
-            <Card>
+            <Card className="bg-card">
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
                   <Calculator className="h-5 w-5" />
@@ -799,7 +799,7 @@ export function TeamTabModuleNew({
           )}
 
           {/* Team Members List */}
-          <Card>
+          <Card className="bg-card">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle>Membros da Equipe</CardTitle>
@@ -914,7 +914,7 @@ export function TeamTabModuleNew({
 
         <TabsContent value="costs" className="space-y-6">
           {/* Cost Summary */}
-          <Card>
+          <Card className="bg-card">
             <CardHeader>
               <CardTitle>Resumo de Custos</CardTitle>
             </CardHeader>
@@ -948,7 +948,7 @@ export function TeamTabModuleNew({
 
           {/* Cost Breakdown by Position */}
           {Object.keys(teamCosts.costByPosition).length > 0 && (
-            <Card>
+            <Card className="bg-card">
               <CardHeader>
                 <CardTitle>Custos por Cargo</CardTitle>
               </CardHeader>

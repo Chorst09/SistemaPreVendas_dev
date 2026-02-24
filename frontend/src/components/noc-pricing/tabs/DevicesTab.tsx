@@ -110,7 +110,7 @@ export function DevicesTab({
     <div className="space-y-6">
       {/* Resumo */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card>
+        <Card className="bg-card">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium">Total de Dispositivos</CardTitle>
           </CardHeader>
@@ -119,7 +119,7 @@ export function DevicesTab({
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="bg-card">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium">Total de Métricas</CardTitle>
           </CardHeader>
@@ -128,7 +128,7 @@ export function DevicesTab({
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="bg-card">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium">Alertas Estimados/Mês</CardTitle>
           </CardHeader>
@@ -139,7 +139,7 @@ export function DevicesTab({
       </div>
 
       {/* Lista de dispositivos */}
-      <Card>
+      <Card className="bg-card">
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle>Dispositivos Monitorados</CardTitle>

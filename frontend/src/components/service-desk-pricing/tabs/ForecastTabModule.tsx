@@ -95,7 +95,7 @@ export function ForecastTabModule({ data, onUpdate, isLoading = false }: Forecas
   return (
     <div className="space-y-6">
       {/* Header */}
-      <Card>
+      <Card className="bg-card">
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
@@ -140,7 +140,7 @@ export function ForecastTabModule({ data, onUpdate, isLoading = false }: Forecas
           {/* KPIs */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {dashboardKPIs.map((kpi) => (
-              <Card key={kpi.id}>
+              <Card className="bg-card" key={kpi.id}>
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
                     <div>
@@ -184,7 +184,7 @@ export function ForecastTabModule({ data, onUpdate, isLoading = false }: Forecas
           </div>
 
           {/* Gráfico de Projeção */}
-          <Card>
+          <Card className="bg-card">
             <CardHeader>
               <CardTitle>Projeção de Receita e Lucro</CardTitle>
               <div className="flex items-center space-x-4">
@@ -212,7 +212,7 @@ export function ForecastTabModule({ data, onUpdate, isLoading = false }: Forecas
 
           {/* Insights e Alertas */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card>
+            <Card className="bg-card">
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
                   <Lightbulb className="h-5 w-5 text-yellow-500" />
@@ -248,7 +248,7 @@ export function ForecastTabModule({ data, onUpdate, isLoading = false }: Forecas
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="bg-card">
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
                   <AlertTriangle className="h-5 w-5 text-orange-500" />
@@ -346,7 +346,7 @@ export function ForecastTabModule({ data, onUpdate, isLoading = false }: Forecas
 
           {/* Configuração do Cenário Ativo */}
           {currentScenario && (
-            <Card>
+            <Card className="bg-card">
               <CardHeader>
                 <CardTitle>Configurar {currentScenario.name}</CardTitle>
               </CardHeader>
@@ -427,7 +427,7 @@ export function ForecastTabModule({ data, onUpdate, isLoading = false }: Forecas
 
         {/* Projections Tab */}
         <TabsContent value="projections" className="space-y-6">
-          <Card>
+          <Card className="bg-card">
             <CardHeader>
               <CardTitle>Projeções Detalhadas - {currentScenario?.name}</CardTitle>
             </CardHeader>
@@ -467,7 +467,7 @@ export function ForecastTabModule({ data, onUpdate, isLoading = false }: Forecas
         {/* Risks Tab */}
         <TabsContent value="risks" className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card>
+            <Card className="bg-card">
               <CardHeader>
                 <CardTitle>Matriz de Riscos</CardTitle>
               </CardHeader>
@@ -481,7 +481,7 @@ export function ForecastTabModule({ data, onUpdate, isLoading = false }: Forecas
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="bg-card">
               <CardHeader>
                 <CardTitle>Análise de Sensibilidade</CardTitle>
               </CardHeader>

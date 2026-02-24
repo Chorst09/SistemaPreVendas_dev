@@ -364,14 +364,14 @@ export function TeamMemberSummary({
 
   return (
     <div className={`grid grid-cols-2 md:grid-cols-4 gap-4 ${className}`}>
-      <Card>
+      <Card className="bg-card">
         <CardContent className="p-4 text-center">
           <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">{summary.totalMembers}</div>
           <div className="text-sm text-gray-600">Membros</div>
         </CardContent>
       </Card>
       
-      <Card>
+      <Card className="bg-card">
         <CardContent className="p-4 text-center">
           <div className="text-2xl font-bold text-green-600 dark:text-green-400">
             {new Intl.NumberFormat('pt-BR', {
@@ -384,7 +384,7 @@ export function TeamMemberSummary({
         </CardContent>
       </Card>
       
-      <Card>
+      <Card className="bg-card">
         <CardContent className="p-4 text-center">
           <div className="text-2xl font-bold text-purple-600">
             {new Intl.NumberFormat('pt-BR', {
@@ -396,7 +396,7 @@ export function TeamMemberSummary({
         </CardContent>
       </Card>
       
-      <Card>
+      <Card className="bg-card">
         <CardContent className="p-4 text-center">
           <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">{summary.totalWorkload}h</div>
           <div className="text-sm text-gray-600">Carga Horária Total</div>

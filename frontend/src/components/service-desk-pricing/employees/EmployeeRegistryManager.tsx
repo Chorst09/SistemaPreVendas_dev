@@ -381,7 +381,7 @@ function StatisticsView({ statistics }: { statistics: any }) {
   return (
     <div className="space-y-6">
       <div className="grid gap-4 md:grid-cols-4">
-        <Card>
+        <Card className="bg-card">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-gray-600">Total</CardTitle>
           </CardHeader>
@@ -389,7 +389,7 @@ function StatisticsView({ statistics }: { statistics: any }) {
             <div className="text-2xl font-bold">{statistics.total}</div>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="bg-card">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-gray-600">Ativos</CardTitle>
           </CardHeader>
@@ -397,7 +397,7 @@ function StatisticsView({ statistics }: { statistics: any }) {
             <div className="text-2xl font-bold text-green-600 dark:text-green-400">{statistics.active}</div>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="bg-card">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-gray-600">Inativos</CardTitle>
           </CardHeader>
@@ -405,7 +405,7 @@ function StatisticsView({ statistics }: { statistics: any }) {
             <div className="text-2xl font-bold text-red-600 dark:text-red-400">{statistics.inactive}</div>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="bg-card">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-gray-600">Salário Médio</CardTitle>
           </CardHeader>
@@ -418,7 +418,7 @@ function StatisticsView({ statistics }: { statistics: any }) {
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">
-        <Card>
+        <Card className="bg-card">
           <CardHeader>
             <CardTitle>Por Departamento</CardTitle>
           </CardHeader>
@@ -434,7 +434,7 @@ function StatisticsView({ statistics }: { statistics: any }) {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="bg-card">
           <CardHeader>
             <CardTitle>Por Cargo</CardTitle>
           </CardHeader>

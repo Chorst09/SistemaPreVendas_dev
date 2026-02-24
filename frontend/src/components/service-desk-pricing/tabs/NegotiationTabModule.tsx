@@ -644,7 +644,7 @@ export function NegotiationTabModule({
         <TabsContent value="scenarios" className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Scenario List */}
-            <Card>
+            <Card className="bg-card">
               <CardHeader>
                 <CardTitle className="flex items-center">
                   <GitBranch className="w-4 h-4 mr-2" />
@@ -774,7 +774,7 @@ export function NegotiationTabModule({
         {/* Adjustments Tab */}
         <TabsContent value="adjustments" className="space-y-6">
           {currentScenario ? (
-            <Card>
+            <Card className="bg-card">
               <CardHeader>
                 <CardTitle className="flex items-center justify-between">
                   <span>Ajustes - {currentScenario.name}</span>
@@ -917,7 +917,7 @@ export function NegotiationTabModule({
 
         {/* Comparison Tab */}
         <TabsContent value="comparison" className="space-y-6">
-          <Card>
+          <Card className="bg-card">
             <CardHeader>
               <CardTitle className="flex items-center">
                 <BarChart3 className="w-4 h-4 mr-2" />
@@ -1190,7 +1190,7 @@ export function NegotiationTabModule({
             <div className="space-y-6">
               {/* Version Info */}
               <div className="grid grid-cols-2 gap-4">
-                <Card>
+                <Card className="bg-card">
                   <CardHeader className="pb-3">
                     <CardTitle className="text-sm">Versão {versionComparison.fromVersion.version}</CardTitle>
                   </CardHeader>
@@ -1206,7 +1206,7 @@ export function NegotiationTabModule({
                   </CardContent>
                 </Card>
 
-                <Card>
+                <Card className="bg-card">
                   <CardHeader className="pb-3">
                     <CardTitle className="text-sm">Versão {versionComparison.toVersion.version}</CardTitle>
                   </CardHeader>
@@ -1224,7 +1224,7 @@ export function NegotiationTabModule({
               </div>
 
               {/* Changes */}
-              <Card>
+              <Card className="bg-card">
                 <CardHeader>
                   <CardTitle className="text-sm">Alterações ({versionComparison.changes.length})</CardTitle>
                 </CardHeader>
@@ -1285,7 +1285,7 @@ export function NegotiationTabModule({
               </Card>
 
               {/* Results Comparison */}
-              <Card>
+              <Card className="bg-card">
                 <CardHeader>
                   <CardTitle className="text-sm">Comparação de Resultados</CardTitle>
                 </CardHeader>

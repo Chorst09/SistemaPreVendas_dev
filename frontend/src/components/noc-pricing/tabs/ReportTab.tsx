@@ -117,7 +117,7 @@ export function ReportTab({ data, onSaveProposal, onGenerateBudget, onExportPDF 
       </Card>
 
       {/* Resumo Executivo */}
-      <Card>
+      <Card className="bg-card">
         <CardHeader>
           <CardTitle className="flex items-center space-x-2">
             <FileText className="h-5 w-5" />
@@ -175,7 +175,7 @@ export function ReportTab({ data, onSaveProposal, onGenerateBudget, onExportPDF 
 
       {/* Métricas Principais */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card>
+        <Card className="bg-card">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium flex items-center space-x-2">
               <Server className="h-4 w-4 text-blue-600" />
@@ -188,7 +188,7 @@ export function ReportTab({ data, onSaveProposal, onGenerateBudget, onExportPDF 
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="bg-card">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium flex items-center space-x-2">
               <Users className="h-4 w-4 text-green-600" />
@@ -201,7 +201,7 @@ export function ReportTab({ data, onSaveProposal, onGenerateBudget, onExportPDF 
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="bg-card">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium flex items-center space-x-2">
               <DollarSign className="h-4 w-4 text-orange-600" />
@@ -216,7 +216,7 @@ export function ReportTab({ data, onSaveProposal, onGenerateBudget, onExportPDF 
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="bg-card">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium flex items-center space-x-2">
               <TrendingUp className="h-4 w-4 text-purple-600" />
@@ -233,7 +233,7 @@ export function ReportTab({ data, onSaveProposal, onGenerateBudget, onExportPDF 
       </div>
 
       {/* Análise Financeira */}
-      <Card>
+      <Card className="bg-card">
         <CardHeader>
           <CardTitle>Análise Financeira</CardTitle>
         </CardHeader>
@@ -315,7 +315,7 @@ export function ReportTab({ data, onSaveProposal, onGenerateBudget, onExportPDF 
       </Card>
 
       {/* Análise de Mercado */}
-      <Card>
+      <Card className="bg-card">
         <CardHeader>
           <CardTitle>Análise de Competitividade</CardTitle>
         </CardHeader>
@@ -358,7 +358,7 @@ export function ReportTab({ data, onSaveProposal, onGenerateBudget, onExportPDF 
       </Card>
 
       {/* Salvar Proposta */}
-      <Card>
+      <Card className="bg-card">
         <CardHeader>
           <CardTitle>Salvar como Proposta</CardTitle>
         </CardHeader>

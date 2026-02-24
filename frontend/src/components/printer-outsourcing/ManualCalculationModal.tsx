@@ -413,7 +413,7 @@ export function ManualCalculationModal({ onClose, onSave }: ManualCalculationMod
 
           {/* Aba Impressora */}
           <TabsContent value="impressora" className="space-y-4">
-            <Card>
+            <Card className="bg-card">
               <CardHeader>
                 <CardTitle className="text-sm">Dados da Impressora</CardTitle>
               </CardHeader>
@@ -502,7 +502,7 @@ export function ManualCalculationModal({ onClose, onSave }: ManualCalculationMod
 
           {/* Aba Suprimentos */}
           <TabsContent value="suprimentos" className="space-y-4">
-            <Card>
+            <Card className="bg-card">
               <CardHeader>
                 <CardTitle className="text-sm">Adicionar Suprimento</CardTitle>
               </CardHeader>
@@ -565,7 +565,7 @@ export function ManualCalculationModal({ onClose, onSave }: ManualCalculationMod
 
             {/* Lista de Suprimentos */}
             {suprimentos.length > 0 && (
-              <Card>
+              <Card className="bg-card">
                 <CardHeader>
                   <CardTitle className="text-sm">Suprimentos Adicionados ({suprimentos.length})</CardTitle>
                 </CardHeader>
@@ -601,7 +601,7 @@ export function ManualCalculationModal({ onClose, onSave }: ManualCalculationMod
 
           {/* Aba Volume */}
           <TabsContent value="volume" className="space-y-4">
-            <Card>
+            <Card className="bg-card">
               <CardHeader>
                 <CardTitle className="text-sm">Modalidade de Locação</CardTitle>
               </CardHeader>
@@ -637,7 +637,7 @@ export function ManualCalculationModal({ onClose, onSave }: ManualCalculationMod
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="bg-card">
               <CardHeader>
                 <CardTitle className="text-sm">Parâmetros de Cálculo</CardTitle>
               </CardHeader>
@@ -820,7 +820,7 @@ export function ManualCalculationModal({ onClose, onSave }: ManualCalculationMod
                   </div>
                 )}
 
-                <Card>
+                <Card className="bg-card">
                   <CardHeader>
                     <CardTitle className="text-sm">Detalhamento do Custo</CardTitle>
                   </CardHeader>
@@ -871,7 +871,7 @@ export function ManualCalculationModal({ onClose, onSave }: ManualCalculationMod
                   </CardContent>
                 </Card>
 
-                <Card>
+                <Card className="bg-card">
                   <CardHeader>
                     <CardTitle className="text-sm">Custos Totais</CardTitle>
                   </CardHeader>
@@ -914,7 +914,7 @@ export function ManualCalculationModal({ onClose, onSave }: ManualCalculationMod
                 </Card>
               </>
             ) : (
-              <Card>
+              <Card className="bg-card">
                 <CardContent className="py-12 text-center">
                   <Calculator className="h-12 w-12 text-slate-400 mx-auto mb-4" />
                   <p className="text-slate-400">

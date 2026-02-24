@@ -529,7 +529,7 @@ export function ResultTabModule({
         <TabsContent value="overview" className="space-y-6">
           {/* KPI Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <Card>
+            <Card className="bg-card">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">ROI</CardTitle>
                 <TrendingUp className="h-4 w-4 text-muted-foreground" />
@@ -544,7 +544,7 @@ export function ResultTabModule({
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="bg-card">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Payback</CardTitle>
                 <Clock className="h-4 w-4 text-muted-foreground" />
@@ -559,7 +559,7 @@ export function ResultTabModule({
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="bg-card">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Margem Bruta</CardTitle>
                 <Target className="h-4 w-4 text-muted-foreground" />
@@ -574,7 +574,7 @@ export function ResultTabModule({
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="bg-card">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Risco</CardTitle>
                 <AlertTriangle className="h-4 w-4 text-muted-foreground" />
@@ -595,7 +595,7 @@ export function ResultTabModule({
           {/* Charts */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Cost Distribution Chart */}
-            <Card>
+            <Card className="bg-card">
               <CardHeader>
                 <CardTitle className="flex items-center">
                   <PieChartIcon className="w-4 h-4 mr-2" />
@@ -626,7 +626,7 @@ export function ResultTabModule({
             </Card>
 
             {/* Monthly Evolution Chart */}
-            <Card>
+            <Card className="bg-card">
               <CardHeader>
                 <CardTitle className="flex items-center">
                   <BarChart3 className="w-4 h-4 mr-2" />
@@ -654,7 +654,7 @@ export function ResultTabModule({
         {/* ROI & Payback Tab */}
         <TabsContent value="roi" className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card>
+            <Card className="bg-card">
               <CardHeader>
                 <CardTitle>Análise de ROI</CardTitle>
               </CardHeader>
@@ -685,7 +685,7 @@ export function ResultTabModule({
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="bg-card">
               <CardHeader>
                 <CardTitle>Análise de Payback</CardTitle>
               </CardHeader>
@@ -710,7 +710,7 @@ export function ResultTabModule({
           </div>
 
           {/* Cash Flow Chart */}
-          <Card>
+          <Card className="bg-card">
             <CardHeader>
               <CardTitle>Fluxo de Caixa Acumulado</CardTitle>
             </CardHeader>
@@ -738,7 +738,7 @@ export function ResultTabModule({
         {/* Margins Tab */}
         <TabsContent value="margins" className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card>
+            <Card className="bg-card">
               <CardHeader>
                 <CardTitle>Análise de Margens</CardTitle>
               </CardHeader>
@@ -769,7 +769,7 @@ export function ResultTabModule({
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="bg-card">
               <CardHeader>
                 <CardTitle>Evolução das Margens</CardTitle>
               </CardHeader>
@@ -803,7 +803,7 @@ export function ResultTabModule({
         {/* Risks Tab */}
         <TabsContent value="risks" className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card>
+            <Card className="bg-card">
               <CardHeader>
                 <CardTitle className="flex items-center">
                   <AlertTriangle className="w-4 h-4 mr-2" />
@@ -841,7 +841,7 @@ export function ResultTabModule({
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="bg-card">
               <CardHeader>
                 <CardTitle>Estratégias de Mitigação</CardTitle>
               </CardHeader>
@@ -871,7 +871,7 @@ export function ResultTabModule({
 
         {/* Sensitivity Tab */}
         <TabsContent value="sensitivity" className="space-y-6">
-          <Card>
+          <Card className="bg-card">
             <CardHeader>
               <CardTitle>Análise de Sensibilidade</CardTitle>
               <p className="text-sm text-muted-foreground">
@@ -904,7 +904,7 @@ export function ResultTabModule({
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="bg-card">
             <CardHeader>
               <CardTitle>Cenários de Análise</CardTitle>
             </CardHeader>

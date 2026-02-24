@@ -114,7 +114,7 @@ export function CostCalculationModule({ printers, suprimentos }: CostCalculation
 
       {/* Resumo Geral */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
+        <Card className="bg-card">
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
               <Calculator className="h-5 w-5 text-blue-600" />
@@ -125,7 +125,7 @@ export function CostCalculationModule({ printers, suprimentos }: CostCalculation
             </div>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="bg-card">
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
               <TrendingUp className="h-5 w-5 text-green-600" />
@@ -138,7 +138,7 @@ export function CostCalculationModule({ printers, suprimentos }: CostCalculation
             </div>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="bg-card">
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
               <DollarSign className="h-5 w-5 text-purple-600" />
@@ -151,7 +151,7 @@ export function CostCalculationModule({ printers, suprimentos }: CostCalculation
             </div>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="bg-card">
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
               <Zap className="h-5 w-5 text-orange-600" />

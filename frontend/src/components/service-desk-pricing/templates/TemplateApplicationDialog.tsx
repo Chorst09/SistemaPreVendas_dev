@@ -116,7 +116,7 @@ export function TemplateApplicationDialog({
 
             {/* Overview Tab */}
             <TabsContent value="overview" className="flex-1 overflow-auto space-y-4">
-              <Card>
+              <Card className="bg-card">
                 <CardHeader>
                   <CardTitle className="text-lg">Resumo da Aplicação</CardTitle>
                 </CardHeader>
@@ -183,7 +183,7 @@ export function TemplateApplicationDialog({
             {/* Conflicts Tab */}
             <TabsContent value="conflicts" className="flex-1 overflow-auto space-y-4">
               {application.conflicts.length === 0 ? (
-                <Card>
+                <Card className="bg-card">
                   <CardContent className="text-center py-8">
                     <CheckCircle className="h-12 w-12 text-green-600 mx-auto mb-4" />
                     <p className="text-lg font-medium">Nenhum conflito encontrado</p>
@@ -202,7 +202,7 @@ export function TemplateApplicationDialog({
                   </Alert>
 
                   {application.conflicts.map((conflict, index) => (
-                    <Card key={index}>
+                    <Card className="bg-card" key={index}>
                       <CardHeader>
                         <CardTitle className="text-sm flex items-center space-x-2">
                           <AlertTriangle className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
@@ -267,7 +267,7 @@ export function TemplateApplicationDialog({
 
             {/* Changes Tab */}
             <TabsContent value="changes" className="flex-1 overflow-auto space-y-4">
-              <Card>
+              <Card className="bg-card">
                 <CardHeader>
                   <CardTitle>Alterações que serão aplicadas</CardTitle>
                 </CardHeader>
@@ -306,7 +306,7 @@ export function TemplateApplicationDialog({
 
             {/* Preview Tab */}
             <TabsContent value="preview" className="flex-1 overflow-auto space-y-4">
-              <Card>
+              <Card className="bg-card">
                 <CardHeader>
                   <CardTitle>Prévia do Resultado</CardTitle>
                 </CardHeader>

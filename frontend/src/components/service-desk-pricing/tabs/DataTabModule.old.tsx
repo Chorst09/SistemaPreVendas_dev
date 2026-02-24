@@ -422,7 +422,7 @@ export function DataTabModule({
   return (
     <div className="space-y-6">
       {/* Header with validation status */}
-      <Card>
+      <Card className="bg-card">
         <CardHeader>
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
@@ -490,7 +490,7 @@ export function DataTabModule({
       )}
 
       {/* Dados do Projeto */}
-      <Card>
+      <Card className="bg-card">
         <CardHeader>
           <CardTitle>Dados do Projeto</CardTitle>
           <p className="text-sm text-muted-foreground">
@@ -957,7 +957,7 @@ export function DataTabModule({
       </Card>
 
       {/* Client Information */}
-      <Card>
+      <Card className="bg-card">
         <CardHeader>
           <CardTitle>Informações do Cliente</CardTitle>
         </CardHeader>
@@ -1131,7 +1131,7 @@ export function DataTabModule({
       </Card>
 
       {/* Contract Period */}
-      <Card>
+      <Card className="bg-card">
         <CardHeader>
           <CardTitle>Período do Contrato</CardTitle>
         </CardHeader>

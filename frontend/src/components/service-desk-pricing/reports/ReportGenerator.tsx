@@ -310,7 +310,7 @@ export function ReportGenerator({
           <TabsContent value="config" className="space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Basic Configuration */}
-              <Card>
+              <Card className="bg-card">
                 <CardHeader>
                   <CardTitle className="flex items-center space-x-2">
                     <Settings className="h-5 w-5" />
@@ -381,7 +381,7 @@ export function ReportGenerator({
               </Card>
 
               {/* Templates */}
-              <Card>
+              <Card className="bg-card">
                 <CardHeader>
                   <CardTitle className="flex items-center space-x-2">
                     <FileText className="h-5 w-5" />
@@ -445,7 +445,7 @@ export function ReportGenerator({
             </div>
 
             {/* Report Summary */}
-            <Card>
+            <Card className="bg-card">
               <CardHeader>
                 <CardTitle>Resumo do Relatório</CardTitle>
               </CardHeader>
@@ -505,7 +505,7 @@ function ReportSectionsConfig({ sections, onSectionToggle, onSectionConfigUpdate
     <div className="space-y-4">
       <h3 className="text-lg font-semibold">Configuração de Seções</h3>
       {sections.map((section: ReportSection) => (
-        <Card key={section.id}>
+        <Card className="bg-card" key={section.id}>
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
@@ -539,7 +539,7 @@ function ReportSectionsConfig({ sections, onSectionToggle, onSectionConfigUpdate
 
 function ReportBrandingConfig({ branding, onUpdate }: any) {
   return (
-    <Card>
+    <Card className="bg-card">
       <CardHeader>
         <CardTitle>Identidade Visual</CardTitle>
       </CardHeader>
@@ -560,7 +560,7 @@ function ReportBrandingConfig({ branding, onUpdate }: any) {
 
 function ReportScheduleConfig({ schedule, onUpdate }: any) {
   return (
-    <Card>
+    <Card className="bg-card">
       <CardHeader>
         <CardTitle>Agendamento Automático</CardTitle>
       </CardHeader>
@@ -580,7 +580,7 @@ function ReportScheduleConfig({ schedule, onUpdate }: any) {
 
 function ReportPreview({ config, data }: { config: ReportConfig; data: ServiceDeskData }) {
   return (
-    <Card>
+    <Card className="bg-card">
       <CardHeader>
         <CardTitle>Visualização do Relatório</CardTitle>
       </CardHeader>

@@ -163,7 +163,7 @@ export function CostsTab({ data, onChange }: CostsTabProps) {
   return (
     <div className="space-y-6">
       {/* Infraestrutura */}
-      <Card>
+      <Card className="bg-card">
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle>Infraestrutura</CardTitle>
@@ -251,7 +251,7 @@ export function CostsTab({ data, onChange }: CostsTabProps) {
       </Card>
 
       {/* Software e Licenças */}
-      <Card>
+      <Card className="bg-card">
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle>Software e Licenças</CardTitle>
@@ -334,7 +334,7 @@ export function CostsTab({ data, onChange }: CostsTabProps) {
       </Card>
 
       {/* Facilities */}
-      <Card>
+      <Card className="bg-card">
         <CardHeader>
           <CardTitle>Facilities</CardTitle>
         </CardHeader>
@@ -364,7 +364,7 @@ export function CostsTab({ data, onChange }: CostsTabProps) {
       </Card>
 
       {/* Treinamento e Desenvolvimento */}
-      <Card>
+      <Card className="bg-card">
         <CardHeader>
           <CardTitle>Treinamento e Desenvolvimento</CardTitle>
         </CardHeader>
@@ -404,7 +404,7 @@ export function CostsTab({ data, onChange }: CostsTabProps) {
       </Card>
 
       {/* Resumo de Custos */}
-      <Card>
+      <Card className="bg-card">
         <CardHeader>
           <CardTitle>Resumo de Custos</CardTitle>
         </CardHeader>

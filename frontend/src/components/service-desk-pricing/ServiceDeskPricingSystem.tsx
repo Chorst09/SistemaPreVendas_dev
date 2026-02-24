@@ -717,7 +717,7 @@ export function ServiceDeskPricingSystem({
         </div>
       </div>
 
-      <Card>
+      <Card className="bg-card">
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
             <div className="space-y-2">

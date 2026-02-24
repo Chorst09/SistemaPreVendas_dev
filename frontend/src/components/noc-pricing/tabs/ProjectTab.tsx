@@ -19,7 +19,7 @@ export function ProjectTab({ data, onChange }: ProjectTabProps) {
 
   return (
     <div className="space-y-6">
-      <Card>
+      <Card className="bg-card">
         <CardHeader>
           <CardTitle>Informações Básicas</CardTitle>
         </CardHeader>
@@ -101,7 +101,7 @@ export function ProjectTab({ data, onChange }: ProjectTabProps) {
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className="bg-card">
         <CardHeader>
           <CardTitle>Configuração do Serviço</CardTitle>
         </CardHeader>

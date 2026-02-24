@@ -38,7 +38,7 @@ export function DataTabGuide() {
             </Alert>
 
             <div className="grid gap-4 md:grid-cols-2">
-                <Card>
+                <Card className="bg-card">
                     <CardHeader>
                         <CardTitle className="text-lg flex items-center space-x-2">
                             <CheckCircle className="text-green-500" size={18} />
@@ -67,7 +67,7 @@ export function DataTabGuide() {
                     </CardContent>
                 </Card>
 
-                <Card>
+                <Card className="bg-card">
                     <CardHeader>
                         <CardTitle className="text-lg flex items-center space-x-2">
                             <Lightbulb className="text-yellow-500" size={18} />
@@ -138,7 +138,7 @@ export function TeamTabGuide() {
             </Alert>
 
             <div className="grid gap-4">
-                <Card>
+                <Card className="bg-card">
                     <CardHeader>
                         <CardTitle className="text-lg">Passo a Passo</CardTitle>
                     </CardHeader>
@@ -177,7 +177,7 @@ export function TeamTabGuide() {
                 </Card>
 
                 <div className="grid gap-4 md:grid-cols-2">
-                    <Card>
+                    <Card className="bg-card">
                         <CardHeader>
                             <CardTitle className="text-lg">Cargos Típicos e Salários</CardTitle>
                         </CardHeader>
@@ -205,7 +205,7 @@ export function TeamTabGuide() {
                         </CardContent>
                     </Card>
 
-                    <Card>
+                    <Card className="bg-card">
                         <CardHeader>
                             <CardTitle className="text-lg">Encargos e Benefícios</CardTitle>
                         </CardHeader>
@@ -255,7 +255,7 @@ export function ScaleTabGuide() {
             </Alert>
 
             <div className="grid gap-4 md:grid-cols-3">
-                <Card>
+                <Card className="bg-card">
                     <CardHeader>
                         <CardTitle className="text-lg">Cobertura 8x5</CardTitle>
                     </CardHeader>
@@ -271,7 +271,7 @@ export function ScaleTabGuide() {
                     </CardContent>
                 </Card>
 
-                <Card>
+                <Card className="bg-card">
                     <CardHeader>
                         <CardTitle className="text-lg">Cobertura 12x5</CardTitle>
                     </CardHeader>
@@ -287,7 +287,7 @@ export function ScaleTabGuide() {
                     </CardContent>
                 </Card>
 
-                <Card>
+                <Card className="bg-card">
                     <CardHeader>
                         <CardTitle className="text-lg">Cobertura 24x7</CardTitle>
                     </CardHeader>
@@ -351,7 +351,7 @@ export function TaxesTabGuide() {
             </Alert>
 
             <div className="grid gap-4 md:grid-cols-2">
-                <Card>
+                <Card className="bg-card">
                     <CardHeader>
                         <CardTitle className="text-lg">Impostos Federais</CardTitle>
                     </CardHeader>
@@ -387,7 +387,7 @@ export function TaxesTabGuide() {
                     </CardContent>
                 </Card>
 
-                <Card>
+                <Card className="bg-card">
                     <CardHeader>
                         <CardTitle className="text-lg">Impostos Municipais</CardTitle>
                     </CardHeader>
@@ -409,7 +409,7 @@ export function TaxesTabGuide() {
                 </Card>
             </div>
 
-            <Card>
+            <Card className="bg-card">
                 <CardHeader>
                     <CardTitle className="text-lg">Regimes Tributários</CardTitle>
                 </CardHeader>
@@ -460,7 +460,7 @@ export function BudgetTabGuide() {
             </Alert>
 
             <div className="grid gap-4 md:grid-cols-2">
-                <Card>
+                <Card className="bg-card">
                     <CardHeader>
                         <CardTitle className="text-lg">Componentes do Orçamento</CardTitle>
                     </CardHeader>
@@ -484,7 +484,7 @@ export function BudgetTabGuide() {
                     </CardContent>
                 </Card>
 
-                <Card>
+                <Card className="bg-card">
                     <CardHeader>
                         <CardTitle className="text-lg">Margens Recomendadas</CardTitle>
                     </CardHeader>
@@ -561,7 +561,7 @@ export function ResultTabGuide() {
             </Alert>
 
             <div className="grid gap-4 md:grid-cols-2">
-                <Card>
+                <Card className="bg-card">
                     <CardHeader>
                         <CardTitle className="text-lg">Indicadores Principais</CardTitle>
                     </CardHeader>
@@ -590,7 +590,7 @@ export function ResultTabGuide() {
                     </CardContent>
                 </Card>
 
-                <Card>
+                <Card className="bg-card">
                     <CardHeader>
                         <CardTitle className="text-lg">Interpretação dos Resultados</CardTitle>
                     </CardHeader>
@@ -617,7 +617,7 @@ export function ResultTabGuide() {
                 </Card>
             </div>
 
-            <Card>
+            <Card className="bg-card">
                 <CardHeader>
                     <CardTitle className="text-lg">Análise de Cenários</CardTitle>
                 </CardHeader>
@@ -674,7 +674,7 @@ export function ForecastTabGuide() {
             </Alert>
 
             <div className="grid gap-4">
-                <Card>
+                <Card className="bg-card">
                     <CardHeader>
                         <CardTitle className="text-lg flex items-center space-x-2">
                             <BarChart3 className="text-blue-500" size={18} />
@@ -793,7 +793,7 @@ export function ForecastTabGuide() {
                     </Card>
                 </div>
 
-                <Card>
+                <Card className="bg-card">
                     <CardHeader>
                         <CardTitle className="text-lg flex items-center space-x-2">
                             <AlertTriangle className="text-orange-500" size={18} />

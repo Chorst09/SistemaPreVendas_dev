@@ -24,7 +24,7 @@ export function VariablesTab({ data, onChange }: VariablesTabProps) {
 
   return (
     <div className="space-y-6">
-      <Card>
+      <Card className="bg-card">
         <CardHeader>
           <CardTitle>Margens</CardTitle>
         </CardHeader>
@@ -66,7 +66,7 @@ export function VariablesTab({ data, onChange }: VariablesTabProps) {
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className="bg-card">
         <CardHeader>
           <CardTitle>Variáveis Econômicas</CardTitle>
         </CardHeader>
@@ -100,7 +100,7 @@ export function VariablesTab({ data, onChange }: VariablesTabProps) {
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className="bg-card">
         <CardHeader>
           <CardTitle>Recomendações de Mercado</CardTitle>
         </CardHeader>

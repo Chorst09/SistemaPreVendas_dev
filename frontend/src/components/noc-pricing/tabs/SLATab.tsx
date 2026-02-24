@@ -26,7 +26,7 @@ export function SLATab({ data, onChange }: SLATabProps) {
 
   return (
     <div className="space-y-6">
-      <Card>
+      <Card className="bg-card">
         <CardHeader>
           <CardTitle>Disponibilidade do Serviço</CardTitle>
         </CardHeader>
@@ -80,7 +80,7 @@ export function SLATab({ data, onChange }: SLATabProps) {
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className="bg-card">
         <CardHeader>
           <CardTitle className="flex items-center space-x-2">
             <Clock className="h-5 w-5" />
@@ -151,7 +151,7 @@ export function SLATab({ data, onChange }: SLATabProps) {
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className="bg-card">
         <CardHeader>
           <CardTitle className="flex items-center space-x-2">
             <TrendingUp className="h-5 w-5" />
@@ -205,7 +205,7 @@ export function SLATab({ data, onChange }: SLATabProps) {
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className="bg-card">
         <CardHeader>
           <CardTitle>Resumo do SLA</CardTitle>
         </CardHeader>

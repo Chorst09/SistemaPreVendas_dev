@@ -99,7 +99,7 @@ export function TeamTab({ team, teamSize, coverage, serviceLevel, deviceCount, o
     <div className="space-y-6">
       {/* Resumo e Recomendação */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Card>
+        <Card className="bg-card">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium">Tamanho da Equipe Atual</CardTitle>
           </CardHeader>
@@ -109,7 +109,7 @@ export function TeamTab({ team, teamSize, coverage, serviceLevel, deviceCount, o
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="bg-card">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium">Equipe Recomendada</CardTitle>
           </CardHeader>
@@ -167,7 +167,7 @@ export function TeamTab({ team, teamSize, coverage, serviceLevel, deviceCount, o
       )}
 
       {/* Lista de Membros */}
-      <Card>
+      <Card className="bg-card">
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle>Membros da Equipe</CardTitle>

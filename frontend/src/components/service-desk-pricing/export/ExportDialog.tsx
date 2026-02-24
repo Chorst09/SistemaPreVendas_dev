@@ -174,7 +174,7 @@ export function ExportDialog({ open, onOpenChange, data }: ExportDialogProps) {
             </div>
 
             {selectedTemplateData && (
-              <Card>
+              <Card className="bg-card">
                 <CardHeader className="pb-3">
                   <CardTitle className="text-sm flex items-center gap-2">
                     {getFormatIcon(selectedTemplateData.format)}

@@ -324,7 +324,7 @@ export function BudgetTabModule({
       )}
 
       {/* Budget health indicator */}
-      <Card>
+      <Card className="bg-card">
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <CardTitle className="text-lg">Status do Orçamento</CardTitle>
@@ -387,7 +387,7 @@ export function BudgetTabModule({
         {/* Overview Tab */}
         <TabsContent value="overview" className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <Card>
+            <Card className="bg-card">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium flex items-center gap-2">
                   <DollarSign className="h-4 w-4" />
@@ -402,7 +402,7 @@ export function BudgetTabModule({
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="bg-card">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium flex items-center gap-2">
                   <PieChart className="h-4 w-4" />
@@ -417,7 +417,7 @@ export function BudgetTabModule({
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="bg-card">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium flex items-center gap-2">
                   <BarChart3 className="h-4 w-4" />
@@ -432,7 +432,7 @@ export function BudgetTabModule({
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="bg-card">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium flex items-center gap-2">
                   <TrendingUp className="h-4 w-4" />
@@ -451,7 +451,7 @@ export function BudgetTabModule({
           </div>
 
           {/* Monthly breakdown chart */}
-          <Card>
+          <Card className="bg-card">
             <CardHeader>
               <CardTitle>Evolução Mensal</CardTitle>
             </CardHeader>
@@ -484,7 +484,7 @@ export function BudgetTabModule({
         <TabsContent value="details" className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Team costs breakdown */}
-            <Card>
+            <Card className="bg-card">
               <CardHeader>
                 <CardTitle>Detalhamento - Custos de Equipe</CardTitle>
               </CardHeader>
@@ -518,7 +518,7 @@ export function BudgetTabModule({
             </Card>
 
             {/* Tax breakdown */}
-            <Card>
+            <Card className="bg-card">
               <CardHeader>
                 <CardTitle>Detalhamento - Impostos</CardTitle>
               </CardHeader>
@@ -563,7 +563,7 @@ export function BudgetTabModule({
             <>
               {/* Budget Health Score */}
               {budgetHealthScore && (
-                <Card>
+                <Card className="bg-card">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <Award className="h-5 w-5" />
@@ -603,7 +603,7 @@ export function BudgetTabModule({
               )}
 
               {/* Deviations from previous budgets */}
-              <Card>
+              <Card className="bg-card">
                 <CardHeader>
                   <CardTitle>Variações em Relação ao Orçamento Anterior</CardTitle>
                 </CardHeader>
@@ -689,7 +689,7 @@ export function BudgetTabModule({
 
               {/* Alerts */}
               {budgetComparison.alerts.length > 0 && (
-                <Card>
+                <Card className="bg-card">
                   <CardHeader>
                     <CardTitle>Alertas e Avisos</CardTitle>
                   </CardHeader>
@@ -722,7 +722,7 @@ export function BudgetTabModule({
 
               {/* Recommendations */}
               {budgetComparison.recommendations.length > 0 && (
-                <Card>
+                <Card className="bg-card">
                   <CardHeader>
                     <CardTitle>Recomendações de Otimização</CardTitle>
                   </CardHeader>
@@ -769,7 +769,7 @@ export function BudgetTabModule({
               )}
 
               {/* Trends */}
-              <Card>
+              <Card className="bg-card">
                 <CardHeader>
                   <CardTitle>Tendências Históricas</CardTitle>
                 </CardHeader>
@@ -810,7 +810,7 @@ export function BudgetTabModule({
               </div>
             </>
           ) : (
-            <Card>
+            <Card className="bg-card">
               <CardHeader>
                 <CardTitle>Comparação com Orçamentos Anteriores</CardTitle>
                 <p className="text-sm text-muted-foreground">
@@ -833,7 +833,7 @@ export function BudgetTabModule({
 
         {/* Settings Tab */}
         <TabsContent value="settings" className="space-y-6">
-          <Card>
+          <Card className="bg-card">
             <CardHeader>
               <CardTitle>Configuração de Margens</CardTitle>
             </CardHeader>
@@ -926,7 +926,7 @@ export function BudgetTabModule({
 
           {/* Optimization suggestions */}
           {showOptimizations && optimizationSuggestions.length > 0 && (
-            <Card>
+            <Card className="bg-card">
               <CardHeader>
                 <CardTitle>Sugestões de Otimização</CardTitle>
               </CardHeader>
