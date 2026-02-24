@@ -465,118 +465,9 @@
     transform: translateY(1px);
   }
 
-  /* Cores específicas para elementos do dashboard - Task 4.1 */
-  .sidebar-bg {
-    background: hsl(var(--primary-900));
-    position: relative;
-  }
-
-  .sidebar-bg::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: radial-gradient(ellipse at center, hsl(var(--accent-cyan) / 0.03), transparent 70%);
-    pointer-events: none;
-  }
-
-  .sidebar-nav-item {
-    position: relative;
-    overflow: hidden;
-  }
-
-  .sidebar-nav-item::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, hsl(var(--accent-cyan) / 0.1), transparent);
-    transition: left 0.5s ease;
-  }
-
-  .sidebar-nav-item:hover::before {
-    left: 100%;
-  }
-
-  .sidebar-nav-item-active {
-    position: relative;
-    background: linear-gradient(135deg, hsl(var(--accent-cyan) / 0.2), hsl(var(--accent-orange) / 0.1));
-    border: 1px solid hsl(var(--accent-cyan) / 0.4);
-    box-shadow: 0 4px 15px hsl(var(--accent-cyan) / 0.15);
-    color: hsl(var(--accent-cyan));
-  }
-
-  .sidebar-nav-item-active::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: 3px;
-    height: 100%;
-    background: linear-gradient(180deg, hsl(var(--accent-cyan)), hsl(var(--accent-orange)));
-    border-radius: 2px 0 0 2px;
-  }
-
-  /* Melhor contraste para ícones e texto na sidebar */
-  .sidebar-nav-item {
-    color: hsl(var(--primary-300));
-    transition: all 0.3s ease;
-  }
-
-  .sidebar-nav-item:hover {
-    color: white;
-    background: hsl(var(--primary-800) / 0.6);
-  }
-
-  .sidebar-nav-item:hover .sidebar-icon {
-    color: hsl(var(--accent-cyan));
-  }
-
-  .header-bg {
-    background: linear-gradient(135deg, hsl(var(--primary-800)), hsl(var(--primary-700)));
-    position: relative;
-  }
-
-  .header-bg::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(90deg, transparent, hsl(var(--primary) / 0.05), transparent);
-    pointer-events: none;
-  }
-
-  .header-search {
-    background: hsl(var(--primary-900) / 0.5);
-    border: 1px solid hsl(var(--primary-600) / 0.5);
-    backdrop-filter: blur(8px);
-    transition: all 0.3s ease;
-  }
-
-  .header-search:focus {
-    background: hsl(var(--primary-900) / 0.7);
-    border-color: hsl(var(--accent-cyan) / 0.5);
-    box-shadow: 0 0 0 3px hsl(var(--accent-cyan) / 0.2);
-  }
-
-  .header-profile-btn {
-    background: hsl(var(--primary-900) / 0.5);
-    border: 1px solid hsl(var(--primary-600) / 0.3);
-    backdrop-filter: blur(8px);
-    transition: all 0.3s ease;
-  }
-
-  .header-profile-btn:hover {
-    background: hsl(var(--primary-600) / 0.5);
-    border-color: hsl(var(--accent-cyan) / 0.3);
-    box-shadow: 0 0 15px hsl(var(--accent-cyan) / 0.2);
-  }
+  /* Cores específicas para elementos do dashboard - REMOVIDO Task 4.1 
+     Essas classes estavam forçando cores escuras e impedindo o light/dark mode de funcionar
+     Agora usamos apenas classes Tailwind inline com dark: variants */
 
   .card-modern {
     background: hsl(var(--card));
@@ -626,34 +517,9 @@
     color: hsl(var(--primary));
   }
 
-  /* Sidebar specific contrast improvements - Task 4.1 */
-  .sidebar-text-primary {
-    color: hsl(var(--primary-300));
-  }
-
-  .sidebar-text-active {
-    color: hsl(var(--accent-cyan));
-  }
-
-  .sidebar-text-hover {
-    color: white;
-  }
-
-  .sidebar-icon-primary {
-    color: hsl(var(--primary-300));
-  }
-
-  .sidebar-icon-active {
-    color: hsl(var(--accent-cyan));
-  }
-
-  .sidebar-icon-hover {
-    color: hsl(var(--accent-cyan));
-  }
-
-  .sidebar-icon-sub-hover {
-    color: hsl(var(--accent-orange));
-  }
+  /* Sidebar specific contrast improvements - REMOVIDO Task 4.1 
+     Essas classes estavam forçando cores escuras
+     Agora usamos apenas classes Tailwind inline com dark: variants */
 
   /* Chart utility classes */
   .chart-revenue {
