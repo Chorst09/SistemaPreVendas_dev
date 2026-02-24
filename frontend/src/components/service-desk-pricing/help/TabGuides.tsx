@@ -95,22 +95,22 @@ export function DataTabGuide() {
                 </Card>
             </div>
 
-            <Card className="border-yellow-200 bg-yellow-50">
+            <Card className="bg-yellow-50 dark:bg-yellow-950 border-yellow-200 dark:border-yellow-800">
                 <CardHeader>
-                    <CardTitle className="text-lg flex items-center space-x-2 text-yellow-800">
+                    <CardTitle className="text-lg flex items-center space-x-2 text-yellow-800 dark:text-yellow-200">
                         <AlertTriangle size={18} />
                         <span>Problemas Comuns</span>
                     </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
                     <div>
-                        <h4 className="font-medium text-yellow-800">Erro: "Dados obrigatórios não preenchidos"</h4>
+                        <h4 className="font-medium text-yellow-800 dark:text-yellow-200">Erro: "Dados obrigatórios não preenchidos"</h4>
                         <p className="text-sm text-yellow-700">
                             <strong>Solução:</strong> Verifique se todos os campos com asterisco (*) estão preenchidos.
                         </p>
                     </div>
                     <div>
-                        <h4 className="font-medium text-yellow-800">Erro: "Data inválida"</h4>
+                        <h4 className="font-medium text-yellow-800 dark:text-yellow-200">Erro: "Data inválida"</h4>
                         <p className="text-sm text-yellow-700">
                             <strong>Solução:</strong> Use o formato DD/MM/AAAA ou selecione no calendário.
                         </p>
@@ -304,9 +304,9 @@ export function ScaleTabGuide() {
                 </Card>
             </div>
 
-            <Card className="border-blue-200 bg-blue-50">
+            <Card className="bg-blue-50 dark:bg-blue-950 border-blue-200 dark:border-blue-800">
                 <CardHeader>
-                    <CardTitle className="text-lg flex items-center space-x-2 text-blue-800">
+                    <CardTitle className="text-lg flex items-center space-x-2 text-blue-800 dark:text-blue-200">
                         <Lightbulb size={18} />
                         <span>Dicas para Escalas</span>
                     </CardTitle>
@@ -342,7 +342,7 @@ export function TaxesTabGuide() {
                 <h2 className="text-xl font-semibold">Guia da Aba Impostos</h2>
             </div>
 
-            <Alert className="border-red-200 bg-red-50">
+            <Alert className="bg-red-50 dark:bg-red-950 border-red-200 dark:border-red-800">
                 <AlertTriangle className="h-4 w-4 text-red-500" />
                 <AlertDescription className="text-red-700">
                     <strong>Importante:</strong> Sempre consulte um contador para confirmar
@@ -400,7 +400,7 @@ export function TaxesTabGuide() {
                             <Badge variant="outline">2% a 5%</Badge>
                         </div>
                         <div className="bg-yellow-50 p-3 rounded-md">
-                            <p className="text-sm text-yellow-800">
+                            <p className="text-sm text-yellow-800 dark:text-yellow-200">
                                 <strong>Atenção:</strong> A alíquota de ISS varia por município.
                                 Consulte a prefeitura local para a alíquota correta.
                             </p>
@@ -514,9 +514,9 @@ export function BudgetTabGuide() {
                 </Card>
             </div>
 
-            <Card className="border-green-200 bg-green-50">
+            <Card className="bg-green-50 dark:bg-green-950 border-green-200 dark:border-green-800">
                 <CardHeader>
-                    <CardTitle className="text-lg flex items-center space-x-2 text-green-800">
+                    <CardTitle className="text-lg flex items-center space-x-2 text-green-800 dark:text-green-200">
                         <CheckCircle size={18} />
                         <span>Checklist de Validação</span>
                     </CardTitle>
@@ -717,9 +717,9 @@ export function ForecastTabGuide() {
                 </Card>
 
                 <div className="grid gap-4 md:grid-cols-3">
-                    <Card className="bg-green-50 border-green-200">
+                    <Card className="bg-green-50 dark:bg-green-950 border-green-200 dark:border-green-800">
                         <CardHeader>
-                            <CardTitle className="text-lg text-green-800">🚀 Cenário Otimista</CardTitle>
+                            <CardTitle className="text-lg text-green-800 dark:text-green-200">🚀 Cenário Otimista</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-2">
                             <div className="flex justify-between text-sm">
@@ -742,9 +742,9 @@ export function ForecastTabGuide() {
                         </CardContent>
                     </Card>
 
-                    <Card className="bg-blue-50 border-blue-200">
+                    <Card className="bg-blue-50 dark:bg-blue-950 border-blue-200 dark:border-blue-800">
                         <CardHeader>
-                            <CardTitle className="text-lg text-blue-800">📊 Cenário Realista</CardTitle>
+                            <CardTitle className="text-lg text-blue-800 dark:text-blue-200">📊 Cenário Realista</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-2">
                             <div className="flex justify-between text-sm">
@@ -767,9 +767,9 @@ export function ForecastTabGuide() {
                         </CardContent>
                     </Card>
 
-                    <Card className="bg-red-50 border-red-200">
+                    <Card className="bg-red-50 dark:bg-red-950 border-red-200 dark:border-red-800">
                         <CardHeader>
-                            <CardTitle className="text-lg text-red-800">⚠️ Cenário Pessimista</CardTitle>
+                            <CardTitle className="text-lg text-red-800 dark:text-red-200">⚠️ Cenário Pessimista</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-2">
                             <div className="flex justify-between text-sm">
@@ -829,14 +829,14 @@ export function ForecastTabGuide() {
                                 <div className="flex items-center space-x-3 p-2 border-l-4 border-red-500 bg-red-50 rounded">
                                     <span className="w-2 h-2 bg-red-500 rounded-full"></span>
                                     <div className="text-sm">
-                                        <span className="font-medium text-red-800">Margem Crítica:</span>
+                                        <span className="font-medium text-red-800 dark:text-red-200">Margem Crítica:</span>
                                         <span className="text-red-600 ml-1">{'<'} 15% - Risco financeiro alto</span>
                                     </div>
                                 </div>
                                 <div className="flex items-center space-x-3 p-2 border-l-4 border-yellow-500 bg-yellow-50 rounded">
                                     <span className="w-2 h-2 bg-yellow-500 rounded-full"></span>
                                     <div className="text-sm">
-                                        <span className="font-medium text-yellow-800">Crescimento de Custos:</span>
+                                        <span className="font-medium text-yellow-800 dark:text-yellow-200">Crescimento de Custos:</span>
                                         <span className="text-yellow-600 ml-1">{'>'} 30% - Risco operacional</span>
                                     </div>
                                 </div>
@@ -880,7 +880,7 @@ export function ForecastTabGuide() {
                     <CardContent className="space-y-3">
                         <div className="border rounded-lg p-3 bg-blue-50">
                             <h5 className="font-medium text-blue-900 mb-1">💰 Oportunidade de Expansão</h5>
-                            <p className="text-sm text-blue-800">
+                            <p className="text-sm text-blue-800 dark:text-blue-200">
                                 <strong>Condição:</strong> Margem {'>'} 25%<br />
                                 <strong>Ação:</strong> Expandir equipe em 25% no Q2<br />
                                 <strong>Impacto:</strong> +R$ 2.1M receita anual
@@ -889,7 +889,7 @@ export function ForecastTabGuide() {
 
                         <div className="border rounded-lg p-3 bg-green-50">
                             <h5 className="font-medium text-green-900 mb-1">⚡ Otimização de Custos</h5>
-                            <p className="text-sm text-green-800">
+                            <p className="text-sm text-green-800 dark:text-green-200">
                                 <strong>Condição:</strong> Margem {'<'} 20%<br />
                                 <strong>Ação:</strong> Implementar automação<br />
                                 <strong>Impacto:</strong> 8% redução custos operacionais

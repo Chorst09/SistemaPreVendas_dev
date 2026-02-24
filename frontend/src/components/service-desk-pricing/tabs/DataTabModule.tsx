@@ -326,7 +326,7 @@ export function DataTabModule({
       <FormSection
         title="Informações do Projeto"
         description="Dados básicos de identificação do projeto"
-        icon={<FileText className="h-5 w-5 text-blue-600" />}
+        icon={<FileText className="h-5 w-5 text-blue-600 dark:text-blue-400" />}
         variant="primary"
         required
         helpText="Preencha os dados principais do projeto para identificação e controle"
@@ -371,7 +371,7 @@ export function DataTabModule({
       <FormSection
         title="Informações do Cliente"
         description="Dados do cliente que receberá o serviço"
-        icon={<Building2 className="h-5 w-5 text-green-600" />}
+        icon={<Building2 className="h-5 w-5 text-green-600 dark:text-green-400" />}
         variant="success"
         required
         helpText="Informações do cliente para a proposta comercial"
@@ -508,7 +508,7 @@ export function DataTabModule({
       <FormSection
         title="Dimensionamento do Serviço"
         description="Parâmetros para cálculo da equipe necessária"
-        icon={<Users className="h-5 w-5 text-orange-600" />}
+        icon={<Users className="h-5 w-5 text-orange-600 dark:text-orange-400" />}
         variant="warning"
         required
         helpText="Dados para dimensionar a equipe de atendimento"
@@ -582,9 +582,9 @@ export function DataTabModule({
         </div>
 
         {monthlyCalls > 0 && (
-          <Alert className="mt-4 bg-blue-50 border-blue-200">
-            <Phone className="h-4 w-4 text-blue-600" />
-            <AlertDescription className="text-blue-900">
+          <Alert className="mt-4 bg-blue-50 dark:bg-blue-950 border-blue-200 dark:border-blue-800">
+            <Phone className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+            <AlertDescription className="text-blue-900 dark:text-blue-100">
               Volume estimado: <strong>{monthlyCalls} chamados/mês</strong> 
               {' '}({Math.round(monthlyCalls / 22)} chamados/dia útil)
             </AlertDescription>
@@ -627,7 +627,7 @@ export function DataTabModule({
               Salvando automaticamente...
             </span>
           ) : (
-            <span className="flex items-center gap-2 text-green-600">
+            <span className="flex items-center gap-2 text-green-600 dark:text-green-400">
               <AlertCircle className="h-4 w-4" />
               Todas as alterações salvas
             </span>

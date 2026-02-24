@@ -392,9 +392,9 @@ export function TeamTabModuleNew({
 
       {/* Required Quantities from Schedule */}
       {requiredQuantities.total > 0 && (
-        <Alert className="bg-blue-50 border-blue-200">
-          <AlertCircle className="h-4 w-4 text-blue-600" />
-          <AlertDescription className="text-blue-900">
+        <Alert className="bg-blue-50 dark:bg-blue-950 border-blue-200 dark:border-blue-800">
+          <AlertCircle className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+          <AlertDescription className="text-blue-900 dark:text-blue-100">
             <div className="font-semibold mb-2">Dimensionamento da Escala Gerada:</div>
             <div className="grid grid-cols-5 gap-4 text-sm">
               <div>
@@ -414,7 +414,7 @@ export function TeamTabModuleNew({
                 <div className="text-xs">Folguistas</div>
               </div>
               <div>
-                <div className="font-bold text-lg text-blue-600">{requiredQuantities.total}</div>
+                <div className="font-bold text-lg text-blue-600 dark:text-blue-400">{requiredQuantities.total}</div>
                 <div className="text-xs">Total Necessário</div>
               </div>
             </div>
@@ -444,7 +444,7 @@ export function TeamTabModuleNew({
           <FormSection
             title="Ações Rápidas"
             description="Adicione equipes pré-configuradas"
-            icon={<Zap className="h-5 w-5 text-yellow-600" />}
+            icon={<Zap className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />}
             variant="warning"
             collapsible
             defaultExpanded={team.length === 0}
@@ -488,7 +488,7 @@ export function TeamTabModuleNew({
           <FormSection
             title="Membros da Equipe"
             description={`${team.length} ${team.length === 1 ? 'cargo configurado' : 'cargos configurados'}`}
-            icon={<Users className="h-5 w-5 text-blue-600" />}
+            icon={<Users className="h-5 w-5 text-blue-600 dark:text-blue-400" />}
             variant="primary"
           >
             {team.length === 0 ? (

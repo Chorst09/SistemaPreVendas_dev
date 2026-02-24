@@ -440,7 +440,7 @@ export function BudgetTabModule({
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-green-600">
+                <div className="text-2xl font-bold text-green-600 dark:text-green-400">
                   {formatCurrency(localData.totalPrice)}
                 </div>
                 <p className="text-xs text-muted-foreground">
@@ -741,7 +741,7 @@ export function BudgetTabModule({
                               </p>
                             </div>
                             <div className="text-right text-sm">
-                              <div className="font-medium text-green-600">
+                              <div className="font-medium text-green-600 dark:text-green-400">
                                 {formatCurrency(recommendation.impact.financial)}
                               </div>
                               <div className="text-xs text-muted-foreground">

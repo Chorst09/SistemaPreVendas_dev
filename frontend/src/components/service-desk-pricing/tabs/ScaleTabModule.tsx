@@ -169,7 +169,7 @@ function CalendarView({ schedules, teamMembers }: CalendarViewProps) {
                       {dayShift.members.length > 0 && (
                         <div className="mt-1">
                           {dayShift.members.map((member, memberIndex) => (
-                            <div key={memberIndex} className="text-[10px] text-blue-600">
+                            <div key={memberIndex} className="text-[10px] text-blue-600 dark:text-blue-400">
                               {member.name}
                             </div>
                           ))}
@@ -305,7 +305,7 @@ function AutomaticSuggestions({ schedules, teamMembers, onApplySuggestion }: Aut
             <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
           </div>
           <div className="flex-1">
-            <p className="text-sm text-blue-800">{suggestion}</p>
+            <p className="text-sm text-blue-800 dark:text-blue-200">{suggestion}</p>
           </div>
           <Button
             size="sm"
@@ -522,7 +522,7 @@ export function ScaleTabModule({
                   <div className="text-sm text-muted-foreground">Cobertura Total</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-blue-600">
+                  <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
                     {coverageAnalysis.coveredHours}h
                   </div>
                   <div className="text-sm text-muted-foreground">Horas Cobertas</div>
@@ -662,13 +662,13 @@ export function ScaleTabModule({
                   <h4 className="text-sm font-medium mb-3">Análise de Custos por Turno</h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="text-center">
-                      <div className="text-2xl font-bold text-green-600">
+                      <div className="text-2xl font-bold text-green-600 dark:text-green-400">
                         R$ {shiftCosts.totalShiftCosts.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                       </div>
                       <div className="text-sm text-muted-foreground">Custo Total Semanal</div>
                     </div>
                     <div className="text-center">
-                      <div className="text-2xl font-bold text-blue-600">
+                      <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
                         {shiftCosts.shiftBreakdown.length}
                       </div>
                       <div className="text-sm text-muted-foreground">Escalas Ativas</div>
@@ -681,7 +681,7 @@ export function ScaleTabModule({
                         <div key={index} className="p-3 bg-gray-50 rounded-lg">
                           <div className="flex justify-between items-center mb-2">
                             <span className="font-medium">{schedule.scheduleName}</span>
-                            <span className="text-sm font-bold text-green-600">
+                            <span className="text-sm font-bold text-green-600 dark:text-green-400">
                               R$ {schedule.totalScheduleCost.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}/semana
                             </span>
                           </div>
@@ -1106,7 +1106,7 @@ export function ScaleTabModule({
             {/* Minimum Coverage Validation */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="text-center p-4 border rounded-lg">
-                <div className="text-lg font-bold text-blue-600">
+                <div className="text-lg font-bold text-blue-600 dark:text-blue-400">
                   {coverageAnalysis ? `${coverageAnalysis.coveragePercentage.toFixed(1)}%` : '0%'}
                 </div>
                 <div className="text-sm text-muted-foreground">Cobertura Total</div>
@@ -1122,7 +1122,7 @@ export function ScaleTabModule({
               </div>
               
               <div className="text-center p-4 border rounded-lg">
-                <div className="text-lg font-bold text-green-600">
+                <div className="text-lg font-bold text-green-600 dark:text-green-400">
                   {schedules.reduce((total, schedule) => 
                     total + schedule.shifts.reduce((shiftTotal, shift) => 
                       shiftTotal + shift.teamMembers.length, 0), 0)}
@@ -1136,7 +1136,7 @@ export function ScaleTabModule({
               </div>
               
               <div className="text-center p-4 border rounded-lg">
-                <div className="text-lg font-bold text-orange-600">
+                <div className="text-lg font-bold text-orange-600 dark:text-orange-400">
                   {coverageAnalysis ? coverageAnalysis.gaps.length : 0}
                 </div>
                 <div className="text-sm text-muted-foreground">Gaps Críticos</div>
@@ -1450,7 +1450,7 @@ export function ScaleTabModule({
       {coverageAnalysis?.gaps && coverageAnalysis.gaps.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-orange-600">
+            <CardTitle className="flex items-center gap-2 text-orange-600 dark:text-orange-400">
               <AlertTriangle className="h-5 w-5" />
               Sistema Inteligente de Detecção de Gaps ({coverageAnalysis.gaps.length})
             </CardTitle>
@@ -1460,25 +1460,25 @@ export function ScaleTabModule({
               {/* Gap Summary */}
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 bg-gray-50 rounded-lg">
                 <div className="text-center">
-                  <div className="text-lg font-bold text-red-600">
+                  <div className="text-lg font-bold text-red-600 dark:text-red-400">
                     {coverageAnalysis.gaps.filter(g => g.severity === 'critical').length}
                   </div>
                   <div className="text-xs text-muted-foreground">Críticos</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-lg font-bold text-orange-600">
+                  <div className="text-lg font-bold text-orange-600 dark:text-orange-400">
                     {coverageAnalysis.gaps.filter(g => g.severity === 'high').length}
                   </div>
                   <div className="text-xs text-muted-foreground">Altos</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-lg font-bold text-yellow-600">
+                  <div className="text-lg font-bold text-yellow-600 dark:text-yellow-400">
                     {coverageAnalysis.gaps.filter(g => g.severity === 'medium').length}
                   </div>
                   <div className="text-xs text-muted-foreground">Médios</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-lg font-bold text-blue-600">
+                  <div className="text-lg font-bold text-blue-600 dark:text-blue-400">
                     {coverageAnalysis.gaps.filter(g => g.severity === 'low').length}
                   </div>
                   <div className="text-xs text-muted-foreground">Baixos</div>
@@ -1488,8 +1488,8 @@ export function ScaleTabModule({
               {/* Auto-Fix Actions */}
               <div className="flex gap-2 p-3 bg-blue-50 rounded-lg border border-blue-200">
                 <div className="flex-1">
-                  <div className="font-medium text-sm text-blue-800">Correção Automática Disponível</div>
-                  <div className="text-xs text-blue-600">
+                  <div className="font-medium text-sm text-blue-800 dark:text-blue-200">Correção Automática Disponível</div>
+                  <div className="text-xs text-blue-600 dark:text-blue-400">
                     O sistema pode corrigir automaticamente os gaps mais críticos
                   </div>
                 </div>

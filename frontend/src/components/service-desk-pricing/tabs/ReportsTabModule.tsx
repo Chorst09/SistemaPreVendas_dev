@@ -153,9 +153,9 @@ export function ReportsTabModule({
 
       {/* Success Message */}
       {showSuccessMessage && lastGeneratedReport && (
-        <Alert className="border-green-200 bg-green-50">
-          <CheckCircle className="h-4 w-4 text-green-600" />
-          <AlertDescription className="text-green-800">
+        <Alert className="bg-green-50 dark:bg-green-950 border-green-200 dark:border-green-800">
+          <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
+          <AlertDescription className="text-green-800 dark:text-green-200">
             Relatório "{lastGeneratedReport}" gerado com sucesso!
           </AlertDescription>
         </Alert>

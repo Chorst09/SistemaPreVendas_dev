@@ -451,7 +451,7 @@ export function VariablesTabModule({
             </div>
             <div className="flex items-center space-x-2">
               {hasChanges && (
-                <Badge variant="outline" className="text-orange-600">
+                <Badge variant="outline" className="text-orange-600 dark:text-orange-400">
                   <Clock className="h-3 w-3 mr-1" />
                   Salvando...
                 </Badge>
@@ -865,7 +865,7 @@ export function VariablesTabModule({
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               <div className="text-center">
                 <p className="text-sm text-muted-foreground">Impacto da Inflação</p>
-                <p className="text-2xl font-bold text-blue-600">
+                <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
                   {formatCurrency(impactAnalysis.inflationImpact)}
                 </p>
                 <div className="text-xs text-muted-foreground mt-1">
@@ -874,7 +874,7 @@ export function VariablesTabModule({
               </div>
               <div className="text-center">
                 <p className="text-sm text-muted-foreground">Impacto Salarial</p>
-                <p className="text-2xl font-bold text-green-600">
+                <p className="text-2xl font-bold text-green-600 dark:text-green-400">
                   {formatCurrency(impactAnalysis.salaryImpact)}
                 </p>
                 <div className="text-xs text-muted-foreground mt-1">
@@ -892,7 +892,7 @@ export function VariablesTabModule({
               </div>
               <div className="text-center">
                 <p className="text-sm text-muted-foreground">Impacto Combinado</p>
-                <p className="text-2xl font-bold text-orange-600">
+                <p className="text-2xl font-bold text-orange-600 dark:text-orange-400">
                   {formatCurrency(impactAnalysis.combinedImpact)}
                 </p>
                 <div className="text-xs text-muted-foreground mt-1">
@@ -1085,7 +1085,7 @@ export function VariablesTabModule({
                           {formatPercentage(scenario.probability * 100)} prob.
                         </Badge>
                         {isExtreme && (
-                          <Badge variant="secondary" className="text-orange-600">
+                          <Badge variant="secondary" className="text-orange-600 dark:text-orange-400">
                             Extremo
                           </Badge>
                         )}
@@ -1094,7 +1094,7 @@ export function VariablesTabModule({
                         <div className="font-semibold">{formatCurrency(scenario.value)}</div>
                         <div className={cn(
                           "text-sm font-medium",
-                          variation > 0 ? "text-green-600" : variation < 0 ? "text-red-600" : "text-gray-600"
+                          variation > 0 ? "text-green-600 dark:text-green-400" : variation < 0 ? "text-red-600 dark:text-red-400" : "text-gray-600"
                         )}>
                           {variation > 0 ? '+' : ''}{variation.toFixed(1)}%
                         </div>
@@ -1129,7 +1129,7 @@ export function VariablesTabModule({
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="text-center">
                 <p className="text-sm text-muted-foreground">Valor Esperado</p>
-                <p className="text-xl font-bold text-blue-600">
+                <p className="text-xl font-bold text-blue-600 dark:text-blue-400">
                   {formatCurrency(scenarioComparison.expectedValue)}
                 </p>
                 <div className="text-xs text-muted-foreground mt-1">
@@ -1165,8 +1165,8 @@ export function VariablesTabModule({
 
             {/* Scenario Recommendations */}
             <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-              <h4 className="font-medium mb-2 text-blue-900">Recomendações</h4>
-              <div className="space-y-1 text-sm text-blue-800">
+              <h4 className="font-medium mb-2 text-blue-900 dark:text-blue-100">Recomendações</h4>
+              <div className="space-y-1 text-sm text-blue-800 dark:text-blue-200">
                 {scenarioComparison.riskLevel === 'high' && (
                   <>
                     <div>• Considere criar um fundo de contingência para cobrir variações</div>
@@ -1245,7 +1245,7 @@ function MarketFactorCard({ factor, onEdit, onRemove }: MarketFactorCardProps) {
                 <p className="text-muted-foreground">Impacto</p>
                 <p className={cn(
                   "font-medium",
-                  factor.impact > 0 ? "text-green-600" : factor.impact < 0 ? "text-red-600" : "text-gray-600"
+                  factor.impact > 0 ? "text-green-600 dark:text-green-400" : factor.impact < 0 ? "text-red-600 dark:text-red-400" : "text-gray-600"
                 )}>
                   {factor.impact > 0 ? '+' : ''}{factor.impact.toFixed(2)}%
                 </p>
@@ -1407,7 +1407,7 @@ function ScenarioCard({ scenario, onEdit, onRemove }: ScenarioCardProps) {
                   </Badge>
                   <span className={cn(
                     "font-medium",
-                    adjustment.adjustment > 0 ? "text-green-600" : adjustment.adjustment < 0 ? "text-red-600" : "text-gray-600"
+                    adjustment.adjustment > 0 ? "text-green-600 dark:text-green-400" : adjustment.adjustment < 0 ? "text-red-600 dark:text-red-400" : "text-gray-600"
                   )}>
                     {adjustment.adjustment > 0 ? '+' : ''}{adjustment.adjustment.toFixed(2)}%
                   </span>

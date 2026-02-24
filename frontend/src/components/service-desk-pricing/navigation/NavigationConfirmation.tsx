@@ -132,9 +132,9 @@ export function NavigationConfirmation({
           <div className="space-y-4">
             {/* Path Analysis */}
             {!isOptimalPath && suggestedPath && (
-              <Alert className="border-blue-200 bg-blue-50">
-                <Route className="h-4 w-4 text-blue-600" />
-                <AlertTitle className="text-blue-800">Caminho Sugerido</AlertTitle>
+              <Alert className="bg-blue-50 dark:bg-blue-950 border-blue-200 dark:border-blue-800">
+                <Route className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                <AlertTitle className="text-blue-800 dark:text-blue-200">Caminho Sugerido</AlertTitle>
                 <AlertDescription className="text-blue-700">
                   <div className="space-y-2">
                     <p>{pathReason}</p>
@@ -175,7 +175,7 @@ export function NavigationConfirmation({
                     <p className="text-sm font-medium text-red-700">
                       {error.field}
                     </p>
-                    <p className="text-sm text-red-600">
+                    <p className="text-sm text-red-600 dark:text-red-400">
                       {error.message}
                     </p>
                     <Badge variant="destructive" className="text-xs mt-1">
@@ -190,9 +190,9 @@ export function NavigationConfirmation({
             {hasWarnings && (
               <>
                 {hasErrors && <Separator />}
-                <Alert variant="default" className="border-yellow-200 bg-yellow-50">
-                  <AlertTriangle className="h-4 w-4 text-yellow-600" />
-                  <AlertTitle className="text-yellow-800">Avisos encontrados</AlertTitle>
+                <Alert variant="default" className="bg-yellow-50 dark:bg-yellow-950 border-yellow-200 dark:border-yellow-800">
+                  <AlertTriangle className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
+                  <AlertTitle className="text-yellow-800 dark:text-yellow-200">Avisos encontrados</AlertTitle>
                   <AlertDescription className="text-yellow-700">
                     Os seguintes avisos foram identificados. Você pode prosseguir, mas recomendamos revisar:
                   </AlertDescription>
@@ -208,7 +208,7 @@ export function NavigationConfirmation({
                     <p className="text-sm font-medium text-yellow-700">
                       {warning.field}
                     </p>
-                    <p className="text-sm text-yellow-600">
+                    <p className="text-sm text-yellow-600 dark:text-yellow-400">
                       {warning.message}
                     </p>
                     {warning.suggestion && (
@@ -225,9 +225,9 @@ export function NavigationConfirmation({
             {hasSuggestions && (
               <>
                 <Separator />
-                <Alert className="border-blue-200 bg-blue-50">
-                  <Lightbulb className="h-4 w-4 text-blue-600" />
-                  <AlertTitle className="text-blue-800">Sugestões</AlertTitle>
+                <Alert className="bg-blue-50 dark:bg-blue-950 border-blue-200 dark:border-blue-800">
+                  <Lightbulb className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                  <AlertTitle className="text-blue-800 dark:text-blue-200">Sugestões</AlertTitle>
                   <AlertDescription className="text-blue-700">
                     Recomendações para melhorar a qualidade dos dados:
                   </AlertDescription>

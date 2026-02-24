@@ -279,16 +279,16 @@ const tabHelpContent: Record<string, HelpContent> = {
           <h4 className="font-medium mb-2">Cenários de Análise</h4>
           <div className="grid grid-cols-3 gap-2 text-xs">
             <div className="bg-green-50 p-2 rounded text-center">
-              <div className="font-medium text-green-800">Otimista</div>
-              <div className="text-green-600">20% crescimento</div>
+              <div className="font-medium text-green-800 dark:text-green-200">Otimista</div>
+              <div className="text-green-600 dark:text-green-400">20% crescimento</div>
             </div>
             <div className="bg-blue-50 p-2 rounded text-center">
-              <div className="font-medium text-blue-800">Realista</div>
-              <div className="text-blue-600">12% crescimento</div>
+              <div className="font-medium text-blue-800 dark:text-blue-200">Realista</div>
+              <div className="text-blue-600 dark:text-blue-400">12% crescimento</div>
             </div>
             <div className="bg-red-50 p-2 rounded text-center">
-              <div className="font-medium text-red-800">Pessimista</div>
-              <div className="text-red-600">5% crescimento</div>
+              <div className="font-medium text-red-800 dark:text-red-200">Pessimista</div>
+              <div className="text-red-600 dark:text-red-400">5% crescimento</div>
             </div>
           </div>
         </div>
@@ -424,7 +424,7 @@ export function IntegratedHelpSystem({
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center space-x-2">
               <HelpCircle className="text-blue-500" size={20} />
-              <h3 className="font-medium text-blue-900">Ajuda</h3>
+              <h3 className="font-medium text-blue-900 dark:text-blue-100">Ajuda</h3>
             </div>
             <Button variant="ghost" size="sm" onClick={onClose}>
               <X size={16} />
@@ -441,7 +441,7 @@ export function IntegratedHelpSystem({
           {helpContent.estimatedTime && (
             <div className="flex items-center space-x-1 mt-2">
               <Info size={14} className="text-blue-500" />
-              <span className="text-xs text-blue-600">
+              <span className="text-xs text-blue-600 dark:text-blue-400">
                 Tempo estimado: {helpContent.estimatedTime} minutos
               </span>
             </div>
@@ -490,7 +490,7 @@ export function IntegratedHelpSystem({
                   {helpContent.tips.map((tip, index) => (
                     <div key={index} className="flex items-start space-x-3 p-3 bg-yellow-50 rounded-md">
                       <CheckCircle className="text-yellow-600 mt-0.5" size={16} />
-                      <p className="text-sm text-yellow-800">{tip}</p>
+                      <p className="text-sm text-yellow-800 dark:text-yellow-200">{tip}</p>
                     </div>
                   ))}
                 </div>

@@ -366,14 +366,14 @@ export function TeamMemberSummary({
     <div className={`grid grid-cols-2 md:grid-cols-4 gap-4 ${className}`}>
       <Card>
         <CardContent className="p-4 text-center">
-          <div className="text-2xl font-bold text-blue-600">{summary.totalMembers}</div>
+          <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">{summary.totalMembers}</div>
           <div className="text-sm text-gray-600">Membros</div>
         </CardContent>
       </Card>
       
       <Card>
         <CardContent className="p-4 text-center">
-          <div className="text-2xl font-bold text-green-600">
+          <div className="text-2xl font-bold text-green-600 dark:text-green-400">
             {new Intl.NumberFormat('pt-BR', {
               style: 'currency',
               currency: 'BRL',
@@ -398,7 +398,7 @@ export function TeamMemberSummary({
       
       <Card>
         <CardContent className="p-4 text-center">
-          <div className="text-2xl font-bold text-orange-600">{summary.totalWorkload}h</div>
+          <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">{summary.totalWorkload}h</div>
           <div className="text-sm text-gray-600">Carga Horária Total</div>
         </CardContent>
       </Card>

@@ -256,7 +256,7 @@ export function ProjectList({
                       </DropdownMenuItem>
                       <DropdownMenuItem 
                         onClick={() => onDeleteProject(project.id)}
-                        className="text-red-600"
+                        className="text-red-600 dark:text-red-400"
                       >
                         <Trash2 className="h-4 w-4 mr-2" />
                         Excluir

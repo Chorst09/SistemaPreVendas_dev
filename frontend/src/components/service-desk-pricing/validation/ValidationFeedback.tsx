@@ -273,7 +273,7 @@ export function ValidationSummary({
     return (
       <div className={`flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-md ${className}`}>
         <CheckCircle className="h-4 w-4 text-green-500" />
-        <span className="text-sm font-medium text-green-800">
+        <span className="text-sm font-medium text-green-800 dark:text-green-200">
           Todos os dados estão válidos
         </span>
       </div>
@@ -285,7 +285,7 @@ export function ValidationSummary({
       {isValidating && (
         <div className="flex items-center gap-2 p-3 bg-blue-50 border border-blue-200 rounded-md">
           <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
-          <span className="text-sm font-medium text-blue-800">
+          <span className="text-sm font-medium text-blue-800 dark:text-blue-200">
             Validando dados...
           </span>
         </div>
@@ -295,7 +295,7 @@ export function ValidationSummary({
         <div className="p-3 bg-red-50 border border-red-200 rounded-md">
           <div className="flex items-center gap-2 mb-2">
             <AlertCircle className="h-4 w-4 text-red-500" />
-            <span className="text-sm font-medium text-red-800">
+            <span className="text-sm font-medium text-red-800 dark:text-red-200">
               {errors.length} erro{errors.length > 1 ? 's' : ''} encontrado{errors.length > 1 ? 's' : ''}
             </span>
           </div>
@@ -319,7 +319,7 @@ export function ValidationSummary({
         <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-md">
           <div className="flex items-center gap-2 mb-2">
             <AlertTriangle className="h-4 w-4 text-yellow-500" />
-            <span className="text-sm font-medium text-yellow-800">
+            <span className="text-sm font-medium text-yellow-800 dark:text-yellow-200">
               {warnings.length} aviso{warnings.length > 1 ? 's' : ''}
             </span>
           </div>
@@ -343,7 +343,7 @@ export function ValidationSummary({
         <div className="p-3 bg-blue-50 border border-blue-200 rounded-md">
           <div className="flex items-center gap-2 mb-2">
             <Lightbulb className="h-4 w-4 text-blue-500" />
-            <span className="text-sm font-medium text-blue-800">
+            <span className="text-sm font-medium text-blue-800 dark:text-blue-200">
               {highPrioritySuggestions} sugestão{highPrioritySuggestions > 1 ? 'ões' : ''} importante{highPrioritySuggestions > 1 ? 's' : ''}
             </span>
           </div>

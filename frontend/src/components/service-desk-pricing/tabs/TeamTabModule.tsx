@@ -631,7 +631,7 @@ export function TeamTabModule({
             </div>
             <div className="flex items-center space-x-2">
               {hasChanges && (
-                <Badge variant="outline" className="text-orange-600">
+                <Badge variant="outline" className="text-orange-600 dark:text-orange-400">
                   <Clock className="h-3 w-3 mr-1" />
                   Salvando...
                 </Badge>
@@ -688,13 +688,13 @@ export function TeamTabModule({
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div className="text-center">
                 <p className="text-sm text-muted-foreground">Custo Mensal</p>
-                <p className="text-2xl font-bold text-green-600">
+                <p className="text-2xl font-bold text-green-600 dark:text-green-400">
                   {formatCurrency(costCalculations.totalMonthlyCost)}
                 </p>
               </div>
               <div className="text-center">
                 <p className="text-sm text-muted-foreground">Custo Anual</p>
-                <p className="text-2xl font-bold text-blue-600">
+                <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
                   {formatCurrency(costCalculations.totalAnnualCost)}
                 </p>
               </div>
@@ -706,7 +706,7 @@ export function TeamTabModule({
               </div>
               <div className="text-center">
                 <p className="text-sm text-muted-foreground">Total de Membros</p>
-                <p className="text-2xl font-bold text-orange-600">
+                <p className="text-2xl font-bold text-orange-600 dark:text-orange-400">
                   {localTeam?.length || 0}
                 </p>
               </div>
@@ -940,7 +940,7 @@ function TeamMemberCard({ member, onEdit, onRemove, onDuplicate, costCalculation
               </div>
               <div>
                 <p className="text-muted-foreground">Custo Mensal</p>
-                <p className="font-medium text-green-600">
+                <p className="font-medium text-green-600 dark:text-green-400">
                   {costCalculation ? formatCurrency(costCalculation.totalCost) : 'Calculando...'}
                 </p>
               </div>
@@ -1099,16 +1099,16 @@ function MemberForm({
               {formData.workload > 0 && (
                 <div className="text-sm space-y-1">
                   {formData.workload > 44 && formData.workload <= 60 && (
-                    <p className="text-yellow-600">⚠️ Acima do limite legal (44h/semana)</p>
+                    <p className="text-yellow-600 dark:text-yellow-400">⚠️ Acima do limite legal (44h/semana)</p>
                   )}
                   {formData.workload > 60 && (
-                    <p className="text-red-600">❌ Carga horária excessiva</p>
+                    <p className="text-red-600 dark:text-red-400">❌ Carga horária excessiva</p>
                   )}
                   {formData.workload < 20 && (
-                    <p className="text-yellow-600">⚠️ Carga horária muito baixa</p>
+                    <p className="text-yellow-600 dark:text-yellow-400">⚠️ Carga horária muito baixa</p>
                   )}
                   {formData.workload >= 20 && formData.workload <= 44 && (
-                    <p className="text-green-600">✅ Carga horária adequada</p>
+                    <p className="text-green-600 dark:text-green-400">✅ Carga horária adequada</p>
                   )}
                 </div>
               )}

@@ -369,7 +369,7 @@ export function JobPositionsManager({
                     <div className="flex items-center space-x-2">
                       <Clock className="h-4 w-4 text-muted-foreground" />
                       <span className="text-sm">8h:</span>
-                      <span className="font-semibold text-green-600">
+                      <span className="font-semibold text-green-600 dark:text-green-400">
                         {formatCurrency(position.salary8h)}
                       </span>
                     </div>
@@ -377,7 +377,7 @@ export function JobPositionsManager({
                       <div className="flex items-center space-x-2">
                         <Clock className="h-4 w-4 text-muted-foreground" />
                         <span className="text-sm">6h:</span>
-                        <span className="font-semibold text-blue-600">
+                        <span className="font-semibold text-blue-600 dark:text-blue-400">
                           {formatCurrency(position.salary6h)}
                         </span>
                       </div>
@@ -449,19 +449,19 @@ export function JobPositionsManager({
                 <div className="text-sm text-muted-foreground">Total de Cargos</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-green-600">
+                <div className="text-2xl font-bold text-green-600 dark:text-green-400">
                   {formatCurrency(Math.min(...positions.map(p => p.salary8h)))}
                 </div>
                 <div className="text-sm text-muted-foreground">Menor Salário</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-blue-600">
+                <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
                   {formatCurrency(Math.max(...positions.map(p => p.salary8h)))}
                 </div>
                 <div className="text-sm text-muted-foreground">Maior Salário</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-orange-600">
+                <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">
                   {formatCurrency(positions.reduce((sum, p) => sum + p.salary8h, 0) / positions.length)}
                 </div>
                 <div className="text-sm text-muted-foreground">Salário Médio</div>

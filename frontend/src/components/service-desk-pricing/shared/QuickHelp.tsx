@@ -46,7 +46,7 @@ export function QuickHelp({
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg flex items-center gap-2">
-            <HelpCircle className="h-5 w-5 text-blue-600" />
+            <HelpCircle className="h-5 w-5 text-blue-600 dark:text-blue-400" />
             {title}
           </CardTitle>
           <Button

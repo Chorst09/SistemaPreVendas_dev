@@ -212,7 +212,7 @@ export function SystemDashboard({ data, userId }: SystemDashboardProps) {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-semibold text-blue-700">Total de Projetos</p>
-                <p className="text-3xl font-bold text-blue-900">{metrics.totalProjects}</p>
+                <p className="text-3xl font-bold text-blue-900 dark:text-blue-100">{metrics.totalProjects}</p>
                 <p className="text-xs text-blue-600 mt-1 font-medium">
                   {metrics.activeProjects} ativos
                 </p>
@@ -229,7 +229,7 @@ export function SystemDashboard({ data, userId }: SystemDashboardProps) {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-semibold text-green-700">Receita Total</p>
-                <p className="text-3xl font-bold text-green-900">{formatCurrency(metrics.totalRevenue)}</p>
+                <p className="text-3xl font-bold text-green-900 dark:text-green-100">{formatCurrency(metrics.totalRevenue)}</p>
                 <div className="flex items-center mt-1">
                   <TrendingUp className="h-3 w-3 text-green-600 mr-1" />
                   <p className="text-xs text-green-700 font-medium">+{metrics.growthRate}%</p>
@@ -294,7 +294,7 @@ export function SystemDashboard({ data, userId }: SystemDashboardProps) {
             <Card className="bg-gradient-to-br from-slate-50 to-slate-100 border-slate-200 shadow-lg">
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2 text-slate-800">
-                  <Activity className="h-5 w-5 text-blue-600" />
+                  <Activity className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                   <span>Atividade Recente</span>
                 </CardTitle>
               </CardHeader>
@@ -303,7 +303,7 @@ export function SystemDashboard({ data, userId }: SystemDashboardProps) {
                   <div key={project.id} className="flex items-center justify-between p-3 bg-white rounded-lg border border-slate-200 hover:border-blue-300 hover:shadow-md transition-all">
                     <div className="flex items-center space-x-3">
                       <div className="p-2 bg-blue-100 rounded-lg">
-                        <FileText className="h-4 w-4 text-blue-600" />
+                        <FileText className="h-4 w-4 text-blue-600 dark:text-blue-400" />
                       </div>
                       <div>
                         <p className="font-medium text-sm text-slate-900">{project.name}</p>

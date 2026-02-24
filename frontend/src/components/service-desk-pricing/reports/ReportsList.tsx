@@ -131,9 +131,9 @@ export function ReportsList({ onViewReport, onShareReport }: ReportsListProps) {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'completed':
-        return <Badge variant="default" className="bg-green-100 text-green-800">Concluído</Badge>;
+        return <Badge variant="default" className="bg-green-100 text-green-800 dark:text-green-200">Concluído</Badge>;
       case 'generating':
-        return <Badge variant="secondary" className="bg-blue-100 text-blue-800">Gerando</Badge>;
+        return <Badge variant="secondary" className="bg-blue-100 text-blue-800 dark:text-blue-200">Gerando</Badge>;
       case 'failed':
         return <Badge variant="destructive">Falhou</Badge>;
       default:
@@ -289,7 +289,7 @@ export function ReportsList({ onViewReport, onShareReport }: ReportsListProps) {
 
                     {report.error && (
                       <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-md">
-                        <p className="text-sm text-red-600">{report.error}</p>
+                        <p className="text-sm text-red-600 dark:text-red-400">{report.error}</p>
                       </div>
                     )}
                   </div>
@@ -340,7 +340,7 @@ export function ReportsList({ onViewReport, onShareReport }: ReportsListProps) {
                         <DropdownMenuItem
                           onClick={() => handleDelete(report.id)}
                           disabled={deletingId === report.id}
-                          className="text-red-600"
+                          className="text-red-600 dark:text-red-400"
                         >
                           {deletingId === report.id ? (
                             <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -372,19 +372,19 @@ export function ReportsList({ onViewReport, onShareReport }: ReportsListProps) {
                 <div className="text-sm text-muted-foreground">Total</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-green-600">
+                <div className="text-2xl font-bold text-green-600 dark:text-green-400">
                   {reports.filter(r => r.status === 'completed').length}
                 </div>
                 <div className="text-sm text-muted-foreground">Concluídos</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-blue-600">
+                <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
                   {reports.filter(r => r.status === 'generating').length}
                 </div>
                 <div className="text-sm text-muted-foreground">Gerando</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-red-600">
+                <div className="text-2xl font-bold text-red-600 dark:text-red-400">
                   {reports.filter(r => r.status === 'failed').length}
                 </div>
                 <div className="text-sm text-muted-foreground">Falharam</div>

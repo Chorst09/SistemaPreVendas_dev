@@ -22,7 +22,7 @@ export const basicServiceDeskTour: TourConfig = {
           <p>Este sistema permite criar orçamentos detalhados para serviços de service desk.</p>
           <p>Vamos fazer um tour pelas 10 abas principais que compõem o sistema.</p>
           <div className="bg-blue-50 p-3 rounded-md">
-            <p className="text-sm text-blue-800">
+            <p className="text-sm text-blue-800 dark:text-blue-200">
               <strong>Dica:</strong> Você pode pausar, pular ou reiniciar este tour a qualquer momento.
             </p>
           </div>
@@ -60,7 +60,7 @@ export const basicServiceDeskTour: TourConfig = {
       .title('Aba 1: Dados do Projeto')
       .content(
         <div className="space-y-3">
-          <div className="flex items-center space-x-2 text-blue-600">
+          <div className="flex items-center space-x-2 text-blue-600 dark:text-blue-400">
             <Calculator size={20} />
             <span className="font-medium">Configuração Inicial</span>
           </div>
@@ -85,7 +85,7 @@ export const basicServiceDeskTour: TourConfig = {
       .title('Aba 2: Equipe')
       .content(
         <div className="space-y-3">
-          <div className="flex items-center space-x-2 text-green-600">
+          <div className="flex items-center space-x-2 text-green-600 dark:text-green-400">
             <Users size={20} />
             <span className="font-medium">Gestão de Recursos Humanos</span>
           </div>
@@ -135,7 +135,7 @@ export const basicServiceDeskTour: TourConfig = {
       .title('Aba 7: Orçamento Consolidado')
       .content(
         <div className="space-y-3">
-          <div className="flex items-center space-x-2 text-orange-600">
+          <div className="flex items-center space-x-2 text-orange-600 dark:text-orange-400">
             <DollarSign size={20} />
             <span className="font-medium">Visão Consolidada</span>
           </div>
@@ -160,7 +160,7 @@ export const basicServiceDeskTour: TourConfig = {
       .title('Aba 8: Análise de Resultados')
       .content(
         <div className="space-y-3">
-          <div className="flex items-center space-x-2 text-red-600">
+          <div className="flex items-center space-x-2 text-red-600 dark:text-red-400">
             <BarChart3 size={20} />
             <span className="font-medium">Análise Financeira</span>
           </div>
@@ -216,7 +216,7 @@ export const basicServiceDeskTour: TourConfig = {
           </div>
           <p>Agora você conhece as principais funcionalidades do sistema.</p>
           <div className="bg-green-50 p-3 rounded-md">
-            <p className="text-sm text-green-800">
+            <p className="text-sm text-green-800 dark:text-green-200">
               <strong>Próximos passos:</strong> Comece criando um novo projeto na aba "Dados" ou explore os tours avançados.
             </p>
           </div>
@@ -343,7 +343,7 @@ export const quickTipsTour: TourConfig = {
             <li>• Recuperação em caso de erro</li>
           </ul>
           <div className="bg-blue-50 p-3 rounded-md">
-            <p className="text-sm text-blue-800">
+            <p className="text-sm text-blue-800 dark:text-blue-200">
               Você nunca perderá seu trabalho!
             </p>
           </div>
@@ -367,7 +367,7 @@ export const quickTipsTour: TourConfig = {
             <li>• Alertas de campos obrigatórios</li>
           </ul>
           <div className="bg-yellow-50 p-3 rounded-md">
-            <p className="text-sm text-yellow-800">
+            <p className="text-sm text-yellow-800 dark:text-yellow-200">
               Fique atento aos indicadores coloridos nas abas!
             </p>
           </div>
@@ -433,7 +433,7 @@ export function TourLauncher({ onStartTour, className }: TourLauncherProps) {
             <p className="text-sm text-blue-700">
               Aprenda os conceitos fundamentais e navegue pelas principais funcionalidades.
             </p>
-            <div className="text-xs text-blue-600">
+            <div className="text-xs text-blue-600 dark:text-blue-400">
               ⏱️ ~4 minutos • 8 passos
             </div>
             <button
@@ -452,7 +452,7 @@ export function TourLauncher({ onStartTour, className }: TourLauncherProps) {
             <p className="text-sm text-blue-700">
               Explore templates, analytics e recursos de exportação.
             </p>
-            <div className="text-xs text-blue-600">
+            <div className="text-xs text-blue-600 dark:text-blue-400">
               ⏱️ ~2 minutos • 3 passos
             </div>
             <button
@@ -471,7 +471,7 @@ export function TourLauncher({ onStartTour, className }: TourLauncherProps) {
             <p className="text-sm text-blue-700">
               Dicas e truques para usar o sistema de forma mais eficiente.
             </p>
-            <div className="text-xs text-blue-600">
+            <div className="text-xs text-blue-600 dark:text-blue-400">
               ⏱️ ~1 minuto • 3 passos
             </div>
             <button

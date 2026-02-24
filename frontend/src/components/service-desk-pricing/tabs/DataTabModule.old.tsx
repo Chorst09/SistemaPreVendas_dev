@@ -434,7 +434,7 @@ export function DataTabModule({
             </div>
             <div className="flex items-center space-x-2">
               {hasChanges && (
-                <Badge variant="outline" className="text-orange-600">
+                <Badge variant="outline" className="text-orange-600 dark:text-orange-400">
                   <Clock className="h-3 w-3 mr-1" />
                   Salvando...
                 </Badge>

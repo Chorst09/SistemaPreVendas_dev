@@ -666,7 +666,7 @@ export function ResultTabModule({
                   </div>
                   <div>
                     <p className="text-sm font-medium text-muted-foreground">ROI</p>
-                    <p className="text-2xl font-bold text-green-600">
+                    <p className="text-2xl font-bold text-green-600 dark:text-green-400">
                       {formatPercentage(calculatedAnalysis.roi.roi)}
                     </p>
                   </div>

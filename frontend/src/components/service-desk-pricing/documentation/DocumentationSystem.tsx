@@ -637,7 +637,7 @@ export function DocumentationSystem({
                               className="text-left p-3 border rounded-md hover:bg-gray-50 transition-colors"
                             >
                               <div className="flex items-center justify-between">
-                                <span className="font-medium text-blue-600">
+                                <span className="font-medium text-blue-600 dark:text-blue-400">
                                   {relatedItem.title}
                                 </span>
                                 <ChevronRight size={16} className="text-gray-400" />

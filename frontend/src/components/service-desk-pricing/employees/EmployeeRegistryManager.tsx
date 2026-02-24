@@ -394,7 +394,7 @@ function StatisticsView({ statistics }: { statistics: any }) {
             <CardTitle className="text-sm font-medium text-gray-600">Ativos</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">{statistics.active}</div>
+            <div className="text-2xl font-bold text-green-600 dark:text-green-400">{statistics.active}</div>
           </CardContent>
         </Card>
         <Card>
@@ -402,7 +402,7 @@ function StatisticsView({ statistics }: { statistics: any }) {
             <CardTitle className="text-sm font-medium text-gray-600">Inativos</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-red-600">{statistics.inactive}</div>
+            <div className="text-2xl font-bold text-red-600 dark:text-red-400">{statistics.inactive}</div>
           </CardContent>
         </Card>
         <Card>

@@ -109,28 +109,28 @@ export function ProgressIndicator({
         return {
           color: 'text-green-600',
           bgColor: 'bg-green-50 border-green-200',
-          icon: <Award className="w-5 h-5 text-green-600" />,
+          icon: <Award className="w-5 h-5 text-green-600 dark:text-green-400" />,
           message: 'Projeto concluído!'
         };
       case 'near-completion':
         return {
           color: 'text-blue-600',
           bgColor: 'bg-blue-50 border-blue-200',
-          icon: <Target className="w-5 h-5 text-blue-600" />,
+          icon: <Target className="w-5 h-5 text-blue-600 dark:text-blue-400" />,
           message: 'Quase finalizado'
         };
       case 'good-progress':
         return {
           color: 'text-green-600',
           bgColor: 'bg-green-50 border-green-200',
-          icon: <TrendingUp className="w-5 h-5 text-green-600" />,
+          icon: <TrendingUp className="w-5 h-5 text-green-600 dark:text-green-400" />,
           message: 'Bom progresso'
         };
       case 'started':
         return {
           color: 'text-yellow-600',
           bgColor: 'bg-yellow-50 border-yellow-200',
-          icon: <Clock className="w-5 h-5 text-yellow-600" />,
+          icon: <Clock className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />,
           message: 'Em andamento'
         };
       default:
@@ -225,7 +225,7 @@ export function ProgressIndicator({
                   <div className="text-sm font-medium text-green-700">
                     {progress.completedTabs}
                   </div>
-                  <div className="text-xs text-green-600">Concluídas</div>
+                  <div className="text-xs text-green-600 dark:text-green-400">Concluídas</div>
                 </div>
               </div>
 
@@ -237,7 +237,7 @@ export function ProgressIndicator({
                     <div className="text-sm font-medium text-yellow-700">
                       {progress.tabsWithWarnings}
                     </div>
-                    <div className="text-xs text-yellow-600">Com Avisos</div>
+                    <div className="text-xs text-yellow-600 dark:text-yellow-400">Com Avisos</div>
                   </div>
                 </div>
               )}
@@ -250,7 +250,7 @@ export function ProgressIndicator({
                     <div className="text-sm font-medium text-red-700">
                       {progress.tabsWithErrors}
                     </div>
-                    <div className="text-xs text-red-600">Com Erros</div>
+                    <div className="text-xs text-red-600 dark:text-red-400">Com Erros</div>
                   </div>
                 </div>
               )}
@@ -292,10 +292,10 @@ export function ProgressIndicator({
               {validationStatus[activeTab] && (
                 <div className="mt-1 ml-4">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs text-blue-600">
+                    <span className="text-xs text-blue-600 dark:text-blue-400">
                       Progresso da aba atual
                     </span>
-                    <span className="text-xs text-blue-600">
+                    <span className="text-xs text-blue-600 dark:text-blue-400">
                       {Math.round(validationStatus[activeTab].completionPercentage)}%
                     </span>
                   </div>

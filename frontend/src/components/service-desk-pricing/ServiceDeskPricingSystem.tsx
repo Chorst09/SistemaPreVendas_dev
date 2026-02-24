@@ -1065,7 +1065,7 @@ export function ServiceDeskPricingSystem({
               
               {isFirstTimeUser && (
                 <div className="bg-blue-50 border border-blue-200 rounded-md p-4 mt-4">
-                  <p className="text-sm text-blue-800">
+                  <p className="text-sm text-blue-800 dark:text-blue-200">
                     <strong>Primeira vez aqui?</strong> Recomendamos começar com o Tour Básico para conhecer as principais funcionalidades.
                   </p>
                 </div>

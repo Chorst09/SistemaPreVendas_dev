@@ -197,7 +197,7 @@ export function ModernServiceDeskCalculator({ onBack, onNavigateToQuotes }: Mode
           )}
           <div>
             <h1 className="text-3xl font-bold flex items-center gap-3">
-              <Calculator className="h-8 w-8 text-blue-600" />
+              <Calculator className="h-8 w-8 text-blue-600 dark:text-blue-400" />
               Calculadora Service Desk
             </h1>
             <p className="text-muted-foreground mt-1">
@@ -218,7 +218,7 @@ export function ModernServiceDeskCalculator({ onBack, onNavigateToQuotes }: Mode
           <Card className="border-2 hover:border-blue-200 transition-colors">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Users className="h-5 w-5 text-blue-600" />
+                <Users className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                 Volume de Atendimento
               </CardTitle>
             </CardHeader>
@@ -282,8 +282,8 @@ export function ModernServiceDeskCalculator({ onBack, onNavigateToQuotes }: Mode
 
               <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-blue-900">Volume Mensal Total</span>
-                  <span className="text-2xl font-bold text-blue-600">
+                  <span className="text-sm font-medium text-blue-900 dark:text-blue-100">Volume Mensal Total</span>
+                  <span className="text-2xl font-bold text-blue-600 dark:text-blue-400">
                     {Math.round(users * ticketsPerUser).toLocaleString()}
                   </span>
                 </div>
@@ -298,7 +298,7 @@ export function ModernServiceDeskCalculator({ onBack, onNavigateToQuotes }: Mode
           <Card className="border-2 hover:border-green-200 transition-colors">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Target className="h-5 w-5 text-green-600" />
+                <Target className="h-5 w-5 text-green-600 dark:text-green-400" />
                 Metas de Performance
               </CardTitle>
             </CardHeader>
@@ -374,7 +374,7 @@ export function ModernServiceDeskCalculator({ onBack, onNavigateToQuotes }: Mode
 
               <div className="p-4 bg-green-50 rounded-lg border border-green-200">
                 <div className="text-sm font-medium text-green-900 mb-2">Meta de SLA</div>
-                <div className="text-lg font-bold text-green-600">
+                <div className="text-lg font-bold text-green-600 dark:text-green-400">
                   {targetServiceLevel}% em {targetResponseTime} segundos
                 </div>
               </div>
@@ -439,7 +439,7 @@ export function ModernServiceDeskCalculator({ onBack, onNavigateToQuotes }: Mode
                 <div className="grid grid-cols-2 gap-3 mt-3">
                   <div className="p-3 bg-blue-50 rounded-lg">
                     <div className="text-xs text-blue-700">N1 (Primeiro Nível)</div>
-                    <div className="text-lg font-bold text-blue-900">{n1Distribution}%</div>
+                    <div className="text-lg font-bold text-blue-900 dark:text-blue-100">{n1Distribution}%</div>
                   </div>
                   <div className="p-3 bg-orange-50 rounded-lg">
                     <div className="text-xs text-orange-700">N2 (Segundo Nível)</div>
@@ -479,7 +479,7 @@ export function ModernServiceDeskCalculator({ onBack, onNavigateToQuotes }: Mode
           {/* Main Results Card */}
           <Card className="border-2 border-blue-600 bg-gradient-to-br from-blue-50 to-white sticky top-6">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-blue-900">
+              <CardTitle className="flex items-center gap-2 text-blue-900 dark:text-blue-100">
                 <BarChart3 className="h-5 w-5" />
                 Resultado do Dimensionamento
               </CardTitle>
@@ -499,7 +499,7 @@ export function ModernServiceDeskCalculator({ onBack, onNavigateToQuotes }: Mode
                 <div className="grid grid-cols-2 gap-2">
                   <div className="p-2 bg-blue-50 rounded">
                     <div className="text-xs text-blue-700">N1</div>
-                    <div className="text-lg font-bold text-blue-900">{results.n1Agents}</div>
+                    <div className="text-lg font-bold text-blue-900 dark:text-blue-100">{results.n1Agents}</div>
                   </div>
                   <div className="p-2 bg-orange-50 rounded">
                     <div className="text-xs text-orange-700">N2</div>
@@ -511,10 +511,10 @@ export function ModernServiceDeskCalculator({ onBack, onNavigateToQuotes }: Mode
               {/* Monthly Cost */}
               <div className="p-4 bg-white rounded-lg border-2 border-green-200">
                 <div className="flex items-center gap-2 mb-2">
-                  <DollarSign className="h-4 w-4 text-green-600" />
+                  <DollarSign className="h-4 w-4 text-green-600 dark:text-green-400" />
                   <span className="text-sm font-medium text-gray-600">Custo Mensal</span>
                 </div>
-                <div className="text-3xl font-bold text-green-600">
+                <div className="text-3xl font-bold text-green-600 dark:text-green-400">
                   R$ {results.monthlyCost.toLocaleString('pt-BR')}
                 </div>
                 <div className="text-xs text-gray-500 mt-1">
@@ -536,10 +536,10 @@ export function ModernServiceDeskCalculator({ onBack, onNavigateToQuotes }: Mode
               {/* Cost per User */}
               <div className="p-4 bg-white rounded-lg border border-gray-200">
                 <div className="flex items-center gap-2 mb-2">
-                  <Users className="h-4 w-4 text-orange-600" />
+                  <Users className="h-4 w-4 text-orange-600 dark:text-orange-400" />
                   <span className="text-sm font-medium text-gray-600">Custo por Usuário</span>
                 </div>
-                <div className="text-2xl font-bold text-orange-600">
+                <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">
                   R$ {results.costPerUser.toFixed(2)}
                 </div>
               </div>
@@ -552,7 +552,7 @@ export function ModernServiceDeskCalculator({ onBack, onNavigateToQuotes }: Mode
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-gray-600">Nível de Serviço</span>
-                  <span className="font-semibold text-green-600">{results.serviceLevel.toFixed(1)}%</span>
+                  <span className="font-semibold text-green-600 dark:text-green-400">{results.serviceLevel.toFixed(1)}%</span>
                 </div>
               </div>
 
@@ -573,12 +573,12 @@ export function ModernServiceDeskCalculator({ onBack, onNavigateToQuotes }: Mode
           {/* Tips Card */}
           <Card className="border border-yellow-200 bg-yellow-50">
             <CardHeader>
-              <CardTitle className="text-sm flex items-center gap-2 text-yellow-900">
+              <CardTitle className="text-sm flex items-center gap-2 text-yellow-900 dark:text-yellow-100">
                 <AlertCircle className="h-4 w-4" />
                 Dicas de Otimização
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-2 text-xs text-yellow-800">
+            <CardContent className="space-y-2 text-xs text-yellow-800 dark:text-yellow-200">
               {results.efficiency === 'low' && (
                 <p>• Equipe subutilizada. Considere reduzir o número de agentes ou expandir o escopo de atendimento.</p>
               )}

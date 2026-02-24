@@ -130,11 +130,11 @@ export function AnalyticsDashboard({ isOpen, onClose }: AnalyticsDashboardProps)
   const getAlertIcon = (severity: string) => {
     switch (severity) {
       case 'error':
-        return <XCircle className="h-4 w-4 text-red-600" />;
+        return <XCircle className="h-4 w-4 text-red-600 dark:text-red-400" />;
       case 'warning':
-        return <AlertTriangle className="h-4 w-4 text-yellow-600" />;
+        return <AlertTriangle className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />;
       default:
-        return <CheckCircle className="h-4 w-4 text-green-600" />;
+        return <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />;
     }
   };
 
@@ -234,7 +234,7 @@ export function AnalyticsDashboard({ isOpen, onClose }: AnalyticsDashboardProps)
                         </CardTitle>
                       </CardHeader>
                       <CardContent>
-                        <div className="text-2xl font-bold text-green-600">
+                        <div className="text-2xl font-bold text-green-600 dark:text-green-400">
                           {analytics.systemMetrics.availability.uptime.toFixed(1)}%
                         </div>
                         <p className="text-xs text-gray-600">
@@ -665,7 +665,7 @@ export function AnalyticsDashboard({ isOpen, onClose }: AnalyticsDashboardProps)
                         <CardTitle className="text-sm">Total de Erros</CardTitle>
                       </CardHeader>
                       <CardContent>
-                        <div className="text-2xl font-bold text-red-600">
+                        <div className="text-2xl font-bold text-red-600 dark:text-red-400">
                           {analytics.errorMetrics.errorFrequency.totalErrors}
                         </div>
                       </CardContent>
@@ -676,7 +676,7 @@ export function AnalyticsDashboard({ isOpen, onClose }: AnalyticsDashboardProps)
                         <CardTitle className="text-sm">Taxa de Erro</CardTitle>
                       </CardHeader>
                       <CardContent>
-                        <div className="text-2xl font-bold text-red-600">
+                        <div className="text-2xl font-bold text-red-600 dark:text-red-400">
                           {analytics.errorMetrics.errorFrequency.errorRate.toFixed(1)}%
                         </div>
                       </CardContent>
@@ -687,7 +687,7 @@ export function AnalyticsDashboard({ isOpen, onClose }: AnalyticsDashboardProps)
                         <CardTitle className="text-sm">Erros Críticos</CardTitle>
                       </CardHeader>
                       <CardContent>
-                        <div className="text-2xl font-bold text-red-800">
+                        <div className="text-2xl font-bold text-red-800 dark:text-red-200">
                           {analytics.errorMetrics.errorSeverity.criticalErrors}
                         </div>
                       </CardContent>
@@ -698,7 +698,7 @@ export function AnalyticsDashboard({ isOpen, onClose }: AnalyticsDashboardProps)
                         <CardTitle className="text-sm">Não Resolvidos</CardTitle>
                       </CardHeader>
                       <CardContent>
-                        <div className="text-2xl font-bold text-orange-600">
+                        <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">
                           {analytics.errorMetrics.errorResolution.unresolved}
                         </div>
                       </CardContent>
@@ -770,7 +770,7 @@ export function AnalyticsDashboard({ isOpen, onClose }: AnalyticsDashboardProps)
                         <CardTitle className="text-sm">Projetos Concluídos</CardTitle>
                       </CardHeader>
                       <CardContent>
-                        <div className="text-2xl font-bold text-green-600">
+                        <div className="text-2xl font-bold text-green-600 dark:text-green-400">
                           {analytics.businessMetrics.productivityMetrics.projectsCompleted}
                         </div>
                       </CardContent>
@@ -803,7 +803,7 @@ export function AnalyticsDashboard({ isOpen, onClose }: AnalyticsDashboardProps)
                         <CardTitle className="text-sm">ROI</CardTitle>
                       </CardHeader>
                       <CardContent>
-                        <div className="text-2xl font-bold text-green-600">
+                        <div className="text-2xl font-bold text-green-600 dark:text-green-400">
                           {analytics.businessMetrics.valueMetrics.roi.roi.toFixed(1)}%
                         </div>
                       </CardContent>

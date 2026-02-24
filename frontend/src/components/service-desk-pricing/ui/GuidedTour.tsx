@@ -457,8 +457,8 @@ export function GuidedTour({ config, isActive, onClose, className }: GuidedTourP
                 key={step.id}
                 className={cn(
                   "flex items-center space-x-2 text-xs p-1 rounded cursor-pointer",
-                  index === currentStepIndex ? "bg-blue-100 text-blue-800" :
-                  completedSteps.has(step.id) ? "bg-green-100 text-green-800" :
+                  index === currentStepIndex ? "bg-blue-100 text-blue-800 dark:text-blue-200" :
+                  completedSteps.has(step.id) ? "bg-green-100 text-green-800 dark:text-green-200" :
                   "text-gray-600 hover:bg-gray-100"
                 )}
                 onClick={() => goToStep(index)}

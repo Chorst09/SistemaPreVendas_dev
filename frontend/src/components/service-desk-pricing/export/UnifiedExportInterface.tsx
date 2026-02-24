@@ -289,7 +289,7 @@ export function UnifiedExportInterface({ open, onOpenChange, data }: UnifiedExpo
                   </div>
 
                   {isExporting && (
-                    <Card className="border-blue-200 bg-blue-50">
+                    <Card className="bg-blue-50 dark:bg-blue-950 border-blue-200 dark:border-blue-800">
                       <CardContent className="pt-4">
                         <div className="space-y-2">
                           <div className="flex items-center justify-between text-sm">

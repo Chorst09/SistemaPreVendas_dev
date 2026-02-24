@@ -814,13 +814,13 @@ export function FinalAnalysisTabModule({
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                 <div className="text-center">
                   <p className="text-sm text-muted-foreground">Valor do Projeto</p>
-                  <p className="text-2xl font-bold text-blue-600">
+                  <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
                     {formatKPIValue(dashboard.summary.projectValue, 'R$')}
                   </p>
                 </div>
                 <div className="text-center">
                   <p className="text-sm text-muted-foreground">Lucro Esperado</p>
-                  <p className="text-2xl font-bold text-green-600">
+                  <p className="text-2xl font-bold text-green-600 dark:text-green-400">
                     {formatKPIValue(dashboard.summary.expectedProfit, 'R$')}
                   </p>
                 </div>
@@ -848,7 +848,7 @@ export function FinalAnalysisTabModule({
                 {/* Key Highlights */}
                 <div>
                   <h4 className="font-semibold mb-3 flex items-center">
-                    <CheckCircle className="w-4 h-4 mr-2 text-green-600" />
+                    <CheckCircle className="w-4 h-4 mr-2 text-green-600 dark:text-green-400" />
                     Pontos Positivos
                   </h4>
                   {dashboard.summary.keyHighlights.length > 0 ? (
@@ -868,7 +868,7 @@ export function FinalAnalysisTabModule({
                 {/* Concerns */}
                 <div>
                   <h4 className="font-semibold mb-3 flex items-center">
-                    <AlertTriangle className="w-4 h-4 mr-2 text-orange-600" />
+                    <AlertTriangle className="w-4 h-4 mr-2 text-orange-600 dark:text-orange-400" />
                     Pontos de Atenção
                   </h4>
                   {dashboard.summary.concerns.length > 0 ? (

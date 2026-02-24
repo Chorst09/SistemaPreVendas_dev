@@ -224,7 +224,7 @@ export function ForecastTabModule({ data, onUpdate, isLoading = false }: Forecas
                   <div className="flex items-start space-x-3">
                     <Badge variant="secondary">Alta Prioridade</Badge>
                     <div>
-                      <h4 className="font-medium text-blue-900">Oportunidade de Expansão</h4>
+                      <h4 className="font-medium text-blue-900 dark:text-blue-100">Oportunidade de Expansão</h4>
                       <p className="text-sm text-blue-700 mt-1">
                         Cenário otimista indica potencial para expandir equipe em 25% no Q2
                       </p>
@@ -237,7 +237,7 @@ export function ForecastTabModule({ data, onUpdate, isLoading = false }: Forecas
                   <div className="flex items-start space-x-3">
                     <Badge variant="secondary">Média Prioridade</Badge>
                     <div>
-                      <h4 className="font-medium text-green-900">Otimização de Custos</h4>
+                      <h4 className="font-medium text-green-900 dark:text-green-100">Otimização de Custos</h4>
                       <p className="text-sm text-green-700 mt-1">
                         Automação pode reduzir custos operacionais em 8%
                       </p>

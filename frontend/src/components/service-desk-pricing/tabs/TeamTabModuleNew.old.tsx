@@ -925,19 +925,19 @@ export function TeamTabModuleNew({
                   <div className="text-sm text-muted-foreground">Total de Membros</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-green-600">
+                  <div className="text-2xl font-bold text-green-600 dark:text-green-400">
                     {formatCurrency(teamCosts.totalCost)}
                   </div>
                   <div className="text-sm text-muted-foreground">Custo Total</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-blue-600">
+                  <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
                     {formatCurrency(teamCosts.averageCost)}
                   </div>
                   <div className="text-sm text-muted-foreground">Custo Médio</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-orange-600">
+                  <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">
                     {formatCurrency(teamCosts.totalCost * 12)}
                   </div>
                   <div className="text-sm text-muted-foreground">Custo Anual</div>

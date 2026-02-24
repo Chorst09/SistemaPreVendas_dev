@@ -722,13 +722,13 @@ export function NegotiationTabModule({
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
                     <div className="text-center">
                       <p className="text-sm text-muted-foreground">Preço Total</p>
-                      <p className="text-xl font-bold text-green-600">
+                      <p className="text-xl font-bold text-green-600 dark:text-green-400">
                         {formatCurrency(currentScenario.results.totalPrice)}
                       </p>
                     </div>
                     <div className="text-center">
                       <p className="text-sm text-muted-foreground">Custo Total</p>
-                      <p className="text-xl font-bold text-red-600">
+                      <p className="text-xl font-bold text-red-600 dark:text-red-400">
                         {formatCurrency(currentScenario.results.totalCost)}
                       </p>
                     </div>
@@ -1257,7 +1257,7 @@ export function NegotiationTabModule({
                                 <div className="mt-2 text-xs">
                                   <div className="flex gap-4">
                                     <div>
-                                      <span className="text-red-600">Antes:</span>
+                                      <span className="text-red-600 dark:text-red-400">Antes:</span>
                                       <span className="ml-1 font-mono bg-red-50 px-1 rounded">
                                         {typeof change.oldValue === 'object' 
                                           ? JSON.stringify(change.oldValue, null, 2)
@@ -1265,7 +1265,7 @@ export function NegotiationTabModule({
                                       </span>
                                     </div>
                                     <div>
-                                      <span className="text-green-600">Depois:</span>
+                                      <span className="text-green-600 dark:text-green-400">Depois:</span>
                                       <span className="ml-1 font-mono bg-green-50 px-1 rounded">
                                         {typeof change.newValue === 'object' 
                                           ? JSON.stringify(change.newValue, null, 2)

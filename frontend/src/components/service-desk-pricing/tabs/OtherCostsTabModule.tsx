@@ -547,7 +547,7 @@ export function OtherCostsTabModule({
             </div>
             <div className="flex items-center space-x-2">
               {hasChanges && (
-                <Badge variant="outline" className="text-orange-600">
+                <Badge variant="outline" className="text-orange-600 dark:text-orange-400">
                   <Clock className="h-3 w-3 mr-1" />
                   Salvando...
                 </Badge>
@@ -648,13 +648,13 @@ export function OtherCostsTabModule({
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div className="text-center">
                 <p className="text-sm text-muted-foreground">Custo Mensal</p>
-                <p className="text-2xl font-bold text-green-600">
+                <p className="text-2xl font-bold text-green-600 dark:text-green-400">
                   {formatCurrency(costSummary.totalMonthlyCost)}
                 </p>
               </div>
               <div className="text-center">
                 <p className="text-sm text-muted-foreground">Custo Anual</p>
-                <p className="text-2xl font-bold text-blue-600">
+                <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
                   {formatCurrency(costSummary.totalAnnualCost)}
                 </p>
               </div>
@@ -666,7 +666,7 @@ export function OtherCostsTabModule({
               </div>
               <div className="text-center">
                 <p className="text-sm text-muted-foreground">Categorias</p>
-                <p className="text-2xl font-bold text-orange-600">
+                <p className="text-2xl font-bold text-orange-600 dark:text-orange-400">
                   {Object.keys(costSummary.byCategory).length}
                 </p>
               </div>
@@ -926,7 +926,7 @@ function CostCard({ cost, onEdit, onRemove, onDuplicate, monthlyCost }: CostCard
               </div>
               <div>
                 <p className="text-muted-foreground">Custo Mensal</p>
-                <p className="font-medium text-green-600">{formatCurrency(monthlyCost)}</p>
+                <p className="font-medium text-green-600 dark:text-green-400">{formatCurrency(monthlyCost)}</p>
               </div>
             </div>
 
@@ -1235,7 +1235,7 @@ function CostForm({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="text-center p-4 bg-green-50 rounded-lg">
               <p className="text-sm text-muted-foreground">Custo Mensal</p>
-              <p className="text-2xl font-bold text-green-600">
+              <p className="text-2xl font-bold text-green-600 dark:text-green-400">
                 {new Intl.NumberFormat('pt-BR', {
                   style: 'currency',
                   currency: 'BRL'
@@ -1244,7 +1244,7 @@ function CostForm({
             </div>
             <div className="text-center p-4 bg-blue-50 rounded-lg">
               <p className="text-sm text-muted-foreground">Custo Anual</p>
-              <p className="text-2xl font-bold text-blue-600">
+              <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
                 {new Intl.NumberFormat('pt-BR', {
                   style: 'currency',
                   currency: 'BRL'

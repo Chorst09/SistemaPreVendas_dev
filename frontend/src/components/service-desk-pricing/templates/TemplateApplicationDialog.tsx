@@ -66,13 +66,13 @@ export function TemplateApplicationDialog({
   const getConflictIcon = (resolution: ConflictResolution) => {
     switch (resolution) {
       case ConflictResolution.USE_TEMPLATE:
-        return <CheckCircle className="h-4 w-4 text-green-600" />;
+        return <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />;
       case ConflictResolution.KEEP_EXISTING:
-        return <XCircle className="h-4 w-4 text-red-600" />;
+        return <XCircle className="h-4 w-4 text-red-600 dark:text-red-400" />;
       case ConflictResolution.MERGE:
-        return <ArrowRight className="h-4 w-4 text-blue-600" />;
+        return <ArrowRight className="h-4 w-4 text-blue-600 dark:text-blue-400" />;
       default:
-        return <AlertTriangle className="h-4 w-4 text-yellow-600" />;
+        return <AlertTriangle className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />;
     }
   };
 
@@ -205,7 +205,7 @@ export function TemplateApplicationDialog({
                     <Card key={index}>
                       <CardHeader>
                         <CardTitle className="text-sm flex items-center space-x-2">
-                          <AlertTriangle className="h-4 w-4 text-yellow-600" />
+                          <AlertTriangle className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
                           <span>Conflito em: {conflict.field}</span>
                         </CardTitle>
                       </CardHeader>
