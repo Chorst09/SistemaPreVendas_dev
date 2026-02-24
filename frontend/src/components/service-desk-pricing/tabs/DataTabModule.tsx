@@ -7,9 +7,27 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { 
   Building2, User, Calendar, Clock, FileText, 
-  Users, Phone, Target, TrendingUp, Save, AlertCircle 
+  Users, Phone, Target, TrendingUp, Save, AlertCircle, Zap 
 } from 'lucide-react';
 import { ProjectData, TabValidationStatus } from '@/lib/types/service-desk-pricing';
+
+// Extended interface for easier form handling
+interface ProjectDataForm extends Partial<ProjectData> {
+  projectName?: string;
+  projectCode?: string;
+  projectDescription?: string;
+  clientName?: string;
+  clientCNPJ?: string;
+  clientContact?: string;
+  clientEmail?: string;
+  contractStartDate?: Date;
+  contractEndDate?: Date;
+  userQuantity?: number;
+  incidentsPerUser?: number;
+  slaTarget?: number;
+  coverageType?: '8x5' | '12x5' | '24x7';
+  updatedAt?: Date;
+}
 import { FormSection, MetricCard, EnhancedInput } from '../shared';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
@@ -34,7 +52,7 @@ export function DataTabModule({
   isLoading = false,
   onAutoSave 
 }: DataTabModuleProps) {
-  const [localData, setLocalData] = useState<ProjectData>(data);
+  const [localData, setLocalData] = useState<ProjectDataForm>(data as ProjectDataForm);
   const [hasChanges, setHasChanges] = useState(false);
 
   // Auto-save functionality
@@ -53,7 +71,7 @@ export function DataTabModule({
     setHasChanges(false);
   }, [data]);
 
-  const handleFieldChange = useCallback((field: keyof ProjectData, value: any) => {
+  const handleFieldChange = useCallback((field: keyof ProjectDataForm, value: any) => {
     setLocalData(prev => ({
       ...prev,
       [field]: value,
@@ -65,6 +83,29 @@ export function DataTabModule({
   const handleSave = useCallback(() => {
     onUpdate(localData);
     setHasChanges(false);
+  }, [localData, onUpdate]);
+
+  const handleGenerateSchedule = useCallback(() => {
+    // Navegar para a aba de Escala e gerar automaticamente
+    // Primeiro, salvar os dados atuais
+    onUpdate(localData);
+    
+    // Mostrar toast de sucesso
+    if (typeof window !== 'undefined') {
+      // Criar um evento customizado para notificar outras abas
+      const event = new CustomEvent('generateSchedule', {
+        detail: {
+          userQuantity: localData.userQuantity,
+          incidentsPerUser: localData.incidentsPerUser,
+          coverageType: localData.coverageType,
+          slaTarget: localData.slaTarget
+        }
+      });
+      window.dispatchEvent(event);
+    }
+    
+    // Mostrar mensagem de sucesso
+    alert('Dados salvos! Navegue para a aba "Escala" para ver a escala gerada automaticamente.');
   }, [localData, onUpdate]);
 
   // Cálculos automáticos
@@ -370,6 +411,35 @@ export function DataTabModule({
           />
         </div>
 
+        {/* Tipo de Cobertura */}
+        <div className="mt-4">
+          <label className="text-sm font-medium mb-2 block">
+            Tipo de Cobertura <span className="text-red-500">*</span>
+          </label>
+          <div className="grid grid-cols-3 gap-3">
+            {[
+              { value: '8x5', label: '8x5 - Comercial', desc: 'Seg-Sex, 8h/dia' },
+              { value: '12x5', label: '12x5 - Estendido', desc: 'Seg-Sex, 12h/dia' },
+              { value: '24x7', label: '24x7 - Integral', desc: '24h, 7 dias' }
+            ].map((option) => (
+              <button
+                key={option.value}
+                type="button"
+                onClick={() => handleFieldChange('coverageType', option.value)}
+                className={cn(
+                  'p-4 rounded-lg border-2 transition-all text-left',
+                  localData.coverageType === option.value
+                    ? 'border-orange-600 bg-orange-50'
+                    : 'border-gray-200 hover:border-orange-300'
+                )}
+              >
+                <div className="font-semibold text-sm">{option.label}</div>
+                <div className="text-xs text-muted-foreground mt-1">{option.desc}</div>
+              </button>
+            ))}
+          </div>
+        </div>
+
         {monthlyCalls > 0 && (
           <Alert className="mt-4 bg-blue-50 border-blue-200">
             <Phone className="h-4 w-4 text-blue-600" />
@@ -378,6 +448,32 @@ export function DataTabModule({
               {' '}({Math.round(monthlyCalls / 22)} chamados/dia útil)
             </AlertDescription>
           </Alert>
+        )}
+
+        {/* Botão Gerar Escala */}
+        {localData.userQuantity && localData.incidentsPerUser && localData.coverageType && (
+          <div className="mt-6 p-4 bg-gradient-to-r from-orange-50 to-yellow-50 rounded-lg border-2 border-orange-200">
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex-1">
+                <h4 className="font-semibold text-orange-900 mb-1 flex items-center gap-2">
+                  <Zap className="h-5 w-5" />
+                  Pronto para Gerar Escala
+                </h4>
+                <p className="text-sm text-orange-700">
+                  Com base nos dados informados, podemos gerar automaticamente a escala de trabalho 
+                  para cobertura <strong>{localData.coverageType}</strong>.
+                </p>
+              </div>
+              <Button
+                size="lg"
+                onClick={handleGenerateSchedule}
+                className="bg-orange-600 hover:bg-orange-700 flex-shrink-0"
+              >
+                <Zap className="h-5 w-5 mr-2" />
+                Gerar Escala Automaticamente
+              </Button>
+            </div>
+          </div>
         )}
       </FormSection>
 
