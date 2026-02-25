@@ -512,7 +512,7 @@ export function PrinterCalculatorModule({ onBack, onNavigateToProposals, printer
     if (showQuoteView && printers.length > 0) {
         const lastPrinter = printers[printers.length - 1]
         return (
-            <div className="min-h-screen bg-background text-foreground">
+            <div className="printer-theme min-h-screen bg-background text-foreground">
                 {/* Header */}
                 <div className="mb-8 p-6">
                     <div className="flex items-center justify-between mb-6">
@@ -644,7 +644,7 @@ export function PrinterCalculatorModule({ onBack, onNavigateToProposals, printer
     }
 
     return (
-        <div className="min-h-screen bg-background text-foreground">
+        <div className="printer-theme min-h-screen bg-background text-foreground">
             {/* Header */}
             <div className="mb-8 p-6">
                 <div className="flex items-center justify-between mb-6">
@@ -1107,7 +1107,7 @@ export function PrinterCalculatorModule({ onBack, onNavigateToProposals, printer
                 )}
 
                 {/* Informações adicionais */}
-                <Card className="bg-card">
+                <Card>
                     <CardHeader>
                         <CardTitle>Informações sobre Outsourcing de Impressão</CardTitle>
                     </CardHeader>

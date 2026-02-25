@@ -333,7 +333,7 @@ export function PrinterPricingModule({ printer, onBack, onUpdatePrinter }: Print
   }
 
   return (
-    <div className="min-h-screen bg-background p-6">
+    <div className="printer-theme min-h-screen bg-background p-6">
       <div className="mb-6">
         <Button onClick={onBack} variant="outline">
           <ArrowLeft className="h-4 w-4 mr-2" />
@@ -639,7 +639,7 @@ export function PrinterPricingModule({ printer, onBack, onUpdatePrinter }: Print
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Parâmetros de Entrada */}
         <div className="space-y-6">
-          <Card className="bg-card">
+          <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <DollarSign className="h-5 w-5" />
@@ -707,7 +707,7 @@ export function PrinterPricingModule({ printer, onBack, onUpdatePrinter }: Print
             </CardContent>
           </Card>
 
-          <Card className="bg-card">
+          <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Percent className="h-5 w-5" />
@@ -764,7 +764,7 @@ export function PrinterPricingModule({ printer, onBack, onUpdatePrinter }: Print
 
         {/* Resultados e Análise */}
         <div className="space-y-6">
-          <Card className="bg-card">
+          <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Calculator className="h-5 w-5" />
@@ -817,7 +817,7 @@ export function PrinterPricingModule({ printer, onBack, onUpdatePrinter }: Print
             </CardContent>
           </Card>
 
-          <Card className="bg-card">
+          <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <FileText className="h-5 w-5" />
@@ -888,7 +888,7 @@ export function PrinterPricingModule({ printer, onBack, onUpdatePrinter }: Print
             </CardContent>
           </Card>
 
-          <Card className="bg-card">
+          <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <TrendingUp className="h-5 w-5" />

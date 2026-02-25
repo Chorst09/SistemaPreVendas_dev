@@ -275,10 +275,10 @@ export default function App() { // Ou Home
                     </div>
                 </div>
             );
-            case 'calculator-ti-vls': return <ITPricingModule onNavigateToProposals={() => setActiveTab('proposals')} />;
+            case 'calculator-ti-vls': return <ITPricingModule onNavigateToProposals={() => setActiveTab('quotes')} />;
             case 'calculator-noc': return <NOCModuleWrapper onNavigateToQuotes={() => setActiveTab('quotes')} />;
-            case 'calculator-servicedesk-advanced': return <ServiceDeskModuleWrapper />;
-            case 'calculator-printer': return <PrinterModuleWrapper />;
+            case 'calculator-servicedesk-advanced': return <ServiceDeskModuleWrapper onNavigateToQuotes={() => setActiveTab('quotes')} />;
+            case 'calculator-printer': return <PrinterModuleWrapper onNavigateToQuotes={() => setActiveTab('quotes')} />;
 
 
             case 'bids-analysis': return <EditalAnalysisView
@@ -319,13 +319,13 @@ export default function App() { // Ou Home
             <div className="min-h-screen font-body bg-background text-foreground transition-colors duration-500">
                 <div className="flex">
 
-                    {/* Sidebar - Light mode: white background, Dark mode: dark background */}
-                    <aside className="w-64 bg-white dark:bg-gray-900 shadow-xl flex-col h-screen sticky top-0 hidden md:flex border-r border-gray-200 dark:border-gray-700">
+                    {/* Sidebar */}
+                    <aside className="w-64 shadow-xl flex-col h-screen sticky top-0 hidden md:flex border-r border-sidebar-border sidebar-bg">
                         {/* Cabeçalho da Sidebar */}
-                        <div className="flex items-center justify-center h-24 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-blue-50 to-blue-100 dark:from-gray-800 dark:to-blue-900 relative">
-                            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-blue-100/50 dark:via-blue-500/5 to-transparent"></div>
-                            <Briefcase className="w-8 h-8 text-blue-600 dark:text-blue-400 relative z-10 drop-shadow-sm" />
-                            <span className="ml-3 text-xl font-bold text-gray-900 dark:text-white relative z-10 drop-shadow-sm">Menu</span>
+                        <div className="flex items-center justify-center h-24 border-b border-sidebar-border/60 sidebar-brand relative">
+                            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/10 to-transparent"></div>
+                            <Briefcase className="w-8 h-8 text-accent-cyan relative z-10 drop-shadow-sm" />
+                            <span className="ml-3 text-xl font-bold text-sidebar-foreground relative z-10 drop-shadow-sm">Menu</span>
                         </div>
                         {/* Navegação da Sidebar */}
                         <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
@@ -335,12 +335,12 @@ export default function App() { // Ou Home
                                         key={item.id}
                                         variant="ghost"
                                         className={`w-full justify-start px-4 py-3 h-auto text-sm transition-all duration-300 rounded-lg ${activeTab === item.id
-                                            ? 'bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 shadow-sm'
-                                            : 'text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 border border-transparent'
+                                            ? 'bg-gradient-to-r from-accent-cyan/20 to-accent-orange/10 text-accent-cyan border border-accent-cyan/40 shadow-lg shadow-accent-cyan/15'
+                                            : 'text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent/70 hover:border-accent-cyan/30 hover:shadow-md hover:shadow-accent-cyan/10 border border-transparent'
                                             }`}
                                         onClick={() => setActiveTab(item.id)}
                                     >
-                                        <span className={activeTab === item.id ? 'text-blue-600 dark:text-blue-400' : 'text-gray-600 dark:text-gray-400'}>{item.icon}</span>
+                                        <span className={activeTab === item.id ? 'text-accent-cyan' : 'text-sidebar-foreground/75 group-hover:text-accent-cyan transition-colors duration-300'}>{item.icon}</span>
                                         <span className="ml-4 font-medium">{item.label}</span>
                                     </Button>
                                 ) : (
@@ -354,15 +354,15 @@ export default function App() { // Ou Home
                                             <Button
                                                 variant="ghost"
                                                 className={`w-full justify-between px-4 py-3 h-auto text-sm transition-all duration-300 rounded-lg group ${item.subItems.some(sub => sub.id === activeTab)
-                                                    ? 'bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 shadow-sm'
-                                                    : 'text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 border border-transparent'
+                                                    ? 'bg-gradient-to-r from-accent-cyan/20 to-accent-orange/10 text-accent-cyan border border-accent-cyan/40 shadow-lg shadow-accent-cyan/15'
+                                                    : 'text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent/70 hover:border-accent-cyan/30 hover:shadow-md hover:shadow-accent-cyan/10 border border-transparent'
                                                     }`}
                                             >
                                                 <div className="flex items-center">
-                                                    <span className={item.subItems.some(sub => sub.id === activeTab) ? 'text-blue-600 dark:text-blue-400' : 'text-gray-600 dark:text-gray-400'}>{item.icon}</span>
+                                                    <span className={item.subItems.some(sub => sub.id === activeTab) ? 'text-accent-cyan' : 'text-sidebar-foreground/75 group-hover:text-accent-cyan transition-colors duration-300'}>{item.icon}</span>
                                                     <span className="ml-4 font-medium">{item.label}</span>
                                                 </div>
-                                                <ChevronDown className={`w-5 h-5 transition-all duration-300 ${openSections[item.id as keyof typeof openSections] || item.subItems.some(sub => sub.id === activeTab) ? 'rotate-180 text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-gray-400'
+                                                <ChevronDown className={`w-5 h-5 transition-all duration-300 ${openSections[item.id as keyof typeof openSections] || item.subItems.some(sub => sub.id === activeTab) ? 'rotate-180 text-accent-cyan' : 'text-sidebar-foreground/60 group-hover:text-accent-cyan'
                                                     }`} />
                                             </Button>
                                         </CollapsibleTrigger>
@@ -373,11 +373,11 @@ export default function App() { // Ou Home
                                                     variant="ghost"
                                                     onClick={() => handleNavigation(subItem)}
                                                     className={`w-full justify-start h-auto px-3 py-2 text-sm transition-all duration-300 rounded-md group ${activeTab === subItem.id
-                                                        ? 'text-blue-700 dark:text-blue-300 font-semibold bg-blue-50 dark:bg-blue-950 border-l-4 border-blue-600 dark:border-blue-400'
-                                                        : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800 border-l-4 border-transparent hover:border-l-4 hover:border-blue-300 dark:hover:border-blue-600'
+                                                        ? 'text-accent-cyan font-semibold bg-accent-cyan/15 border-l-4 border-accent-cyan shadow-sm shadow-accent-cyan/20'
+                                                        : 'text-sidebar-foreground/65 hover:text-sidebar-foreground hover:bg-sidebar-accent/60 hover:border-l-4 hover:border-accent-orange/60 border-l-4 border-transparent'
                                                         }`}
                                                 >
-                                                    <span className={activeTab === subItem.id ? 'text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-gray-400'}>{subItem.icon}</span>
+                                                    <span className={activeTab === subItem.id ? 'text-accent-cyan' : 'text-sidebar-foreground/65 group-hover:text-accent-orange transition-colors duration-300'}>{subItem.icon}</span>
                                                     <span className="ml-3">{subItem.label}</span>
                                                 </Button>
                                             ))}
@@ -387,21 +387,20 @@ export default function App() { // Ou Home
                             ))}
                         </nav>
                         {/* Parte inferior da Sidebar */}
-                        <div className="p-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 flex flex-col gap-2">
-                            {/* Botão de Tema */}
+                        <div className="p-4 border-t border-sidebar-border bg-sidebar/90 flex flex-col gap-2">
                             <Button
                                 onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
                                 variant="outline"
-                                className="w-full bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 hover:border-blue-400 dark:hover:border-blue-500 transition-all duration-300"
+                                className="w-full bg-sidebar-accent/70 border-sidebar-border text-sidebar-foreground hover:bg-sidebar-accent hover:border-accent-cyan/50 hover:text-sidebar-foreground hover:shadow-md hover:shadow-accent-cyan/20 transition-all duration-300"
                             >
                                 {mounted ? (
                                     <>
-                                        {theme === 'dark' ? <Sun className="mr-2 h-4 w-4 text-orange-500" /> : <Moon className="mr-2 h-4 w-4 text-blue-600" />}
+                                        {theme === 'dark' ? <Sun className="mr-2 h-4 w-4 text-accent-orange" /> : <Moon className="mr-2 h-4 w-4 text-accent-cyan" />}
                                         <span className="font-medium">{theme === 'dark' ? 'Modo Claro' : 'Modo Escuro'}</span>
                                     </>
                                 ) : (
                                     <>
-                                        <Sun className="mr-2 h-4 w-4 text-orange-500" />
+                                        <Sun className="mr-2 h-4 w-4 text-accent-orange" />
                                         <span className="font-medium">Mudar Tema</span>
                                     </>
                                 )}

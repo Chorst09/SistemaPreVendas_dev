@@ -28,6 +28,7 @@ import type { ClientData } from '@/components/calculators/ProposalClientForm';
 // Import services
 import { UnifiedProposalService } from '@/lib/services/unified-proposal-service';
 import { Quote } from '@/lib/types/base';
+import { QuoteStatus } from '@/lib/types/enums';
 import { useToast } from '@/hooks/use-toast';
 import { usePricingIntegration } from '@/hooks/use-pricing-integration';
 
@@ -297,7 +298,7 @@ export function NOCPricingSystem({ onBack, proposalClientData, onNavigateToQuote
             client: mappedClientData.razaoSocial || data.project.clientName || 'Cliente não informado',
             projectName: mappedClientData.nomeProjeto || data.project.projectName || 'Projeto NOC',
             accountManager: mappedClientData.nomeGerente || 'Não informado',
-            status: 'pending',
+            status: QuoteStatus.PENDING,
             total: Number.isFinite(totalProjectValue) ? totalProjectValue : 0,
             monthlyPrice: computedMonthlyPrice,
             contractDurationMonths: contractMonths,
@@ -418,7 +419,7 @@ export function NOCPricingSystem({ onBack, proposalClientData, onNavigateToQuote
             client: mappedClientData.razaoSocial || data.project.clientName || 'Cliente não informado',
             projectName: mappedClientData.nomeProjeto || data.project.projectName || 'Projeto NOC',
             accountManager: mappedClientData.nomeGerente || 'Não informado',
-            status: 'pending',
+            status: QuoteStatus.PENDING,
             total: Number.isFinite(totalProjectValue) ? totalProjectValue : 0,
             monthlyPrice: computedMonthlyPrice,
             contractDurationMonths: contractMonths,
@@ -485,26 +486,26 @@ export function NOCPricingSystem({ onBack, proposalClientData, onNavigateToQuote
   const getStatusBadgeClass = (status: string) => {
     switch (status) {
       case 'error':
-        return 'border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-950 text-red-900 dark:text-red-100';
+        return 'border-destructive/40 bg-destructive/10 text-destructive';
       case 'warning':
-        return 'border-yellow-200 dark:border-yellow-800 bg-yellow-50 dark:bg-yellow-950 text-yellow-900 dark:text-yellow-100';
+        return 'border-yellow-500/40 bg-yellow-500/10 text-yellow-700 dark:text-yellow-200';
       case 'success':
-        return 'border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-950 text-green-900 dark:text-green-100';
+        return 'border-green-500/40 bg-green-500/10 text-green-700 dark:text-green-200';
       default:
-        return 'border-blue-200 dark:border-blue-800 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100';
+        return 'border-border/70 bg-card/70 text-foreground';
     }
   };
 
   const getCompetitivenessBadgeClass = (competitiveness: string) => {
     switch (competitiveness) {
       case 'competitive':
-        return 'border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-950 text-green-900 dark:text-green-100';
+        return 'border-green-500/40 bg-green-500/10 text-green-700 dark:text-green-200';
       case 'low':
-        return 'border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-950 text-blue-900 dark:text-blue-100';
+        return 'border-yellow-500/40 bg-yellow-500/10 text-yellow-700 dark:text-yellow-200';
       case 'high':
-        return 'border-orange-200 dark:border-orange-800 bg-orange-50 dark:bg-orange-950 text-orange-900 dark:text-orange-100';
+        return 'border-destructive/40 bg-destructive/10 text-destructive';
       default:
-        return 'border-blue-200 dark:border-blue-800 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100';
+        return 'border-border/70 bg-card/70 text-foreground';
     }
   };
 
@@ -518,7 +519,7 @@ export function NOCPricingSystem({ onBack, proposalClientData, onNavigateToQuote
 
   return (
     <div className="noc-theme w-full max-w-7xl mx-auto p-6 space-y-6 rounded-2xl">
-      <Card className="bg-white dark:bg-gray-900 border-blue-200 dark:border-blue-800 backdrop-blur-md">
+      <Card className="card-surface border-border/60 backdrop-blur-md">
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
@@ -570,7 +571,7 @@ export function NOCPricingSystem({ onBack, proposalClientData, onNavigateToQuote
 
         <CardContent>
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid grid-cols-5 lg:grid-cols-10 gap-2 h-auto bg-gray-100 dark:bg-gray-800 border border-blue-200 dark:border-blue-800 p-2 rounded-xl">
+            <TabsList className="grid grid-cols-5 lg:grid-cols-10 gap-2 h-auto bg-card/80 border border-border/60 p-2 rounded-xl">
               {NOC_TABS.map(tab => {
                 const status = getTabStatus(tab.id);
                 return (
@@ -667,7 +668,7 @@ export function NOCPricingSystem({ onBack, proposalClientData, onNavigateToQuote
                   <h3 className="text-lg font-semibold mb-4">Cálculos e Resultados</h3>
                   {data.calculations ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      <Card className="bg-card">
+                      <Card>
                         <CardHeader>
                           <CardTitle className="text-sm">Custo Mensal Total</CardTitle>
                         </CardHeader>
@@ -678,7 +679,7 @@ export function NOCPricingSystem({ onBack, proposalClientData, onNavigateToQuote
                         </CardContent>
                       </Card>
 
-                      <Card className="bg-card">
+                      <Card>
                         <CardHeader>
                           <CardTitle className="text-sm">Preço Final Mensal</CardTitle>
                         </CardHeader>
@@ -689,7 +690,7 @@ export function NOCPricingSystem({ onBack, proposalClientData, onNavigateToQuote
                         </CardContent>
                       </Card>
 
-                      <Card className="bg-card">
+                      <Card>
                         <CardHeader>
                           <CardTitle className="text-sm">Custo por Dispositivo</CardTitle>
                         </CardHeader>
@@ -700,7 +701,7 @@ export function NOCPricingSystem({ onBack, proposalClientData, onNavigateToQuote
                         </CardContent>
                       </Card>
 
-                      <Card className="bg-card">
+                      <Card>
                         <CardHeader>
                           <CardTitle className="text-sm">Rentabilidade</CardTitle>
                         </CardHeader>
@@ -711,7 +712,7 @@ export function NOCPricingSystem({ onBack, proposalClientData, onNavigateToQuote
                         </CardContent>
                       </Card>
 
-                      <Card className="bg-card">
+                      <Card>
                         <CardHeader>
                           <CardTitle className="text-sm">ROI</CardTitle>
                         </CardHeader>
@@ -722,7 +723,7 @@ export function NOCPricingSystem({ onBack, proposalClientData, onNavigateToQuote
                         </CardContent>
                       </Card>
 
-                      <Card className="bg-card">
+                      <Card>
                         <CardHeader>
                           <CardTitle className="text-sm">Competitividade</CardTitle>
                         </CardHeader>
