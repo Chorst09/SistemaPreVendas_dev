@@ -776,14 +776,14 @@ export function ServiceDeskPricingSystem({
   // Don't render on server to avoid localStorage errors
   if (!isMounted) {
     return (
-      <div className="w-full max-w-7xl mx-auto p-6 flex items-center justify-center min-h-screen">
+      <div className="service-desk-theme w-full max-w-7xl mx-auto p-6 flex items-center justify-center min-h-screen rounded-2xl">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
 
   return (
-    <div className="w-full max-w-7xl mx-auto p-6 space-y-6">
+    <div className="service-desk-theme w-full max-w-7xl mx-auto p-6 space-y-6 rounded-2xl">
       {/* Comando rápido e visão geral */}
       <Card variant="contrast" className="card-surface overflow-hidden relative">
         <div className="absolute inset-0 pointer-events-none bg-gradient-to-r from-primary/15 via-[hsl(var(--accent-cyan))/12] to-transparent" />

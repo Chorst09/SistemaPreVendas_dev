@@ -153,7 +153,7 @@ export function PrinterOutsourcingModule({ onNavigateToProposals, editingProposa
 
     if (currentModule === "printers") {
         return (
-            <div className="min-h-screen bg-background p-6">
+            <div className="printer-theme min-h-screen bg-background p-6">
                 <div className="mb-6">
                     <Button onClick={handleBack} variant="outline">
                         ← Voltar
@@ -177,7 +177,7 @@ export function PrinterOutsourcingModule({ onNavigateToProposals, editingProposa
 
     if (currentModule === "supplies") {
         return (
-            <div className="min-h-screen bg-background p-6">
+            <div className="printer-theme min-h-screen bg-background p-6">
                 <div className="mb-6">
                     <Button onClick={handleBack} variant="outline">
                         ← Voltar
@@ -190,7 +190,7 @@ export function PrinterOutsourcingModule({ onNavigateToProposals, editingProposa
 
     if (currentModule === "costs") {
         return (
-            <div className="min-h-screen bg-background p-6">
+            <div className="printer-theme min-h-screen bg-background p-6">
                 <div className="mb-6">
                     <Button onClick={handleBack} variant="outline">
                         ← Voltar
@@ -231,7 +231,7 @@ export function PrinterOutsourcingModule({ onNavigateToProposals, editingProposa
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-background via-muted/30 to-primary/5">
+        <div className="printer-theme min-h-screen bg-gradient-to-br from-background via-muted/30 to-primary/5">
             <header className="glass-effect border-b sticky top-0 z-50">
                 <div className="container mx-auto px-4 py-4">
                     <div className="flex items-center justify-between">

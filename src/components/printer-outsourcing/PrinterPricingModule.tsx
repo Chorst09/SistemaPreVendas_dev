@@ -333,7 +333,7 @@ export function PrinterPricingModule({ printer, onBack, onUpdatePrinter }: Print
   }
 
   return (
-    <div className="min-h-screen bg-background p-6">
+    <div className="printer-theme min-h-screen bg-background p-6">
       <div className="mb-6">
         <Button onClick={onBack} variant="outline">
           <ArrowLeft className="h-4 w-4 mr-2" />

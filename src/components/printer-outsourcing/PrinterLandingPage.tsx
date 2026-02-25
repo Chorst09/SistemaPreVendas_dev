@@ -12,7 +12,7 @@ interface PrinterLandingPageProps {
 
 export function PrinterLandingPage({ onNewProposal, onAdminPanel }: PrinterLandingPageProps) {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-green-900 to-slate-900 flex items-center justify-center p-6">
+    <div className="printer-theme min-h-screen flex items-center justify-center p-6">
       <div className="max-w-6xl w-full">
         {/* Hero Section */}
         <div className="text-center mb-12">
@@ -21,14 +21,14 @@ export function PrinterLandingPage({ onNewProposal, onAdminPanel }: PrinterLandi
               <Printer className="h-16 w-16 text-green-400" />
             </div>
           </div>
-          <h1 className="text-5xl md:text-6xl font-bold text-white mb-6">
+          <h1 className="text-5xl md:text-6xl font-bold text-foreground mb-6">
             Potencialize Seu Negócio
             <br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-400">
               com Precificação Inteligente
             </span>
           </h1>
-          <p className="text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed">
+          <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
             Nossa solução inovadora de precificação de Outsourcing de Impressão foi projetada para profissionais de TI que
             exigem precisão e flexibilidade. Personalize sua estratégia de preços sem esforço e
             eleve o potencial do seu negócio.
@@ -37,43 +37,43 @@ export function PrinterLandingPage({ onNewProposal, onAdminPanel }: PrinterLandi
 
         {/* Features Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-          <Card className="bg-slate-800/50 border-slate-700/50 backdrop-blur-sm hover:bg-slate-800/70 transition-all">
+          <Card className="card-surface border-border/60 backdrop-blur-sm hover:bg-card/95 transition-all">
             <CardContent className="p-6 text-center">
               <div className="flex justify-center mb-4">
                 <div className="p-3 bg-green-500/20 rounded-lg">
                   <TrendingDown className="h-8 w-8 text-green-400" />
                 </div>
               </div>
-              <h3 className="text-lg font-semibold text-white mb-2">Redução de Custos</h3>
-              <p className="text-gray-400 text-sm">
+              <h3 className="text-lg font-semibold text-foreground mb-2">Redução de Custos</h3>
+              <p className="text-muted-foreground text-sm">
                 Otimize gastos com impressão e reduza custos operacionais
               </p>
             </CardContent>
           </Card>
 
-          <Card className="bg-slate-800/50 border-slate-700/50 backdrop-blur-sm hover:bg-slate-800/70 transition-all">
+          <Card className="card-surface border-border/60 backdrop-blur-sm hover:bg-card/95 transition-all">
             <CardContent className="p-6 text-center">
               <div className="flex justify-center mb-4">
                 <div className="p-3 bg-emerald-500/20 rounded-lg">
                   <Leaf className="h-8 w-8 text-emerald-400" />
                 </div>
               </div>
-              <h3 className="text-lg font-semibold text-white mb-2">Sustentabilidade</h3>
-              <p className="text-gray-400 text-sm">
+              <h3 className="text-lg font-semibold text-foreground mb-2">Sustentabilidade</h3>
+              <p className="text-muted-foreground text-sm">
                 Reduza desperdício e contribua para um ambiente mais sustentável
               </p>
             </CardContent>
           </Card>
 
-          <Card className="bg-slate-800/50 border-slate-700/50 backdrop-blur-sm hover:bg-slate-800/70 transition-all">
+          <Card className="card-surface border-border/60 backdrop-blur-sm hover:bg-card/95 transition-all">
             <CardContent className="p-6 text-center">
               <div className="flex justify-center mb-4">
                 <div className="p-3 bg-cyan-500/20 rounded-lg">
                   <Settings className="h-8 w-8 text-cyan-400" />
                 </div>
               </div>
-              <h3 className="text-lg font-semibold text-white mb-2">Gestão Simplificada</h3>
-              <p className="text-gray-400 text-sm">
+              <h3 className="text-lg font-semibold text-foreground mb-2">Gestão Simplificada</h3>
+              <p className="text-muted-foreground text-sm">
                 Controle total sobre equipamentos, suprimentos e manutenção
               </p>
             </CardContent>
@@ -95,7 +95,7 @@ export function PrinterLandingPage({ onNewProposal, onAdminPanel }: PrinterLandi
             onClick={onAdminPanel}
             size="lg"
             variant="outline"
-            className="border-2 border-slate-600 bg-slate-800/50 hover:bg-slate-700/50 text-white px-12 py-6 text-lg font-semibold rounded-xl backdrop-blur-sm transition-all"
+            className="border-2 border-border bg-card/75 hover:bg-card text-foreground px-12 py-6 text-lg font-semibold rounded-xl backdrop-blur-sm transition-all"
           >
             <DollarSign className="h-6 w-6 mr-3" />
             Painel Administrativo
@@ -114,7 +114,7 @@ export function PrinterLandingPage({ onNewProposal, onAdminPanel }: PrinterLandi
               <div className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-400 mb-2">
                 {stat.value}
               </div>
-              <div className="text-sm text-gray-400">{stat.label}</div>
+              <div className="text-sm text-muted-foreground">{stat.label}</div>
             </div>
           ))}
         </div>

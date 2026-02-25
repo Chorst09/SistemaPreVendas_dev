@@ -44,6 +44,16 @@
     --input: 220 35% 22%;            /* Inputs com fundo escuro */
     --ring: 195 100% 50%;            /* Focus ring ciano */
     
+    /* Sidebar Variables - Dark by default */
+    --sidebar-background: 220 45% 15%;
+    --sidebar-foreground: 220 15% 95%;
+    --sidebar-primary: 195 100% 50%;
+    --sidebar-primary-foreground: 220 45% 15%;
+    --sidebar-accent: 220 35% 25%;
+    --sidebar-accent-foreground: 220 15% 95%;
+    --sidebar-border: 220 35% 25%;
+    --sidebar-ring: 195 100% 50%;
+    
     /* Chart Colors - Paleta moderna para gráficos baseada no design */
     --chart-1: 195 100% 50%;         /* Ciano principal - #00D4FF - Para dados primários */
     --chart-2: 20 100% 60%;          /* Laranja - #FF6B35 - Para dados secundários/ações */
@@ -88,6 +98,14 @@
     --border: 220 35% 25%;
     --input: 220 35% 22%;
     --ring: 195 100% 50%;
+    --sidebar-background: 220 45% 15%;
+    --sidebar-foreground: 220 15% 95%;
+    --sidebar-primary: 195 100% 50%;
+    --sidebar-primary-foreground: 220 45% 15%;
+    --sidebar-accent: 220 35% 25%;
+    --sidebar-accent-foreground: 220 15% 95%;
+    --sidebar-border: 220 35% 25%;
+    --sidebar-ring: 195 100% 50%;
     --chart-1: 195 100% 50%;
     --chart-2: 20 100% 60%;
     --chart-3: 150 80% 45%;
@@ -129,6 +147,17 @@
     --border: 220 25% 85%;
     --input: 220 25% 95%;
     --ring: 195 100% 45%;
+    
+    /* Sidebar Variables - Light theme */
+    --sidebar-background: 220 25% 95%;
+    --sidebar-foreground: 220 45% 15%;
+    --sidebar-primary: 195 100% 45%;
+    --sidebar-primary-foreground: 220 25% 98%;
+    --sidebar-accent: 220 25% 90%;
+    --sidebar-accent-foreground: 220 45% 15%;
+    --sidebar-border: 220 25% 85%;
+    --sidebar-ring: 195 100% 45%;
+    
     --chart-1: 195 100% 45%;
     --chart-2: 20 100% 55%;
     --chart-3: 150 80% 40%;
@@ -560,6 +589,134 @@
 
   .bg-chart-commission {
     background-color: hsl(var(--chart-commission));
+  }
+
+  .sidebar-bg {
+    background:
+      radial-gradient(110% 80% at 10% -10%, hsl(var(--primary) / 0.2), transparent 55%),
+      linear-gradient(165deg, hsl(var(--sidebar-background)), hsl(var(--sidebar-accent) / 0.92));
+  }
+
+  .sidebar-brand {
+    background:
+      linear-gradient(115deg, hsl(var(--sidebar-background) / 0.98), hsl(var(--sidebar-accent) / 0.84));
+  }
+
+  .header-bg {
+    background:
+      radial-gradient(90% 100% at 5% 0%, hsl(var(--primary) / 0.18), transparent 55%),
+      linear-gradient(135deg, hsl(var(--background) / 0.96), hsl(var(--card) / 0.95));
+  }
+
+  .service-desk-theme,
+  .printer-theme {
+    position: relative;
+    overflow: hidden;
+    background:
+      radial-gradient(920px circle at 8% -12%, hsl(var(--primary) / 0.12), transparent 58%),
+      radial-gradient(920px circle at 96% 0%, hsl(var(--accent) / 0.08), transparent 60%),
+      linear-gradient(145deg, hsl(var(--background)), hsl(var(--muted) / 0.9));
+  }
+
+  .service-desk-theme::before,
+  .printer-theme::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image:
+      linear-gradient(hsl(var(--primary) / 0.06) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(var(--primary) / 0.06) 1px, transparent 1px);
+    background-size: 56px 56px;
+  }
+
+  .service-desk-theme > *,
+  .printer-theme > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  .dark .service-desk-theme {
+    background:
+      radial-gradient(960px circle at 8% -15%, rgba(168, 85, 247, 0.2), transparent 58%),
+      radial-gradient(960px circle at 96% 0%, rgba(34, 211, 238, 0.18), transparent 62%),
+      linear-gradient(145deg, #0b142a 0%, #1d1d42 55%, #1a2348 100%);
+  }
+
+  .dark .printer-theme {
+    background:
+      radial-gradient(960px circle at 8% -15%, rgba(16, 185, 129, 0.22), transparent 58%),
+      radial-gradient(960px circle at 96% 0%, rgba(6, 182, 212, 0.18), transparent 62%),
+      linear-gradient(145deg, #081829 0%, #123a3a 55%, #103150 100%);
+  }
+
+  .light .noc-theme,
+  .light .service-desk-theme,
+  .light .printer-theme {
+    background:
+      radial-gradient(960px circle at 8% -12%, hsl(var(--primary) / 0.12), transparent 58%),
+      radial-gradient(960px circle at 96% 0%, hsl(var(--accent) / 0.08), transparent 62%),
+      linear-gradient(145deg, hsl(var(--background)), hsl(var(--muted) / 0.82));
+  }
+
+  .light .noc-theme::before,
+  .light .service-desk-theme::before,
+  .light .printer-theme::before {
+    background-image:
+      linear-gradient(hsl(var(--primary) / 0.08) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(var(--primary) / 0.08) 1px, transparent 1px);
+    background-size: 48px 48px;
+  }
+
+  .light .noc-theme [class*="bg-slate-"],
+  .light .service-desk-theme [class*="bg-slate-"],
+  .light .printer-theme [class*="bg-slate-"] {
+    background-color: hsl(var(--card) / 0.92) !important;
+  }
+
+  .light .noc-theme [class*="border-slate-"],
+  .light .service-desk-theme [class*="border-slate-"],
+  .light .printer-theme [class*="border-slate-"] {
+    border-color: hsl(var(--border) / 0.72) !important;
+  }
+
+  .light .noc-theme [class*="bg-slate-"] [class*="text-white"],
+  .light .noc-theme [class*="bg-slate-"][class*="text-white"],
+  .light .service-desk-theme [class*="bg-slate-"] [class*="text-white"],
+  .light .service-desk-theme [class*="bg-slate-"][class*="text-white"],
+  .light .printer-theme [class*="bg-slate-"] [class*="text-white"],
+  .light .printer-theme [class*="bg-slate-"][class*="text-white"] {
+    color: hsl(var(--foreground)) !important;
+  }
+
+  .light .noc-theme [class*="bg-slate-"] [class*="text-slate-"],
+  .light .noc-theme [class*="bg-slate-"] [class*="text-gray-"],
+  .light .service-desk-theme [class*="bg-slate-"] [class*="text-slate-"],
+  .light .service-desk-theme [class*="bg-slate-"] [class*="text-gray-"],
+  .light .printer-theme [class*="bg-slate-"] [class*="text-slate-"],
+  .light .printer-theme [class*="bg-slate-"] [class*="text-gray-"] {
+    color: hsl(var(--muted-foreground)) !important;
+  }
+
+  .light .noc-theme [class*="bg-blue-900/"],
+  .light .noc-theme [class*="bg-green-900/"],
+  .light .noc-theme [class*="bg-cyan-900/"],
+  .light .noc-theme [class*="bg-purple-900/"],
+  .light .noc-theme [class*="bg-amber-900/"],
+  .light .noc-theme [class*="bg-orange-900/"],
+  .light .service-desk-theme [class*="bg-blue-900/"],
+  .light .service-desk-theme [class*="bg-green-900/"],
+  .light .service-desk-theme [class*="bg-cyan-900/"],
+  .light .service-desk-theme [class*="bg-purple-900/"],
+  .light .service-desk-theme [class*="bg-amber-900/"],
+  .light .service-desk-theme [class*="bg-orange-900/"],
+  .light .printer-theme [class*="bg-blue-900/"],
+  .light .printer-theme [class*="bg-green-900/"],
+  .light .printer-theme [class*="bg-cyan-900/"],
+  .light .printer-theme [class*="bg-purple-900/"],
+  .light .printer-theme [class*="bg-amber-900/"],
+  .light .printer-theme [class*="bg-orange-900/"] {
+    background-color: hsl(var(--primary) / 0.12) !important;
   }
 
   /* High contrast mode specific styles */

@@ -486,26 +486,26 @@ export function NOCPricingSystem({ onBack, proposalClientData, onNavigateToQuote
   const getStatusBadgeClass = (status: string) => {
     switch (status) {
       case 'error':
-        return 'border-blue-300/40 bg-blue-900/50 text-blue-100';
+        return 'border-destructive/40 bg-destructive/10 text-destructive';
       case 'warning':
-        return 'border-blue-300/35 bg-blue-800/45 text-blue-100';
+        return 'border-yellow-500/40 bg-yellow-500/10 text-yellow-700 dark:text-yellow-200';
       case 'success':
-        return 'border-cyan-300/40 bg-cyan-900/45 text-cyan-100';
+        return 'border-green-500/40 bg-green-500/10 text-green-700 dark:text-green-200';
       default:
-        return 'border-blue-300/30 bg-slate-900/35 text-slate-200';
+        return 'border-border/70 bg-card/70 text-foreground';
     }
   };
 
   const getCompetitivenessBadgeClass = (competitiveness: string) => {
     switch (competitiveness) {
       case 'competitive':
-        return 'border-cyan-300/40 bg-cyan-900/45 text-cyan-100';
+        return 'border-green-500/40 bg-green-500/10 text-green-700 dark:text-green-200';
       case 'low':
-        return 'border-blue-300/35 bg-blue-900/45 text-blue-100';
+        return 'border-yellow-500/40 bg-yellow-500/10 text-yellow-700 dark:text-yellow-200';
       case 'high':
-        return 'border-blue-300/45 bg-blue-950/65 text-blue-100';
+        return 'border-destructive/40 bg-destructive/10 text-destructive';
       default:
-        return 'border-blue-300/30 bg-slate-900/35 text-slate-200';
+        return 'border-border/70 bg-card/70 text-foreground';
     }
   };
 
@@ -519,7 +519,7 @@ export function NOCPricingSystem({ onBack, proposalClientData, onNavigateToQuote
 
   return (
     <div className="noc-theme w-full max-w-7xl mx-auto p-6 space-y-6 rounded-2xl">
-      <Card className="bg-slate-900/55 border-blue-400/20 backdrop-blur-md">
+      <Card className="card-surface border-border/60 backdrop-blur-md">
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
@@ -571,7 +571,7 @@ export function NOCPricingSystem({ onBack, proposalClientData, onNavigateToQuote
 
         <CardContent>
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid grid-cols-5 lg:grid-cols-10 gap-2 h-auto bg-slate-900/40 border border-blue-400/20 p-2 rounded-xl">
+            <TabsList className="grid grid-cols-5 lg:grid-cols-10 gap-2 h-auto bg-card/80 border border-border/60 p-2 rounded-xl">
               {NOC_TABS.map(tab => {
                 const status = getTabStatus(tab.id);
                 return (
