@@ -1,4 +1,4 @@
-import { ApiResponse } from '../../../shared/types/index.js';
+import { ApiResponse } from '../shared/types/index.js';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 

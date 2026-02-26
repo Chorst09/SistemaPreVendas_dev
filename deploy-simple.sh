@@ -21,11 +21,13 @@ rsync -a --exclude='node_modules' --exclude='.next' --exclude='dist' --exclude='
 rsync -a --exclude='node_modules' --exclude='.next' --exclude='dist' --exclude='.git' \
   frontend/ .deploy-temp/frontend/
 
-# Sincronizar shared da raiz para o backend (imports relativos em runtime/build)
+# Copiar shared para backend e frontend (necessário para imports relativos ../../../shared)
 if [ -d shared ]; then
-  echo "🔄 Sincronizando shared/ (raiz) -> backend/shared/..."
-  mkdir -p .deploy-temp/backend/shared
-  rsync -a --delete shared/ .deploy-temp/backend/shared/
+  echo "🔄 Sincronizando shared/ (raiz) -> backend/src/shared/ e frontend/src/shared/..."
+  mkdir -p .deploy-temp/backend/src/shared
+  mkdir -p .deploy-temp/frontend/src/shared
+  rsync -a --delete shared/ .deploy-temp/backend/src/shared/
+  rsync -a --delete shared/ .deploy-temp/frontend/src/shared/
 fi
 
 # Sincronizar código fonte atual da raiz para o frontend publicado
@@ -79,6 +81,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+    ports:
+      - "127.0.0.1:3011:3001"
     networks:
       - prevendas-network
 
@@ -93,29 +97,13 @@ services:
       NODE_ENV: production
     depends_on:
       - backend
-    networks:
-      - prevendas-network
-
-  nginx:
-    image: nginx:alpine
-    container_name: prevendas-nginx
-    restart: always
     ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf:ro
-      - /etc/letsencrypt:/etc/letsencrypt:ro
-      - certbot-www:/var/www/certbot
-    depends_on:
-      - frontend
-      - backend
+      - "127.0.0.1:3010:3000"
     networks:
       - prevendas-network
 
 volumes:
   postgres_data:
-  certbot-www:
 
 networks:
   prevendas-network:

@@ -35,9 +35,9 @@ const StatCard: React.FC<StatCardProps> = ({
   const getIconClasses = () => {
     switch (variant) {
       case 'primary':
-        return 'text-primary-foreground';
+        return 'text-foreground dark:text-primary-foreground';
       case 'accent':
-        return 'text-accent-foreground';
+        return 'text-foreground dark:text-accent-foreground';
       case 'success':
         return 'text-accent-green';
       default:
@@ -48,13 +48,35 @@ const StatCard: React.FC<StatCardProps> = ({
   const getValueClasses = () => {
     switch (variant) {
       case 'primary':
-        return 'text-primary-foreground';
+        return 'text-foreground dark:text-primary-foreground';
       case 'accent':
-        return 'text-accent-foreground';
+        return 'text-foreground dark:text-accent-foreground';
       case 'success':
         return 'text-foreground';
       default:
         return 'text-foreground';
+    }
+  };
+
+  const getTitleClasses = () => {
+    switch (variant) {
+      case 'primary':
+        return 'text-foreground/80 dark:text-primary-foreground/80';
+      case 'accent':
+        return 'text-foreground/80 dark:text-accent-foreground/80';
+      default:
+        return 'text-muted-foreground';
+    }
+  };
+
+  const getSubtextClasses = () => {
+    switch (variant) {
+      case 'primary':
+        return 'text-muted-foreground dark:text-primary-foreground/70';
+      case 'accent':
+        return 'text-muted-foreground dark:text-accent-foreground/70';
+      default:
+        return 'text-muted-foreground';
     }
   };
 
@@ -68,9 +90,7 @@ const StatCard: React.FC<StatCardProps> = ({
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className={cn(
           "text-sm font-medium transition-colors duration-300",
-          variant === 'primary' || variant === 'accent' 
-            ? 'text-primary-foreground/80' 
-            : 'text-muted-foreground'
+          getTitleClasses()
         )}>
           {title}
         </CardTitle>
@@ -90,9 +110,7 @@ const StatCard: React.FC<StatCardProps> = ({
         </div>
         <p className={cn(
           'text-xs transition-colors duration-300',
-          variant === 'primary' || variant === 'accent' 
-            ? 'text-primary-foreground/70' 
-            : 'text-muted-foreground'
+          getSubtextClasses()
         )}>
           {subtext}
         </p>
