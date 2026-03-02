@@ -3,58 +3,75 @@ version: '3.8'
 services:
   postgres:
     image: postgres:16-alpine
-    container_name: sistema-prevendas-db
+    container_name: prevendas-db
+    restart: always
     environment:
       POSTGRES_USER: prevendas
-      POSTGRES_PASSWORD: prevendas123
+      POSTGRES_PASSWORD: PrevendasSecure2025!
       POSTGRES_DB: sistema_prevendas
-    ports:
-      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    networks:
+      - prevendas-network
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U prevendas"]
       interval: 10s
       timeout: 5s
       retries: 5
+    ports:
+      - "127.0.0.1:5432:5432"
 
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: sistema-prevendas-backend
+    container_name: prevendas-backend
+    restart: always
     environment:
-      NODE_ENV: development
+      NODE_ENV: production
       PORT: 3001
-      DATABASE_URL: postgresql://prevendas:prevendas123@postgres:5432/sistema_prevendas
-      CORS_ORIGIN: http://localhost:3000
-    ports:
-      - "3001:3001"
+      DATABASE_URL: postgresql://prevendas:PrevendasSecure2025!@postgres:5432/sistema_prevendas
+      CORS_ORIGIN: https://prevendas.chorstconsult.com.br
     depends_on:
       postgres:
         condition: service_healthy
-    volumes:
-      - ./backend/src:/app/src
-    command: npm run dev
+    networks:
+      - prevendas-network
+    ports:
+      - "127.0.0.1:3011:3001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    container_name: sistema-prevendas-frontend
+    container_name: prevendas-frontend
+    restart: always
     environment:
-      NEXT_PUBLIC_API_URL: http://localhost:3001/api
-    ports:
-      - "3000:3000"
+      NEXT_PUBLIC_API_URL: https://prevendas.chorstconsult.com.br/api
+      NODE_ENV: production
     depends_on:
       - backend
-    volumes:
-      - ./frontend/src:/app/src
-    command: npm run dev
+    networks:
+      - prevendas-network
+    ports:
+      - "127.0.0.1:3010:3000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
 volumes:
   postgres_data:
+    driver: local
 
 networks:
-  default:
-    name: sistema-prevendas-network
+  prevendas-network:
+    driver: bridge
