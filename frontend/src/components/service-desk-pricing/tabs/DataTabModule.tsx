@@ -2,11 +2,10 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { 
-  Building2, User, Calendar, Clock, FileText, 
+  Calendar, Clock, FileText, 
   Users, Phone, Target, TrendingUp, Save, AlertCircle, Zap 
 } from 'lucide-react';
 import { ProjectData, TabValidationStatus } from '@/lib/types/service-desk-pricing';
@@ -16,10 +15,6 @@ interface ProjectDataForm extends Partial<ProjectData> {
   projectName?: string;
   projectCode?: string;
   projectDescription?: string;
-  clientName?: string;
-  clientCNPJ?: string;
-  clientContact?: string;
-  clientEmail?: string;
   contractStartDate?: Date;
   contractEndDate?: Date;
   userQuantity?: number;
@@ -29,7 +24,6 @@ interface ProjectDataForm extends Partial<ProjectData> {
   updatedAt?: Date;
 }
 import { FormSection, MetricCard, EnhancedInput } from '../shared';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
@@ -71,12 +65,40 @@ export function DataTabModule({
     setHasChanges(false);
   }, [data]);
 
-  const handleFieldChange = useCallback((field: keyof ProjectDataForm, value: any) => {
-    setLocalData(prev => ({
-      ...prev,
-      [field]: value,
-      updatedAt: new Date()
-    }));
+  const handleFieldChange = useCallback((field: string, value: any) => {
+    setLocalData(prev => {
+      // Support nested field paths like 'dimensioning.n1SixHourShift'
+      if (field.includes('.')) {
+        const keys = field.split('.');
+        const newData = { ...prev };
+        let current = newData;
+        
+        // Navigate to the parent object
+        for (let i = 0; i < keys.length - 1; i++) {
+          const key = keys[i];
+          if (!current[key]) {
+            current[key] = {};
+          }
+          current[key] = { ...current[key] };
+          current = current[key];
+        }
+        
+        // Set the final value
+        current[keys[keys.length - 1]] = value;
+        
+        return {
+          ...newData,
+          updatedAt: new Date()
+        };
+      }
+      
+      // Handle top-level fields
+      return {
+        ...prev,
+        [field]: value,
+        updatedAt: new Date()
+      };
+    });
     setHasChanges(true);
   }, []);
 
@@ -260,9 +282,9 @@ export function DataTabModule({
       {/* Header com Status */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-foreground">Dados do Projeto</h2>
+          <h2 className="text-2xl font-bold text-foreground">Dados do Projeto e Contrato</h2>
           <p className="text-muted-foreground mt-1">
-            Configure as informações básicas do projeto e cliente
+            Configure as informações do projeto e o período do contrato.
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -329,7 +351,7 @@ export function DataTabModule({
         icon={<FileText className="h-5 w-5 text-blue-600 dark:text-blue-400" />}
         variant="primary"
         required
-        helpText="Preencha os dados principais do projeto para identificação e controle"
+        helpText="Os dados do cliente já são preenchidos na Nova Proposta."
       >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <EnhancedInput
@@ -363,55 +385,6 @@ export function DataTabModule({
             onChange={(e) => handleFieldChange('projectDescription', e.target.value)}
             rows={3}
             className="resize-none"
-          />
-        </div>
-      </FormSection>
-
-      {/* Informações do Cliente */}
-      <FormSection
-        title="Informações do Cliente"
-        description="Dados do cliente que receberá o serviço"
-        icon={<Building2 className="h-5 w-5 text-green-600 dark:text-green-400" />}
-        variant="success"
-        required
-        helpText="Informações do cliente para a proposta comercial"
-      >
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <EnhancedInput
-            label="Nome do Cliente"
-            placeholder="Ex: Empresa XYZ Ltda"
-            value={localData.clientName || ''}
-            onChange={(e) => handleFieldChange('clientName', e.target.value)}
-            required
-            tooltip="Razão social ou nome fantasia do cliente"
-            icon={<Building2 className="h-4 w-4" />}
-          />
-          
-          <EnhancedInput
-            label="CNPJ"
-            placeholder="00.000.000/0000-00"
-            value={localData.clientCNPJ || ''}
-            onChange={(e) => handleFieldChange('clientCNPJ', e.target.value)}
-            tooltip="CNPJ do cliente"
-            showOptional
-          />
-
-          <EnhancedInput
-            label="Contato Principal"
-            placeholder="Nome do responsável"
-            value={localData.clientContact || ''}
-            onChange={(e) => handleFieldChange('clientContact', e.target.value)}
-            icon={<User className="h-4 w-4" />}
-            showOptional
-          />
-
-          <EnhancedInput
-            label="E-mail"
-            type="email"
-            placeholder="contato@empresa.com"
-            value={localData.clientEmail || ''}
-            onChange={(e) => handleFieldChange('clientEmail', e.target.value)}
-            showOptional
           />
         </div>
       </FormSection>
