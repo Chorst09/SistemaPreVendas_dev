@@ -85,9 +85,9 @@ export function MetricCard({
   return (
     <Card
       className={cn(
-        'transition-all hover:shadow-md',
+        'transition-shadow',
         styles.card,
-        onClick && 'cursor-pointer hover:scale-105',
+        onClick && 'cursor-pointer',
         className
       )}
       {...(onClick ? { onClick } : {})}

@@ -111,7 +111,10 @@ export function DataTabModule({
     // 1. Calculate dimensioning using Erlang C
     const monthlyCalls = (localData.userQuantity || 0) * (localData.incidentsPerUser || 0);
     const dailyCalls = Math.round(monthlyCalls / 22); // 22 working days
-    const hourlyCalls = dailyCalls / 8; // Assuming 8 hour workday
+    
+    // Adjust for 6-hour shifts if enabled
+    const workingHoursPerDay = localData.dimensioning?.n1SixHourShift ? 6 : 8;
+    const hourlyCalls = dailyCalls / workingHoursPerDay;
     
     // Simplified Erlang C calculation
     const tma = 15; // Average handling time in minutes
@@ -122,10 +125,14 @@ export function DataTabModule({
     const trafficIntensity = (hourlyCalls * tma) / 60; // Erlangs
     const baseAgents = Math.ceil(trafficIntensity / occupancy);
     
+    // Adjust for 6-hour shifts: need more agents to cover same hours
+    const agentMultiplier = localData.dimensioning?.n1SixHourShift ? (8 / 6) : 1;
+    const adjustedBaseAgents = Math.ceil(baseAgents * agentMultiplier);
+    
     // Distribution: 60% N1, 30% N2, 10% N3
-    const n1Count = Math.max(Math.ceil(baseAgents * 0.6), 2);
-    const n2Count = Math.max(Math.ceil(baseAgents * 0.3), 1);
-    const n3Count = Math.max(Math.ceil(baseAgents * 0.1), 1);
+    const n1Count = Math.max(Math.ceil(adjustedBaseAgents * 0.6), 2);
+    const n2Count = Math.max(Math.ceil(adjustedBaseAgents * 0.3), 1);
+    const n3Count = Math.max(Math.ceil(adjustedBaseAgents * 0.1), 1);
     const totalAgents = n1Count + n2Count + n3Count;
     
     // 2. Calculate folguistas based on coverage type
@@ -143,12 +150,13 @@ export function DataTabModule({
     const shifts: any[] = [];
     
     if (localData.coverageType === '8x5') {
-      // Business hours: 8am-6pm, Mon-Fri
+      // Business hours: 8am-6pm (or 8am-2pm for 6h), Mon-Fri
+      const endTime = localData.dimensioning?.n1SixHourShift ? '14:00' : '18:00';
       shifts.push({
         id: `shift-${Date.now()}-1`,
-        name: 'Turno Comercial',
+        name: localData.dimensioning?.n1SixHourShift ? 'Turno Comercial (6h)' : 'Turno Comercial',
         startTime: '08:00',
-        endTime: '18:00',
+        endTime: endTime,
         daysOfWeek: [1, 2, 3, 4, 5],
         teamMembers: [],
         isSpecialShift: false,
@@ -159,12 +167,13 @@ export function DataTabModule({
         requiredFolguistas: folguistas
       });
     } else if (localData.coverageType === '12x5') {
-      // Extended hours: 7am-7pm, Mon-Fri
+      // Extended hours: 7am-7pm (or 7am-1pm for 6h), Mon-Fri
+      const endTime = localData.dimensioning?.n1SixHourShift ? '13:00' : '19:00';
       shifts.push({
         id: `shift-${Date.now()}-1`,
-        name: 'Turno Manhã/Tarde',
+        name: localData.dimensioning?.n1SixHourShift ? 'Turno Manhã/Tarde (6h)' : 'Turno Manhã/Tarde',
         startTime: '07:00',
-        endTime: '19:00',
+        endTime: endTime,
         daysOfWeek: [1, 2, 3, 4, 5],
         teamMembers: [],
         isSpecialShift: false,
@@ -175,60 +184,127 @@ export function DataTabModule({
         requiredFolguistas: folguistas
       });
     } else if (localData.coverageType === '24x7') {
-      // 24x7 coverage: 3 shifts of 8 hours
-      const shiftsPerDay = Math.ceil(n1Count / 3);
-      const n2PerShift = Math.ceil(n2Count / 3);
+      // 24x7 coverage: 3 shifts of 8 hours (or 4 shifts of 6 hours)
+      const shiftsPerDay = localData.dimensioning?.n1SixHourShift 
+        ? Math.ceil(n1Count / 4) 
+        : Math.ceil(n1Count / 3);
+      const n2PerShift = localData.dimensioning?.n1SixHourShift
+        ? Math.ceil(n2Count / 4)
+        : Math.ceil(n2Count / 3);
       
-      shifts.push(
-        {
-          id: `shift-${Date.now()}-1`,
-          name: 'Turno Madrugada (00h-08h)',
-          startTime: '00:00',
-          endTime: '08:00',
-          daysOfWeek: [0, 1, 2, 3, 4, 5, 6],
-          teamMembers: [],
-          isSpecialShift: true,
-          multiplier: 1.5, // Night shift premium
-          requiredN1: shiftsPerDay,
-          requiredN2: n2PerShift,
-          requiredN3: 0,
-          requiredFolguistas: Math.ceil(folguistas / 3)
-        },
-        {
-          id: `shift-${Date.now()}-2`,
-          name: 'Turno Manhã (08h-16h)',
-          startTime: '08:00',
-          endTime: '16:00',
-          daysOfWeek: [0, 1, 2, 3, 4, 5, 6],
-          teamMembers: [],
-          isSpecialShift: false,
-          multiplier: 1.0,
-          requiredN1: shiftsPerDay,
-          requiredN2: n2PerShift,
-          requiredN3: n3Count, // N3 works during business hours
-          requiredFolguistas: Math.ceil(folguistas / 3)
-        },
-        {
-          id: `shift-${Date.now()}-3`,
-          name: 'Turno Tarde (16h-00h)',
-          startTime: '16:00',
-          endTime: '23:59',
-          daysOfWeek: [0, 1, 2, 3, 4, 5, 6],
-          teamMembers: [],
-          isSpecialShift: true,
-          multiplier: 1.3, // Evening shift premium
-          requiredN1: shiftsPerDay,
-          requiredN2: n2PerShift,
-          requiredN3: 0,
-          requiredFolguistas: Math.ceil(folguistas / 3)
-        }
-      );
+      if (localData.dimensioning?.n1SixHourShift) {
+        // 4 shifts of 6 hours
+        shifts.push(
+          {
+            id: `shift-${Date.now()}-1`,
+            name: 'Turno Madrugada (00h-06h)',
+            startTime: '00:00',
+            endTime: '06:00',
+            daysOfWeek: [0, 1, 2, 3, 4, 5, 6],
+            teamMembers: [],
+            isSpecialShift: true,
+            multiplier: 1.5,
+            requiredN1: shiftsPerDay,
+            requiredN2: n2PerShift,
+            requiredN3: 0,
+            requiredFolguistas: Math.ceil(folguistas / 4)
+          },
+          {
+            id: `shift-${Date.now()}-2`,
+            name: 'Turno Manhã (06h-12h)',
+            startTime: '06:00',
+            endTime: '12:00',
+            daysOfWeek: [0, 1, 2, 3, 4, 5, 6],
+            teamMembers: [],
+            isSpecialShift: false,
+            multiplier: 1.0,
+            requiredN1: shiftsPerDay,
+            requiredN2: n2PerShift,
+            requiredN3: Math.ceil(n3Count / 2),
+            requiredFolguistas: Math.ceil(folguistas / 4)
+          },
+          {
+            id: `shift-${Date.now()}-3`,
+            name: 'Turno Tarde (12h-18h)',
+            startTime: '12:00',
+            endTime: '18:00',
+            daysOfWeek: [0, 1, 2, 3, 4, 5, 6],
+            teamMembers: [],
+            isSpecialShift: false,
+            multiplier: 1.0,
+            requiredN1: shiftsPerDay,
+            requiredN2: n2PerShift,
+            requiredN3: Math.ceil(n3Count / 2),
+            requiredFolguistas: Math.ceil(folguistas / 4)
+          },
+          {
+            id: `shift-${Date.now()}-4`,
+            name: 'Turno Noite (18h-00h)',
+            startTime: '18:00',
+            endTime: '23:59',
+            daysOfWeek: [0, 1, 2, 3, 4, 5, 6],
+            teamMembers: [],
+            isSpecialShift: true,
+            multiplier: 1.3,
+            requiredN1: shiftsPerDay,
+            requiredN2: n2PerShift,
+            requiredN3: 0,
+            requiredFolguistas: Math.ceil(folguistas / 4)
+          }
+        );
+      } else {
+        // 3 shifts of 8 hours
+        shifts.push(
+          {
+            id: `shift-${Date.now()}-1`,
+            name: 'Turno Madrugada (00h-08h)',
+            startTime: '00:00',
+            endTime: '08:00',
+            daysOfWeek: [0, 1, 2, 3, 4, 5, 6],
+            teamMembers: [],
+            isSpecialShift: true,
+            multiplier: 1.5,
+            requiredN1: shiftsPerDay,
+            requiredN2: n2PerShift,
+            requiredN3: 0,
+            requiredFolguistas: Math.ceil(folguistas / 3)
+          },
+          {
+            id: `shift-${Date.now()}-2`,
+            name: 'Turno Manhã (08h-16h)',
+            startTime: '08:00',
+            endTime: '16:00',
+            daysOfWeek: [0, 1, 2, 3, 4, 5, 6],
+            teamMembers: [],
+            isSpecialShift: false,
+            multiplier: 1.0,
+            requiredN1: shiftsPerDay,
+            requiredN2: n2PerShift,
+            requiredN3: n3Count,
+            requiredFolguistas: Math.ceil(folguistas / 3)
+          },
+          {
+            id: `shift-${Date.now()}-3`,
+            name: 'Turno Tarde (16h-00h)',
+            startTime: '16:00',
+            endTime: '23:59',
+            daysOfWeek: [0, 1, 2, 3, 4, 5, 6],
+            teamMembers: [],
+            isSpecialShift: true,
+            multiplier: 1.3,
+            requiredN1: shiftsPerDay,
+            requiredN2: n2PerShift,
+            requiredN3: 0,
+            requiredFolguistas: Math.ceil(folguistas / 3)
+          }
+        );
+      }
     }
     
     // 4. Create schedule object
     const generatedSchedule = {
       id: `schedule-${Date.now()}`,
-      name: `Escala ${localData.coverageType}`,
+      name: `Escala ${localData.coverageType}${localData.dimensioning?.n1SixHourShift ? ' (6h)' : ''}`,
       shifts: shifts,
       coverage: {
         minimumStaff: totalAgents,
@@ -268,7 +344,7 @@ export function DataTabModule({
     }
     
     // Show success message
-    alert(`Escala gerada com sucesso!\n\nDimensionamento:\n- N1: ${n1Count} agentes\n- N2: ${n2Count} agentes\n- N3: ${n3Count} agentes\n- Folguistas: ${folguistas} agentes\n- Total: ${totalWithFolguistas} agentes\n\nNavegue para a aba "Escala" para conferir.`);
+    alert(`Escala gerada com sucesso!\n\nDimensionamento:\n- N1: ${n1Count} agentes${localData.dimensioning?.n1SixHourShift ? ' (6h)' : ' (8h)'}\n- N2: ${n2Count} agentes\n- N3: ${n3Count} agentes\n- Folguistas: ${folguistas} agentes\n- Total: ${totalWithFolguistas} agentes\n\nNavegue para a aba "Escala" para conferir.`);
   }, [localData, onUpdate]);
 
   // Cálculos automáticos
