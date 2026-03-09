@@ -27,6 +27,7 @@ export interface DataTabModuleProps {
   validation?: TabValidationStatus;
   isLoading?: boolean;
   onAutoSave?: (data: ProjectData) => void;
+  onDimensionTeam?: (projectData: ProjectData, dimensionedTeam: any[]) => void;
 }
 
 export function DataTabModule({ 
@@ -34,7 +35,8 @@ export function DataTabModule({
   onUpdate, 
   validation, 
   isLoading = false,
-  onAutoSave 
+  onAutoSave,
+  onDimensionTeam
 }: DataTabModuleProps) {
   const [localData, setLocalData] = useState<ProjectData>(data);
   const [hasChanges, setHasChanges] = useState(false);
@@ -133,6 +135,11 @@ export function DataTabModule({
     });
     setHasChanges(true);
   }, [calculateMonthlyCalls, calculateN1Agents, calculateN2Agents]);
+
+  const toggleAdditionalService = useCallback((serviceField: 'needsSoftware' | 'needs0800' | 'needsDirectCall' | 'needsInfrastructure') => {
+    const currentValue = !!localData.additionalServices?.[serviceField];
+    handleFieldChange(`additionalServices.${serviceField}`, !currentValue);
+  }, [localData.additionalServices, handleFieldChange]);
 
   const handleSave = useCallback(() => {
     onUpdate(localData);
@@ -396,6 +403,74 @@ export function DataTabModule({
     return schedules;
   }, []);
 
+  const handleDimensionAndGoToTeam = useCallback(() => {
+    const erlangResult = calculateErlangDimensioning(
+      localData.generalInfo?.userQuantity || 100,
+      localData.dimensioning?.incidentsPerUser || 1.5,
+      localData.dimensioning?.tmaMinutes || 10,
+      localData.dimensioning?.occupancyRate || 80,
+      localData.dimensioning?.n1Distribution || 80,
+      localData.dimensioning?.n1SixHourShift || false
+    );
+
+    const coverageType = localData.dimensioning?.coverageType || CoverageType.BUSINESS_HOURS;
+    const n1SixHourShift = localData.dimensioning?.n1SixHourShift || false;
+
+    const updatedData: ProjectData = {
+      ...localData,
+      generalInfo: {
+        userQuantity: localData.generalInfo?.userQuantity || 100,
+        monthlyCalls: erlangResult.totalCallsPerMonth
+      },
+      dimensioning: {
+        incidentsPerUser: localData.dimensioning?.incidentsPerUser || 1.5,
+        tmaMinutes: localData.dimensioning?.tmaMinutes || 10,
+        occupancyRate: localData.dimensioning?.occupancyRate || 80,
+        n1Distribution: localData.dimensioning?.n1Distribution || 80,
+        n1Capacity: localData.dimensioning?.n1Capacity || 100,
+        n2Capacity: localData.dimensioning?.n2Capacity || 75,
+        n1SixHourShift,
+        coverageType,
+        suggestedN1: erlangResult.n1Agents,
+        suggestedN2: erlangResult.n2Agents
+      }
+    };
+
+    const timestamp = Date.now();
+    const dimensionedTeam = [
+      {
+        id: `auto-n1-${timestamp}`,
+        jobPositionId: 'pos-1',
+        quantity: erlangResult.n1Agents,
+        workingHours: n1SixHourShift ? 6 : 8,
+        isActive: true,
+        notes: 'Dimensionado automaticamente na aba Dados'
+      },
+      {
+        id: `auto-n2-${timestamp + 1}`,
+        jobPositionId: 'pos-2',
+        quantity: erlangResult.n2Agents,
+        workingHours: 8,
+        isActive: true,
+        notes: 'Dimensionado automaticamente na aba Dados'
+      }
+    ];
+
+    if (onDimensionTeam) {
+      onDimensionTeam(updatedData, dimensionedTeam);
+      return;
+    }
+
+    onUpdate(updatedData);
+    alert(
+      `Dimensionamento aplicado com sucesso!\n\n` +
+      `• N1: ${erlangResult.n1Agents} agentes${n1SixHourShift ? ' (6h)' : ' (8h)'}\n` +
+      `• N2: ${erlangResult.n2Agents} agentes (8h)\n` +
+      `• Cobertura: ${coverageType === CoverageType.BUSINESS_HOURS ? '8x5' :
+        coverageType === CoverageType.EXTENDED_HOURS ? '12x5' : '24x7'}`
+    );
+  }, [calculateErlangDimensioning, localData, onDimensionTeam, onUpdate]);
+
   // Preview dinâmico para cards de KPI no topo da aba
   const summary = useMemo(() => {
     const userQty = localData.generalInfo?.userQuantity || 0;
@@ -631,11 +706,26 @@ export function DataTabModule({
               <h3 className={styles.sectionTitle}>Serviços Adicionais</h3>
               
               <div className="space-y-3">
-                <div className="flex items-start gap-3 rounded-lg border border-border/60 bg-background/60 p-3">
+                <div
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => toggleAdditionalService('needsSoftware')}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      toggleAdditionalService('needsSoftware');
+                    }
+                  }}
+                  className={cn(
+                    "flex items-start gap-3 rounded-lg border bg-background/60 p-3 cursor-pointer transition-colors",
+                    localData.additionalServices?.needsSoftware ? "border-cyan-400/70" : "border-border/60 hover:border-cyan-400/40"
+                  )}
+                >
                   <Checkbox
                     id="needs-software"
                     checked={localData.additionalServices?.needsSoftware || false}
                     onCheckedChange={(checked) => handleFieldChange('additionalServices.needsSoftware', !!checked)}
+                    onClick={(e) => e.stopPropagation()}
                     disabled={isLoading}
                   />
                   <div>
@@ -644,11 +734,26 @@ export function DataTabModule({
                   </div>
                 </div>
 
-                <div className="flex items-start gap-3 rounded-lg border border-border/60 bg-background/60 p-3">
+                <div
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => toggleAdditionalService('needs0800')}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      toggleAdditionalService('needs0800');
+                    }
+                  }}
+                  className={cn(
+                    "flex items-start gap-3 rounded-lg border bg-background/60 p-3 cursor-pointer transition-colors",
+                    localData.additionalServices?.needs0800 ? "border-cyan-400/70" : "border-border/60 hover:border-cyan-400/40"
+                  )}
+                >
                   <Checkbox
                     id="needs-0800"
                     checked={localData.additionalServices?.needs0800 || false}
                     onCheckedChange={(checked) => handleFieldChange('additionalServices.needs0800', !!checked)}
+                    onClick={(e) => e.stopPropagation()}
                     disabled={isLoading}
                   />
                   <div>
@@ -657,11 +762,26 @@ export function DataTabModule({
                   </div>
                 </div>
 
-                <div className="flex items-start gap-3 rounded-lg border border-border/60 bg-background/60 p-3">
+                <div
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => toggleAdditionalService('needsDirectCall')}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      toggleAdditionalService('needsDirectCall');
+                    }
+                  }}
+                  className={cn(
+                    "flex items-start gap-3 rounded-lg border bg-background/60 p-3 cursor-pointer transition-colors",
+                    localData.additionalServices?.needsDirectCall ? "border-cyan-400/70" : "border-border/60 hover:border-cyan-400/40"
+                  )}
+                >
                   <Checkbox
                     id="needs-directcall"
                     checked={localData.additionalServices?.needsDirectCall || false}
                     onCheckedChange={(checked) => handleFieldChange('additionalServices.needsDirectCall', !!checked)}
+                    onClick={(e) => e.stopPropagation()}
                     disabled={isLoading}
                   />
                   <div>
@@ -670,11 +790,26 @@ export function DataTabModule({
                   </div>
                 </div>
 
-                <div className="flex items-start gap-3 rounded-lg border border-border/60 bg-background/60 p-3">
+                <div
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => toggleAdditionalService('needsInfrastructure')}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      toggleAdditionalService('needsInfrastructure');
+                    }
+                  }}
+                  className={cn(
+                    "flex items-start gap-3 rounded-lg border bg-background/60 p-3 cursor-pointer transition-colors",
+                    localData.additionalServices?.needsInfrastructure ? "border-cyan-400/70" : "border-border/60 hover:border-cyan-400/40"
+                  )}
+                >
                   <Checkbox
                     id="needs-infrastructure"
                     checked={localData.additionalServices?.needsInfrastructure || false}
                     onCheckedChange={(checked) => handleFieldChange('additionalServices.needsInfrastructure', !!checked)}
+                    onClick={(e) => e.stopPropagation()}
                     disabled={isLoading}
                   />
                   <div>
@@ -934,68 +1069,7 @@ export function DataTabModule({
             <div className="flex flex-col items-center justify-center space-y-3">
               <Button 
                 className={styles.applyButton}
-                onClick={() => {
-                  // Aplicar dimensionamento automático usando Erlang C
-                  const erlangResult = calculateErlangDimensioning(
-                    localData.generalInfo?.userQuantity || 100,
-                    localData.dimensioning?.incidentsPerUser || 1.5,
-                    localData.dimensioning?.tmaMinutes || 10,
-                    localData.dimensioning?.occupancyRate || 80,
-                    localData.dimensioning?.n1Distribution || 80,
-                    localData.dimensioning?.n1SixHourShift || false
-                  );
-                  
-                  // Criar escalas automáticas
-                  const automaticSchedules = createAutomaticSchedules(
-                    erlangResult.n1Agents,
-                    erlangResult.n2Agents,
-                    localData.dimensioning?.coverageType || CoverageType.BUSINESS_HOURS,
-                    localData.dimensioning?.n1SixHourShift || false
-                  );
-                  
-                  // Atualizar dados
-                  const updatedData: ProjectData = {
-                    ...localData,
-                    generalInfo: {
-                      userQuantity: localData.generalInfo?.userQuantity || 100,
-                      monthlyCalls: erlangResult.totalCallsPerMonth
-                    },
-                    dimensioning: {
-                      incidentsPerUser: localData.dimensioning?.incidentsPerUser || 1.5,
-                      tmaMinutes: localData.dimensioning?.tmaMinutes || 10,
-                      occupancyRate: localData.dimensioning?.occupancyRate || 80,
-                      n1Distribution: localData.dimensioning?.n1Distribution || 80,
-                      n1Capacity: localData.dimensioning?.n1Capacity || 100,
-                      n2Capacity: localData.dimensioning?.n2Capacity || 75,
-                      n1SixHourShift: localData.dimensioning?.n1SixHourShift || false,
-                      coverageType: localData.dimensioning?.coverageType || CoverageType.BUSINESS_HOURS,
-                      suggestedN1: erlangResult.n1Agents,
-                      suggestedN2: erlangResult.n2Agents
-                    }
-                  };
-                  
-                  // Aplicar todas as mudanças
-                  onUpdate(updatedData);
-                  
-                  // Mostrar feedback visual
-                  console.log('Dimensionamento e escalas aplicados:', {
-                    totalCalls: erlangResult.totalCallsPerMonth,
-                    n1Agents: erlangResult.n1Agents,
-                    n2Agents: erlangResult.n2Agents,
-                    workload: erlangResult.workloadErlang,
-                    coverageType: localData.dimensioning?.coverageType,
-                    schedulesCreated: automaticSchedules.length,
-                    n1SixHour: localData.dimensioning?.n1SixHourShift
-                  });
-                  
-                  // Notificar sobre a criação das escalas
-                  alert(`Dimensionamento aplicado com sucesso!\n\n` +
-                    `• N1: ${erlangResult.n1Agents} agentes${localData.dimensioning?.n1SixHourShift ? ' (6h)' : ' (8h)'}\n` +
-                    `• N2: ${erlangResult.n2Agents} agentes (8h)\n` +
-                    `• Cobertura: ${localData.dimensioning?.coverageType === CoverageType.BUSINESS_HOURS ? '8x5' : 
-                                   localData.dimensioning?.coverageType === CoverageType.EXTENDED_HOURS ? '12x5' : '24x7'}\n` +
-                    `• Escalas criadas automaticamente na aba "Escala"`);
-                }}
+                onClick={handleDimensionAndGoToTeam}
                 disabled={isLoading}
               >
                 Dimensionar Equipe

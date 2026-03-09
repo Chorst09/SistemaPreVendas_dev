@@ -95,6 +95,14 @@ export function ResultTabModule({
 
   const calculationEngine = useMemo(() => new ServiceDeskCalculationEngine(), []);
   const reportTemplates = useMemo(() => ReportExportService.getTemplates(), []);
+  const areEqual = (left: any, right: any) => {
+    if (left === right) return true;
+    try {
+      return JSON.stringify(left) === JSON.stringify(right);
+    } catch {
+      return false;
+    }
+  };
 
   // Recalculate analysis when full data changes
   useEffect(() => {
@@ -156,8 +164,10 @@ export function ResultTabModule({
       };
 
       setCalculatedAnalysis(newAnalysis);
-      onUpdate(newAnalysis);
-      onAutoSave(newAnalysis);
+      if (!areEqual(newAnalysis, data)) {
+        onUpdate(newAnalysis);
+        onAutoSave(newAnalysis);
+      }
 
     } catch (error) {
       console.error('Error calculating profitability analysis:', error);

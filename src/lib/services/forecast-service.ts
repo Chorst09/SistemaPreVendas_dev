@@ -90,14 +90,20 @@ export class ForecastService {
     ticketVolume: number,
     month: number
   ) {
-    // Simulação de variação nos KPIs baseada no mês e performance
-    const performanceFactor = Math.sin((month * Math.PI) / 6) * 0.1 + 1; // Variação sazonal
-    
+    const seasonality = Math.sin((month * Math.PI) / 6) * 0.05;
+    const profitability = costs > 0 ? (revenue - costs) / costs : 0;
+    const teamLoad = teamSize > 0 ? ticketVolume / teamSize : ticketVolume;
+
+    const customerSatisfaction = Math.max(60, Math.min(99, 82 + (profitability * 12) + (seasonality * 10)));
+    const slaCompliance = Math.max(75, Math.min(99.9, 90 + (profitability * 6) - (teamLoad / 250) + (seasonality * 8)));
+    const firstCallResolution = Math.max(55, Math.min(98, 68 + (profitability * 10) - (teamLoad / 300) + (teamSize / 3)));
+    const averageResolutionTime = Math.max(1, 6.5 - (profitability * 1.2) + (teamLoad / 1800) - seasonality);
+
     return {
-      customerSatisfaction: Math.min(100, 80 + (revenue / costs - 1) * 50 + Math.random() * 10),
-      slaCompliance: Math.min(100, 90 + performanceFactor * 5 + Math.random() * 5),
-      firstCallResolution: Math.min(100, 70 + (teamSize / (ticketVolume / 1000)) * 20 + Math.random() * 10),
-      averageResolutionTime: Math.max(1, 6 - performanceFactor + Math.random() * 2),
+      customerSatisfaction,
+      slaCompliance,
+      firstCallResolution,
+      averageResolutionTime,
       costPerTicket: ticketVolume > 0 ? costs / ticketVolume : 0,
       revenuePerEmployee: teamSize > 0 ? revenue / teamSize : 0
     };

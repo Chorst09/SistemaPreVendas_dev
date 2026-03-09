@@ -13,6 +13,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest",
     "test:run": "vitest run",
+    "test:run:frontend": "vitest run --config frontend/vitest.config.ts",
     "test:visual": "playwright test tests/visual",
     "test:visual:ui": "playwright test tests/visual --ui",
     "test:visual:update": "playwright test tests/visual --update-snapshots",

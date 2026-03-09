@@ -35,6 +35,9 @@ export interface TeamMemberNew {
   workingHours: 8 | 6; // 8 or 6 hours
   isActive: boolean;
   notes?: string;
+  role?: string;
+  salary?: number;
+  workload?: number;
   // Legacy fields for backward compatibility
   name?: string;
   startDate?: Date;
@@ -148,6 +151,26 @@ export function TeamTabModuleNew({
     });
   };
 
+  const enrichTeamMembers = useCallback((members: TeamMemberNew[]): TeamMemberNew[] => {
+    return members.map(member => {
+      const position = jobPositions.find(p => p.id === member.jobPositionId);
+      const calculatedSalary = member.salary && member.salary > 0
+        ? member.salary
+        : (member.workingHours === 8
+          ? (position?.salary8h || 0)
+          : (position?.salary6h || position?.salary8h || 0));
+
+      return {
+        ...member,
+        role: member.role || position?.name || member.jobPositionId,
+        salary: calculatedSalary,
+        workload: typeof member.workload === 'number'
+          ? member.workload
+          : (member.workingHours === 6 ? 30 : 40)
+      };
+    });
+  }, [jobPositions]);
+
   const handleEditMember = (member: TeamMemberNew) => {
     setEditingMember(member);
     setIsAddingMember(false);
@@ -178,10 +201,10 @@ export function TeamTabModuleNew({
       const updatedTeam = team.map(member => 
         member.id === editingMember.id ? memberData : member
       );
-      onUpdate(updatedTeam);
+      onUpdate(enrichTeamMembers(updatedTeam));
     } else {
       // Add new member
-      onUpdate([...team, memberData]);
+      onUpdate(enrichTeamMembers([...team, memberData]));
     }
 
     // Reset form
@@ -198,7 +221,7 @@ export function TeamTabModuleNew({
   const handleDeleteMember = (memberId: string) => {
     if (confirm('Tem certeza que deseja remover este membro da equipe?')) {
       const updatedTeam = team.filter(member => member.id !== memberId);
-      onUpdate(updatedTeam);
+      onUpdate(enrichTeamMembers(updatedTeam));
     }
   };
 
@@ -523,13 +546,13 @@ export function TeamTabModuleNew({
     });
 
     const finalTeam = [...dimensionedTeam, ...otherPositions];
-    onUpdate(finalTeam);
+    onUpdate(enrichTeamMembers(finalTeam));
 
     // Gerar escala básica automaticamente
     generateBasicSchedule(finalTeam, fullData);
 
     alert(`Equipe dimensionada com sucesso!\\n\\nN1: ${erlangResult.n1Agents} pessoas\\nN2: ${erlangResult.n2Agents} pessoas\\n\\nEscala básica gerada automaticamente!\\n\\nBaseado em ${Math.round(erlangResult.totalCallsPerMonth)} chamados/mês`);
-  }, [fullData, jobPositions, team, onUpdate]);
+  }, [fullData, jobPositions, team, onUpdate, enrichTeamMembers]);
 
   // Calculate team costs
   const teamCosts = useMemo(() => {

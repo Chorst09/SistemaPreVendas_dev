@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -27,6 +27,7 @@ export interface TaxesTabModuleProps {
 
 export function TaxesTabModule({ data, onUpdate, onAutoSave, validation, isLoading }: TaxesTabModuleProps) {
   const [calculationEngine] = useState(() => new ServiceDeskCalculationEngine());
+  const lastAutoSavedRef = useRef<string>(JSON.stringify(data));
   const [showTemplateDialog, setShowTemplateDialog] = useState(false);
   const [showCustomTaxDialog, setShowCustomTaxDialog] = useState(false);
   const [showSaveTemplateDialog, setShowSaveTemplateDialog] = useState(false);
@@ -60,7 +61,13 @@ export function TaxesTabModule({ data, onUpdate, onAutoSave, validation, isLoadi
   // Auto-save functionality
   useEffect(() => {
     if (onAutoSave) {
+      const serializedData = JSON.stringify(data);
+      if (serializedData === lastAutoSavedRef.current) {
+        return;
+      }
+
       const timer = setTimeout(() => {
+        lastAutoSavedRef.current = serializedData;
         onAutoSave(data);
       }, 1000);
       return () => clearTimeout(timer);

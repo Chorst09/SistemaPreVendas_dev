@@ -2,8 +2,15 @@ import { ServiceDeskData } from '../types/service-desk-pricing';
 
 // Cache key generator for calculations
 export const generateCacheKey = (data: any, operation: string): string => {
-  const dataHash = JSON.stringify(data);
-  return `${operation}_${btoa(dataHash).slice(0, 16)}`;
+  const serialized = JSON.stringify(data);
+  // FNV-1a 32-bit hash for deterministic, low-collision cache keys
+  let hash = 0x811c9dc5;
+  for (let i = 0; i < serialized.length; i++) {
+    hash ^= serialized.charCodeAt(i);
+    hash = (hash >>> 0) * 0x01000193;
+  }
+
+  return `${operation}_${(hash >>> 0).toString(16)}_${serialized.length}`;
 };
 
 // Cache entry interface

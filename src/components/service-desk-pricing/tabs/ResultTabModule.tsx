@@ -96,6 +96,14 @@ export function ResultTabModule({
 
   const calculationEngine = useMemo(() => new ServiceDeskCalculationEngine(), []);
   const reportTemplates = useMemo(() => ReportExportService.getTemplates(), []);
+  const areEqual = (left: any, right: any) => {
+    if (left === right) return true;
+    try {
+      return JSON.stringify(left) === JSON.stringify(right);
+    } catch {
+      return false;
+    }
+  };
 
   // Recalculate analysis when full data changes
   useEffect(() => {
@@ -115,17 +123,34 @@ export function ResultTabModule({
       // Calculate taxes
       const taxes = calculationEngine.calculateTaxes(fullData.budget.totalPrice, fullData.taxes);
       
-      // Calculate margins
-      const margins = calculationEngine.calculateMargins(
+      const fallbackMargins = calculationEngine.calculateMargins(
         teamCosts.totalMonthlyCost,
         fullData.budget.margin,
         fullData.otherCosts
       );
+      const margins = fullData.budget.totalPrice > 0
+        ? {
+            totalPrice: fullData.budget.totalPrice,
+            grossMargin: fullData.budget.totalPrice > 0
+              ? ((fullData.budget.totalPrice - fullData.budget.totalCosts) / fullData.budget.totalPrice) * 100
+              : 0,
+            netMargin: fullData.budget.totalPrice > 0
+              ? ((fullData.budget.totalPrice - fullData.budget.totalCosts - fullData.budget.taxes.total) / fullData.budget.totalPrice) * 100
+              : 0,
+            markup: fullData.budget.totalCosts > 0
+              ? ((fullData.budget.totalPrice - fullData.budget.totalCosts) / fullData.budget.totalCosts) * 100
+              : 0
+          }
+        : fallbackMargins;
 
       // Calculate ROI
-      const investment = fullData.budget.totalCosts;
-      const monthlyProfit = margins.totalPrice / 12 - (teamCosts.totalMonthlyCost + taxes.totalTaxes / 12);
-      const returns = Array(12).fill(monthlyProfit);
+      const investment = fullData.budget.totalCosts > 0
+        ? fullData.budget.totalCosts
+        : (teamCosts.totalMonthlyCost * 12);
+
+      const returns = fullData.budget.monthlyBreakdown?.length
+        ? fullData.budget.monthlyBreakdown.map(month => month.profit)
+        : Array(12).fill(margins.totalPrice / 12 - (teamCosts.totalMonthlyCost + taxes.totalTaxes / 12));
       const roi = calculationEngine.calculateROI(investment, returns);
 
       // Calculate payback
@@ -157,8 +182,10 @@ export function ResultTabModule({
       };
 
       setCalculatedAnalysis(newAnalysis);
-      onUpdate(newAnalysis);
-      onAutoSave(newAnalysis);
+      if (!areEqual(newAnalysis, data)) {
+        onUpdate(newAnalysis);
+        onAutoSave(newAnalysis);
+      }
 
     } catch (error) {
       console.error('Error calculating profitability analysis:', error);
@@ -267,7 +294,11 @@ export function ResultTabModule({
     const variables = [
       {
         name: 'Salários da Equipe',
-        baseValue: data.team.reduce((sum, member) => sum + member.salary, 0),
+        baseValue: data.team.reduce((sum, member) => {
+          const salary = Number(member.salary || 0);
+          const quantity = Number(member.quantity || 1);
+          return sum + (salary * quantity);
+        }, 0),
         variations: [-20, -10, -5, 5, 10, 20],
         impacts: [-15, -7.5, -3.75, 3.75, 7.5, 15]
       },
@@ -391,6 +422,78 @@ export function ResultTabModule({
     } as const;
     return variants[risk];
   };
+
+  const unitEconomicsByModel = useMemo(() => {
+    if (!fullData) return [];
+
+    const pricingModelConfig = fullData.budget?.pricingModel;
+    const comparisons = fullData.budget?.pricingModelComparisons || [];
+    const selectedModel = pricingModelConfig?.model || 'cost_plus_margin';
+
+    const contractMonths = Math.max(
+      1,
+      Number(
+        fullData.project?.contractPeriod?.durationMonths ||
+        fullData.budget?.monthlyBreakdown?.length ||
+        12
+      )
+    );
+
+    const projectedTicketsMonthly = Math.max(
+      0,
+      Number(
+        pricingModelConfig?.projectedTicketsMonthly ||
+        fullData.project?.generalInfo?.monthlyCalls ||
+        0
+      )
+    );
+
+    const totalTickets = Math.max(1, projectedTicketsMonthly * contractMonths);
+    const operationalCostContract = Math.max(0, Number(fullData.budget?.totalCosts || 0));
+    const currentRevenue = Math.max(1, Number(fullData.budget?.totalPrice || 1));
+
+    const rows = comparisons.length > 0
+      ? comparisons
+      : [{
+          model: selectedModel,
+          label: 'Modelo Atual',
+          contractRevenue: Number(fullData.budget?.totalPrice || 0),
+          monthlyRevenue: Number(fullData.budget?.totalPrice || 0) / contractMonths
+        }];
+
+    return rows.map((row: any) => {
+      const contractRevenue = Math.max(0, Number(row.contractRevenue || 0));
+
+      let taxesForModel = 0;
+      if (fullData.taxes) {
+        taxesForModel = calculationEngine.calculateTaxes(contractRevenue, fullData.taxes).totalTaxes;
+      } else {
+        const ratio = contractRevenue / currentRevenue;
+        taxesForModel = Number(fullData.budget?.taxes?.total || 0) * ratio;
+      }
+
+      const fullCost = operationalCostContract + taxesForModel;
+      const revenuePerTicket = contractRevenue / totalTickets;
+      const costPerTicket = fullCost / totalTickets;
+      const marginPerTicket = revenuePerTicket - costPerTicket;
+      const marginPercentage = revenuePerTicket > 0
+        ? (marginPerTicket / revenuePerTicket) * 100
+        : 0;
+
+      return {
+        model: row.model,
+        label: row.label || row.model,
+        isSelected: row.model === selectedModel,
+        projectedTicketsMonthly,
+        totalTickets,
+        contractRevenue,
+        revenuePerTicket,
+        costPerTicket,
+        marginPerTicket,
+        marginPercentage
+      };
+    });
+  }, [fullData, calculationEngine]);
 
   // Export functionality
   const handleExport = async (templateId: string) => {
@@ -592,6 +695,64 @@ export function ResultTabModule({
               </CardContent>
             </Card>
           </div>
+
+          {/* Unit Economics by Pricing Model */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Unit Economics por Modelo</CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Custo, receita e margem por ticket para cada estratégia de precificação
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {unitEconomicsByModel.length === 0 ? (
+                <p className="text-sm text-muted-foreground">
+                  Dados insuficientes para calcular unit economics.
+                </p>
+              ) : (
+                unitEconomicsByModel.map((row) => (
+                  <div
+                    key={row.model}
+                    className={`rounded-lg border p-3 ${
+                      row.isSelected ? 'border-primary bg-primary/5' : ''
+                    }`}
+                  >
+                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 mb-2">
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium">{row.label}</span>
+                        {row.isSelected && <Badge>Ativo</Badge>}
+                      </div>
+                      <span className="text-xs text-muted-foreground">
+                        Tickets/mês: {Math.round(row.projectedTicketsMonthly)} | Tickets no contrato: {Math.round(row.totalTickets)}
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-3 text-sm">
+                      <div>
+                        <div className="text-muted-foreground">Receita/Ticket</div>
+                        <div className="font-semibold">{formatCurrency(row.revenuePerTicket)}</div>
+                      </div>
+                      <div>
+                        <div className="text-muted-foreground">Custo/Ticket</div>
+                        <div className="font-semibold">{formatCurrency(row.costPerTicket)}</div>
+                      </div>
+                      <div>
+                        <div className="text-muted-foreground">Margem/Ticket</div>
+                        <div className={`font-semibold ${row.marginPerTicket >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                          {formatCurrency(row.marginPerTicket)}
+                        </div>
+                      </div>
+                      <div>
+                        <div className="text-muted-foreground">Margem %</div>
+                        <div className={`font-semibold ${row.marginPercentage >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                          {formatPercentage(row.marginPercentage)}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </CardContent>
+          </Card>
 
           {/* Charts */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

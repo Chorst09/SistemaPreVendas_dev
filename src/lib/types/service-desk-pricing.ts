@@ -649,6 +649,32 @@ export interface CostAllocation {
   percentages?: number[];
 }
 
+export type PricingModelType =
+  | 'cost_plus_margin'
+  | 'per_agent'
+  | 'per_user'
+  | 'per_ticket'
+  | 'hybrid';
+
+export interface PricingModelConfiguration {
+  model: PricingModelType;
+  agentRateMonthly: number;
+  userRateMonthly: number;
+  ticketRate: number;
+  baseRetainerMonthly: number;
+  projectedUsers: number;
+  projectedTicketsMonthly: number;
+  minimumMonthlyCharge: number;
+}
+
+export interface PricingModelComparison {
+  model: PricingModelType;
+  label: string;
+  monthlyRevenue: number;
+  contractRevenue: number;
+  estimatedMargin: number;
+}
+
 // Consolidated Budget (Tab 7: Orçamento)
 export interface ConsolidatedBudget {
   teamCosts: TeamCostSummary;
@@ -659,6 +685,8 @@ export interface ConsolidatedBudget {
   margin: MarginConfiguration;
   totalPrice: number;
   monthlyBreakdown: MonthlyBudget[];
+  pricingModel?: PricingModelConfiguration;
+  pricingModelComparisons?: PricingModelComparison[];
 }
 
 export interface TeamCostSummary {

@@ -1,5 +1,10 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { ServiceDeskData, ProjectStatus } from '@/lib/types/service-desk-pricing';
+import { ServiceDeskCalculationEngine } from '@/lib/services/service-desk-calculation-engine';
+import { ServiceDeskValidationEngine } from '@/lib/services/service-desk-validation-engine';
+import { ServiceDeskDataManager } from '@/lib/services/service-desk-data-manager';
+import { ServiceDeskPDFIntegration } from '@/lib/services/service-desk-pdf-integration';
+import { ServiceDeskMemoryManager } from '@/lib/services/service-desk-memory-manager';
 
 // Mock the service classes
 vi.mock('@/lib/services/service-desk-calculation-engine', () => ({
@@ -45,12 +50,24 @@ vi.mock('@/lib/services/service-desk-calculation-engine', () => ({
 
 vi.mock('@/lib/services/service-desk-validation-engine', () => ({
   ServiceDeskValidationEngine: vi.fn().mockImplementation(() => ({
-    validateTabData: vi.fn().mockReturnValue({
-      tabId: 'data',
-      isValid: true,
-      errors: [],
-      warnings: [],
-      completionPercentage: 100
+    validateTabData: vi.fn().mockImplementation((tabId, tabData) => {
+      if (tabId === 'data' && (!tabData?.name || !tabData?.client?.name)) {
+        return {
+          tabId,
+          isValid: false,
+          errors: [{ field: 'name', message: 'Nome obrigatório', code: 'REQUIRED_FIELD' }],
+          warnings: [],
+          completionPercentage: 50
+        };
+      }
+
+      return {
+        tabId,
+        isValid: true,
+        errors: [],
+        warnings: [],
+        completionPercentage: 100
+      };
     }),
     validateTransition: vi.fn().mockReturnValue({
       isValid: true,
@@ -111,6 +128,7 @@ vi.mock('@/lib/services/service-desk-pdf-integration', () => ({
   ServiceDeskPDFIntegration: vi.fn().mockImplementation(() => ({
     generateProposal: vi.fn().mockResolvedValue({
       success: true,
+      pdfBlob: new Blob(['test-pdf']),
       pdfUrl: 'blob:test-pdf-url',
       metadata: { pages: 5, size: 1024 }
     }),
@@ -281,10 +299,6 @@ describe('Service Desk Services Integration Tests', () => {
 
   describe('Services Integration Flow', () => {
     it('should integrate calculation, validation, and data management services', async () => {
-      const { ServiceDeskCalculationEngine } = require('@/lib/services/service-desk-calculation-engine');
-      const { ServiceDeskValidationEngine } = require('@/lib/services/service-desk-validation-engine');
-      const { ServiceDeskDataManager } = require('@/lib/services/service-desk-data-manager');
-
       const calculationEngine = new ServiceDeskCalculationEngine();
       const validationEngine = new ServiceDeskValidationEngine();
       const dataManager = new ServiceDeskDataManager();
@@ -305,7 +319,6 @@ describe('Service Desk Services Integration Tests', () => {
     });
 
     it('should handle validation failures in service integration', () => {
-      const { ServiceDeskValidationEngine } = require('@/lib/services/service-desk-validation-engine');
       const validationEngine = new ServiceDeskValidationEngine();
 
       const invalidData = {
@@ -322,9 +335,6 @@ describe('Service Desk Services Integration Tests', () => {
 
   describe('Data Flow Integration', () => {
     it('should maintain data consistency across service operations', async () => {
-      const { ServiceDeskDataManager } = require('@/lib/services/service-desk-data-manager');
-      const { ServiceDeskCalculationEngine } = require('@/lib/services/service-desk-calculation-engine');
-
       const dataManager = new ServiceDeskDataManager();
       const calculationEngine = new ServiceDeskCalculationEngine();
 
@@ -360,7 +370,6 @@ describe('Service Desk Services Integration Tests', () => {
     });
 
     it('should handle cascading calculations correctly', () => {
-      const { ServiceDeskCalculationEngine } = require('@/lib/services/service-desk-calculation-engine');
       const calculationEngine = new ServiceDeskCalculationEngine();
 
       // Calculate team costs
@@ -382,7 +391,6 @@ describe('Service Desk Services Integration Tests', () => {
     it('should integrate auto-save functionality with data manager', async () => {
       vi.useFakeTimers();
       
-      const { ServiceDeskDataManager } = require('@/lib/services/service-desk-data-manager');
       const dataManager = new ServiceDeskDataManager();
       
       const scheduleAutoSaveSpy = vi.spyOn(dataManager, 'scheduleAutoSave');
@@ -403,7 +411,6 @@ describe('Service Desk Services Integration Tests', () => {
     it('should handle auto-save errors in service integration', async () => {
       const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
       
-      const { ServiceDeskDataManager } = require('@/lib/services/service-desk-data-manager');
       const dataManager = new ServiceDeskDataManager();
       
       // Mock persistence to fail
@@ -418,7 +425,6 @@ describe('Service Desk Services Integration Tests', () => {
 
   describe('PDF Integration', () => {
     it('should integrate PDF generation with service desk data', async () => {
-      const { ServiceDeskPDFIntegration } = require('@/lib/services/service-desk-pdf-integration');
       const pdfIntegration = new ServiceDeskPDFIntegration();
 
       const result = await pdfIntegration.generateProposal(mockData, 'standard');
@@ -429,7 +435,7 @@ describe('Service Desk Services Integration Tests', () => {
     });
 
     it('should handle PDF generation errors in service integration', async () => {
-      const mockPDFIntegration = vi.mocked(require('@/lib/services/service-desk-pdf-integration').ServiceDeskPDFIntegration);
+      const mockPDFIntegration = vi.mocked(ServiceDeskPDFIntegration);
       mockPDFIntegration.mockImplementation(() => ({
         generateProposal: vi.fn().mockRejectedValue(new Error('PDF generation failed')),
         mapServiceDeskDataToProposal: vi.fn()
@@ -444,7 +450,6 @@ describe('Service Desk Services Integration Tests', () => {
 
   describe('Memory Management Integration', () => {
     it('should integrate memory optimization with data operations', () => {
-      const { ServiceDeskMemoryManager } = require('@/lib/services/service-desk-memory-manager');
       const memoryManager = ServiceDeskMemoryManager.getInstance();
 
       const optimizedData = memoryManager.optimizeServiceDeskData(mockData);
@@ -456,7 +461,6 @@ describe('Service Desk Services Integration Tests', () => {
     });
 
     it('should handle cleanup in service integration', () => {
-      const { ServiceDeskDataManager } = require('@/lib/services/service-desk-data-manager');
       const dataManager = new ServiceDeskDataManager();
 
       // Should not throw during cleanup
@@ -466,8 +470,8 @@ describe('Service Desk Services Integration Tests', () => {
 
   describe('Error Handling Integration', () => {
     it('should handle calculation engine errors gracefully', () => {
-      const mockCalculationEngine = vi.mocked(require('@/lib/services/service-desk-calculation-engine').ServiceDeskCalculationEngine);
-      mockCalculationEngine.mockImplementation(() => ({
+      const mockCalculationEngine = vi.mocked(ServiceDeskCalculationEngine);
+      mockCalculationEngine.mockImplementationOnce(() => ({
         calculateTeamCosts: vi.fn().mockImplementation(() => {
           throw new Error('Calculation failed');
         }),
@@ -488,7 +492,6 @@ describe('Service Desk Services Integration Tests', () => {
     });
 
     it('should handle data loading errors in service integration', async () => {
-      const { ServiceDeskDataManager } = require('@/lib/services/service-desk-data-manager');
       const dataManager = new ServiceDeskDataManager();
       
       // Mock loadData to fail
@@ -527,9 +530,6 @@ describe('Service Desk Services Integration Tests', () => {
         }))
       };
 
-      const { ServiceDeskCalculationEngine } = require('@/lib/services/service-desk-calculation-engine');
-      const { ServiceDeskValidationEngine } = require('@/lib/services/service-desk-validation-engine');
-      
       const calculationEngine = new ServiceDeskCalculationEngine();
       const validationEngine = new ServiceDeskValidationEngine();
 

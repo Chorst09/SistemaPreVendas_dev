@@ -19,7 +19,10 @@ import {
   TeamCostSummary,
   TaxSummary,
   ValidationResult,
-  ServiceDeskData
+  ServiceDeskData,
+  PricingModelConfiguration,
+  PricingModelComparison,
+  PricingModelType
 } from '@/lib/types/service-desk-pricing';
 import { ServiceDeskCalculationEngine } from '@/lib/services/service-desk-calculation-engine';
 import { BudgetComparisonService, BudgetComparison, BudgetAlert, BudgetRecommendation } from '@/lib/services/budget-comparison-service';
@@ -55,7 +58,39 @@ export interface BudgetTabModuleProps {
   projectData?: any;
 }
 
-// Remove the local interface since we're importing it from the service
+const DEFAULT_PRICING_MODEL_CONFIGURATION: PricingModelConfiguration = {
+  model: 'cost_plus_margin',
+  agentRateMonthly: 2200,
+  userRateMonthly: 55,
+  ticketRate: 18,
+  baseRetainerMonthly: 25000,
+  projectedUsers: 200,
+  projectedTicketsMonthly: 1200,
+  minimumMonthlyCharge: 0
+};
+
+const PRICING_MODEL_LABELS: Record<PricingModelType, string> = {
+  cost_plus_margin: 'Custo + Margem',
+  per_agent: 'Por Agente',
+  per_user: 'Por Usuário',
+  per_ticket: 'Por Ticket',
+  hybrid: 'Híbrido'
+};
+
+const sanitizePricingModelConfig = (
+  config?: Partial<PricingModelConfiguration>
+): PricingModelConfiguration => ({
+  ...DEFAULT_PRICING_MODEL_CONFIGURATION,
+  ...config,
+  model: config?.model || DEFAULT_PRICING_MODEL_CONFIGURATION.model,
+  agentRateMonthly: Math.max(0, Number(config?.agentRateMonthly ?? DEFAULT_PRICING_MODEL_CONFIGURATION.agentRateMonthly)),
+  userRateMonthly: Math.max(0, Number(config?.userRateMonthly ?? DEFAULT_PRICING_MODEL_CONFIGURATION.userRateMonthly)),
+  ticketRate: Math.max(0, Number(config?.ticketRate ?? DEFAULT_PRICING_MODEL_CONFIGURATION.ticketRate)),
+  baseRetainerMonthly: Math.max(0, Number(config?.baseRetainerMonthly ?? DEFAULT_PRICING_MODEL_CONFIGURATION.baseRetainerMonthly)),
+  projectedUsers: Math.max(0, Number(config?.projectedUsers ?? DEFAULT_PRICING_MODEL_CONFIGURATION.projectedUsers)),
+  projectedTicketsMonthly: Math.max(0, Number(config?.projectedTicketsMonthly ?? DEFAULT_PRICING_MODEL_CONFIGURATION.projectedTicketsMonthly)),
+  minimumMonthlyCharge: Math.max(0, Number(config?.minimumMonthlyCharge ?? DEFAULT_PRICING_MODEL_CONFIGURATION.minimumMonthlyCharge))
+});
 
 export function BudgetTabModule({
   data,
@@ -69,7 +104,11 @@ export function BudgetTabModule({
   otherCostsData = [],
   projectData = {}
 }: BudgetTabModuleProps) {
-  const [localData, setLocalData] = useState<ConsolidatedBudget>(data);
+  const [localData, setLocalData] = useState<ConsolidatedBudget>({
+    ...data,
+    pricingModel: sanitizePricingModelConfig(data?.pricingModel),
+    pricingModelComparisons: data?.pricingModelComparisons || []
+  });
   const [activeView, setActiveView] = useState<'overview' | 'details' | 'comparison' | 'settings'>('overview');
   const [isRecalculating, setIsRecalculating] = useState(false);
   const [showOptimizations, setShowOptimizations] = useState(false);
@@ -79,10 +118,22 @@ export function BudgetTabModule({
 
   const calculationEngine = useMemo(() => new ServiceDeskCalculationEngine(), []);
   const comparisonService = useMemo(() => new BudgetComparisonService(), []);
+  const contractPeriod = useMemo(
+    () => Math.max(1, Number(projectData?.contractPeriod?.durationMonths || 12)),
+    [projectData]
+  );
+  const teamHeadcount = useMemo(
+    () => teamData.reduce((sum: number, member: any) => sum + Math.max(1, Number(member?.quantity || 1)), 0),
+    [teamData]
+  );
 
   // Initialize local data and load comparison data
   useEffect(() => {
-    setLocalData(data);
+    setLocalData({
+      ...data,
+      pricingModel: sanitizePricingModelConfig(data?.pricingModel),
+      pricingModelComparisons: data?.pricingModelComparisons || []
+    });
     
     // Load previous budgets from localStorage (in a real app, this would come from an API)
     const loadPreviousBudgets = () => {
@@ -119,49 +170,215 @@ export function BudgetTabModule({
     return () => clearTimeout(timer);
   }, [localData, data, onAutoSave]);
 
+  const calculateContractRevenueByModel = useCallback((
+    modelConfig: PricingModelConfiguration,
+    costPlusRevenue: number
+  ) => {
+    const agentRevenue = teamHeadcount * modelConfig.agentRateMonthly;
+    const userRevenue = modelConfig.projectedUsers * modelConfig.userRateMonthly;
+    const ticketRevenue = modelConfig.projectedTicketsMonthly * modelConfig.ticketRate;
+
+    let monthlyRevenue = 0;
+    switch (modelConfig.model) {
+      case 'per_agent':
+        monthlyRevenue = agentRevenue;
+        break;
+      case 'per_user':
+        monthlyRevenue = userRevenue;
+        break;
+      case 'per_ticket':
+        monthlyRevenue = ticketRevenue;
+        break;
+      case 'hybrid':
+        monthlyRevenue = modelConfig.baseRetainerMonthly + agentRevenue + userRevenue + ticketRevenue;
+        break;
+      case 'cost_plus_margin':
+      default:
+        monthlyRevenue = costPlusRevenue / contractPeriod;
+        break;
+    }
+
+    const monthlyWithMinimum = Math.max(monthlyRevenue, modelConfig.minimumMonthlyCharge);
+    return monthlyWithMinimum * contractPeriod;
+  }, [teamHeadcount, contractPeriod]);
+
+  const buildPricingModelComparisons = useCallback((
+    modelConfig: PricingModelConfiguration,
+    costPlusRevenue: number,
+    totalCosts: number
+  ): PricingModelComparison[] => {
+    const models: PricingModelType[] = ['cost_plus_margin', 'per_agent', 'per_user', 'per_ticket', 'hybrid'];
+    return models.map((model) => {
+      const configForModel = { ...modelConfig, model };
+      const contractRevenue = calculateContractRevenueByModel(configForModel, costPlusRevenue);
+      const monthlyRevenue = contractRevenue / contractPeriod;
+      const estimatedMargin = contractRevenue > 0
+        ? ((contractRevenue - totalCosts) / contractRevenue) * 100
+        : 0;
+
+      return {
+        model,
+        label: PRICING_MODEL_LABELS[model],
+        monthlyRevenue,
+        contractRevenue,
+        estimatedMargin
+      };
+    });
+  }, [calculateContractRevenueByModel, contractPeriod]);
+
+  const buildTaxSummary = useCallback((taxResult: any) => {
+    const breakdown = taxResult?.breakdown || [];
+    return {
+      federal: breakdown
+        .filter((t: any) => ['PIS', 'COFINS', 'IR', 'CSLL'].includes(t.taxName))
+        .reduce((sum: number, t: any) => sum + t.amount, 0),
+      state: breakdown
+        .filter((t: any) => t.taxName === 'ICMS')
+        .reduce((sum: number, t: any) => sum + t.amount, 0),
+      municipal: breakdown
+        .filter((t: any) => t.taxName === 'ISS')
+        .reduce((sum: number, t: any) => sum + t.amount, 0),
+      total: Number(taxResult?.totalTaxes || 0),
+      breakdown
+    };
+  }, []);
+
+  const applyPricingModelToBudget = useCallback((
+    baseBudget: ConsolidatedBudget,
+    modelConfig: PricingModelConfiguration
+  ): ConsolidatedBudget => {
+    const costPlusRevenue = calculationEngine.calculateMargins(
+      Math.max(0, baseBudget.totalCosts || 0),
+      baseBudget.margin
+    ).totalPrice;
+
+    const selectedContractRevenue = calculateContractRevenueByModel(modelConfig, costPlusRevenue);
+    const safeRevenue = Number.isFinite(selectedContractRevenue) ? Math.max(0, selectedContractRevenue) : 0;
+
+    let taxResult: any;
+    if (taxData && Object.keys(taxData).length > 0) {
+      taxResult = calculationEngine.calculateTaxes(safeRevenue, taxData);
+    } else {
+      const currentRevenue = Math.max(1, baseBudget.totalPrice || costPlusRevenue);
+      const ratio = safeRevenue / currentRevenue;
+      taxResult = {
+        totalTaxes: baseBudget.taxes.total * ratio,
+        breakdown: baseBudget.taxes.breakdown.map((tax) => ({
+          ...tax,
+          base: safeRevenue,
+          amount: tax.amount * ratio
+        }))
+      };
+    }
+
+    const monthlyRevenue = safeRevenue / contractPeriod;
+    const monthlyTaxes = (taxResult.totalTaxes || 0) / contractPeriod;
+    const monthlyBreakdown = baseBudget.monthlyBreakdown.map((month) => {
+      const profit = monthlyRevenue - month.totalCosts - monthlyTaxes;
+      const margin = monthlyRevenue > 0 ? (profit / monthlyRevenue) * 100 : 0;
+      return {
+        ...month,
+        revenue: monthlyRevenue,
+        taxes: monthlyTaxes,
+        profit,
+        margin
+      };
+    });
+
+    const taxSummary = buildTaxSummary(taxResult);
+    const pricingModelComparisons = buildPricingModelComparisons(modelConfig, costPlusRevenue, baseBudget.totalCosts);
+
+    return {
+      ...baseBudget,
+      totalPrice: safeRevenue,
+      taxes: taxSummary,
+      monthlyBreakdown,
+      pricingModel: modelConfig,
+      pricingModelComparisons
+    };
+  }, [
+    calculationEngine,
+    calculateContractRevenueByModel,
+    taxData,
+    contractPeriod,
+    buildTaxSummary,
+    buildPricingModelComparisons
+  ]);
+
   // Recalculate budget when dependencies change
   const recalculateBudget = useCallback(async () => {
-    if (!teamData.length || !taxData) return;
+    if (!teamData.length || !taxData || Object.keys(taxData).length === 0) return;
 
     setIsRecalculating(true);
     try {
       // Calculate team costs
       const teamCosts = calculationEngine.calculateTeamCosts(teamData, scheduleData);
-      
-      // Calculate taxes (estimate based on current total price)
-      const taxes = calculationEngine.calculateTaxes(localData.totalPrice, taxData);
-      
-      // Calculate consolidated budget
+
       const contractPeriod = projectData?.contractPeriod?.durationMonths || 12;
+      const safeContractPeriod = Math.max(1, contractPeriod);
+
+      const marginValue = localData.margin.type === 'percentage'
+        ? Math.min(Math.max(localData.margin.value || 0, 0), 95)
+        : null;
+
+      const fallbackRevenueEstimate = marginValue !== null
+        ? (teamCosts.totalMonthlyCost * safeContractPeriod) / (1 - marginValue / 100)
+        : (teamCosts.totalMonthlyCost * safeContractPeriod) + Math.max(0, localData.margin.value || 0);
+
+      const taxBaseRevenue = localData.totalPrice > 0 ? localData.totalPrice : fallbackRevenueEstimate;
+
+      // Calculate taxes using a consistent contract-level revenue estimate
+      const taxes = calculationEngine.calculateTaxes(taxBaseRevenue, taxData);
+
+      // Calculate consolidated budget
       const consolidatedBudget = calculationEngine.calculateConsolidatedBudget(
         teamCosts,
         otherCostsData,
         taxes,
         localData.margin,
-        contractPeriod
+        safeContractPeriod
       );
+      const modelConfig = sanitizePricingModelConfig(localData.pricingModel);
+      const budgetWithModel = applyPricingModelToBudget(consolidatedBudget, modelConfig);
 
-      setLocalData(consolidatedBudget);
-      onUpdate(consolidatedBudget);
+      setLocalData(budgetWithModel);
+      onUpdate(budgetWithModel);
     } catch (error) {
       console.error('Error recalculating budget:', error);
     } finally {
       setIsRecalculating(false);
     }
-  }, [teamData, scheduleData, taxData, otherCostsData, projectData, localData.margin, calculationEngine, onUpdate]);
+  }, [
+    teamData,
+    scheduleData,
+    taxData,
+    otherCostsData,
+    projectData,
+    localData.margin,
+    localData.pricingModel,
+    calculationEngine,
+    onUpdate,
+    applyPricingModelToBudget
+  ]);
 
   // Handle margin configuration changes
   const handleMarginChange = useCallback((field: keyof MarginConfiguration, value: any) => {
     const updatedMargin = { ...localData.margin, [field]: value };
-    const updatedData = { ...localData, margin: updatedMargin };
-    
-    // Recalculate total price based on new margin
-    const totalCosts = localData.teamCosts.total + localData.otherCosts;
-    const margins = calculationEngine.calculateMargins(totalCosts, updatedMargin, otherCostsData);
-    updatedData.totalPrice = margins.totalPrice;
-    
+    const baseBudget: ConsolidatedBudget = { ...localData, margin: updatedMargin };
+    const modelConfig = sanitizePricingModelConfig(localData.pricingModel);
+    const updatedData = applyPricingModelToBudget(baseBudget, modelConfig);
     setLocalData(updatedData);
-  }, [localData, calculationEngine, otherCostsData]);
+  }, [localData, applyPricingModelToBudget]);
+
+  const handlePricingModelConfigChange = useCallback((field: keyof PricingModelConfiguration, value: any) => {
+    const currentConfig = sanitizePricingModelConfig(localData.pricingModel);
+    const nextConfig = sanitizePricingModelConfig({
+      ...currentConfig,
+      [field]: field === 'model' ? value : Number(value || 0)
+    });
+    const updatedData = applyPricingModelToBudget(localData, nextConfig);
+    setLocalData(updatedData);
+  }, [localData, applyPricingModelToBudget]);
 
   // Calculate budget health indicators
   const budgetHealth = useMemo(() => {
@@ -181,6 +398,29 @@ export function BudgetTabModule({
       ]
     };
   }, [localData]);
+
+  const pricingModelConfig = useMemo(
+    () => sanitizePricingModelConfig(localData.pricingModel),
+    [localData.pricingModel]
+  );
+
+  const pricingModelComparisons = useMemo(() => {
+    if (localData.pricingModelComparisons && localData.pricingModelComparisons.length > 0) {
+      return localData.pricingModelComparisons;
+    }
+
+    const costPlusRevenue = calculationEngine.calculateMargins(
+      Math.max(0, localData.totalCosts || 0),
+      localData.margin
+    ).totalPrice;
+
+    return buildPricingModelComparisons(pricingModelConfig, costPlusRevenue, localData.totalCosts);
+  }, [localData, calculationEngine, pricingModelConfig, buildPricingModelComparisons]);
+
+  const selectedPricingModelComparison = useMemo(
+    () => pricingModelComparisons.find((item) => item.model === pricingModelConfig.model),
+    [pricingModelComparisons, pricingModelConfig.model]
+  );
 
   // Generate optimization suggestions from comparison service
   const optimizationSuggestions = useMemo(() => {
@@ -449,6 +689,27 @@ export function BudgetTabModule({
               </CardContent>
             </Card>
           </div>
+
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base flex items-center gap-2">
+                <Target className="h-4 w-4" />
+                Modelo de Precificação Ativo
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+              <div className="space-y-1">
+                <Badge variant="secondary">{PRICING_MODEL_LABELS[pricingModelConfig.model]}</Badge>
+                <p className="text-sm text-muted-foreground">
+                  Receita mensal estimada: {formatCurrency(selectedPricingModelComparison?.monthlyRevenue || 0)}
+                </p>
+              </div>
+              <div className="text-sm">
+                <div>Receita contrato: <strong>{formatCurrency(selectedPricingModelComparison?.contractRevenue || localData.totalPrice)}</strong></div>
+                <div>Margem estimada: <strong>{formatPercentage(selectedPricingModelComparison?.estimatedMargin || budgetHealth.marginPercentage)}</strong></div>
+              </div>
+            </CardContent>
+          </Card>
 
           {/* Monthly breakdown chart */}
           <Card>
@@ -911,6 +1172,119 @@ export function BudgetTabModule({
               <Separator />
 
               <div className="space-y-4">
+                <h4 className="font-medium">Modelo de Precificação Moderno</h4>
+
+                <div>
+                  <Label htmlFor="pricing-model">Modelo</Label>
+                  <Select
+                    value={pricingModelConfig.model}
+                    onValueChange={(value: PricingModelType) => handlePricingModelConfigChange('model', value)}
+                  >
+                    <SelectTrigger id="pricing-model">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="cost_plus_margin">Custo + Margem</SelectItem>
+                      <SelectItem value="per_agent">Por Agente</SelectItem>
+                      <SelectItem value="per_user">Por Usuário</SelectItem>
+                      <SelectItem value="per_ticket">Por Ticket</SelectItem>
+                      <SelectItem value="hybrid">Híbrido</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {(pricingModelConfig.model === 'per_agent' || pricingModelConfig.model === 'hybrid') && (
+                  <div>
+                    <Label htmlFor="agent-rate">Valor por agente/mês (R$)</Label>
+                    <Input
+                      id="agent-rate"
+                      type="number"
+                      step="10"
+                      value={pricingModelConfig.agentRateMonthly}
+                      onChange={(e) => handlePricingModelConfigChange('agentRateMonthly', e.target.value)}
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Headcount atual considerado: {teamHeadcount} agentes
+                    </p>
+                  </div>
+                )}
+
+                {(pricingModelConfig.model === 'per_user' || pricingModelConfig.model === 'hybrid') && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="projected-users">Usuários projetados</Label>
+                      <Input
+                        id="projected-users"
+                        type="number"
+                        value={pricingModelConfig.projectedUsers}
+                        onChange={(e) => handlePricingModelConfigChange('projectedUsers', e.target.value)}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="user-rate">Valor por usuário/mês (R$)</Label>
+                      <Input
+                        id="user-rate"
+                        type="number"
+                        step="1"
+                        value={pricingModelConfig.userRateMonthly}
+                        onChange={(e) => handlePricingModelConfigChange('userRateMonthly', e.target.value)}
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {(pricingModelConfig.model === 'per_ticket' || pricingModelConfig.model === 'hybrid') && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="projected-tickets">Tickets projetados/mês</Label>
+                      <Input
+                        id="projected-tickets"
+                        type="number"
+                        value={pricingModelConfig.projectedTicketsMonthly}
+                        onChange={(e) => handlePricingModelConfigChange('projectedTicketsMonthly', e.target.value)}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="ticket-rate">Valor por ticket (R$)</Label>
+                      <Input
+                        id="ticket-rate"
+                        type="number"
+                        step="0.1"
+                        value={pricingModelConfig.ticketRate}
+                        onChange={(e) => handlePricingModelConfigChange('ticketRate', e.target.value)}
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {pricingModelConfig.model === 'hybrid' && (
+                  <div>
+                    <Label htmlFor="base-retainer">Retainer base mensal (R$)</Label>
+                    <Input
+                      id="base-retainer"
+                      type="number"
+                      step="100"
+                      value={pricingModelConfig.baseRetainerMonthly}
+                      onChange={(e) => handlePricingModelConfigChange('baseRetainerMonthly', e.target.value)}
+                    />
+                  </div>
+                )}
+
+                <div>
+                  <Label htmlFor="minimum-charge">Piso mensal de cobrança (R$)</Label>
+                  <Input
+                    id="minimum-charge"
+                    type="number"
+                    step="100"
+                    value={pricingModelConfig.minimumMonthlyCharge}
+                    onChange={(e) => handlePricingModelConfigChange('minimumMonthlyCharge', e.target.value)}
+                  />
+                </div>
+              </div>
+
+              <Separator />
+
+              <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <Label htmlFor="auto-recalc">Recálculo Automático</Label>
                   <Switch id="auto-recalc" defaultChecked />
@@ -921,6 +1295,35 @@ export function BudgetTabModule({
                   <Switch id="show-warnings" defaultChecked />
                 </div>
               </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Comparação de Modelos (Lado a Lado)</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {pricingModelComparisons.map((comparison) => (
+                <div
+                  key={comparison.model}
+                  className={`p-3 border rounded-lg ${
+                    comparison.model === pricingModelConfig.model ? 'border-primary bg-primary/5' : ''
+                  }`}
+                >
+                  <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+                    <div>
+                      <div className="font-medium">{comparison.label}</div>
+                      <div className="text-xs text-muted-foreground">
+                        Receita mensal: {formatCurrency(comparison.monthlyRevenue)}
+                      </div>
+                    </div>
+                    <div className="text-sm">
+                      <div>Contrato: <strong>{formatCurrency(comparison.contractRevenue)}</strong></div>
+                      <div>Margem: <strong>{formatPercentage(comparison.estimatedMargin)}</strong></div>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </CardContent>
           </Card>
 

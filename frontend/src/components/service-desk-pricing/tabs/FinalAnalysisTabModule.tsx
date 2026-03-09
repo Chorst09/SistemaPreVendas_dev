@@ -127,6 +127,14 @@ export function FinalAnalysisTabModule({
   const [showPdfOptions, setShowPdfOptions] = useState(false);
 
   const calculationEngine = useMemo(() => new ServiceDeskCalculationEngine(), []);
+  const areEqual = useCallback((left: any, right: any) => {
+    if (left === right) return true;
+    try {
+      return JSON.stringify(left) === JSON.stringify(right);
+    } catch {
+      return false;
+    }
+  }, []);
 
   // Generate dashboard data from full project data
   useEffect(() => {
@@ -137,10 +145,10 @@ export function FinalAnalysisTabModule({
 
   // Auto-save dashboard when it changes
   useEffect(() => {
-    if (dashboard && dashboard !== data) {
+    if (dashboard && !areEqual(dashboard, data)) {
       onAutoSave(dashboard);
     }
-  }, [dashboard, data, onAutoSave]);
+  }, [dashboard, data, onAutoSave, areEqual]);
 
   const createEmptyDashboard = useCallback((): ExecutiveDashboard => ({
     kpis: [],
@@ -185,11 +193,13 @@ export function FinalAnalysisTabModule({
       };
 
       setDashboard(newDashboard);
-      onUpdate(newDashboard);
+      if (!areEqual(newDashboard, data)) {
+        onUpdate(newDashboard);
+      }
     } catch (error) {
       console.error('Error generating dashboard data:', error);
     }
-  }, [fullData, onUpdate]);
+  }, [fullData, onUpdate, areEqual, data]);
 
   const generateKPIs = useCallback((projectData: ServiceDeskData): KPI[] => {
     const kpis: KPI[] = [];

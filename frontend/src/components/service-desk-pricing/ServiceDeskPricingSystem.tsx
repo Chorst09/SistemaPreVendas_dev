@@ -1,7 +1,7 @@
 // @ts-nocheck
 'use client';
 
-import React, { useState, useCallback, useMemo, useEffect, Suspense } from 'react';
+import React, { useState, useCallback, useMemo, useEffect, useRef, Suspense } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
@@ -187,16 +187,15 @@ export function ServiceDeskPricingSystem({
 }: ServiceDeskPricingSystemProps) {
   // Early return for SSR - prevent localStorage access on server
   const [isMounted, setIsMounted] = useState(false);
-  
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
 
   const [data, setData] = useState<ServiceDeskData>(
     initialData || ServiceDeskDataManager.createEmptyData()
   );
   const [validationStatus, setValidationStatus] = useState<Record<string, TabValidationStatus>>({});
   const [isLoading, setIsLoading] = useState(false);
+  const isComponentMountedRef = useRef(false);
+  const dataRef = useRef<ServiceDeskData>(data);
+  const loadingOperationsRef = useRef(0);
 
   // Template management state
   const [showTemplateManager, setShowTemplateManager] = useState(false);
@@ -236,6 +235,45 @@ export function ServiceDeskPricingSystem({
   const templateService = useMemo(() => new ServiceDeskTemplateService(), []);
   const analyticsService = useMemo(() => new ServiceDeskAnalyticsService(), []);
   const { createQuoteFromPricingData } = usePricingIntegration();
+
+  useEffect(() => {
+    isComponentMountedRef.current = true;
+    setIsMounted(true);
+
+    return () => {
+      isComponentMountedRef.current = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    dataRef.current = data;
+  }, [data]);
+
+  const setLoadingSafely = useCallback((value: boolean) => {
+    if (!isComponentMountedRef.current) return;
+    setIsLoading(value);
+  }, []);
+
+  const beginLoadingOperation = useCallback(() => {
+    loadingOperationsRef.current += 1;
+    setLoadingSafely(true);
+  }, [setLoadingSafely]);
+
+  const endLoadingOperation = useCallback(() => {
+    loadingOperationsRef.current = Math.max(0, loadingOperationsRef.current - 1);
+    if (loadingOperationsRef.current === 0) {
+      setLoadingSafely(false);
+    }
+  }, [setLoadingSafely]);
+
+  const areValuesEqual = useCallback((left: any, right: any) => {
+    if (left === right) return true;
+    try {
+      return JSON.stringify(left) === JSON.stringify(right);
+    } catch {
+      return false;
+    }
+  }, []);
 
   // Enhanced navigation with validation
   const navigation = useServiceDeskNavigation({
@@ -317,7 +355,7 @@ export function ServiceDeskPricingSystem({
   useEffect(() => {
     const initializeData = async () => {
       try {
-        setIsLoading(true);
+        beginLoadingOperation();
         
         // Preload critical tabs for better performance
         await preloadCriticalTabs();
@@ -338,6 +376,7 @@ export function ServiceDeskPricingSystem({
         // Load existing data if no initial data provided
         if (!initialData) {
           const loadedData = await dataManager.loadData();
+          dataRef.current = loadedData;
           setData(loadedData);
           
           // Validate all tabs
@@ -358,7 +397,7 @@ export function ServiceDeskPricingSystem({
         console.error('Error initializing data:', error);
         showNotification('error', 'Erro ao inicializar o sistema. Tente recarregar a página.');
       } finally {
-        setIsLoading(false);
+        endLoadingOperation();
       }
     };
 
@@ -369,7 +408,7 @@ export function ServiceDeskPricingSystem({
       dataManager.cleanup();
       batchCalculationManager.clearBatch();
     };
-  }, [initialData, dataManager, validationEngine]);
+  }, [initialData, dataManager, validationEngine, beginLoadingOperation, endLoadingOperation]);
 
   // Create backup when data changes significantly
   useEffect(() => {
@@ -392,7 +431,12 @@ export function ServiceDeskPricingSystem({
     const startTime = Date.now();
     
     try {
-      setIsLoading(true);
+      const currentTabData = dataManager.getTabData(dataRef.current, tabId);
+      if (areValuesEqual(currentTabData, tabData)) {
+        return;
+      }
+
+      beginLoadingOperation();
       
       // Track data operation start
       analyticsService.trackEvent({
@@ -404,7 +448,8 @@ export function ServiceDeskPricingSystem({
       });
       
       // Update data
-      const updatedData = dataManager.updateTabData(data, tabId, tabData);
+      const updatedData = dataManager.updateTabData(dataRef.current, tabId, tabData);
+      dataRef.current = updatedData;
       setData(updatedData);
       
       // Invalidate related caches when data changes
@@ -471,15 +516,21 @@ export function ServiceDeskPricingSystem({
       
       console.error('Error updating data:', error);
     } finally {
-      setIsLoading(false);
+      endLoadingOperation();
     }
-  }, [data, dataManager, validationEngine, onDataChange, calculationCache, analyticsService]);
+  }, [dataManager, validationEngine, onDataChange, calculationCache, analyticsService, beginLoadingOperation, endLoadingOperation, areValuesEqual]);
 
   // Handle auto-save from tabs with enhanced debouncing
   const handleAutoSave = useCallback(async (tabId: string, tabData: any) => {
     try {
+      const currentTabData = dataManager.getTabData(dataRef.current, tabId);
+      if (areValuesEqual(currentTabData, tabData)) {
+        return;
+      }
+
       // Update data without loading state for auto-save
-      const updatedData = dataManager.updateTabData(data, tabId, tabData);
+      const updatedData = dataManager.updateTabData(dataRef.current, tabId, tabData);
+      dataRef.current = updatedData;
       setData(updatedData);
       
       // Use batch calculation manager for performance
@@ -504,7 +555,7 @@ export function ServiceDeskPricingSystem({
     } catch (error) {
       console.error('Error during auto-save:', error);
     }
-  }, [data, dataManager, validationEngine, onDataChange, calculationCache]);
+  }, [dataManager, validationEngine, onDataChange, calculationCache, areValuesEqual]);
 
   // Handle tab navigation with enhanced validation and preloading
   const handleTabChange = useCallback(async (newTab: string) => {
@@ -545,7 +596,7 @@ export function ServiceDeskPricingSystem({
     resolutions: Record<string, ConflictResolution>
   ) => {
     try {
-      setIsLoading(true);
+      beginLoadingOperation();
       
       // Apply conflict resolutions
       let updatedData = { ...application.targetData };
@@ -566,6 +617,7 @@ export function ServiceDeskPricingSystem({
       });
 
       // Update data
+      dataRef.current = updatedData;
       setData(updatedData);
       
       // Persist data
@@ -582,9 +634,9 @@ export function ServiceDeskPricingSystem({
     } catch (error) {
       console.error('Error applying template:', error);
     } finally {
-      setIsLoading(false);
+      endLoadingOperation();
     }
-  }, [dataManager, onDataChange]);
+  }, [dataManager, onDataChange, beginLoadingOperation, endLoadingOperation]);
 
   const handleCancelTemplateApplication = useCallback(() => {
     setShowTemplateApplication(false);

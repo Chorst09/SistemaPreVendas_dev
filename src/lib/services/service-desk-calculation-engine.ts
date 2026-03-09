@@ -32,6 +32,7 @@ import { ServiceDeskCalculationCache, cached } from '../utils/calculation-cache'
  */
 export class ServiceDeskCalculationEngine {
   private cache: ServiceDeskCalculationCache;
+  private static readonly WEEKS_PER_MONTH = 52 / 12;
 
   constructor() {
     this.cache = ServiceDeskCalculationCache.getInstance();
@@ -54,9 +55,9 @@ export class ServiceDeskCalculationEngine {
       const memberCalculation = this.calculateMemberCost(member, schedules);
       breakdown.push(memberCalculation);
       totalMonthlyCost += memberCalculation.totalCost;
-      // FIXED: Use more precise weeks per month calculation (52/12 = 4.333...)
-      const weeksPerMonth = 52 / 12;
-      totalHours += member.workload * weeksPerMonth;
+      const workload = this.resolveMemberWorkload(member);
+      const quantity = this.getMemberQuantity(member);
+      totalHours += workload * ServiceDeskCalculationEngine.WEEKS_PER_MONTH * quantity;
     });
 
     const totalAnnualCost = totalMonthlyCost * 12;
@@ -79,15 +80,18 @@ export class ServiceDeskCalculationEngine {
    * Calculate individual team member costs
    */
   private calculateMemberCost(member: TeamMember, schedules: WorkSchedule[]): TeamMemberCostCalculation {
-    const baseSalary = member.salary;
-    const benefits = this.calculateBenefits(member);
+    const quantity = this.getMemberQuantity(member);
+    const salaryPerMember = this.resolveMemberSalary(member);
+    const benefitsPerMember = this.calculateBenefits(member, salaryPerMember);
     
     // Calculate special shift multipliers
     const shiftMultiplier = this.calculateShiftMultiplier(member, schedules);
-    const adjustedSalary = baseSalary * shiftMultiplier;
+    const adjustedSalary = salaryPerMember * shiftMultiplier * quantity;
+    const benefits = benefitsPerMember * quantity;
     
     const totalCost = adjustedSalary + benefits;
-    const hourlyRate = member.workload > 0 ? totalCost / (member.workload * 4.33) : 0;
+    const monthlyHours = this.resolveMemberWorkload(member) * ServiceDeskCalculationEngine.WEEKS_PER_MONTH * quantity;
+    const hourlyRate = monthlyHours > 0 ? totalCost / monthlyHours : 0;
     const annualCost = totalCost * 12;
 
     return {
@@ -104,8 +108,18 @@ export class ServiceDeskCalculationEngine {
    * Calculate benefits for a team member
    * FIXED: Use configured values properly, with correct defaults
    */
-  private calculateBenefits(member: TeamMember): number {
-    const benefits = member.benefits;
+  private calculateBenefits(member: TeamMember, salaryBase: number): number {
+    const benefits = member.benefits || {
+      healthInsurance: 0,
+      mealVoucher: 0,
+      transportVoucher: 0,
+      lifeInsurance: 0,
+      vacation: 8.33,
+      thirteenthSalary: 8.33,
+      fgts: 8,
+      inss: 0,
+      otherBenefits: []
+    };
     let totalBenefits = 0;
 
     // Fixed benefits
@@ -120,17 +134,17 @@ export class ServiceDeskCalculationEngine {
     const fgtsRate = benefits.fgts ?? 8; // Default 8% FGTS
     const inssRate = benefits.inss ?? 0; // Default 0% (employer doesn't pay)
 
-    totalBenefits += member.salary * (vacationRate / 100);
-    totalBenefits += member.salary * (thirteenthRate / 100);
-    totalBenefits += member.salary * (fgtsRate / 100);
-    totalBenefits += member.salary * (inssRate / 100);
+    totalBenefits += salaryBase * (vacationRate / 100);
+    totalBenefits += salaryBase * (thirteenthRate / 100);
+    totalBenefits += salaryBase * (fgtsRate / 100);
+    totalBenefits += salaryBase * (inssRate / 100);
 
     // Custom benefits
     benefits.otherBenefits?.forEach(benefit => {
       if (benefit.type === 'fixed') {
         totalBenefits += benefit.value;
       } else {
-        totalBenefits += member.salary * (benefit.value / 100);
+        totalBenefits += salaryBase * (benefit.value / 100);
       }
     });
 
@@ -144,19 +158,81 @@ export class ServiceDeskCalculationEngine {
     let multiplier = 1;
     
     schedules.forEach(schedule => {
-      schedule.shifts.forEach(shift => {
-        if (shift.teamMembers.includes(member.id) && shift.isSpecialShift) {
+      const assignedShifts = schedule.shifts.filter(shift =>
+        this.isMemberAssignedToShift(member, shift.teamMembers)
+      );
+
+      assignedShifts.forEach(shift => {
+        if (shift.isSpecialShift) {
           multiplier = Math.max(multiplier, shift.multiplier);
         }
       });
       
       schedule.specialRates.forEach(rate => {
-        // Apply special rates based on conditions
-        multiplier = Math.max(multiplier, rate.multiplier);
+        const appliesToAssignedShift = assignedShifts.some(shift =>
+          rate.applicableShifts.length === 0 || rate.applicableShifts.includes(shift.id)
+        );
+
+        if (appliesToAssignedShift) {
+          multiplier = Math.max(multiplier, rate.multiplier);
+        }
       });
     });
 
     return multiplier;
+  }
+
+  private isMemberAssignedToShift(member: TeamMember, assignedMemberIds: string[]): boolean {
+    const memberId = member.id;
+    return assignedMemberIds.includes(memberId) ||
+      assignedMemberIds.some(assignedId => assignedId.startsWith(`${memberId}-`));
+  }
+
+  private getMemberQuantity(member: TeamMember): number {
+    const quantity = (member as any).quantity;
+    return Number.isFinite(quantity) && quantity > 0 ? Math.floor(quantity) : 1;
+  }
+
+  private resolveMemberWorkload(member: TeamMember): number {
+    if (typeof member.workload === 'number') {
+      return member.workload > 0 ? member.workload : 0;
+    }
+
+    const workingHours = (member as any).workingHours;
+    if (workingHours === 6) {
+      return 30;
+    }
+    if (workingHours === 8) {
+      return 40;
+    }
+
+    return 40;
+  }
+
+  private resolveMemberSalary(member: TeamMember): number {
+    if (typeof member.salary === 'number' && member.salary > 0) {
+      return member.salary;
+    }
+
+    const role = `${member.role || (member as any).jobPositionId || ''}`.toLowerCase();
+
+    if (role.includes('n1') || role.includes('pos-1')) {
+      return 1780;
+    }
+    if (role.includes('n2') || role.includes('pos-2')) {
+      return 2880;
+    }
+    if (role.includes('n3') || role.includes('pos-3')) {
+      return 7380;
+    }
+    if (role.includes('lider') || role.includes('líder') || role.includes('pos-4')) {
+      return 5200;
+    }
+    if (role.includes('coordenador') || role.includes('gest') || role.includes('pos-5')) {
+      return 9800;
+    }
+
+    return 3000;
   }
 
   /**
@@ -335,9 +411,15 @@ export class ServiceDeskCalculationEngine {
         const memberCosts: any[] = [];
 
         shift.teamMembers.forEach(memberId => {
-          const member = team.find(m => m.id === memberId);
+          const member = team.find(m => m.id === memberId || memberId.startsWith(`${m.id}-`));
           if (member) {
-            const baseCost = member.costPerHour || (member.salary / (member.workload * 4.33));
+            const memberSalary = this.resolveMemberSalary(member);
+            const memberWorkload = this.resolveMemberWorkload(member);
+            const baseCost = member.costPerHour || (
+              memberWorkload > 0
+                ? memberSalary / (memberWorkload * ServiceDeskCalculationEngine.WEEKS_PER_MONTH)
+                : 0
+            );
             let multiplier = 1;
 
             // Apply shift multiplier
@@ -363,7 +445,7 @@ export class ServiceDeskCalculationEngine {
 
             memberCosts.push({
               memberId: member.id,
-              memberName: member.name,
+              memberName: member.name || member.role || (member as any).jobPositionId || member.id,
               baseCost,
               multipliedCost,
               multiplier,
@@ -494,17 +576,18 @@ export class ServiceDeskCalculationEngine {
   ): { totalPrice: number; grossMargin: number; netMargin: number; markup: number } {
     
     // Add additional costs
-    const otherCosts = additionalCosts.reduce((sum, cost) => sum + cost.value, 0);
-    const finalCosts = totalCosts + otherCosts;
+    const otherCosts = additionalCosts.reduce((sum, cost) => sum + (cost?.value || 0), 0);
+    const finalCosts = Math.max(0, totalCosts + otherCosts);
 
     let totalPrice: number;
     
     if (marginConfig.type === 'percentage') {
       // Price = Cost / (1 - Margin%)
-      totalPrice = finalCosts / (1 - marginConfig.value / 100);
+      const safeMargin = Math.min(Math.max(marginConfig.value || 0, 0), 95);
+      totalPrice = finalCosts / (1 - safeMargin / 100);
     } else {
       // Fixed margin
-      totalPrice = finalCosts + marginConfig.value;
+      totalPrice = finalCosts + Math.max(0, marginConfig.value || 0);
     }
 
     const grossMargin = totalPrice - finalCosts;
@@ -789,24 +872,29 @@ export class ServiceDeskCalculationEngine {
     marginConfig: MarginConfiguration,
     contractPeriod: number
   ): ConsolidatedBudget {
-    
+    const normalizedContractPeriod = Math.max(1, Math.floor(contractPeriod || 1));
+
     const infrastructureCosts = otherCosts
-      .filter(cost => cost.category === 'INFRASTRUCTURE')
-      .reduce((sum, cost) => sum + cost.value, 0);
+      .filter(cost => cost.category === 'infrastructure' || (cost.category as unknown as string) === 'INFRASTRUCTURE')
+      .reduce((sum, cost) => sum + this.calculateContractCost(cost, normalizedContractPeriod), 0);
     
-    const totalOtherCosts = otherCosts.reduce((sum, cost) => sum + cost.value, 0);
-    const totalCosts = teamCosts.totalMonthlyCost + totalOtherCosts;
+    const totalOtherCosts = otherCosts.reduce(
+      (sum, cost) => sum + this.calculateContractCost(cost, normalizedContractPeriod),
+      0
+    );
+    const totalCosts = (teamCosts.totalMonthlyCost * normalizedContractPeriod) + totalOtherCosts;
     
-    const margins = this.calculateMargins(totalCosts, marginConfig, otherCosts);
+    const margins = this.calculateMargins(totalCosts, marginConfig);
+    const adjustedTaxes = this.scaleTaxesToRevenue(taxes, margins.totalPrice);
     
     // Generate monthly breakdown
     const monthlyBreakdown: MonthlyBudget[] = [];
-    for (let month = 1; month <= contractPeriod; month++) {
+    for (let month = 1; month <= normalizedContractPeriod; month++) {
       const monthlyTeamCost = teamCosts.totalMonthlyCost;
-      const monthlyOtherCosts = totalOtherCosts / contractPeriod;
+      const monthlyOtherCosts = totalOtherCosts / normalizedContractPeriod;
       const monthlyTotalCosts = monthlyTeamCost + monthlyOtherCosts;
-      const monthlyRevenue = margins.totalPrice / contractPeriod;
-      const monthlyTaxes = taxes.totalTaxes / contractPeriod;
+      const monthlyRevenue = margins.totalPrice / normalizedContractPeriod;
+      const monthlyTaxes = adjustedTaxes.total / normalizedContractPeriod;
       const monthlyProfit = monthlyRevenue - monthlyTotalCosts - monthlyTaxes;
       const monthlyMargin = monthlyRevenue > 0 ? (monthlyProfit / monthlyRevenue) * 100 : 0;
 
@@ -839,19 +927,63 @@ export class ServiceDeskCalculationEngine {
       infrastructureCosts,
       otherCosts: totalOtherCosts,
       taxes: {
-        federal: taxes.breakdown.filter(t => ['PIS', 'COFINS', 'IR', 'CSLL'].includes(t.taxName))
+        federal: adjustedTaxes.breakdown.filter(t => ['PIS', 'COFINS', 'IR', 'CSLL'].includes(t.taxName))
           .reduce((sum, t) => sum + t.amount, 0),
-        state: taxes.breakdown.filter(t => t.taxName === 'ICMS')
+        state: adjustedTaxes.breakdown.filter(t => t.taxName === 'ICMS')
           .reduce((sum, t) => sum + t.amount, 0),
-        municipal: taxes.breakdown.filter(t => t.taxName === 'ISS')
+        municipal: adjustedTaxes.breakdown.filter(t => t.taxName === 'ISS')
           .reduce((sum, t) => sum + t.amount, 0),
-        total: taxes.totalTaxes,
-        breakdown: taxes.breakdown
+        total: adjustedTaxes.total,
+        breakdown: adjustedTaxes.breakdown
       },
       totalCosts,
       margin: marginConfig,
       totalPrice: margins.totalPrice,
       monthlyBreakdown
+    };
+  }
+
+  private calculateContractCost(cost: AdditionalCost, contractPeriod: number): number {
+    const period = Math.max(1, contractPeriod);
+    const value = Number.isFinite(cost?.value) ? Math.max(0, cost.value) : 0;
+
+    switch (cost?.frequency) {
+      case 'monthly':
+        return value * period;
+      case 'quarterly':
+        return value * Math.ceil(period / 3);
+      case 'semi_annual':
+        return value * Math.ceil(period / 6);
+      case 'annual':
+        return value * Math.ceil(period / 12);
+      case 'one_time':
+        return value;
+      default:
+        return value * period;
+    }
+  }
+
+  private scaleTaxesToRevenue(taxes: TaxCalculationResult, revenue: number): { total: number; breakdown: TaxBreakdown[] } {
+    const targetTotalTaxes = revenue * ((taxes.effectiveRate || 0) / 100);
+    const sourceTotalTaxes = taxes.breakdown.reduce((sum, item) => sum + item.amount, 0);
+
+    if (sourceTotalTaxes <= 0 || taxes.breakdown.length === 0) {
+      return { total: targetTotalTaxes, breakdown: [] };
+    }
+
+    const scaledBreakdown = taxes.breakdown.map(item => {
+      const proportion = item.amount / sourceTotalTaxes;
+      const amount = targetTotalTaxes * proportion;
+      return {
+        ...item,
+        base: revenue,
+        amount
+      };
+    });
+
+    return {
+      total: targetTotalTaxes,
+      breakdown: scaledBreakdown
     };
   }
 }

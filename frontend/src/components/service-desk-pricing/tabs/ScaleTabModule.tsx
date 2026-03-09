@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -338,12 +338,19 @@ export function ScaleTabModule({
     action?: string;
   }>>([]);
   const [shiftCosts, setShiftCosts] = useState<any>(null);
+  const lastSyncedSchedulesRef = useRef(JSON.stringify(data || []));
   
   const calculationEngine = useMemo(() => new ServiceDeskCalculationEngine(), []);
   const validationEngine = useMemo(() => new ServiceDeskValidationEngine(), []);
 
   useEffect(() => {
-    setSchedules(data || []);
+    const incomingSchedules = data || [];
+    const serializedIncoming = JSON.stringify(incomingSchedules);
+    if (serializedIncoming !== JSON.stringify(schedules)) {
+      setSchedules(incomingSchedules);
+    }
+    // Keep sync checkpoint aligned with parent-originated updates to avoid bounce updates.
+    lastSyncedSchedulesRef.current = serializedIncoming;
   }, [data]);
 
   // Listen for schedule generation event
@@ -352,8 +359,12 @@ export function ScaleTabModule({
       const { schedule, dimensioning } = event.detail;
       
       // Add generated schedule to existing schedules
-      const updatedSchedules = [...schedules, schedule];
-      setSchedules(updatedSchedules);
+      setSchedules(prev => {
+        if (prev.some(existing => existing.id === schedule.id)) {
+          return prev;
+        }
+        return [...prev, schedule];
+      });
       
       // Show success message
       if (typeof window !== 'undefined' && window.alert) {
@@ -365,7 +376,7 @@ export function ScaleTabModule({
 
     window.addEventListener('scheduleGenerated', handleScheduleGenerated);
     return () => window.removeEventListener('scheduleGenerated', handleScheduleGenerated);
-  }, [schedules]);
+  }, []);
 
   useEffect(() => {
     const analysis = calculationEngine.calculateCoverageAnalysis(schedules);
@@ -402,8 +413,12 @@ export function ScaleTabModule({
     const alerts = validationEngine.generateCoverageAlerts(schedules);
     setCoverageAlerts(alerts);
     
-    onUpdate(schedules);
-    onAutoSave?.(schedules);
+    const serializedSchedules = JSON.stringify(schedules);
+    if (lastSyncedSchedulesRef.current !== serializedSchedules) {
+      lastSyncedSchedulesRef.current = serializedSchedules;
+      onUpdate(schedules);
+      onAutoSave?.(schedules);
+    }
   }, [schedules, calculationEngine, validationEngine, teamMembers, onUpdate, onAutoSave]);
 
   const addSchedule = () => {

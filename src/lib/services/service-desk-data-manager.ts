@@ -194,7 +194,18 @@ export class ServiceDeskDataManager {
           maximumMargin: 40
         },
         totalPrice: 0,
-        monthlyBreakdown: []
+        monthlyBreakdown: [],
+        pricingModel: {
+          model: 'cost_plus_margin',
+          agentRateMonthly: 2200,
+          userRateMonthly: 55,
+          ticketRate: 18,
+          baseRetainerMonthly: 25000,
+          projectedUsers: 200,
+          projectedTicketsMonthly: 1200,
+          minimumMonthlyCharge: 0
+        },
+        pricingModelComparisons: []
       },
       analysis: {
         roi: {

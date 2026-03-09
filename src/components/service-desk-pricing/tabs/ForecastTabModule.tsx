@@ -32,7 +32,8 @@ import {
   MonthlyProjection,
   DashboardKPI,
   AlertSeverity,
-  InsightPriority
+  InsightPriority,
+  ServiceDeskData
 } from '@/lib/types/service-desk-pricing';
 import { ForecastService } from '@/lib/services/forecast-service';
 
@@ -40,9 +41,10 @@ export interface ForecastTabModuleProps {
   data: ForecastData;
   onUpdate: (data: ForecastData) => void;
   isLoading?: boolean;
+  fullData?: ServiceDeskData;
 }
 
-export function ForecastTabModule({ data, onUpdate, isLoading = false }: ForecastTabModuleProps) {
+export function ForecastTabModule({ data, onUpdate, isLoading = false, fullData }: ForecastTabModuleProps) {
   const [activeScenario, setActiveScenario] = useState<string>(
     data.scenarios.find(s => s.isBaseline)?.id || data.scenarios[0]?.id || ''
   );
@@ -50,24 +52,43 @@ export function ForecastTabModule({ data, onUpdate, isLoading = false }: Forecas
     ProjectionTimeframe.MEDIUM_TERM
   );
 
+  const baseFinancials = useMemo(() => {
+    const contractDuration = Math.max(1, data.assumptions.contractDuration || 12);
+    const monthlyFromBudget = fullData?.budget?.monthlyBreakdown?.[0];
+
+    if (monthlyFromBudget) {
+      return {
+        baseRevenue: Math.max(0, monthlyFromBudget.revenue || 0),
+        baseCosts: Math.max(0, (monthlyFromBudget.totalCosts || 0) + (monthlyFromBudget.taxes || 0))
+      };
+    }
+
+    const totalRevenue = fullData?.budget?.totalPrice || 0;
+    const totalCosts = (fullData?.budget?.totalCosts || 0) + (fullData?.budget?.taxes?.total || 0);
+
+    return {
+      baseRevenue: totalRevenue > 0 ? totalRevenue / contractDuration : 100000,
+      baseCosts: totalCosts > 0 ? totalCosts / contractDuration : 80000
+    };
+  }, [data.assumptions.contractDuration, fullData]);
+
   // Calcular projeções usando o serviço
   const calculateProjections = useCallback((scenario: ForecastScenario) => {
-    const baseRevenue = 100000; // Base revenue from budget
-    const baseCosts = 80000; // Base costs from budget
     const contractDuration = data.assumptions.contractDuration;
     
     return ForecastService.calculateMonthlyProjections(
       scenario,
-      baseRevenue,
-      baseCosts,
+      baseFinancials.baseRevenue,
+      baseFinancials.baseCosts,
       contractDuration,
       data.assumptions.seasonalFactors
     );
-  }, [data.assumptions.contractDuration, data.assumptions.seasonalFactors]);
+  }, [data.assumptions.contractDuration, data.assumptions.seasonalFactors, baseFinancials]);
 
   // Cenários padrão usando o serviço
   const defaultScenarios: ForecastScenario[] = useMemo(() => 
-    ForecastService.generateDefaultScenarios(100000, 80000), []
+    ForecastService.generateDefaultScenarios(baseFinancials.baseRevenue, baseFinancials.baseCosts),
+    [baseFinancials]
   );
 
   // Inicializar cenários se não existirem

@@ -1,5 +1,6 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { vi, describe, it, beforeEach, expect } from 'vitest';
 import { TaxesTabModule } from '../TaxesTabModule';
 import { TaxConfiguration, TaxRegime } from '@/lib/types/service-desk-pricing';
@@ -137,6 +138,8 @@ describe('TaxesTabModule', () => {
   });
 
   it('allows adding custom taxes', async () => {
+    const user = userEvent.setup();
+
     render(
       <TaxesTabModule
         data={mockTaxConfig}
@@ -144,18 +147,12 @@ describe('TaxesTabModule', () => {
       />
     );
 
-    // Click on custom taxes tab
-    const customTab = screen.getByText('Impostos Customizados');
-    fireEvent.click(customTab);
-
     // First navigate to custom taxes tab
-    const customTab = screen.getByRole('tab', { name: /impostos customizados/i });
-    fireEvent.click(customTab);
+    const customTaxesTab = screen.getByRole('tab', { name: /impostos customizados/i });
+    await user.click(customTaxesTab);
 
-    await waitFor(() => {
-      const addButton = screen.getByRole('button', { name: /adicionar imposto/i });
-      fireEvent.click(addButton);
-    });
+    const addButton = await screen.findByRole('button', { name: /adicionar imposto/i });
+    await user.click(addButton);
 
     await waitFor(() => {
       expect(screen.getByText('Novo Imposto Customizado')).toBeInTheDocument();
