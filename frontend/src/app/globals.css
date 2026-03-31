@@ -681,18 +681,48 @@
   .light .service-desk-theme,
   .light .printer-theme {
     background:
-      radial-gradient(960px circle at 8% -12%, hsl(var(--primary) / 0.12), transparent 58%),
-      radial-gradient(960px circle at 96% 0%, hsl(var(--accent) / 0.08), transparent 62%),
-      linear-gradient(145deg, hsl(var(--background)), hsl(var(--muted) / 0.82));
+      radial-gradient(960px circle at 8% -12%, hsl(var(--primary) / 0.18), transparent 58%),
+      radial-gradient(960px circle at 96% 0%, hsl(var(--accent) / 0.14), transparent 62%),
+      linear-gradient(145deg, hsl(var(--background)), hsl(var(--muted) / 0.64));
   }
 
   .light .noc-theme::before,
   .light .service-desk-theme::before,
   .light .printer-theme::before {
     background-image:
-      linear-gradient(hsl(var(--primary) / 0.08) 1px, transparent 1px),
-      linear-gradient(90deg, hsl(var(--primary) / 0.08) 1px, transparent 1px);
+      linear-gradient(hsl(var(--primary) / 0.12) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(var(--primary) / 0.12) 1px, transparent 1px);
     background-size: 48px 48px;
+  }
+
+  .light .noc-theme .card-surface,
+  .light .noc-theme .card-surface-strong {
+    background: linear-gradient(180deg, hsl(var(--card) / 0.98), hsl(var(--card) / 0.94)) !important;
+    border-color: hsl(var(--border) / 0.94) !important;
+    box-shadow: 0 16px 34px -24px hsl(var(--primary) / 0.26) !important;
+  }
+
+  .light .noc-theme [class*="bg-card/"] {
+    background-color: hsl(var(--card) / 0.96) !important;
+  }
+
+  .light .noc-theme [class*="border-border/"] {
+    border-color: hsl(var(--border) / 0.9) !important;
+  }
+
+  .light .noc-theme [class*="text-muted-foreground"],
+  .light .noc-theme .text-gray-400,
+  .light .noc-theme .text-gray-500 {
+    color: hsl(var(--foreground) / 0.78) !important;
+  }
+
+  .light .noc-theme [class*="bg-blue-500/10"] {
+    background-color: hsl(var(--primary) / 0.16) !important;
+  }
+
+  .light .noc-theme [class*="border-blue-500/30"],
+  .light .noc-theme [class*="border-blue-500/40"] {
+    border-color: hsl(var(--primary) / 0.42) !important;
   }
 
   .light .noc-theme [class*="bg-slate-"],
