@@ -1,99 +1,125 @@
 "use client";
 
 import React from 'react';
-import { Search, User, Menu, Settings } from 'lucide-react';
+import { LogOut, Search, User, Menu, Settings, Bell, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ChorstLogo } from '@/components/ui/chorst-logo';
+import type { SystemUser } from '@/lib/services/user-auth-service';
 
 interface HeaderProps {
     currentTitle: string;
     currentSubtitle?: string;
     logoSrc?: string | null;
+    currentUser?: SystemUser | null;
+    onNavigateSettings?: () => void;
+    onLogout?: () => void;
 }
 
-export function Header({ currentTitle, currentSubtitle, logoSrc }: HeaderProps) {
+export function Header({ currentTitle, currentSubtitle, logoSrc, currentUser, onNavigateSettings, onLogout }: HeaderProps) {
     return (
-        <header className="header-bg border-b border-border/60 shadow-xl relative overflow-hidden">
-            {/* Efeito de brilho sutil */}
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/10 to-transparent animate-pulse"></div>
-
-            {/* Logo e Título Principal */}
-            <div className="px-4 py-3 border-b border-border/40 relative z-10">
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3 md:space-x-4">
-                        {/* Logo da Chorst Consultoria */}
-                        <div className="flex-shrink-0">
-                            <ChorstLogo size="lg" logoSrc={logoSrc || undefined} />
-                        </div>
-
-                        {/* Separador - oculto em mobile */}
-                        <div className="hidden md:block h-12 w-px bg-gradient-to-b from-transparent via-border to-transparent"></div>
-
-                        {/* Nome do Sistema */}
-                        <div className="flex flex-col min-w-0">
-                            <h1 className="text-lg md:text-xl font-bold text-foreground">
-                                Sistema Pré-Venda TI
-                            </h1>
-                            <p className="text-xs text-muted-foreground font-medium">
-                                Gestão Completa de Precificações, Oportunidades e Propostas
-                            </p>
-                        </div>
+        <header className="sticky top-0 z-40 w-full border-b border-border/60 bg-background/95 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60">
+            {/* Main Header Bar */}
+            <div className="flex h-16 items-center justify-between px-4 md:px-6">
+                {/* Left - Logo & Title */}
+                <div className="flex items-center gap-3">
+                    <div className="flex-shrink-0">
+                        <ChorstLogo size="md" logoSrc={logoSrc || undefined} />
                     </div>
+                    
+                    <div className="hidden md:block h-8 w-px bg-border/60" />
+                    
+                    <div className="hidden md:flex flex-col min-w-0">
+                        <h1 className="text-lg font-bold text-foreground truncate">
+                            Sistema Pré-Venda TI
+                        </h1>
+                        <p className="text-xs text-muted-foreground truncate">
+                            {currentSubtitle || 'Gestão Completa de Precificações e Propostas'}
+                        </p>
+                    </div>
+                </div>
 
-                    {/* Controles do Header */}
-                    <div className="flex items-center space-x-3">
-                        {/* Barra de busca - Desktop */}
-                        <div className="relative hidden lg:block">
-                            <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 text-muted-foreground w-3 h-3" />
-                            <Input
-                                type="search"
-                                placeholder="Buscar..."
-                                className="pl-8 w-48 h-8 text-sm bg-card/70 border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-primary/20"
-                            />
-                        </div>
+                {/* Center - Search (Desktop) */}
+                <div className="hidden lg:flex items-center flex-1 max-w-md mx-8">
+                    <div className="relative w-full">
+                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                        <Input
+                            type="search"
+                            placeholder="Buscar módulos, funcionalidades..."
+                            className="pl-10 h-10 bg-muted/50 border-transparent focus:bg-background focus:border-primary/50"
+                        />
+                    </div>
+                </div>
 
-                        {/* Botões de ação */}
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            className="lg:hidden h-8 w-8 text-foreground hover:bg-accent/20"
-                        >
-                            <Search className="h-4 w-4" />
-                        </Button>
+                {/* Right - Actions */}
+                <div className="flex items-center gap-2">
+                    {/* Notifications */}
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        className="relative h-10 w-10 text-muted-foreground hover:text-foreground"
+                    >
+                        <Bell className="h-5 w-5" />
+                        <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-accent animate-pulse" />
+                    </Button>
 
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-8 w-8 text-foreground hover:bg-accent/20"
-                        >
-                            <Settings className="h-4 w-4" />
-                        </Button>
+                    {/* Settings */}
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-10 w-10 text-muted-foreground hover:text-foreground"
+                        onClick={onNavigateSettings}
+                        title="Configurações"
+                    >
+                        <Settings className="h-5 w-5" />
+                    </Button>
 
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            className="relative h-8 w-8 rounded-full text-foreground hover:bg-accent/20"
-                        >
+                    {/* Separator */}
+                    <div className="hidden md:block h-8 w-px bg-border/60 mx-1" />
+
+                    {/* User Menu */}
+                    <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-muted/50 cursor-pointer transition-colors">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary">
                             <User className="h-4 w-4" />
-                        </Button>
-
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            className="md:hidden h-8 w-8 text-foreground hover:bg-accent/20"
-                        >
-                            <Menu className="h-4 w-4" />
-                        </Button>
+                        </div>
+                        <div className="flex flex-col min-w-0">
+                            <span className="text-sm font-semibold text-foreground truncate max-w-[120px]">
+                                {currentUser?.name || 'Usuário'}
+                            </span>
+                            <span className="text-xs text-muted-foreground">
+                                {currentUser?.role === 'admin' ? 'Administrador' : 'Usuário'}
+                            </span>
+                        </div>
+                        <ChevronDown className="h-4 w-4 text-muted-foreground" />
                     </div>
+
+                    {/* Logout */}
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-10 w-10 text-muted-foreground hover:text-destructive"
+                        onClick={onLogout}
+                        title="Sair"
+                    >
+                        <LogOut className="h-5 w-5" />
+                    </Button>
+
+                    {/* Mobile Menu */}
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        className="md:hidden h-10 w-10 text-muted-foreground"
+                    >
+                        <Menu className="h-5 w-5" />
+                    </Button>
                 </div>
             </div>
 
-            {/* Breadcrumb/Navegação Atual */}
-            <div className="px-4 py-2 bg-card/45 relative z-10">
+            {/* Sub Header - Breadcrumb/Current Page */}
+            <div className="border-t border-border/40 bg-muted/30 px-4 md:px-6 py-3">
                 <div className="flex items-center justify-between">
                     <div>
-                        <h2 className="text-lg font-semibold text-foreground capitalize">
+                        <h2 className="text-base font-semibold text-foreground capitalize">
                             {currentTitle}
                         </h2>
                         {currentSubtitle && (
@@ -103,12 +129,10 @@ export function Header({ currentTitle, currentSubtitle, logoSrc }: HeaderProps) 
                         )}
                     </div>
 
-                    {/* Indicadores de status ou informações adicionais */}
-                    <div className="flex items-center space-x-2">
-                        <div className="flex items-center space-x-1">
-                            <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                            <span className="text-xs text-muted-foreground">Online</span>
-                        </div>
+                    {/* Status Indicator */}
+                    <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-accent-green/10 border border-accent-green/20">
+                        <div className="h-2 w-2 rounded-full bg-accent-green animate-pulse" />
+                        <span className="text-xs font-medium text-accent-green">Online</span>
                     </div>
                 </div>
             </div>

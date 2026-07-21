@@ -59,6 +59,7 @@ import { useTheme } from 'next-themes'; // <--- ADICIONADO ESTE IMPORT
 import { useLogo } from '@/hooks/use-logo';
 import { QuoteProvider } from '@/contexts/QuoteContext';
 import { SystemUser, UserAuthService } from '@/lib/services/user-auth-service';
+import { MODULE_DEFINITIONS } from '@/lib/modules';
 
 
 const ACTIVE_TAB_STORAGE_KEY = 'sistema-pre-active-tab';
@@ -901,17 +902,47 @@ export default function App() { // Ou Home
         { id: 'settings', label: 'Configurações', icon: <Settings size={20} /> },
     ];
 
+    // Filtrar navItems com base nas permissões do usuário
+    const filteredNavItems = useMemo(() => {
+        if (!currentUser) return navItems;
+        if (currentUser.role === 'admin') return navItems;
+
+        const perms = currentUser.permissions || [];
+        return navItems
+            .map((item) => {
+                if (item.subItems) {
+                    const filteredSubs = item.subItems.filter((sub) => perms.includes(sub.id));
+                    if (filteredSubs.length === 0) return null;
+                    return { ...item, subItems: filteredSubs };
+                }
+                return perms.includes(item.id) ? item : null;
+            })
+            .filter(Boolean) as typeof navItems;
+    }, [currentUser, navItems]);
+
+    // Redirecionar se o módulo atual não é permitido
+    useEffect(() => {
+        if (!currentUser || currentUser.role === 'admin') return;
+        const perms = currentUser.permissions || [];
+        if (activeTab && !perms.includes(activeTab) && activeTab !== 'home') {
+            const firstAllowed = filteredNavItems[0];
+            if (firstAllowed) {
+                setActiveTab(firstAllowed.subItems ? firstAllowed.subItems[0].id : firstAllowed.id);
+            }
+        }
+    }, [currentUser, activeTab, filteredNavItems]);
+
     // Lógica para encontrar o item de navegação atual (adapte)
     const currentNavItem = useMemo(() => {
-        for (const item of navItems) {
+        for (const item of filteredNavItems) {
             if (item.id === activeTab) return { ...item, parentLabel: null };
             if (item.subItems) {
                 const subItem = item.subItems.find(sub => sub.id === activeTab);
                 if (subItem) return { ...subItem, parentLabel: item.label };
             }
         }
-        return { ...navItems[0], parentLabel: null };
-    }, [activeTab]);
+        return { ...filteredNavItems[0], parentLabel: null };
+    }, [activeTab, filteredNavItems]);
 
     // Função para lidar com navegação
     const handleNavigation = (item: any) => {
@@ -943,6 +974,25 @@ export default function App() { // Ou Home
     const renderContent = () => {
         // NOTA: Os componentes de view (DashboardView, PartnerView, etc.) agora devem gerenciar seus próprios dados.
         // Remova a dependência de useAuth() dentro deles, se houver.
+
+        // Controle de acesso por módulo
+        if (currentUser && currentUser.role !== 'admin' && activeTab !== 'home') {
+            const perms = currentUser.permissions || [];
+            if (!perms.includes(activeTab)) {
+                return (
+                    <div className="flex flex-col items-center justify-center h-96 text-center space-y-4">
+                        <ShieldCheck className="h-16 w-16 text-muted-foreground/40" />
+                        <h2 className="text-xl font-bold text-foreground">Acesso Restrito</h2>
+                        <p className="text-muted-foreground max-w-md">
+                            Você não tem permissão para acessar este módulo. Entre em contato com o administrador para solicitar acesso.
+                        </p>
+                        <Button onClick={() => setActiveTab('dashboard')}>
+                            Voltar ao Dashboard
+                        </Button>
+                    </div>
+                );
+            }
+        }
 
         switch (activeTab) {
             case 'home': return <HomeLandingPage setActiveTab={setActiveTab} />;
@@ -1122,7 +1172,7 @@ export default function App() { // Ou Home
                         </div>
                         {/* Navegação da Sidebar */}
                         <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
-                            {navItems.map(item => (
+                            {filteredNavItems.map(item => (
                                 !item.subItems ? (
                                     <Button
                                         key={item.id}
