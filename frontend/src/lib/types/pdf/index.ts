@@ -7,7 +7,16 @@
 export * from './core'
 
 // Error and validation types
-export * from './errors'
+export type {
+  PDFError,
+  PDFValidationResult,
+  ValidationRule,
+  ValidationResult,
+  ValidationReport,
+  ValidationIssue,
+  SizeLimitResult,
+  PDFSizeLimits
+} from './errors'
 
 // Component types
 export * from './components'

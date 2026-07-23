@@ -35,6 +35,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { cn } from '@/lib/utils';
 import { EmployeeRegistryService, EmployeeProfile, EmployeeSearchFilters } from '@/lib/services/employee-registry-service';
 import { BenefitPackage } from '@/lib/types/service-desk-pricing';
+import { DEFAULT_LABOR_CHARGES } from '@/lib/utils/labor-costs';
 
 interface EmployeeRegistryManagerProps {
   isOpen: boolean;
@@ -48,10 +49,14 @@ const defaultBenefits: BenefitPackage = {
   mealVoucher: 400,
   transportVoucher: 200,
   lifeInsurance: 50,
-  vacation: 8.33,
-  thirteenthSalary: 8.33,
-  fgts: 8,
-  inss: 11,
+  vacation: DEFAULT_LABOR_CHARGES.vacation,
+  vacationThird: DEFAULT_LABOR_CHARGES.vacationThird,
+  thirteenthSalary: DEFAULT_LABOR_CHARGES.thirteenthSalary,
+  fgts: DEFAULT_LABOR_CHARGES.fgts,
+  inss: DEFAULT_LABOR_CHARGES.employerSocialSecurity,
+  employerSocialSecurity: DEFAULT_LABOR_CHARGES.employerSocialSecurity,
+  fgtsOnProvisions: true,
+  socialSecurityOnProvisions: true,
   otherBenefits: []
 };
 

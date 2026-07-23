@@ -12,10 +12,12 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
-import { Trash2, Plus, Save, AlertTriangle, Info } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Trash2, Plus, Save, AlertTriangle, Info, RefreshCw } from 'lucide-react';
 import { TaxConfiguration, TabValidationStatus, CustomTax, TaxRegime } from '@/lib/types/service-desk-pricing';
 import { ServiceDeskCalculationEngine } from '@/lib/services/service-desk-calculation-engine';
 import { TaxTemplateService, TaxTemplate } from '@/lib/services/tax-template-service';
+import { useConfigurationStore } from '@/lib/stores/configuration-store';
 
 export interface TaxesTabModuleProps {
   data: TaxConfiguration;
@@ -26,6 +28,7 @@ export interface TaxesTabModuleProps {
 }
 
 export function TaxesTabModule({ data, onUpdate, onAutoSave, validation, isLoading }: TaxesTabModuleProps) {
+  const { taxRegimes, serviceDeskConfig, setServiceDeskConfig } = useConfigurationStore();
   const [calculationEngine] = useState(() => new ServiceDeskCalculationEngine());
   const lastAutoSavedRef = useRef<string>(JSON.stringify(data));
   const [showTemplateDialog, setShowTemplateDialog] = useState(false);
@@ -48,6 +51,60 @@ export function TaxesTabModule({ data, onUpdate, onAutoSave, validation, isLoadi
   });
   const [importData, setImportData] = useState('');
   const [taxCalculationPreview, setTaxCalculationPreview] = useState<any>(null);
+  const [syncWithCentral, setSyncWithCentral] = useState(() => !!serviceDeskConfig.taxRegimeId);
+
+  const centralRegime = serviceDeskConfig.taxRegimeId
+    ? taxRegimes.find(r => r.id === serviceDeskConfig.taxRegimeId)
+    : taxRegimes.find(r => r.active) || null;
+
+  const fillRatesFromCentralRegime = (regime: typeof centralRegime) => {
+    if (!regime) return;
+    if (regime.type === 'iva') {
+      onUpdate({
+        ...data,
+        pis: 0,
+        cofins: 0,
+        ir: 0,
+        csll: 0,
+        icms: 0,
+        iss: 0,
+        taxRegime: TaxRegime.LUCRO_PRESUMIDO,
+      });
+    } else {
+      onUpdate({
+        ...data,
+        pis: regime.pis || 0,
+        cofins: regime.cofins || 0,
+        ir: regime.irpj || 0,
+        csll: regime.csll || 0,
+        icms: regime.icms || 0,
+        iss: regime.iss || 0,
+        taxRegime: regime.type === 'simples' ? TaxRegime.SIMPLES_NACIONAL
+                  : regime.type === 'real' ? TaxRegime.LUCRO_REAL
+                  : TaxRegime.LUCRO_PRESUMIDO,
+      });
+    }
+  };
+
+  const handleToggleSync = (checked: boolean) => {
+    setSyncWithCentral(checked);
+    if (checked && centralRegime) {
+      setServiceDeskConfig({ taxRegimeId: centralRegime.id });
+      fillRatesFromCentralRegime(centralRegime);
+    } else if (!checked) {
+      setServiceDeskConfig({ taxRegimeId: null });
+    }
+  };
+
+  const handleCentralRegimeChange = (regimeId: string) => {
+    const regime = taxRegimes.find(r => r.id === regimeId);
+    if (regime) {
+      setServiceDeskConfig({ taxRegimeId: regimeId });
+      if (syncWithCentral) {
+        fillRatesFromCentralRegime(regime);
+      }
+    }
+  };
   const [taxValidation, setTaxValidation] = useState<any>(null);
   const [regionalInfo, setRegionalInfo] = useState<any>(null);
 
@@ -555,6 +612,81 @@ export function TaxesTabModule({ data, onUpdate, onAutoSave, validation, isLoadi
         </TabsList>
 
         <TabsContent value="basic" className="space-y-6">
+          {/* Sincronização com Configurações Gerais */}
+          <Card className="border-blue-200 bg-blue-50/30">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <RefreshCw className="h-4 w-4 text-blue-600" />
+                Sincronizar com Configurações Gerais
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center gap-3">
+                <Checkbox
+                  id="sync-central"
+                  checked={syncWithCentral}
+                  onCheckedChange={handleToggleSync}
+                />
+                <Label htmlFor="sync-central" className="font-medium">
+                  Usar regime tributário das Configurações Gerais
+                </Label>
+              </div>
+              {syncWithCentral && (
+                <div className="space-y-3 pl-7">
+                  <div className="space-y-2">
+                    <Label>Regime Centralizado</Label>
+                    <Select
+                      value={serviceDeskConfig.taxRegimeId || centralRegime?.id || ''}
+                      onValueChange={handleCentralRegimeChange}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione o regime" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {taxRegimes.map(r => (
+                          <SelectItem key={r.id} value={r.id}>
+                            {r.name} {r.active ? '(Ativo)' : ''}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  {centralRegime && (
+                    <div className="p-3 border rounded-lg bg-white">
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="font-semibold text-sm">{centralRegime.name}</span>
+                        <Badge variant="outline" className="text-xs">
+                          {centralRegime.type === 'iva' ? 'IVA (IBS+CBS)' :
+                           centralRegime.type === 'presumido' ? 'Lucro Presumido' :
+                           centralRegime.type === 'real' ? 'Lucro Real' :
+                           centralRegime.type === 'simples' ? 'Simples Nacional' : 'MEI'}
+                        </Badge>
+                      </div>
+                      <div className="grid grid-cols-3 gap-2 text-xs text-muted-foreground">
+                        {centralRegime.type === 'iva' ? (
+                          <div className="col-span-3">IVA Total: <strong>{centralRegime.ivaTotal}%</strong></div>
+                        ) : (
+                          <>
+                            <div>PIS: <strong>{centralRegime.pis}%</strong></div>
+                            <div>COFINS: <strong>{centralRegime.cofins}%</strong></div>
+                            <div>IRPJ: <strong>{centralRegime.irpj}%</strong></div>
+                            <div>CSLL: <strong>{centralRegime.csll}%</strong></div>
+                            <div>ICMS: <strong>{centralRegime.icms}%</strong></div>
+                            <div>ISS: <strong>{centralRegime.iss}%</strong></div>
+                          </>
+                        )}
+                      </div>
+                      <p className="text-xs text-green-600 mt-2 flex items-center gap-1">
+                        <RefreshCw className="h-3 w-3" />
+                        Os campos abaixo estão sincronizados automaticamente
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
           {/* Basic Configuration */}
           <Card>
             <CardHeader>
@@ -604,6 +736,7 @@ export function TaxesTabModule({ data, onUpdate, onAutoSave, validation, isLoadi
                     min="0"
                     max="100"
                     value={data.pis}
+                    disabled={syncWithCentral}
                     onChange={(e) => handleTaxRateChange('pis', e.target.value)}
                   />
                 </div>
@@ -616,6 +749,7 @@ export function TaxesTabModule({ data, onUpdate, onAutoSave, validation, isLoadi
                     min="0"
                     max="100"
                     value={data.cofins}
+                    disabled={syncWithCentral}
                     onChange={(e) => handleTaxRateChange('cofins', e.target.value)}
                   />
                 </div>
@@ -628,6 +762,7 @@ export function TaxesTabModule({ data, onUpdate, onAutoSave, validation, isLoadi
                     min="0"
                     max="100"
                     value={data.ir}
+                    disabled={syncWithCentral}
                     onChange={(e) => handleTaxRateChange('ir', e.target.value)}
                   />
                 </div>
@@ -640,6 +775,7 @@ export function TaxesTabModule({ data, onUpdate, onAutoSave, validation, isLoadi
                     min="0"
                     max="100"
                     value={data.csll}
+                    disabled={syncWithCentral}
                     onChange={(e) => handleTaxRateChange('csll', e.target.value)}
                   />
                 </div>
@@ -663,6 +799,7 @@ export function TaxesTabModule({ data, onUpdate, onAutoSave, validation, isLoadi
                     min="0"
                     max="100"
                     value={data.icms}
+                    disabled={syncWithCentral}
                     onChange={(e) => handleTaxRateChange('icms', e.target.value)}
                   />
                 </div>
@@ -675,6 +812,7 @@ export function TaxesTabModule({ data, onUpdate, onAutoSave, validation, isLoadi
                     min="0"
                     max="100"
                     value={data.iss}
+                    disabled={syncWithCentral}
                     onChange={(e) => handleTaxRateChange('iss', e.target.value)}
                   />
                 </div>

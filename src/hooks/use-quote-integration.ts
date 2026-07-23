@@ -51,7 +51,10 @@ export function useQuoteIntegration() {
       date: proposal.date,
       distributorId: 1, // Distribuidor padrão - pode ser configurado
       quotationFile: '', // Será preenchido quando o arquivo for gerado
-      pricingFile: `${proposal.module.toLowerCase().replace(/[^a-z0-9]/g, '-')}-${proposal.id}.json`
+      pricingFile: `${proposal.module.toLowerCase().replace(/[^a-z0-9]/g, '-')}-${proposal.id}.json`,
+      module: proposal.module,
+      technicalSpecs: proposal.technicalSpecs,
+      clientData: proposal.clientData
     };
 
     return quote;

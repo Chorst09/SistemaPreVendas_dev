@@ -62,7 +62,8 @@ export function useJobPositions() {
         setJobPositions(prev => [...prev, newPosition]);
         return newPosition;
       } else {
-        throw new Error(data.error || 'Failed to create job position');
+        const detailMsg = data.details ? ` (${data.details})` : '';
+        throw new Error(`${data.error || 'Failed to create job position'}${detailMsg}`);
       }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to create job position';
@@ -92,7 +93,8 @@ export function useJobPositions() {
         setJobPositions(prev => prev.map(pos => pos.id === id ? updatedPosition : pos));
         return updatedPosition;
       } else {
-        throw new Error(data.error || 'Failed to update job position');
+        const detailMsg = data.details ? ` (${data.details})` : '';
+        throw new Error(`${data.error || 'Failed to update job position'}${detailMsg}`);
       }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to update job position';

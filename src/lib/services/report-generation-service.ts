@@ -1,6 +1,7 @@
 // @ts-nocheck
 import { ServiceDeskData } from '@/lib/types/service-desk-pricing';
 import { ReportConfig, ReportSection } from '@/components/service-desk-pricing/reports/ReportGenerator';
+import { createId } from '@/lib/utils/id';
 
 export interface GeneratedReport {
   id: string;
@@ -36,7 +37,7 @@ export class ReportGenerationService {
   }
 
   async generateReport(config: ReportConfig, data: ServiceDeskData): Promise<GeneratedReport> {
-    const reportId = crypto.randomUUID();
+    const reportId = createId();
     
     const report: GeneratedReport = {
       id: reportId,

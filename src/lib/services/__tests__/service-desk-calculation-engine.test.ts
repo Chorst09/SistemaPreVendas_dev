@@ -98,9 +98,8 @@ describe('ServiceDeskCalculationEngine', () => {
       const schedules: WorkSchedule[] = [];
       const result = engine.calculateTeamCosts(team, schedules);
 
-      // Expected: 10000 + (10000 * 0.0833) + (10000 * 0.0833) + (10000 * 0.08) + 500 + 600 + 400 + 100
-      // = 10000 + 833 + 833 + 800 + 1600 = 14066
-      expect(result.breakdown[0].totalCost).toBeCloseTo(14066, -1);
+      // Includes fixed benefits, vacation, 1/3 vacation, 13th salary, and FGTS on salary + provisions.
+      expect(result.breakdown[0].totalCost).toBeCloseTo(14499.52, 1);
     });
 
     it('should use precise weeks per month calculation', () => {
@@ -461,6 +460,60 @@ describe('ServiceDeskCalculationEngine', () => {
       expect(result.otherCosts).toBe((3000 * 12) + 6000);
       expect(result.totalCosts).toBe((10000 * 12) + (3000 * 12) + 6000);
       expect(result.monthlyBreakdown).toHaveLength(12);
+    });
+
+    it('should keep monthly costs monthly and distribute one-time costs over the contract', () => {
+      const teamCosts = {
+        totalMonthlyCost: 0,
+        totalAnnualCost: 0,
+        costPerHour: 0,
+        breakdown: []
+      };
+
+      const otherCosts: AdditionalCost[] = [
+        {
+          id: 'monthly-license',
+          name: 'Licenca mensal',
+          category: 'licenses' as any,
+          value: 1200,
+          type: 'fixed' as any,
+          frequency: 'monthly' as any,
+          startDate: new Date(),
+          description: '',
+          allocation: { method: 'equal', periods: [] }
+        },
+        {
+          id: 'setup',
+          name: 'Setup pontual',
+          category: 'infrastructure' as any,
+          value: 24000,
+          type: 'fixed' as any,
+          frequency: 'one_time' as any,
+          startDate: new Date(),
+          description: '',
+          allocation: { method: 'equal', periods: [] }
+        }
+      ];
+
+      const taxes = {
+        totalTaxes: 0,
+        effectiveRate: 0,
+        breakdown: [],
+        optimizationSuggestions: []
+      };
+
+      const marginConfig: MarginConfiguration = {
+        type: 'percentage',
+        value: 0,
+        minimumMargin: 0,
+        targetMargin: 0,
+        maximumMargin: 0
+      };
+
+      const result = engine.calculateConsolidatedBudget(teamCosts as any, otherCosts, taxes as any, marginConfig, 24);
+
+      expect(result.otherCosts).toBe((1200 * 24) + 24000);
+      expect(result.monthlyBreakdown[0].otherCosts).toBe(2200);
     });
   });
 

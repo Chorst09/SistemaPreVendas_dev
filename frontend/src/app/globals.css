@@ -776,6 +776,271 @@
     background-color: hsl(var(--primary) / 0.12) !important;
   }
 
+  .service-desk-theme .bg-white,
+  .service-desk-theme .bg-gray-50,
+  .service-desk-theme .bg-slate-50,
+  .service-desk-theme .bg-zinc-50 {
+    background-color: hsl(var(--card) / 0.94) !important;
+    color: hsl(var(--card-foreground)) !important;
+  }
+
+  .service-desk-theme .bg-gray-100,
+  .service-desk-theme .bg-slate-100,
+  .service-desk-theme .bg-zinc-100,
+  .service-desk-theme .bg-blue-50,
+  .service-desk-theme .bg-cyan-50,
+  .service-desk-theme .bg-green-50,
+  .service-desk-theme .bg-emerald-50,
+  .service-desk-theme .bg-yellow-50,
+  .service-desk-theme .bg-amber-50,
+  .service-desk-theme .bg-orange-50,
+  .service-desk-theme .bg-red-50,
+  .service-desk-theme .bg-rose-50,
+  .service-desk-theme .bg-purple-50,
+  .service-desk-theme .bg-violet-50,
+  .service-desk-theme .bg-blue-100,
+  .service-desk-theme .bg-cyan-100,
+  .service-desk-theme .bg-green-100,
+  .service-desk-theme .bg-emerald-100,
+  .service-desk-theme .bg-yellow-100,
+  .service-desk-theme .bg-amber-100,
+  .service-desk-theme .bg-orange-100,
+  .service-desk-theme .bg-red-100,
+  .service-desk-theme .bg-rose-100,
+  .service-desk-theme .bg-purple-100,
+  .service-desk-theme .bg-violet-100 {
+    background-color: hsl(var(--muted) / 0.78) !important;
+    color: hsl(var(--foreground)) !important;
+  }
+
+  .service-desk-theme .text-gray-400,
+  .service-desk-theme .text-gray-500,
+  .service-desk-theme .text-gray-600,
+  .service-desk-theme .text-slate-400,
+  .service-desk-theme .text-slate-500,
+  .service-desk-theme .text-slate-600,
+  .service-desk-theme .text-zinc-400,
+  .service-desk-theme .text-zinc-500,
+  .service-desk-theme .text-zinc-600 {
+    color: hsl(var(--muted-foreground)) !important;
+  }
+
+  .service-desk-theme .text-gray-700,
+  .service-desk-theme .text-gray-800,
+  .service-desk-theme .text-gray-900,
+  .service-desk-theme .text-slate-700,
+  .service-desk-theme .text-slate-800,
+  .service-desk-theme .text-slate-900,
+  .service-desk-theme .text-zinc-700,
+  .service-desk-theme .text-zinc-800,
+  .service-desk-theme .text-zinc-900,
+  .service-desk-theme .text-black {
+    color: hsl(var(--foreground)) !important;
+  }
+
+  .service-desk-theme .text-blue-500,
+  .service-desk-theme .text-blue-600,
+  .service-desk-theme .text-blue-700,
+  .service-desk-theme .text-blue-800,
+  .service-desk-theme .text-blue-900,
+  .service-desk-theme .text-cyan-500,
+  .service-desk-theme .text-cyan-600,
+  .service-desk-theme .text-cyan-700,
+  .service-desk-theme .text-cyan-800,
+  .service-desk-theme .text-cyan-900 {
+    color: hsl(198 92% 38%) !important;
+  }
+
+  .service-desk-theme .text-green-500,
+  .service-desk-theme .text-green-600,
+  .service-desk-theme .text-green-700,
+  .service-desk-theme .text-green-800,
+  .service-desk-theme .text-green-900,
+  .service-desk-theme .text-emerald-500,
+  .service-desk-theme .text-emerald-600,
+  .service-desk-theme .text-emerald-700,
+  .service-desk-theme .text-emerald-800,
+  .service-desk-theme .text-emerald-900 {
+    color: hsl(151 76% 31%) !important;
+  }
+
+  .service-desk-theme .text-yellow-500,
+  .service-desk-theme .text-yellow-600,
+  .service-desk-theme .text-yellow-700,
+  .service-desk-theme .text-yellow-800,
+  .service-desk-theme .text-yellow-900,
+  .service-desk-theme .text-amber-500,
+  .service-desk-theme .text-amber-600,
+  .service-desk-theme .text-amber-700,
+  .service-desk-theme .text-amber-800,
+  .service-desk-theme .text-amber-900,
+  .service-desk-theme .text-orange-500,
+  .service-desk-theme .text-orange-600,
+  .service-desk-theme .text-orange-700,
+  .service-desk-theme .text-orange-800,
+  .service-desk-theme .text-orange-900 {
+    color: hsl(30 92% 37%) !important;
+  }
+
+  .service-desk-theme .text-red-500,
+  .service-desk-theme .text-red-600,
+  .service-desk-theme .text-red-700,
+  .service-desk-theme .text-red-800,
+  .service-desk-theme .text-red-900,
+  .service-desk-theme .text-rose-500,
+  .service-desk-theme .text-rose-600,
+  .service-desk-theme .text-rose-700,
+  .service-desk-theme .text-rose-800,
+  .service-desk-theme .text-rose-900 {
+    color: hsl(356 75% 47%) !important;
+  }
+
+  .service-desk-theme .text-purple-500,
+  .service-desk-theme .text-purple-600,
+  .service-desk-theme .text-purple-700,
+  .service-desk-theme .text-purple-800,
+  .service-desk-theme .text-purple-900,
+  .service-desk-theme .text-violet-500,
+  .service-desk-theme .text-violet-600,
+  .service-desk-theme .text-violet-700,
+  .service-desk-theme .text-violet-800,
+  .service-desk-theme .text-violet-900 {
+    color: hsl(262 72% 52%) !important;
+  }
+
+  .dark .service-desk-theme .bg-white,
+  .dark .service-desk-theme .bg-gray-50,
+  .dark .service-desk-theme .bg-gray-100,
+  .dark .service-desk-theme .bg-slate-50,
+  .dark .service-desk-theme .bg-slate-100,
+  .dark .service-desk-theme .bg-zinc-50,
+  .dark .service-desk-theme .bg-zinc-100 {
+    background-color: hsl(var(--card) / 0.86) !important;
+    color: hsl(var(--card-foreground)) !important;
+  }
+
+  .dark .service-desk-theme .bg-blue-50,
+  .dark .service-desk-theme .bg-blue-100,
+  .dark .service-desk-theme .bg-cyan-50,
+  .dark .service-desk-theme .bg-cyan-100,
+  .dark .service-desk-theme .bg-green-50,
+  .dark .service-desk-theme .bg-green-100,
+  .dark .service-desk-theme .bg-emerald-50,
+  .dark .service-desk-theme .bg-emerald-100,
+  .dark .service-desk-theme .bg-yellow-50,
+  .dark .service-desk-theme .bg-yellow-100,
+  .dark .service-desk-theme .bg-amber-50,
+  .dark .service-desk-theme .bg-amber-100,
+  .dark .service-desk-theme .bg-orange-50,
+  .dark .service-desk-theme .bg-orange-100,
+  .dark .service-desk-theme .bg-red-50,
+  .dark .service-desk-theme .bg-red-100,
+  .dark .service-desk-theme .bg-rose-50,
+  .dark .service-desk-theme .bg-rose-100,
+  .dark .service-desk-theme .bg-purple-50,
+  .dark .service-desk-theme .bg-purple-100,
+  .dark .service-desk-theme .bg-violet-50,
+  .dark .service-desk-theme .bg-violet-100 {
+    background-color: hsl(var(--muted) / 0.42) !important;
+    color: hsl(var(--foreground)) !important;
+  }
+
+  .dark .service-desk-theme .text-blue-500,
+  .dark .service-desk-theme .text-blue-600,
+  .dark .service-desk-theme .text-blue-700,
+  .dark .service-desk-theme .text-blue-800,
+  .dark .service-desk-theme .text-blue-900,
+  .dark .service-desk-theme .text-cyan-500,
+  .dark .service-desk-theme .text-cyan-600,
+  .dark .service-desk-theme .text-cyan-700,
+  .dark .service-desk-theme .text-cyan-800,
+  .dark .service-desk-theme .text-cyan-900 {
+    color: hsl(198 100% 76%) !important;
+  }
+
+  .dark .service-desk-theme .text-green-500,
+  .dark .service-desk-theme .text-green-600,
+  .dark .service-desk-theme .text-green-700,
+  .dark .service-desk-theme .text-green-800,
+  .dark .service-desk-theme .text-green-900,
+  .dark .service-desk-theme .text-emerald-500,
+  .dark .service-desk-theme .text-emerald-600,
+  .dark .service-desk-theme .text-emerald-700,
+  .dark .service-desk-theme .text-emerald-800,
+  .dark .service-desk-theme .text-emerald-900 {
+    color: hsl(151 78% 70%) !important;
+  }
+
+  .dark .service-desk-theme .text-yellow-500,
+  .dark .service-desk-theme .text-yellow-600,
+  .dark .service-desk-theme .text-yellow-700,
+  .dark .service-desk-theme .text-yellow-800,
+  .dark .service-desk-theme .text-yellow-900,
+  .dark .service-desk-theme .text-amber-500,
+  .dark .service-desk-theme .text-amber-600,
+  .dark .service-desk-theme .text-amber-700,
+  .dark .service-desk-theme .text-amber-800,
+  .dark .service-desk-theme .text-amber-900,
+  .dark .service-desk-theme .text-orange-500,
+  .dark .service-desk-theme .text-orange-600,
+  .dark .service-desk-theme .text-orange-700,
+  .dark .service-desk-theme .text-orange-800,
+  .dark .service-desk-theme .text-orange-900 {
+    color: hsl(36 100% 72%) !important;
+  }
+
+  .dark .service-desk-theme .text-red-500,
+  .dark .service-desk-theme .text-red-600,
+  .dark .service-desk-theme .text-red-700,
+  .dark .service-desk-theme .text-red-800,
+  .dark .service-desk-theme .text-red-900,
+  .dark .service-desk-theme .text-rose-500,
+  .dark .service-desk-theme .text-rose-600,
+  .dark .service-desk-theme .text-rose-700,
+  .dark .service-desk-theme .text-rose-800,
+  .dark .service-desk-theme .text-rose-900 {
+    color: hsl(356 100% 76%) !important;
+  }
+
+  .dark .service-desk-theme .text-purple-500,
+  .dark .service-desk-theme .text-purple-600,
+  .dark .service-desk-theme .text-purple-700,
+  .dark .service-desk-theme .text-purple-800,
+  .dark .service-desk-theme .text-purple-900,
+  .dark .service-desk-theme .text-violet-500,
+  .dark .service-desk-theme .text-violet-600,
+  .dark .service-desk-theme .text-violet-700,
+  .dark .service-desk-theme .text-violet-800,
+  .dark .service-desk-theme .text-violet-900 {
+    color: hsl(262 100% 82%) !important;
+  }
+
+  .service-desk-theme .border-gray-200,
+  .service-desk-theme .border-gray-300,
+  .service-desk-theme .border-slate-200,
+  .service-desk-theme .border-slate-300,
+  .service-desk-theme .border-blue-200,
+  .service-desk-theme .border-green-200,
+  .service-desk-theme .border-yellow-200,
+  .service-desk-theme .border-amber-200,
+  .service-desk-theme .border-orange-200,
+  .service-desk-theme .border-red-200,
+  .service-desk-theme .border-purple-200 {
+    border-color: hsl(var(--border) / 0.78) !important;
+  }
+
+  .service-desk-theme .hover\:bg-gray-50:hover,
+  .service-desk-theme .hover\:bg-gray-100:hover,
+  .service-desk-theme .hover\:bg-slate-50:hover,
+  .service-desk-theme .hover\:bg-slate-100:hover,
+  .service-desk-theme .hover\:bg-blue-50:hover,
+  .service-desk-theme .hover\:bg-green-50:hover,
+  .service-desk-theme .hover\:bg-orange-50:hover,
+  .service-desk-theme .hover\:bg-purple-50:hover {
+    background-color: hsl(var(--muted)) !important;
+    color: hsl(var(--foreground)) !important;
+  }
+
   /* High contrast mode specific styles */
   .high-contrast .glass-effect {
     background: hsl(var(--card));

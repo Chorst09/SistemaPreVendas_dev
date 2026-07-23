@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -32,6 +32,7 @@ import {
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
+import { calculateMonthlyAdditionalCost, normalizeAdditionalCost, normalizeContractPeriodMonths } from '@/lib/utils/cost-normalization';
 import { 
   AdditionalCost, 
   TabValidationStatus,
@@ -48,6 +49,7 @@ export interface OtherCostsTabModuleProps {
   validation?: TabValidationStatus;
   isLoading?: boolean;
   onAutoSave?: (data: AdditionalCost[]) => void;
+  contractPeriodMonths?: number;
 }
 
 interface CostFormData extends Omit<AdditionalCost, 'id'> {
@@ -171,7 +173,8 @@ export function OtherCostsTabModule({
   onUpdate,
   validation,
   isLoading = false,
-  onAutoSave
+  onAutoSave,
+  contractPeriodMonths = 12
 }: OtherCostsTabModuleProps) {
   const [localData, setLocalData] = useState<AdditionalCost[]>(data);
   const [hasChanges, setHasChanges] = useState(false);
@@ -185,40 +188,67 @@ export function OtherCostsTabModule({
   const [isTemplateDialogOpen, setIsTemplateDialogOpen] = useState(false);
   const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
   const [duplicateValidation, setDuplicateValidation] = useState<any>(null);
+  const normalizedContractPeriod = normalizeContractPeriodMonths(contractPeriodMonths);
+
+  // Stable refs to avoid callback recreation on every parent render
+  const onAutoSaveRef = useRef(onAutoSave);
+  const onUpdateRef = useRef(onUpdate);
+  const costFormRef = useRef(costForm);
+  useEffect(() => {
+    onAutoSaveRef.current = onAutoSave;
+  }, [onAutoSave]);
+  useEffect(() => {
+    onUpdateRef.current = onUpdate;
+  }, [onUpdate]);
+  useEffect(() => {
+    costFormRef.current = costForm;
+  }, [costForm]);
 
   // Auto-save functionality with debouncing
   useEffect(() => {
-    if (hasChanges && onAutoSave) {
-      const timeoutId = setTimeout(() => {
-        onAutoSave(localData);
+    const onSave = onAutoSaveRef.current;
+    if (hasChanges && onSave) {
+      const timeoutId = setTimeout(async () => {
+        try {
+          await onSave(localData);
+        } catch (error) {
+          console.error('Auto-save error:', error);
+        }
         setHasChanges(false);
       }, 2000);
 
       return () => clearTimeout(timeoutId);
     }
-  }, [localData, hasChanges, onAutoSave]);
+  }, [localData, hasChanges]);
 
-  // Update local data when prop changes
+  // Update local data when prop changes (only if no local unsaved changes and values actually changed)
+  const propDataRef = useRef(data);
   useEffect(() => {
-    setLocalData(data);
-    setHasChanges(false);
-  }, [data]);
+    if (!hasChanges && JSON.stringify(data) !== JSON.stringify(propDataRef.current)) {
+      setLocalData(data);
+    }
+    propDataRef.current = data;
+  }, [data, hasChanges]);
 
   // Calculate cost summary when data changes
   useEffect(() => {
     calculateCostSummary();
     validateDuplicates();
-  }, [localData]);
+  }, [localData, normalizedContractPeriod]);
 
   // Load templates and previous projects on mount
   useEffect(() => {
     loadTemplatesAndProjects();
   }, []);
 
-  const handleSave = useCallback(() => {
-    onUpdate(localData);
+  const handleSave = useCallback(async () => {
+    try {
+      await onUpdateRef.current(localData);
+    } catch (error) {
+      console.error('Save error:', error);
+    }
     setHasChanges(false);
-  }, [localData, onUpdate]);
+  }, [localData]);
 
   const calculateCostSummary = useCallback(() => {
     const summary = {
@@ -256,28 +286,22 @@ export function OtherCostsTabModule({
     });
 
     setCostSummary(summary);
-  }, [localData]);
+  }, [localData, normalizedContractPeriod]);
 
   const calculateMonthlyCost = useCallback((cost: AdditionalCost): number => {
-    const frequencyConfig = costFrequencyConfig[cost.frequency];
-    
-    if (cost.frequency === CostFrequency.ONE_TIME) {
-      // For one-time costs, distribute over contract period (assuming 12 months)
-      return cost.value / 12;
-    }
-    
-    return cost.value / frequencyConfig.multiplier;
-  }, []);
+    return calculateMonthlyAdditionalCost(cost, normalizedContractPeriod);
+  }, [normalizedContractPeriod]);
 
   const resetCostForm = useCallback(() => {
-    setCostForm({ ...defaultCostData });
+    setCostForm({ ...defaultCostData, startDate: new Date() });
   }, []);
 
   const handleAddCost = useCallback(() => {
+    const formData = costFormRef.current;
     const newCost: AdditionalCost = {
-      ...costForm,
+      ...formData,
       id: `cost-${Date.now()}`,
-      startDate: costForm.startDate || new Date()
+      startDate: formData.startDate || new Date()
     };
     
     const updatedData = [...localData, newCost];
@@ -285,7 +309,7 @@ export function OtherCostsTabModule({
     setHasChanges(true);
     setIsAddingCost(false);
     resetCostForm();
-  }, [costForm, localData, resetCostForm]);
+  }, [localData, resetCostForm]);
 
   const handleEditCost = useCallback((cost: AdditionalCost) => {
     setEditingCost(cost);
@@ -295,8 +319,9 @@ export function OtherCostsTabModule({
   const handleUpdateCost = useCallback(() => {
     if (!editingCost) return;
     
+    const formData = costFormRef.current;
     const updatedCost: AdditionalCost = {
-      ...costForm,
+      ...formData,
       id: editingCost.id
     };
     
@@ -308,7 +333,7 @@ export function OtherCostsTabModule({
     setHasChanges(true);
     setEditingCost(null);
     resetCostForm();
-  }, [editingCost, costForm, localData, resetCostForm]);
+  }, [editingCost, localData, resetCostForm]);
 
   const handleRemoveCost = useCallback((costId: string) => {
     const updatedData = localData.filter(cost => cost.id !== costId);
@@ -329,21 +354,7 @@ export function OtherCostsTabModule({
   }, [localData]);
 
   const handleFormFieldChange = useCallback((field: string, value: any) => {
-    setCostForm(prev => {
-      const newForm = { ...prev };
-      const fieldPath = field.split('.');
-      
-      let current: any = newForm;
-      for (let i = 0; i < fieldPath.length - 1; i++) {
-        if (!current[fieldPath[i]]) {
-          current[fieldPath[i]] = {};
-        }
-        current = current[fieldPath[i]];
-      }
-      
-      current[fieldPath[fieldPath.length - 1]] = value;
-      return newForm;
-    });
+    setCostForm(prev => ({ ...prev, [field]: value }));
   }, []);
 
   const handleCategoryFilter = useCallback((category: CostCategory | null) => {
@@ -740,6 +751,7 @@ export function OtherCostsTabModule({
                     resetCostForm();
                   }}
                   submitLabel="Adicionar Custo"
+                  contractPeriodMonths={normalizedContractPeriod}
                 />
               </DialogContent>
             </Dialog>
@@ -791,6 +803,7 @@ export function OtherCostsTabModule({
               resetCostForm();
             }}
             submitLabel="Atualizar Custo"
+            contractPeriodMonths={normalizedContractPeriod}
           />
         </DialogContent>
       </Dialog>
@@ -917,7 +930,7 @@ function CostCard({ cost, onEdit, onRemove, onDuplicate, monthlyCost }: CostCard
                 <p className="font-medium">{categoryConfig.label}</p>
               </div>
               <div>
-                <p className="text-muted-foreground">Valor Original</p>
+                <p className="text-muted-foreground">Valor de Custo</p>
                 <p className="font-medium">{formatCurrency(cost.value)}</p>
               </div>
               <div>
@@ -925,7 +938,7 @@ function CostCard({ cost, onEdit, onRemove, onDuplicate, monthlyCost }: CostCard
                 <p className="font-medium">{frequencyConfig.label}</p>
               </div>
               <div>
-                <p className="text-muted-foreground">Custo Mensal</p>
+                <p className="text-muted-foreground">Custo Mensal Equiv.</p>
                 <p className="font-medium text-green-600">{formatCurrency(monthlyCost)}</p>
               </div>
             </div>
@@ -969,6 +982,7 @@ interface CostFormProps {
   onSubmit: () => void;
   onCancel: () => void;
   submitLabel: string;
+  contractPeriodMonths: number;
 }
 
 function CostForm({
@@ -976,7 +990,8 @@ function CostForm({
   onFieldChange,
   onSubmit,
   onCancel,
-  submitLabel
+  submitLabel,
+  contractPeriodMonths
 }: CostFormProps) {
   const [selectedCategoryItems, setSelectedCategoryItems] = useState<string[]>([]);
 
@@ -1001,19 +1016,11 @@ function CostForm({
   };
 
   const calculatePreviewCost = () => {
-    const frequencyConfig = costFrequencyConfig[formData.frequency];
-    
-    if (formData.frequency === CostFrequency.ONE_TIME) {
-      return {
-        monthly: formData.value / 12,
-        annual: formData.value
-      };
-    }
-    
-    const monthly = formData.value / frequencyConfig.multiplier;
+    const normalized = normalizeAdditionalCost(formData, contractPeriodMonths);
     return {
-      monthly,
-      annual: monthly * 12
+      monthly: normalized.monthlyEquivalent,
+      annual: normalized.annualEquivalent,
+      contractTotal: normalized.contractTotal
     };
   };
 
@@ -1084,7 +1091,7 @@ function CostForm({
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="cost-value">Valor *</Label>
+              <Label htmlFor="cost-value">Valor de Custo *</Label>
               <Input
                 id="cost-value"
                 type="number"
@@ -1234,7 +1241,7 @@ function CostForm({
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="text-center p-4 bg-green-50 rounded-lg">
-              <p className="text-sm text-muted-foreground">Custo Mensal</p>
+              <p className="text-sm text-muted-foreground">Custo Mensal Equivalente</p>
               <p className="text-2xl font-bold text-green-600">
                 {new Intl.NumberFormat('pt-BR', {
                   style: 'currency',
@@ -1243,12 +1250,12 @@ function CostForm({
               </p>
             </div>
             <div className="text-center p-4 bg-blue-50 rounded-lg">
-              <p className="text-sm text-muted-foreground">Custo Anual</p>
+              <p className="text-sm text-muted-foreground">Custo no Contrato</p>
               <p className="text-2xl font-bold text-blue-600">
                 {new Intl.NumberFormat('pt-BR', {
                   style: 'currency',
                   currency: 'BRL'
-                }).format(previewCost.annual)}
+                }).format(previewCost.contractTotal)}
               </p>
             </div>
           </div>

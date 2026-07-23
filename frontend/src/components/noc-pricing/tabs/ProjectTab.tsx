@@ -31,7 +31,7 @@ export function ProjectTab({ data, onChange }: ProjectTabProps) {
                 id="projectName"
                 value={data.projectName}
                 onChange={(e) => handleChange('projectName', e.target.value)}
-                placeholder="Ex: NOC Empresa XYZ"
+                placeholder="Ex: NOC/SOC/SIEM Empresa XYZ"
               />
             </div>
 
@@ -103,7 +103,7 @@ export function ProjectTab({ data, onChange }: ProjectTabProps) {
 
       <Card className="bg-card">
         <CardHeader>
-          <CardTitle>Configuração do Serviço</CardTitle>
+          <CardTitle>Configuração do Serviço NOC/SOC/SIEM</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -187,10 +187,10 @@ export function ProjectTab({ data, onChange }: ProjectTabProps) {
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-4">
             <h4 className="font-medium text-blue-900 mb-2">Sobre os Níveis de Serviço</h4>
             <ul className="text-sm text-blue-800 space-y-1">
-              <li>• <strong>Básico:</strong> Monitoramento de disponibilidade e alertas básicos</li>
-              <li>• <strong>Padrão:</strong> Monitoramento completo com métricas de performance</li>
-              <li>• <strong>Avançado:</strong> Inclui automação de resposta e análise proativa</li>
-              <li>• <strong>Premium:</strong> IA para predição de falhas e otimização contínua</li>
+              <li>• <strong>Básico:</strong> Monitoramento essencial, alertas e operação NOC</li>
+              <li>• <strong>Padrão:</strong> Monitoramento completo com métricas, SOC ou SIEM gerenciado</li>
+              <li>• <strong>Avançado:</strong> Inclui automação, correlação, MDR e análise proativa</li>
+              <li>• <strong>Premium:</strong> IA, threat hunting, resposta a incidente e otimização contínua</li>
             </ul>
           </div>
         </CardContent>

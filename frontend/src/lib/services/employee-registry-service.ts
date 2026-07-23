@@ -1,4 +1,6 @@
 import { TeamMember, BenefitPackage } from '@/lib/types/service-desk-pricing';
+import { createId } from '@/lib/utils/id';
+import { calculateMemberCostPerHour } from '@/lib/utils/labor-costs';
 
 export interface EmployeeProfile extends Omit<TeamMember, 'id'> {
   id: string;
@@ -42,7 +44,8 @@ export class EmployeeRegistryService {
   async createEmployee(employeeData: Omit<EmployeeProfile, 'id' | 'createdAt' | 'updatedAt'>): Promise<EmployeeProfile> {
     const employee: EmployeeProfile = {
       ...employeeData,
-      id: crypto.randomUUID(),
+      id: createId(),
+      costPerHour: calculateMemberCostPerHour(employeeData),
       createdAt: new Date(),
       updatedAt: new Date()
     };
@@ -62,6 +65,7 @@ export class EmployeeRegistryService {
       id, // Ensure ID doesn't change
       updatedAt: new Date()
     };
+    updatedEmployee.costPerHour = calculateMemberCostPerHour(updatedEmployee);
 
     this.employees.set(id, updatedEmployee);
     await this.saveToStorage();
@@ -101,7 +105,7 @@ export class EmployeeRegistryService {
 
     if (filters.role) {
       results = results.filter(emp => 
-        emp.role.toLowerCase().includes(filters.role!.toLowerCase())
+        (emp.role ?? '').toLowerCase().includes(filters.role!.toLowerCase())
       );
     }
 
@@ -129,11 +133,19 @@ export class EmployeeRegistryService {
     return {
       id: employee.id,
       name: employee.name,
+      jobPositionId: employee.jobPositionId,
+      workingHours: employee.workingHours,
+      startDate: employee.startDate,
+      isActive: employee.isActive,
       role: employee.role,
       salary: employee.salary,
       benefits: employee.benefits,
       workload: employee.workload,
-      costPerHour: employee.costPerHour
+      costPerHour: calculateMemberCostPerHour(employee),
+      skills: employee.skills,
+      certifications: employee.certifications,
+      endDate: employee.endDate,
+      notes: employee.notes
     };
   }
 
@@ -164,7 +176,8 @@ export class EmployeeRegistryService {
     }, {} as Record<string, number>);
 
     const byRole = all.reduce((acc, emp) => {
-      acc[emp.role] = (acc[emp.role] || 0) + 1;
+      const role = emp.role ?? 'Desconhecido';
+      acc[role] = (acc[role] || 0) + 1;
       return acc;
     }, {} as Record<string, number>);
 
@@ -174,7 +187,7 @@ export class EmployeeRegistryService {
       inactive: all.length - active.length,
       byDepartment,
       byRole,
-      averageSalary: all.reduce((sum, emp) => sum + emp.salary, 0) / all.length || 0
+      averageSalary: all.reduce((sum, emp) => sum + (emp.salary ?? 0), 0) / all.length || 0
     };
   }
 

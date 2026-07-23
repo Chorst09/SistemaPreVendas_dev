@@ -16,6 +16,7 @@ import {
   IncidentType,
   IncidentSeverity
 } from '@/lib/types/service-desk-analytics';
+import { createId } from '@/lib/utils/id';
 
 export class ServiceDeskAnalyticsService {
   private static readonly STORAGE_KEY = 'service-desk-analytics';
@@ -145,7 +146,7 @@ export class ServiceDeskAnalyticsService {
     if (Math.random() * 100 > this.config.samplingRate) return;
 
     const event: AnalyticsEvent = {
-      id: crypto.randomUUID(),
+      id: createId(),
       timestamp: new Date(),
       sessionId: this.sessionId,
       ...eventData

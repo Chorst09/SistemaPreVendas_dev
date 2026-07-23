@@ -468,7 +468,9 @@ export class ServiceDeskMemoryManager {
           // Limit cache size to prevent memory issues
           if (pageCache.size > 10) {
             const oldestKey = pageCache.keys().next().value;
-            pageCache.delete(oldestKey);
+            if (oldestKey !== undefined) {
+              pageCache.delete(oldestKey);
+            }
           }
         }
         

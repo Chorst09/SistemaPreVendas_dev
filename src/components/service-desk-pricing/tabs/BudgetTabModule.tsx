@@ -422,6 +422,32 @@ export function BudgetTabModule({
     [pricingModelComparisons, pricingModelConfig.model]
   );
 
+  const financialStatement = useMemo(() => {
+    const grossRevenue = Math.max(0, localData.totalPrice || 0);
+    const taxes = Math.max(0, localData.taxes.total || 0);
+    const netRevenue = Math.max(0, grossRevenue - taxes);
+    const costs = Math.max(0, localData.totalCosts || 0);
+    const grossProfit = netRevenue - costs;
+    const margin = grossRevenue > 0 ? (grossProfit / grossRevenue) * 100 : 0;
+    const monthlyRevenue = grossRevenue / contractPeriod;
+    const monthlyTaxes = taxes / contractPeriod;
+    const monthlyCosts = costs / contractPeriod;
+    const monthlyProfit = grossProfit / contractPeriod;
+
+    return {
+      grossRevenue,
+      taxes,
+      netRevenue,
+      costs,
+      grossProfit,
+      margin,
+      monthlyRevenue,
+      monthlyTaxes,
+      monthlyCosts,
+      monthlyProfit
+    };
+  }, [localData, contractPeriod]);
+
   // Generate optimization suggestions from comparison service
   const optimizationSuggestions = useMemo(() => {
     if (budgetComparison) {
@@ -619,7 +645,7 @@ export function BudgetTabModule({
       <Tabs value={activeView} onValueChange={(value: any) => setActiveView(value)}>
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="overview">Visão Geral</TabsTrigger>
-          <TabsTrigger value="details">Detalhamento</TabsTrigger>
+          <TabsTrigger value="details">DRE</TabsTrigger>
           <TabsTrigger value="comparison">Comparação</TabsTrigger>
           <TabsTrigger value="settings">Configurações</TabsTrigger>
         </TabsList>
@@ -741,8 +767,68 @@ export function BudgetTabModule({
           </Card>
         </TabsContent>
 
-        {/* Details Tab */}
+        {/* DRE Tab */}
         <TabsContent value="details" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>DRE - Demonstrativo de Resultado</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-3">
+                  <div className="flex justify-between">
+                    <span>Receita bruta de venda</span>
+                    <span className="font-medium">{formatCurrency(financialStatement.grossRevenue)}</span>
+                  </div>
+                  <div className="flex justify-between text-destructive">
+                    <span>(-) Impostos sobre venda</span>
+                    <span className="font-medium">({formatCurrency(financialStatement.taxes)})</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Receita líquida</span>
+                    <span className="font-medium">{formatCurrency(financialStatement.netRevenue)}</span>
+                  </div>
+                  <div className="flex justify-between text-destructive">
+                    <span>(-) Custos totais</span>
+                    <span className="font-medium">({formatCurrency(financialStatement.costs)})</span>
+                  </div>
+                  <Separator />
+                  <div className="flex justify-between text-lg font-semibold">
+                    <span>Resultado bruto</span>
+                    <span>{formatCurrency(financialStatement.grossProfit)}</span>
+                  </div>
+                  <div className="flex justify-between text-sm text-muted-foreground">
+                    <span>Margem DRE</span>
+                    <span>{formatPercentage(financialStatement.margin)}</span>
+                  </div>
+                </div>
+                <div className="space-y-3">
+                  <div className="flex justify-between">
+                    <span>Venda mensal</span>
+                    <span className="font-medium">{formatCurrency(financialStatement.monthlyRevenue)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Impostos mensais</span>
+                    <span className="font-medium">{formatCurrency(financialStatement.monthlyTaxes)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Custos mensais</span>
+                    <span className="font-medium">{formatCurrency(financialStatement.monthlyCosts)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Resultado mensal</span>
+                    <span className="font-medium">{formatCurrency(financialStatement.monthlyProfit)}</span>
+                  </div>
+                  <Separator />
+                  <div className="flex justify-between text-sm text-muted-foreground">
+                    <span>Prazo usado no cálculo</span>
+                    <span>{contractPeriod} meses</span>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Team costs breakdown */}
             <Card>

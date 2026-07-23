@@ -12,15 +12,55 @@ import { initialLaborCosts } from '@/lib/types/labor-costs'
 import { defaultCompanyData } from '@/lib/types/company-data'
 import { defaultICMSRates, type ICMSInterstateRates } from '@/lib/types/pricing'
 
+export interface ModuleTaxConfig {
+  taxRegimeId: string | null
+}
+
+export interface OutsourcingConfig {
+  comissaoVenda: number
+  custosOperacionais: number
+  margemPadrao: number
+  taxRegimeId: string | null
+  custosBase: {
+    "Preto e Branco": number
+    "Colorida": number
+    "A3 Preto e Branco": number
+    "A3 Colorida": number
+  }
+  taxaFinanceiraMensal: number
+}
+
+const defaultOutsourcingConfig: OutsourcingConfig = {
+  comissaoVenda: 3,
+  custosOperacionais: 8,
+  margemPadrao: 25,
+  taxRegimeId: null,
+  custosBase: {
+    "Preto e Branco": 0.08,
+    "Colorida": 0.35,
+    "A3 Preto e Branco": 0.12,
+    "A3 Colorida": 0.50
+  },
+  taxaFinanceiraMensal: 1.17
+}
+
+const defaultModuleConfig: ModuleTaxConfig = {
+  taxRegimeId: null
+}
+
 interface ConfigurationState {
   taxRegimes: TaxRegime[]
   costsExpenses: CostsExpenses
   laborCosts: LaborCosts
   companyData: CompanyData
   icmsRates: ICMSInterstateRates
+  outsourcingConfig: OutsourcingConfig
+  nocConfig: ModuleTaxConfig
+  serviceDeskConfig: ModuleTaxConfig
   
   // Getters
   getActiveTaxRegime: () => TaxRegime | null
+  getRegimeForModule: (moduleConfig: ModuleTaxConfig) => TaxRegime | null
   
   // Actions
   setTaxRegimes: (regimes: TaxRegime[]) => void
@@ -28,6 +68,9 @@ interface ConfigurationState {
   setLaborCosts: (labor: LaborCosts) => void
   setCompanyData: (companyData: CompanyData) => void
   setIcmsRates: (rates: ICMSInterstateRates) => void
+  setOutsourcingConfig: (config: Partial<OutsourcingConfig>) => void
+  setNocConfig: (config: Partial<ModuleTaxConfig>) => void
+  setServiceDeskConfig: (config: Partial<ModuleTaxConfig>) => void
 }
 
 export const useConfigurationStore = create<ConfigurationState>()(
@@ -38,9 +81,20 @@ export const useConfigurationStore = create<ConfigurationState>()(
       laborCosts: initialLaborCosts,
       companyData: defaultCompanyData,
       icmsRates: defaultICMSRates,
+      outsourcingConfig: defaultOutsourcingConfig,
+      nocConfig: { ...defaultModuleConfig },
+      serviceDeskConfig: { ...defaultModuleConfig },
 
       getActiveTaxRegime: () => {
         const { taxRegimes } = get()
+        return taxRegimes.find(regime => regime.active) || null
+      },
+
+      getRegimeForModule: (moduleConfig) => {
+        const { taxRegimes } = get()
+        if (moduleConfig.taxRegimeId) {
+          return taxRegimes.find(r => r.id === moduleConfig.taxRegimeId) || null
+        }
         return taxRegimes.find(regime => regime.active) || null
       },
 
@@ -49,10 +103,19 @@ export const useConfigurationStore = create<ConfigurationState>()(
       setLaborCosts: (labor) => set({ laborCosts: labor }),
       setCompanyData: (companyData) => set({ companyData }),
       setIcmsRates: (rates) => set({ icmsRates: rates }),
+      setOutsourcingConfig: (config) => set((state) => ({ 
+        outsourcingConfig: { ...state.outsourcingConfig, ...config } 
+      })),
+      setNocConfig: (config) => set((state) => ({
+        nocConfig: { ...state.nocConfig, ...config }
+      })),
+      setServiceDeskConfig: (config) => set((state) => ({
+        serviceDeskConfig: { ...state.serviceDeskConfig, ...config }
+      })),
     }),
     {
       name: 'it-pricing-configuration',
-      version: 1,
+      version: 2,
     },
   ),
 )

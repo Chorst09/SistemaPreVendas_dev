@@ -24,6 +24,8 @@ import {
   TaxSummary
 } from '../types/service-desk-pricing';
 import { ServiceDeskCalculationCache, cached } from '../utils/calculation-cache';
+import { calculateLaborCostBreakdown, resolveWorkload } from '../utils/labor-costs';
+import { calculateContractAdditionalCost, normalizeContractPeriodMonths } from '../utils/cost-normalization';
 
 /**
  * Core calculation engine for Service Desk pricing system
@@ -82,12 +84,12 @@ export class ServiceDeskCalculationEngine {
   private calculateMemberCost(member: TeamMember, schedules: WorkSchedule[]): TeamMemberCostCalculation {
     const quantity = this.getMemberQuantity(member);
     const salaryPerMember = this.resolveMemberSalary(member);
-    const benefitsPerMember = this.calculateBenefits(member, salaryPerMember);
+    const laborCostPerMember = calculateLaborCostBreakdown(salaryPerMember, member.benefits);
     
     // Calculate special shift multipliers
     const shiftMultiplier = this.calculateShiftMultiplier(member, schedules);
     const adjustedSalary = salaryPerMember * shiftMultiplier * quantity;
-    const benefits = benefitsPerMember * quantity;
+    const benefits = laborCostPerMember.totalBenefitsAndCharges * quantity;
     
     const totalCost = adjustedSalary + benefits;
     const monthlyHours = this.resolveMemberWorkload(member) * ServiceDeskCalculationEngine.WEEKS_PER_MONTH * quantity;
@@ -98,57 +100,11 @@ export class ServiceDeskCalculationEngine {
       memberId: member.id,
       baseSalary: adjustedSalary,
       benefits,
+      laborCharges: benefits,
       totalCost,
       hourlyRate,
       annualCost
     };
-  }
-
-  /**
-   * Calculate benefits for a team member
-   * FIXED: Use configured values properly, with correct defaults
-   */
-  private calculateBenefits(member: TeamMember, salaryBase: number): number {
-    const benefits = member.benefits || {
-      healthInsurance: 0,
-      mealVoucher: 0,
-      transportVoucher: 0,
-      lifeInsurance: 0,
-      vacation: 8.33,
-      thirteenthSalary: 8.33,
-      fgts: 8,
-      inss: 0,
-      otherBenefits: []
-    };
-    let totalBenefits = 0;
-
-    // Fixed benefits
-    totalBenefits += benefits.healthInsurance || 0;
-    totalBenefits += benefits.mealVoucher || 0;
-    totalBenefits += benefits.transportVoucher || 0;
-    totalBenefits += benefits.lifeInsurance || 0;
-
-    // Percentage-based benefits - use configured values with proper defaults
-    const vacationRate = benefits.vacation ?? 8.33; // 1/12 of year
-    const thirteenthRate = benefits.thirteenthSalary ?? 8.33; // 1/12 of year
-    const fgtsRate = benefits.fgts ?? 8; // Default 8% FGTS
-    const inssRate = benefits.inss ?? 0; // Default 0% (employer doesn't pay)
-
-    totalBenefits += salaryBase * (vacationRate / 100);
-    totalBenefits += salaryBase * (thirteenthRate / 100);
-    totalBenefits += salaryBase * (fgtsRate / 100);
-    totalBenefits += salaryBase * (inssRate / 100);
-
-    // Custom benefits
-    benefits.otherBenefits?.forEach(benefit => {
-      if (benefit.type === 'fixed') {
-        totalBenefits += benefit.value;
-      } else {
-        totalBenefits += salaryBase * (benefit.value / 100);
-      }
-    });
-
-    return totalBenefits;
   }
 
   /**
@@ -194,19 +150,7 @@ export class ServiceDeskCalculationEngine {
   }
 
   private resolveMemberWorkload(member: TeamMember): number {
-    if (typeof member.workload === 'number') {
-      return member.workload > 0 ? member.workload : 0;
-    }
-
-    const workingHours = (member as any).workingHours;
-    if (workingHours === 6) {
-      return 30;
-    }
-    if (workingHours === 8) {
-      return 40;
-    }
-
-    return 40;
+    return resolveWorkload(member);
   }
 
   private resolveMemberSalary(member: TeamMember): number {
@@ -872,14 +816,14 @@ export class ServiceDeskCalculationEngine {
     marginConfig: MarginConfiguration,
     contractPeriod: number
   ): ConsolidatedBudget {
-    const normalizedContractPeriod = Math.max(1, Math.floor(contractPeriod || 1));
+    const normalizedContractPeriod = normalizeContractPeriodMonths(contractPeriod);
 
     const infrastructureCosts = otherCosts
       .filter(cost => cost.category === 'infrastructure' || (cost.category as unknown as string) === 'INFRASTRUCTURE')
-      .reduce((sum, cost) => sum + this.calculateContractCost(cost, normalizedContractPeriod), 0);
+      .reduce((sum, cost) => sum + calculateContractAdditionalCost(cost, normalizedContractPeriod), 0);
     
     const totalOtherCosts = otherCosts.reduce(
-      (sum, cost) => sum + this.calculateContractCost(cost, normalizedContractPeriod),
+      (sum, cost) => sum + calculateContractAdditionalCost(cost, normalizedContractPeriod),
       0
     );
     const totalCosts = (teamCosts.totalMonthlyCost * normalizedContractPeriod) + totalOtherCosts;
@@ -941,26 +885,6 @@ export class ServiceDeskCalculationEngine {
       totalPrice: margins.totalPrice,
       monthlyBreakdown
     };
-  }
-
-  private calculateContractCost(cost: AdditionalCost, contractPeriod: number): number {
-    const period = Math.max(1, contractPeriod);
-    const value = Number.isFinite(cost?.value) ? Math.max(0, cost.value) : 0;
-
-    switch (cost?.frequency) {
-      case 'monthly':
-        return value * period;
-      case 'quarterly':
-        return value * Math.ceil(period / 3);
-      case 'semi_annual':
-        return value * Math.ceil(period / 6);
-      case 'annual':
-        return value * Math.ceil(period / 12);
-      case 'one_time':
-        return value;
-      default:
-        return value * period;
-    }
   }
 
   private scaleTaxesToRevenue(taxes: TaxCalculationResult, revenue: number): { total: number; breakdown: TaxBreakdown[] } {

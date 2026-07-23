@@ -17,6 +17,7 @@ import {
 import { TeamMember } from '@/lib/types/service-desk-pricing';
 import { useServiceDeskMemoryOptimization } from '@/hooks/use-memory-optimization';
 import { usePaginatedVirtualScrolling } from '@/hooks/use-virtual-scrolling';
+import { calculateMemberCostPerHour } from '@/lib/utils/labor-costs';
 
 interface MemoryOptimizedTeamListProps {
   team: TeamMember[];
@@ -75,7 +76,7 @@ export function MemoryOptimizedTeamList({
 
   // Memoized team member cost calculation
   const calculateMemberCost = useCallback((member: TeamMember): number => {
-    const cacheKey = `member-cost-${member.id}-${member.salary}-${member.workload}`;
+    const cacheKey = `member-cost-${member.id}-${member.salary}-${member.workload}-${JSON.stringify(member.benefits)}`;
     
     // Check cache first
     const cached = getCachedCalculation(cacheKey);
@@ -83,18 +84,7 @@ export function MemoryOptimizedTeamList({
       return cached;
     }
 
-    // Calculate cost
-    const monthlyHours = member.workload * 4.33;
-    const benefitsTotal = Object.values(member.benefits).reduce((sum, benefit) => {
-      if (typeof benefit === 'number') return sum + benefit;
-      if (Array.isArray(benefit)) {
-        return sum + benefit.reduce((benefitSum, b) => benefitSum + (b.value || 0), 0);
-      }
-      return sum;
-    }, 0);
-    
-    const totalMonthlyCost = member.salary + benefitsTotal;
-    const costPerHour = monthlyHours > 0 ? totalMonthlyCost / monthlyHours : 0;
+    const costPerHour = calculateMemberCostPerHour(member);
     
     // Cache the result
     cacheCalculation(cacheKey, costPerHour);

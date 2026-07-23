@@ -92,8 +92,8 @@ export class EnhancedValidationEngine extends ServiceDeskValidationEngine {
     const tabData = this.getTabDataForValidation(data, fromTab);
     const validation = this.validateTabData(fromTab, tabData);
 
-    // Check completion percentage
-    if (validation.completionPercentage < 50) {
+    // Check completion percentage only for tabs with visible, user-actionable required fields.
+    if (this.shouldWarnAboutCompletion(fromTab) && validation.completionPercentage < 50) {
       warnings.push({
         field: 'completion',
         message: `Aba atual está apenas ${validation.completionPercentage}% completa`,
@@ -152,14 +152,12 @@ export class EnhancedValidationEngine extends ServiceDeskValidationEngine {
           code: 'DEPENDENCY_NOT_MET'
         });
         blockingIssues.push(depTab);
-      } else if (depValidation.completionPercentage < 80) {
-        warnings.push({
-          field: 'dependency_completion',
-          message: `Aba "${this.getTabDisplayName(depTab)}" está incompleta (${depValidation.completionPercentage}%)`,
-          suggestion: 'Complete as dependências para melhor experiência'
-        });
       }
     }
+  }
+
+  private shouldWarnAboutCompletion(tabId: string): boolean {
+    return ['data', 'team', 'taxes'].includes(tabId);
   }
 
   /**
@@ -198,7 +196,14 @@ export class EnhancedValidationEngine extends ServiceDeskValidationEngine {
   ): void {
     if (!data.team || !data.schedules) return;
 
-    const teamMemberIds = new Set(data.team.map(member => member.id));
+    const teamMemberIds = new Set<string>();
+    data.team.forEach(member => {
+      teamMemberIds.add(member.id);
+      const quantity = Math.max(1, Number((member as any).quantity) || 1);
+      for (let index = 0; index < quantity; index += 1) {
+        teamMemberIds.add(`${member.id}-${index}`);
+      }
+    });
     const assignedMemberIds = new Set<string>();
 
     data.schedules.forEach(schedule => {
@@ -217,7 +222,10 @@ export class EnhancedValidationEngine extends ServiceDeskValidationEngine {
       });
     });
 
-    const unassignedMembers = data.team.filter(member => !assignedMemberIds.has(member.id));
+    const unassignedMembers = Array.from(teamMemberIds).filter(memberId => {
+      if (data.team.some(member => member.id === memberId)) return false;
+      return !assignedMemberIds.has(memberId);
+    });
     if (unassignedMembers.length > 0) {
       warnings.push({
         field: 'unassigned_members',

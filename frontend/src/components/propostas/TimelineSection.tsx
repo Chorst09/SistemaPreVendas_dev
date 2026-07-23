@@ -5,6 +5,7 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Plus, Trash2, Calendar, Clock } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { createId } from '@/lib/utils/id';
 
 interface TimelineSectionProps {
   proposal: CommercialProposal;
@@ -144,7 +145,7 @@ export function TimelineSection({ proposal, onUpdate }: TimelineSectionProps) {
       currentDay += duration;
       
       return {
-        id: crypto.randomUUID(),
+        id: createId(),
         period: weekStart === weekEnd ? `Semana ${weekStart}` : `Semanas ${weekStart}-${weekEnd}`,
         description: phase.name,
         startDate: phaseStartDate.toISOString().split('T')[0],
@@ -165,7 +166,7 @@ export function TimelineSection({ proposal, onUpdate }: TimelineSectionProps) {
 
   const addMilestone = () => {
     const newMilestone: TimelineMilestone = {
-      id: crypto.randomUUID(),
+      id: createId(),
       period: '',
       description: '',
       durationDays: 7

@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma';
 
 export async function GET() {
   try {
-    const jobPositions = await prisma.jobPosition.findMany({
+    const jobPositions = await (prisma as any).jobPosition.findMany({
       where: { isActive: true },
       orderBy: { name: 'asc' }
     });
@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const jobPosition = await prisma.jobPosition.create({
+    const jobPosition = await (prisma as any).jobPosition.create({
       data: {
         name,
         level,
@@ -75,7 +75,7 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    const jobPosition = await prisma.jobPosition.update({
+    const jobPosition = await (prisma as any).jobPosition.update({
       where: { id },
       data: {
         name,
@@ -116,7 +116,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Check if position is being used by any team members
-    const teamMembersCount = await prisma.teamMember.count({
+    const teamMembersCount = await (prisma as any).teamMember.count({
       where: { jobPositionId: id }
     });
 
@@ -127,7 +127,7 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    await prisma.jobPosition.delete({
+    await (prisma as any).jobPosition.delete({
       where: { id }
     });
 

@@ -39,6 +39,14 @@ export interface VendedorResponsavel extends ContactInfo {
   vendedor: string
 }
 
+export interface AcessoPartner {
+  id: string
+  nome: string
+  site: string
+  login: string
+  senha: string
+}
+
 // Parceiros (Distribuidores e Fornecedores)
 export interface Partner extends BaseEntity {
   id: number
@@ -60,6 +68,7 @@ export interface Partner extends BaseEntity {
   loginEcommerce?: string
   passwordEcommerce?: string
   vendedoresResponsaveis?: VendedorResponsavel[]
+  acessosPartner?: AcessoPartner[]
 }
 
 // Orçamentos
@@ -76,6 +85,9 @@ export interface Quote extends BaseEntity {
   distributorId: ID
   quotationFile?: string
   pricingFile?: string
+  module?: string
+  technicalSpecs?: any
+  clientData?: any
 }
 
 // Propostas

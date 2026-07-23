@@ -92,9 +92,11 @@ export class PDFCompatibilityLayer {
     options: EnhancedPDFOptions = {}
   ): Promise<PDFGenerationResult> {
     
+    let migrationStatus: MigrationStatus | null = null;
+    
     try {
       // Detect data type and migration status
-      const migrationStatus = this.analyzeMigrationStatus(proposalData, options);
+      migrationStatus = this.analyzeMigrationStatus(proposalData, options);
       
       // Handle legacy data with fallback support
       if (migrationStatus.isLegacyData) {
@@ -123,7 +125,7 @@ export class PDFCompatibilityLayer {
       console.error('PDF generation failed:', error);
       
       // Attempt fallback generation if enhanced generation fails
-      if (options.enableEnhancedFeatures && !migrationStatus.isLegacyData) {
+      if (options.enableEnhancedFeatures && migrationStatus && !migrationStatus.isLegacyData) {
         console.log('Attempting fallback to legacy generator...');
         try {
           const legacyData = this.convertToLegacyFormat(proposalData, clientData);

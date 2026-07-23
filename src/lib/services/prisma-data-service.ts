@@ -101,14 +101,14 @@ export class PrismaDataService {
       
       // Get job positions separately
       const jobPositionsResponse = await fetch('/api/job-positions');
-      const jobPositions = jobPositionsResponse.ok ? await jobPositionsResponse.json() : [];
+      const jobPositionsData = jobPositionsResponse.ok ? await jobPositionsResponse.json() : { jobPositions: [] };
 
       if (!project) {
         throw new Error('Project not found');
       }
 
       const serviceDeskData = this.transformPrismaToServiceDeskData(project);
-      serviceDeskData.jobPositions = jobPositions;
+      serviceDeskData.jobPositions = Array.isArray(jobPositionsData) ? jobPositionsData : (jobPositionsData.jobPositions || []);
 
       return serviceDeskData;
     } catch (error) {

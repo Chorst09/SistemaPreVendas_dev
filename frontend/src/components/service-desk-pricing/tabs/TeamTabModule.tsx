@@ -45,6 +45,7 @@ import { useComprehensiveMemoryOptimization } from '@/hooks/use-comprehensive-me
 import { useAutomaticDataCleanup } from '@/lib/services/automatic-data-cleanup';
 import { EmployeeRegistryManager } from '../employees/EmployeeRegistryManager';
 import { EmployeeRegistryService, EmployeeProfile } from '@/lib/services/employee-registry-service';
+import { DEFAULT_LABOR_CHARGES, calculateLaborCostBreakdown, calculateMemberCostPerHour as calculateLaborCostPerHourValue } from '@/lib/utils/labor-costs';
 
 export interface TeamTabModuleProps {
   team: TeamMember[];
@@ -56,8 +57,11 @@ export interface TeamTabModuleProps {
   onAutoSave?: (team: TeamMember[]) => void;
 }
 
-interface TeamMemberFormData extends Omit<TeamMember, 'id' | 'costPerHour'> {
+interface TeamMemberFormData extends Omit<TeamMember, 'id' | 'costPerHour' | 'jobPositionId' | 'workingHours' | 'isActive'> {
   id?: string;
+  jobPositionId?: string;
+  workingHours?: 8 | 6;
+  isActive?: boolean;
 }
 
 const defaultBenefits: BenefitPackage = {
@@ -65,11 +69,15 @@ const defaultBenefits: BenefitPackage = {
   mealVoucher: 0,
   transportVoucher: 0,
   lifeInsurance: 0,
-  vacation: 8.33, // 1/12 of salary
-  thirteenthSalary: 8.33, // 1/12 of salary
-  fgts: 8, // 8% of salary
-  inss: 11, // Average INSS rate
-  otherBenefits: []
+  vacation: DEFAULT_LABOR_CHARGES.vacation,
+  vacationThird: DEFAULT_LABOR_CHARGES.vacationThird,
+  thirteenthSalary: DEFAULT_LABOR_CHARGES.thirteenthSalary,
+  fgts: DEFAULT_LABOR_CHARGES.fgts,
+  inss: DEFAULT_LABOR_CHARGES.employerSocialSecurity,
+  employerSocialSecurity: DEFAULT_LABOR_CHARGES.employerSocialSecurity,
+  fgtsOnProvisions: true,
+  socialSecurityOnProvisions: true,
+  otherBenefits: [] as CustomBenefit[]
 };
 
 const commonRoles = [
@@ -296,12 +304,7 @@ export function TeamTabModule({
       return cached;
     }
 
-    const monthlyHours = member.workload * 4.33; // weeks to month
-    if (monthlyHours === 0) return 0;
-    
-    const benefits = calculateMemberBenefits(member);
-    const totalMonthlyCost = member.salary + benefits;
-    const costPerHour = totalMonthlyCost / monthlyHours;
+    const costPerHour = calculateLaborCostPerHourValue(member);
     
     // Cache the result
     setCachedResult(cacheKey, costPerHour);
@@ -318,31 +321,7 @@ export function TeamTabModule({
   }, [debouncedCalculations]);
 
   const calculateMemberBenefits = useCallback((member: TeamMember): number => {
-    const benefits = member.benefits;
-    let totalBenefits = 0;
-
-    // Fixed benefits
-    totalBenefits += benefits.healthInsurance || 0;
-    totalBenefits += benefits.mealVoucher || 0;
-    totalBenefits += benefits.transportVoucher || 0;
-    totalBenefits += benefits.lifeInsurance || 0;
-
-    // Percentage-based benefits
-    totalBenefits += member.salary * (benefits.vacation / 100 || 0);
-    totalBenefits += member.salary * (benefits.thirteenthSalary / 100 || 0);
-    totalBenefits += member.salary * (benefits.fgts / 100 || 0);
-    totalBenefits += member.salary * (benefits.inss / 100 || 0);
-
-    // Custom benefits
-    benefits.otherBenefits?.forEach(benefit => {
-      if (benefit.type === 'fixed') {
-        totalBenefits += benefit.value;
-      } else {
-        totalBenefits += member.salary * (benefit.value / 100);
-      }
-    });
-
-    return totalBenefits;
+    return calculateLaborCostBreakdown(member.salary ?? 0, member.benefits ?? defaultBenefits).totalBenefitsAndCharges;
   }, []);
 
   const resetMemberForm = useCallback(() => {
@@ -362,7 +341,12 @@ export function TeamTabModule({
     const newMember: TeamMember = {
       ...memberForm,
       id: `member-${Date.now()}`,
-      costPerHour: 0 // Will be calculated
+      jobPositionId: memberForm.jobPositionId || '',
+      workingHours: (memberForm.workingHours ?? 8) as 8 | 6,
+      isActive: memberForm.isActive ?? true,
+      startDate: memberForm.startDate || new Date(),
+      name: memberForm.name || '',
+      costPerHour: 0
     };
     
     newMember.costPerHour = calculateMemberCostPerHour(newMember);
@@ -376,7 +360,8 @@ export function TeamTabModule({
 
   const handleEditMember = useCallback((member: TeamMember) => {
     setEditingMember(member);
-    setMemberForm({ ...member });
+    const { costPerHour, ...memberWithoutCost } = member;
+    setMemberForm(memberWithoutCost);
   }, []);
 
   const handleUpdateMember = useCallback(() => {
@@ -385,7 +370,12 @@ export function TeamTabModule({
     const updatedMember: TeamMember = {
       ...memberForm,
       id: editingMember.id,
-      costPerHour: 0 // Will be calculated
+      jobPositionId: memberForm.jobPositionId || '',
+      workingHours: (memberForm.workingHours ?? 8) as 8 | 6,
+      isActive: memberForm.isActive ?? true,
+      startDate: memberForm.startDate || new Date(),
+      name: memberForm.name || '',
+      costPerHour: 0
     };
     
     updatedMember.costPerHour = calculateMemberCostPerHour(updatedMember);
@@ -459,8 +449,8 @@ export function TeamTabModule({
     setMemberForm(prev => ({
       ...prev,
       benefits: {
-        ...prev.benefits,
-        otherBenefits: [...(prev.benefits.otherBenefits || []), newBenefit]
+        ...(prev.benefits ?? defaultBenefits),
+        otherBenefits: [...(prev.benefits?.otherBenefits ?? []), newBenefit]
       }
     }));
   }, []);
@@ -469,8 +459,8 @@ export function TeamTabModule({
     setMemberForm(prev => ({
       ...prev,
       benefits: {
-        ...prev.benefits,
-        otherBenefits: prev.benefits.otherBenefits?.filter((_, i) => i !== index) || []
+        ...(prev.benefits ?? defaultBenefits),
+        otherBenefits: prev.benefits?.otherBenefits?.filter((_, i) => i !== index) || []
       }
     }));
   }, []);
@@ -483,7 +473,7 @@ export function TeamTabModule({
         ...prev,
         salary: template.salary,
         benefits: {
-          ...prev.benefits,
+          ...(prev.benefits ?? defaultBenefits),
           ...template.benefits
         }
       }));
@@ -713,7 +703,7 @@ export function TeamTabModule({
             </div>
 
             {/* Workload Validation Warnings */}
-            {(localTeam || []).some(member => validateWorkload(member.workload).length > 0) && (
+            {(localTeam || []).some(member => validateWorkload(member.workload ?? 0).length > 0) && (
               <div className="mt-4">
                 <Alert>
                   <AlertCircle className="h-4 w-4" />
@@ -722,7 +712,7 @@ export function TeamTabModule({
                       <p className="font-medium">Atenção na carga horária:</p>
                       <ul className="list-disc list-inside space-y-1">
                         {(localTeam || []).map(member => {
-                          const warnings = validateWorkload(member.workload);
+                          const warnings = validateWorkload(member.workload ?? 0);
                           return warnings.map((warning, index) => (
                             <li key={`${member.id}-${index}`} className="text-sm">
                               <strong>{member.name}:</strong> {warning}
@@ -928,15 +918,15 @@ function TeamMemberCard({ member, onEdit, onRemove, onDuplicate, costCalculation
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
               <div>
                 <p className="text-muted-foreground">Salário Base</p>
-                <p className="font-medium">{formatCurrency(member.salary)}</p>
+                <p className="font-medium">{formatCurrency(member.salary ?? 0)}</p>
               </div>
               <div>
                 <p className="text-muted-foreground">Carga Horária</p>
-                <p className="font-medium">{member.workload}h/semana</p>
+                <p className="font-medium">{member.workload ?? 0}h/semana</p>
               </div>
               <div>
                 <p className="text-muted-foreground">Custo/Hora</p>
-                <p className="font-medium">{formatCurrency(member.costPerHour)}</p>
+                <p className="font-medium">{formatCurrency(member.costPerHour ?? 0)}</p>
               </div>
               <div>
                 <p className="text-muted-foreground">Custo Mensal</p>
@@ -999,6 +989,7 @@ function MemberForm({
   onCancel,
   submitLabel
 }: MemberFormProps) {
+  const benefits = formData.benefits ?? defaultBenefits;
   const handleSkillsChange = (skillsText: string) => {
     const skills = skillsText.split(',').map(skill => skill.trim()).filter(skill => skill.length > 0);
     onFieldChange('skills', skills);
@@ -1047,12 +1038,12 @@ function MemberForm({
                     <SelectItem value="custom">Outro (personalizado)</SelectItem>
                   </SelectContent>
                 </Select>
-                {salaryTemplates[formData.role] && (
+                {formData.role && salaryTemplates[formData.role] && (
                   <Button
                     type="button"
                     variant="outline"
                     size="sm"
-                    onClick={() => onApplyRoleTemplate(formData.role)}
+                    onClick={() => formData.role && onApplyRoleTemplate(formData.role)}
                   >
                     Aplicar Template
                   </Button>
@@ -1086,28 +1077,28 @@ function MemberForm({
               <Input
                 id="member-workload"
                 type="number"
-                value={formData.workload}
+                value={formData.workload ?? 0}
                 onChange={(e) => onFieldChange('workload', parseInt(e.target.value) || 0)}
                 placeholder="40"
                 min="1"
                 max="60"
                 className={cn(
-                  formData.workload > 44 && "border-yellow-500",
-                  formData.workload > 60 && "border-red-500"
+                  (formData.workload ?? 0) > 44 && "border-yellow-500",
+                  (formData.workload ?? 0) > 60 && "border-red-500"
                 )}
               />
-              {formData.workload > 0 && (
+              {(formData.workload ?? 0) > 0 && (
                 <div className="text-sm space-y-1">
-                  {formData.workload > 44 && formData.workload <= 60 && (
+                  {(formData.workload ?? 0) > 44 && (formData.workload ?? 0) <= 60 && (
                     <p className="text-yellow-600 dark:text-yellow-400">⚠️ Acima do limite legal (44h/semana)</p>
                   )}
-                  {formData.workload > 60 && (
+                  {(formData.workload ?? 0) > 60 && (
                     <p className="text-red-600 dark:text-red-400">❌ Carga horária excessiva</p>
                   )}
-                  {formData.workload < 20 && (
+                  {(formData.workload ?? 0) < 20 && (
                     <p className="text-yellow-600 dark:text-yellow-400">⚠️ Carga horária muito baixa</p>
                   )}
-                  {formData.workload >= 20 && formData.workload <= 44 && (
+                  {(formData.workload ?? 0) >= 20 && (formData.workload ?? 0) <= 44 && (
                     <p className="text-green-600 dark:text-green-400">✅ Carga horária adequada</p>
                   )}
                 </div>
@@ -1119,7 +1110,7 @@ function MemberForm({
             <Label htmlFor="member-skills">Habilidades (separadas por vírgula)</Label>
             <Textarea
               id="member-skills"
-              value={formData.skills.join(', ')}
+              value={(formData.skills ?? []).join(', ')}
               onChange={(e) => handleSkillsChange(e.target.value)}
               placeholder="Windows Server, Active Directory, SQL Server, etc."
               rows={2}
@@ -1130,7 +1121,7 @@ function MemberForm({
             <Label htmlFor="member-certifications">Certificações (separadas por vírgula)</Label>
             <Textarea
               id="member-certifications"
-              value={formData.certifications.join(', ')}
+              value={(formData.certifications ?? []).join(', ')}
               onChange={(e) => handleCertificationsChange(e.target.value)}
               placeholder="ITIL, CompTIA A+, Microsoft Certified, etc."
               rows={2}
@@ -1151,7 +1142,7 @@ function MemberForm({
               <Input
                 id="health-insurance"
                 type="number"
-                value={formData.benefits.healthInsurance}
+                value={benefits.healthInsurance}
                 onChange={(e) => onFieldChange('benefits.healthInsurance', parseFloat(e.target.value) || 0)}
                 placeholder="0.00"
                 min="0"
@@ -1164,7 +1155,7 @@ function MemberForm({
               <Input
                 id="meal-voucher"
                 type="number"
-                value={formData.benefits.mealVoucher}
+                value={benefits.mealVoucher}
                 onChange={(e) => onFieldChange('benefits.mealVoucher', parseFloat(e.target.value) || 0)}
                 placeholder="0.00"
                 min="0"
@@ -1179,7 +1170,7 @@ function MemberForm({
               <Input
                 id="transport-voucher"
                 type="number"
-                value={formData.benefits.transportVoucher}
+                value={benefits.transportVoucher}
                 onChange={(e) => onFieldChange('benefits.transportVoucher', parseFloat(e.target.value) || 0)}
                 placeholder="0.00"
                 min="0"
@@ -1192,7 +1183,7 @@ function MemberForm({
               <Input
                 id="life-insurance"
                 type="number"
-                value={formData.benefits.lifeInsurance}
+                value={benefits.lifeInsurance}
                 onChange={(e) => onFieldChange('benefits.lifeInsurance', parseFloat(e.target.value) || 0)}
                 placeholder="0.00"
                 min="0"
@@ -1205,11 +1196,11 @@ function MemberForm({
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="vacation">Férias (%)</Label>
+              <Label htmlFor="vacation">Provisão de Férias (%)</Label>
               <Input
                 id="vacation"
                 type="number"
-                value={formData.benefits.vacation}
+                value={benefits.vacation}
                 onChange={(e) => onFieldChange('benefits.vacation', parseFloat(e.target.value) || 0)}
                 placeholder="8.33"
                 min="0"
@@ -1219,13 +1210,13 @@ function MemberForm({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="thirteenth-salary">13º Salário (%)</Label>
+              <Label htmlFor="vacation-third">1/3 Constitucional (%)</Label>
               <Input
-                id="thirteenth-salary"
+                id="vacation-third"
                 type="number"
-                value={formData.benefits.thirteenthSalary}
-                onChange={(e) => onFieldChange('benefits.thirteenthSalary', parseFloat(e.target.value) || 0)}
-                placeholder="8.33"
+                value={benefits.vacationThird ?? DEFAULT_LABOR_CHARGES.vacationThird}
+                onChange={(e) => onFieldChange('benefits.vacationThird', parseFloat(e.target.value) || 0)}
+                placeholder="2.78"
                 min="0"
                 max="100"
                 step="0.01"
@@ -1235,13 +1226,13 @@ function MemberForm({
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="fgts">FGTS (%)</Label>
+              <Label htmlFor="thirteenth-salary">Provisão de 13º (%)</Label>
               <Input
-                id="fgts"
+                id="thirteenth-salary"
                 type="number"
-                value={formData.benefits.fgts}
-                onChange={(e) => onFieldChange('benefits.fgts', parseFloat(e.target.value) || 0)}
-                placeholder="8.00"
+                value={benefits.thirteenthSalary}
+                onChange={(e) => onFieldChange('benefits.thirteenthSalary', parseFloat(e.target.value) || 0)}
+                placeholder="8.33"
                 min="0"
                 max="100"
                 step="0.01"
@@ -1249,13 +1240,33 @@ function MemberForm({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="inss">INSS (%)</Label>
+              <Label htmlFor="fgts">FGTS Patronal (%)</Label>
+              <Input
+                id="fgts"
+                type="number"
+                value={benefits.fgts}
+                onChange={(e) => onFieldChange('benefits.fgts', parseFloat(e.target.value) || 0)}
+                placeholder="8.00"
+                min="0"
+                max="100"
+                step="0.01"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="inss">INSS Patronal (%)</Label>
               <Input
                 id="inss"
                 type="number"
-                value={formData.benefits.inss}
-                onChange={(e) => onFieldChange('benefits.inss', parseFloat(e.target.value) || 0)}
-                placeholder="11.00"
+                value={benefits.employerSocialSecurity ?? benefits.inss}
+                onChange={(e) => {
+                  const value = parseFloat(e.target.value) || 0;
+                  onFieldChange('benefits.inss', value);
+                  onFieldChange('benefits.employerSocialSecurity', value);
+                }}
+                placeholder="20.00"
                 min="0"
                 max="100"
                 step="0.01"
@@ -1275,7 +1286,7 @@ function MemberForm({
               </Button>
             </div>
 
-            {formData.benefits.otherBenefits?.map((benefit, index) => (
+            {benefits.otherBenefits?.map((benefit, index) => (
               <div key={index} className="flex items-end space-x-2 p-3 border rounded-lg">
                 <div className="flex-1 space-y-2">
                   <Label htmlFor={`benefit-name-${index}`}>Nome</Label>
@@ -1336,7 +1347,7 @@ function MemberForm({
         <Button 
           type="button" 
           onClick={onSubmit}
-          disabled={!formData.name || !formData.role || formData.salary <= 0}
+          disabled={!formData.name || !formData.role || (formData.salary ?? 0) <= 0}
         >
           {submitLabel}
         </Button>

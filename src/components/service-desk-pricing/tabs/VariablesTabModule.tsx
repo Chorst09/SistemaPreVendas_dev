@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -119,10 +119,14 @@ export function VariablesTabModule({
     }
   }, [localData, hasChanges, onAutoSave]);
 
-  // Update local data when prop changes
+  // Update local data when prop changes (only if values actually changed)
+  const dataRef = useRef(data);
   useEffect(() => {
-    setLocalData(data);
-    setHasChanges(false);
+    if (JSON.stringify(data) !== JSON.stringify(dataRef.current)) {
+      setLocalData(data);
+      setHasChanges(false);
+    }
+    dataRef.current = data;
   }, [data]);
 
   // Calculate impact analysis when data changes
@@ -579,7 +583,7 @@ export function VariablesTabModule({
                 <Label>Última Atualização</Label>
                 <Input
                   type="date"
-                  value={localData.inflation.lastUpdate.toISOString().split('T')[0]}
+                  value={localData.inflation.lastUpdate ? new Date(localData.inflation.lastUpdate).toISOString().split('T')[0] : ''}
                   onChange={(e) => handleInflationChange('lastUpdate', new Date(e.target.value))}
                   disabled={isLoading}
                 />
@@ -664,7 +668,7 @@ export function VariablesTabModule({
                 <Label>Data do Reajuste</Label>
                 <Input
                   type="date"
-                  value={localData.salaryAdjustments.adjustmentDate.toISOString().split('T')[0]}
+                  value={localData.salaryAdjustments.adjustmentDate ? new Date(localData.salaryAdjustments.adjustmentDate).toISOString().split('T')[0] : ''}
                   onChange={(e) => handleSalaryAdjustmentChange('adjustmentDate', new Date(e.target.value))}
                   disabled={isLoading}
                 />

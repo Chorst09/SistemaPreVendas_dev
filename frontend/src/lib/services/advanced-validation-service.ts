@@ -108,7 +108,7 @@ export class AdvancedValidationService {
     try {
       // Validate each section
       const projectValidation = this.validateProject(data.project, data)
-      const teamValidation = this.validateTeam(data.team, data)
+      const teamValidation = this.validateTeam(data.team as unknown as TeamMember[], data)
       const scheduleValidation = this.validateSchedules(data.schedules, data)
       const taxValidation = this.validateTaxes(data.taxes, data)
       const budgetValidation = this.validateBudget(data.budget, data)
@@ -212,7 +212,7 @@ export class AdvancedValidationService {
 
     // Analyze data and provide suggestions
     suggestions.push(...this.getProjectSuggestions(data.project))
-    suggestions.push(...this.getTeamSuggestions(data.team))
+    suggestions.push(...this.getTeamSuggestions(data.team as unknown as TeamMember[]))
     suggestions.push(...this.getScheduleSuggestions(data.schedules))
     suggestions.push(...this.getBudgetSuggestions(data.budget, data))
 
@@ -522,7 +522,7 @@ export class AdvancedValidationService {
 
         if (teamData && budgetData) {
           const calculatedTeamCost = teamData.reduce((total: number, member: TeamMember) => {
-            const monthlyCost = member.salary + (member.benefits?.healthInsurance || 0) + 
+            const monthlyCost = (member.salary ?? 0) + (member.benefits?.healthInsurance || 0) + 
                               (member.benefits?.mealVoucher || 0) + (member.benefits?.transportVoucher || 0)
             return total + monthlyCost
           }, 0)

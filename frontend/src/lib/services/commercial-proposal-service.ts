@@ -3,6 +3,7 @@
  */
 
 import { CommercialProposal, ProposalStatus, ProposalTemplate } from '@/lib/types/commercial-proposal';
+import { createId } from '@/lib/utils/id';
 
 export class CommercialProposalService {
   private static readonly STORAGE_KEY = 'commercial-proposals';
@@ -17,7 +18,7 @@ export class CommercialProposalService {
     validUntil.setDate(validUntil.getDate() + 15); // Válida por 15 dias
 
     return {
-      id: crypto.randomUUID(),
+      id: createId(),
       title: 'Nova Proposta Comercial',
       proposalNumber: this.generateProposalNumber(),
       version: '1.0',
@@ -241,7 +242,7 @@ export class CommercialProposalService {
 
     const duplicate: CommercialProposal = {
       ...original,
-      id: crypto.randomUUID(),
+      id: createId(),
       title: `${original.title} (Cópia)`,
       proposalNumber: this.generateProposalNumber(),
       status: ProposalStatus.DRAFT,
@@ -258,11 +259,21 @@ export class CommercialProposalService {
    * Calcula totais da proposta
    */
   static calculateTotals(proposal: CommercialProposal): CommercialProposal {
-    const subtotal = proposal.items.reduce((sum, item) => sum + item.total, 0);
-    const discount = (subtotal * proposal.pricing.discountPercentage) / 100;
+    const subtotal = proposal.items.reduce<number>((sum, item) => sum + item.total, 0);
+    const pricing = proposal.pricing ?? {
+      subtotal: 0,
+      discount: 0,
+      discountPercentage: 0,
+      taxes: [],
+      totalTaxes: 0,
+      total: 0,
+      currency: 'BRL',
+      paymentTerms: []
+    };
+    const discount = (subtotal * pricing.discountPercentage) / 100;
     const afterDiscount = subtotal - discount;
     
-    const totalTaxes = proposal.pricing.taxes.reduce((sum, tax) => {
+    const totalTaxes = pricing.taxes.reduce<number>((sum, tax) => {
       tax.amount = (afterDiscount * tax.rate) / 100;
       return sum + tax.amount;
     }, 0);
@@ -272,7 +283,7 @@ export class CommercialProposalService {
     return {
       ...proposal,
       pricing: {
-        ...proposal.pricing,
+        ...pricing,
         subtotal,
         discount,
         totalTaxes,
@@ -295,7 +306,7 @@ export class CommercialProposalService {
     const data = JSON.parse(json);
     return {
       ...data,
-      id: crypto.randomUUID(), // Novo ID
+      id: createId(), // Novo ID
       createdAt: new Date(),
       updatedAt: new Date(),
       status: ProposalStatus.DRAFT
@@ -348,7 +359,7 @@ export class CommercialProposalService {
     return {
       ...base,
       ...template.template,
-      id: crypto.randomUUID(),
+      id: createId(),
       createdAt: new Date(),
       updatedAt: new Date(),
       status: ProposalStatus.DRAFT

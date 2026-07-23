@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -9,7 +9,25 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Plus, Search, Filter, Eye, Edit, Trash2, FileText, Calendar, DollarSign, User } from 'lucide-react';
+import {
+  AlertTriangle,
+  Calendar,
+  CheckCircle,
+  Clock,
+  DollarSign,
+  Edit,
+  Eye,
+  FileQuestion,
+  FileText,
+  Filter,
+  Plus,
+  Search,
+  Send,
+  ShieldCheck,
+  Trash2,
+  User,
+  XCircle
+} from 'lucide-react';
 import { RFP } from '@/lib/types';
 import RFPForm from './RFPForm';
 
@@ -19,6 +37,33 @@ interface RFPViewProps {
   onUpdate: (id: string, rfp: Omit<RFP, 'id'>) => void;
   onDelete: (id: string) => void;
 }
+
+const statusStyles: Record<string, string> = {
+  Aberto: 'border-emerald-400/30 bg-emerald-400/10 text-emerald-300',
+  'Em Análise': 'border-cyan-400/30 bg-cyan-400/10 text-cyan-300',
+  Respondido: 'border-amber-400/30 bg-amber-400/10 text-amber-300',
+  Fechado: 'border-muted bg-muted text-muted-foreground',
+  Vencido: 'border-red-400/30 bg-red-400/10 text-red-300'
+};
+
+const formatCurrency = (value: number) =>
+  new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
+
+const formatDate = (date: string) => new Date(date).toLocaleDateString('pt-BR');
+
+const getDaysUntilDeadline = (deadlineDate: string) => {
+  const today = new Date();
+  const deadline = new Date(deadlineDate);
+  return Math.ceil((deadline.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+};
+
+const statusIcon = (status: string) => {
+  if (status === 'Aberto') return CheckCircle;
+  if (status === 'Em Análise') return Clock;
+  if (status === 'Respondido') return Send;
+  if (status === 'Vencido') return XCircle;
+  return FileText;
+};
 
 const RFPView: React.FC<RFPViewProps> = ({ rfps, onAdd, onUpdate, onDelete }) => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -31,18 +76,29 @@ const RFPView: React.FC<RFPViewProps> = ({ rfps, onAdd, onUpdate, onDelete }) =>
 
   const filteredRFPs = useMemo(() => {
     return rfps.filter(rfp => {
-      const matchesSearch = 
-        rfp.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        rfp.client.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        rfp.description.toLowerCase().includes(searchTerm.toLowerCase());
-      
+      const normalizedSearch = searchTerm.toLowerCase();
+      const matchesSearch =
+        rfp.title.toLowerCase().includes(normalizedSearch) ||
+        rfp.client.toLowerCase().includes(normalizedSearch) ||
+        rfp.description.toLowerCase().includes(normalizedSearch) ||
+        rfp.accountManager.toLowerCase().includes(normalizedSearch);
       const matchesStatus = statusFilter === 'all' || rfp.status === statusFilter;
       const matchesType = typeFilter === 'all' || rfp.type === typeFilter;
       const matchesCategory = categoryFilter === 'all' || rfp.category === categoryFilter;
-
       return matchesSearch && matchesStatus && matchesType && matchesCategory;
     });
   }, [rfps, searchTerm, statusFilter, typeFilter, categoryFilter]);
+
+  const stats = {
+    total: rfps.length,
+    open: rfps.filter(r => r.status === 'Aberto').length,
+    answered: rfps.filter(r => r.status === 'Respondido').length,
+    urgent: rfps.filter(r => {
+      const days = getDaysUntilDeadline(r.deadlineDate);
+      return days >= 0 && days <= 7;
+    }).length,
+    totalValue: rfps.reduce((sum, r) => sum + (r.value || 0), 0)
+  };
 
   const handleCreate = () => {
     setEditingRFP(null);
@@ -54,148 +110,156 @@ const RFPView: React.FC<RFPViewProps> = ({ rfps, onAdd, onUpdate, onDelete }) =>
     setShowForm(true);
   };
 
-  const handleView = (rfp: RFP) => {
-    setViewingRFP(rfp);
-  };
-
   const handleDelete = (id: string) => {
-    if (confirm('Tem certeza que deseja excluir este RFP/RFI?')) {
-      onDelete(id);
-    }
+    if (confirm('Tem certeza que deseja excluir este RFP/RFI?')) onDelete(id);
   };
 
   const handleSubmit = (rfpData: Omit<RFP, 'id'>) => {
-    if (editingRFP) {
-      onUpdate(editingRFP.id, rfpData);
-    } else {
-      onAdd(rfpData);
-    }
+    if (editingRFP) onUpdate(editingRFP.id, rfpData);
+    else onAdd(rfpData);
     setShowForm(false);
     setEditingRFP(null);
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'Aberto': return 'bg-green-100 text-green-800';
-      case 'Em Análise': return 'bg-blue-100 text-blue-800';
-      case 'Respondido': return 'bg-yellow-100 text-yellow-800';
-      case 'Fechado': return 'bg-gray-100 text-gray-800';
-      case 'Vencido': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
-  };
-
-  const getTypeColor = (type: string) => {
-    return type === 'RFP' ? 'bg-purple-100 text-purple-800' : 'bg-orange-100 text-orange-800';
-  };
-
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL'
-    }).format(value);
-  };
-
-  const formatDate = (date: string) => {
-    return new Date(date).toLocaleDateString('pt-BR');
-  };
-
-  const getDaysUntilDeadline = (deadlineDate: string) => {
-    const today = new Date();
-    const deadline = new Date(deadlineDate);
-    const diffTime = deadline.getTime() - today.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays;
+  const badgeForStatus = (status: string) => {
+    const Icon = statusIcon(status);
+    return (
+      <Badge variant="outline" className={statusStyles[status] || 'border-border bg-muted text-muted-foreground'}>
+        <Icon className="mr-1 h-3 w-3" />
+        {status}
+      </Badge>
+    );
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h2 className="text-2xl font-bold tracking-tight">Gestão de RFP/RFI</h2>
-          <p className="text-muted-foreground">
-            Gerencie solicitações de propostas e informações
-          </p>
-        </div>
-        <Button onClick={handleCreate}>
-          <Plus className="h-4 w-4 mr-2" />
-          Novo RFP/RFI
-        </Button>
-      </div>
+    <div className="space-y-7 p-4 sm:p-6">
+      <section className="relative overflow-hidden rounded-lg border border-cyan-400/20 bg-card shadow-xl">
+        <div className="absolute inset-0 bg-[linear-gradient(115deg,rgba(6,14,30,0.96)_0%,rgba(11,24,48,0.86)_50%,rgba(255,115,45,0.16)_100%)]" />
+        <div
+          className="absolute inset-0 bg-cover bg-center opacity-25"
+          style={{ backgroundImage: "url('https://images.unsplash.com/photo-1455390582262-044cdead277a?auto=format&fit=crop&w=1600&q=80')" }}
+        />
+        <div className="relative z-10 grid gap-6 p-6 text-white lg:grid-cols-[1fr_360px] lg:p-8">
+          <div>
+            <div className="mb-5 inline-flex w-fit items-center gap-2 rounded-full border border-cyan-300/35 bg-cyan-300/10 px-4 py-2 text-sm font-medium text-cyan-100">
+              <FileQuestion className="h-4 w-4 text-cyan-300" />
+              Gestão de demandas formais, perguntas técnicas e respostas comerciais
+            </div>
+            <h1 className="text-3xl font-bold leading-tight sm:text-4xl lg:text-5xl">RFP/RFI</h1>
+            <p className="mt-4 max-w-3xl text-base leading-7 text-slate-200">
+              Controle solicitações, prazos, requisitos, responsáveis e status de resposta para transformar demandas formais em propostas consistentes.
+            </p>
+            <div className="mt-6 flex flex-wrap gap-3">
+              <Button onClick={handleCreate} className="bg-orange-500 text-white hover:bg-orange-600">
+                <Plus className="mr-2 h-4 w-4" />
+                Novo RFP/RFI
+              </Button>
+              <Button variant="outline" className="border-cyan-300/50 bg-slate-950/30 text-white hover:bg-cyan-300/10 hover:text-white">
+                <FileText className="mr-2 h-4 w-4" />
+                Central de Respostas
+              </Button>
+            </div>
+          </div>
 
-      {/* Filtros */}
-      <Card>
+          <Card className="border-white/15 bg-slate-950/50 text-white backdrop-blur">
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2 text-lg text-white">
+                <ShieldCheck className="h-5 w-5 text-cyan-300" />
+                Prioridade da fila
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="rounded-md border border-white/10 bg-white/5 p-3">
+                  <p className="text-xs text-slate-300">Em aberto</p>
+                  <p className="mt-1 text-2xl font-bold text-emerald-300">{stats.open}</p>
+                </div>
+                <div className="rounded-md border border-white/10 bg-white/5 p-3">
+                  <p className="text-xs text-slate-300">Urgentes</p>
+                  <p className="mt-1 text-2xl font-bold text-amber-300">{stats.urgent}</p>
+                </div>
+              </div>
+              <div className="rounded-md border border-white/10 bg-white/5 p-3">
+                <p className="text-xs text-slate-300">Valor estimado</p>
+                <p className="mt-1 text-xl font-bold">{formatCurrency(stats.totalValue)}</p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </section>
+
+      <section className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+        {[
+          { label: 'Total RFP/RFI', value: stats.total, icon: FileQuestion, accent: 'text-cyan-300' },
+          { label: 'Em Aberto', value: stats.open, icon: Calendar, accent: 'text-emerald-300' },
+          { label: 'Respondidos', value: stats.answered, icon: Send, accent: 'text-amber-300' },
+          { label: 'Valor Total', value: formatCurrency(stats.totalValue), icon: DollarSign, accent: 'text-orange-300' }
+        ].map((item) => {
+          const Icon = item.icon;
+          return (
+            <Card key={item.label} className="border-border bg-card shadow-sm">
+              <CardContent className="p-5">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">{item.label}</p>
+                    <p className="mt-2 text-2xl font-bold text-foreground">{item.value}</p>
+                  </div>
+                  <div className={`flex h-12 w-12 items-center justify-center rounded-md bg-background ${item.accent}`}>
+                    <Icon className="h-6 w-6" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })}
+      </section>
+
+      <Card className="border-border bg-card shadow-sm">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Filter className="h-5 w-5" />
-            Filtros
+            <Filter className="h-5 w-5 text-cyan-300" />
+            Filtros e Pesquisa
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
             <div>
-              <Label htmlFor="search">Buscar</Label>
+              <Label>Buscar</Label>
               <div className="relative">
-                <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                <Input
-                  id="search"
-                  placeholder="Buscar por título, cliente..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
+                <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                <Input placeholder="Título, cliente, gerente..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-10" />
               </div>
             </div>
-
             <div>
-              <Label htmlFor="status">Status</Label>
+              <Label>Status</Label>
               <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Todos os status" />
-                </SelectTrigger>
+                <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Todos os status</SelectItem>
-                  <SelectItem value="Aberto">Aberto</SelectItem>
-                  <SelectItem value="Em Análise">Em Análise</SelectItem>
-                  <SelectItem value="Respondido">Respondido</SelectItem>
-                  <SelectItem value="Fechado">Fechado</SelectItem>
-                  <SelectItem value="Vencido">Vencido</SelectItem>
+                  {['all', 'Aberto', 'Em Análise', 'Respondido', 'Fechado', 'Vencido'].map((status) => (
+                    <SelectItem key={status} value={status}>{status === 'all' ? 'Todos os status' : status}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
-
             <div>
-              <Label htmlFor="type">Tipo</Label>
+              <Label>Tipo</Label>
               <Select value={typeFilter} onValueChange={setTypeFilter}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Todos os tipos" />
-                </SelectTrigger>
+                <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Todos os tipos</SelectItem>
-                  <SelectItem value="RFP">RFP</SelectItem>
-                  <SelectItem value="RFI">RFI</SelectItem>
+                  {['all', 'RFP', 'RFI'].map((type) => (
+                    <SelectItem key={type} value={type}>{type === 'all' ? 'Todos os tipos' : type}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
-
             <div>
-              <Label htmlFor="category">Categoria</Label>
+              <Label>Categoria</Label>
               <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Todas as categorias" />
-                </SelectTrigger>
+                <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Todas as categorias</SelectItem>
-                  <SelectItem value="Saúde">Saúde</SelectItem>
-                  <SelectItem value="Governo">Governo</SelectItem>
-                  <SelectItem value="Educação">Educação</SelectItem>
-                  <SelectItem value="Financeiro">Financeiro</SelectItem>
-                  <SelectItem value="Transporte">Transporte</SelectItem>
-                  <SelectItem value="Varejo">Varejo</SelectItem>
-                  <SelectItem value="Indústria">Indústria</SelectItem>
-                  <SelectItem value="Serviços">Serviços</SelectItem>
-                  <SelectItem value="Tecnologia">Tecnologia</SelectItem>
-                  <SelectItem value="Outros">Outros</SelectItem>
+                  {['all', 'Saúde', 'Governo', 'Educação', 'Financeiro', 'Transporte', 'Varejo', 'Indústria', 'Serviços', 'Tecnologia', 'Outros'].map((category) => (
+                    <SelectItem key={category} value={category}>{category === 'all' ? 'Todas as categorias' : category}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -203,69 +267,11 @@ const RFPView: React.FC<RFPViewProps> = ({ rfps, onAdd, onUpdate, onDelete }) =>
         </CardContent>
       </Card>
 
-      {/* Estatísticas */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center space-x-2">
-              <FileText className="h-5 w-5 text-blue-600" />
-              <div>
-                <p className="text-sm font-medium text-gray-600">Total RFP/RFI</p>
-                <p className="text-2xl font-bold">{rfps.length}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center space-x-2">
-              <Calendar className="h-5 w-5 text-green-600" />
-              <div>
-                <p className="text-sm font-medium text-gray-600">Em Aberto</p>
-                <p className="text-2xl font-bold">
-                  {rfps.filter(r => r.status === 'Aberto').length}
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center space-x-2">
-              <DollarSign className="h-5 w-5 text-yellow-600" />
-              <div>
-                <p className="text-sm font-medium text-gray-600">Valor Total</p>
-                <p className="text-2xl font-bold">
-                  {formatCurrency(rfps.reduce((sum, r) => sum + (r.value || 0), 0))}
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center space-x-2">
-              <User className="h-5 w-5 text-purple-600" />
-              <div>
-                <p className="text-sm font-medium text-gray-600">Respondidos</p>
-                <p className="text-2xl font-bold">
-                  {rfps.filter(r => r.status === 'Respondido').length}
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Tabela */}
-      <Card>
+      <Card className="border-border bg-card shadow-sm">
         <CardHeader>
-          <CardTitle>RFP/RFI ({filteredRFPs.length})</CardTitle>
+          <CardTitle>Solicitações Encontradas ({filteredRFPs.length})</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
@@ -282,66 +288,39 @@ const RFPView: React.FC<RFPViewProps> = ({ rfps, onAdd, onUpdate, onDelete }) =>
             </TableHeader>
             <TableBody>
               {filteredRFPs.map((rfp) => {
-                const daysUntilDeadline = getDaysUntilDeadline(rfp.deadlineDate);
-                const isOverdue = daysUntilDeadline < 0;
-                const isUrgent = daysUntilDeadline <= 7 && daysUntilDeadline >= 0;
-
+                const days = getDaysUntilDeadline(rfp.deadlineDate);
+                const isOverdue = days < 0;
+                const isUrgent = days <= 7 && days >= 0;
                 return (
                   <TableRow key={rfp.id}>
                     <TableCell>
                       <div>
-                        <div className="font-medium">{rfp.title}</div>
-                        <div className="text-sm text-gray-500 truncate max-w-xs">
-                          {rfp.description}
-                        </div>
+                        <div className="font-semibold text-foreground">{rfp.title}</div>
+                        <div className="max-w-xs truncate text-sm text-muted-foreground">{rfp.description}</div>
                       </div>
                     </TableCell>
-                    <TableCell>{rfp.client}</TableCell>
+                    <TableCell className="text-foreground">{rfp.client}</TableCell>
                     <TableCell>
-                      <Badge className={getTypeColor(rfp.type)}>
+                      <Badge variant="outline" className={rfp.type === 'RFP' ? 'border-purple-400/30 bg-purple-400/10 text-purple-300' : 'border-orange-400/30 bg-orange-400/10 text-orange-300'}>
                         {rfp.type}
                       </Badge>
                     </TableCell>
+                    <TableCell>{badgeForStatus(rfp.status)}</TableCell>
+                    <TableCell className="text-muted-foreground">{rfp.category}</TableCell>
                     <TableCell>
-                      <Badge className={getStatusColor(rfp.status)}>
-                        {rfp.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>{rfp.category}</TableCell>
-                    <TableCell>
-                      <div className={`text-sm ${isOverdue ? 'text-red-600 font-semibold' : isUrgent ? 'text-orange-600 font-semibold' : ''}`}>
+                      <div className={`text-sm ${isOverdue ? 'font-semibold text-red-300' : isUrgent ? 'font-semibold text-amber-300' : 'text-foreground'}`}>
                         {formatDate(rfp.deadlineDate)}
-                        {isOverdue && <div className="text-xs">Vencido há {Math.abs(daysUntilDeadline)} dias</div>}
-                        {isUrgent && <div className="text-xs">Vence em {daysUntilDeadline} dias</div>}
+                        {isOverdue && <div className="text-xs text-red-300">Vencido há {Math.abs(days)} dias</div>}
+                        {isUrgent && <div className="text-xs text-amber-300">Vence em {days} dias</div>}
                       </div>
                     </TableCell>
+                    <TableCell className="font-semibold text-foreground">{rfp.value ? formatCurrency(rfp.value) : '-'}</TableCell>
+                    <TableCell className="text-foreground">{rfp.accountManager}</TableCell>
                     <TableCell>
-                      {rfp.value ? formatCurrency(rfp.value) : '-'}
-                    </TableCell>
-                    <TableCell>{rfp.accountManager}</TableCell>
-                    <TableCell>
-                      <div className="flex space-x-1">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleView(rfp)}
-                        >
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleEdit(rfp)}
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleDelete(rfp.id)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                      <div className="flex gap-1">
+                        <Button variant="ghost" size="sm" onClick={() => setViewingRFP(rfp)}><Eye className="h-4 w-4" /></Button>
+                        <Button variant="ghost" size="sm" onClick={() => handleEdit(rfp)}><Edit className="h-4 w-4" /></Button>
+                        <Button variant="ghost" size="sm" onClick={() => handleDelete(rfp.id)}><Trash2 className="h-4 w-4 text-red-300" /></Button>
                       </div>
                     </TableCell>
                   </TableRow>
@@ -352,7 +331,6 @@ const RFPView: React.FC<RFPViewProps> = ({ rfps, onAdd, onUpdate, onDelete }) =>
         </CardContent>
       </Card>
 
-      {/* Formulário */}
       {showForm && (
         <RFPForm
           rfp={editingRFP || undefined}
@@ -364,99 +342,45 @@ const RFPView: React.FC<RFPViewProps> = ({ rfps, onAdd, onUpdate, onDelete }) =>
         />
       )}
 
-      {/* Visualização Detalhada */}
       {viewingRFP && (
         <Dialog open={true} onOpenChange={() => setViewingRFP(null)}>
-          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="max-h-[90vh] max-w-4xl overflow-y-auto">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
-                <FileText className="h-5 w-5" />
+                <FileQuestion className="h-5 w-5 text-cyan-300" />
                 Detalhes do {viewingRFP.type}
               </DialogTitle>
             </DialogHeader>
 
             <div className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label className="text-sm font-medium text-gray-600">Título</Label>
-                  <p className="text-lg font-semibold">{viewingRFP.title}</p>
-                </div>
-                <div>
-                  <Label className="text-sm font-medium text-gray-600">Cliente</Label>
-                  <p className="text-lg">{viewingRFP.client}</p>
-                </div>
-                <div>
-                  <Label className="text-sm font-medium text-gray-600">Tipo</Label>
-                  <Badge className={getTypeColor(viewingRFP.type)}>
-                    {viewingRFP.type}
-                  </Badge>
-                </div>
-                <div>
-                  <Label className="text-sm font-medium text-gray-600">Status</Label>
-                  <Badge className={getStatusColor(viewingRFP.status)}>
-                    {viewingRFP.status}
-                  </Badge>
-                </div>
-                <div>
-                  <Label className="text-sm font-medium text-gray-600">Data de Publicação</Label>
-                  <p>{formatDate(viewingRFP.publishDate)}</p>
-                </div>
-                <div>
-                  <Label className="text-sm font-medium text-gray-600">Data Limite</Label>
-                  <p className={getDaysUntilDeadline(viewingRFP.deadlineDate) < 0 ? 'text-red-600 font-semibold' : ''}>
-                    {formatDate(viewingRFP.deadlineDate)}
-                  </p>
-                </div>
-                {viewingRFP.submissionDate && (
-                  <div>
-                    <Label className="text-sm font-medium text-gray-600">Data de Submissão</Label>
-                    <p>{formatDate(viewingRFP.submissionDate)}</p>
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                {[
+                  ['Título', viewingRFP.title],
+                  ['Cliente', viewingRFP.client],
+                  ['Publicação', formatDate(viewingRFP.publishDate)],
+                  ['Data Limite', formatDate(viewingRFP.deadlineDate)],
+                  ['Gerente de Conta', viewingRFP.accountManager],
+                  ['Valor Estimado', viewingRFP.value ? formatCurrency(viewingRFP.value) : '-']
+                ].map(([label, value]) => (
+                  <div key={label} className="rounded-md border border-border bg-background/50 p-4">
+                    <Label className="text-xs text-muted-foreground">{label}</Label>
+                    <p className="mt-1 font-semibold text-foreground">{value}</p>
                   </div>
-                )}
-                {viewingRFP.value && (
-                  <div>
-                    <Label className="text-sm font-medium text-gray-600">Valor Estimado</Label>
-                    <p className="text-lg font-semibold">{formatCurrency(viewingRFP.value)}</p>
-                  </div>
-                )}
-                <div>
-                  <Label className="text-sm font-medium text-gray-600">Gerente de Conta</Label>
-                  <p>{viewingRFP.accountManager}</p>
-                </div>
-                <div>
-                  <Label className="text-sm font-medium text-gray-600">Categoria</Label>
-                  <p>{viewingRFP.category}</p>
-                </div>
+                ))}
               </div>
 
-              <div>
-                <Label className="text-sm font-medium text-gray-600">Descrição</Label>
-                <p className="text-gray-700 whitespace-pre-wrap">{viewingRFP.description}</p>
+              <div className="rounded-md border border-border bg-background/50 p-4">
+                <Label className="text-xs text-muted-foreground">Descrição</Label>
+                <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-foreground">{viewingRFP.description}</p>
               </div>
-
-              <div>
-                <Label className="text-sm font-medium text-gray-600">Requisitos</Label>
-                <p className="text-gray-700 whitespace-pre-wrap">{viewingRFP.requirements}</p>
+              <div className="rounded-md border border-border bg-background/50 p-4">
+                <Label className="text-xs text-muted-foreground">Requisitos</Label>
+                <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-foreground">{viewingRFP.requirements}</p>
               </div>
-
               {viewingRFP.notes && (
-                <div>
-                  <Label className="text-sm font-medium text-gray-600">Observações</Label>
-                  <p className="text-gray-700 whitespace-pre-wrap">{viewingRFP.notes}</p>
-                </div>
-              )}
-
-              {viewingRFP.attachments && viewingRFP.attachments.length > 0 && (
-                <div>
-                  <Label className="text-sm font-medium text-gray-600">Anexos</Label>
-                  <div className="space-y-2">
-                    {viewingRFP.attachments.map((attachment, index) => (
-                      <div key={index} className="flex items-center gap-2 p-2 bg-gray-50 rounded">
-                        <FileText className="h-4 w-4 text-gray-500" />
-                        <span className="text-sm">{attachment}</span>
-                      </div>
-                    ))}
-                  </div>
+                <div className="rounded-md border border-border bg-background/50 p-4">
+                  <Label className="text-xs text-muted-foreground">Observações</Label>
+                  <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-foreground">{viewingRFP.notes}</p>
                 </div>
               )}
             </div>
@@ -467,4 +391,4 @@ const RFPView: React.FC<RFPViewProps> = ({ rfps, onAdd, onUpdate, onDelete }) =>
   );
 };
 
-export default RFPView; 
+export default RFPView;

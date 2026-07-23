@@ -1,5 +1,7 @@
 // @ts-nocheck
 import { TeamMember, BenefitPackage } from '@/lib/types/service-desk-pricing';
+import { createId } from '@/lib/utils/id';
+import { calculateMemberCostPerHour } from '@/lib/utils/labor-costs';
 
 export interface EmployeeProfile extends Omit<TeamMember, 'id'> {
   id: string;
@@ -43,7 +45,8 @@ export class EmployeeRegistryService {
   async createEmployee(employeeData: Omit<EmployeeProfile, 'id' | 'createdAt' | 'updatedAt'>): Promise<EmployeeProfile> {
     const employee: EmployeeProfile = {
       ...employeeData,
-      id: crypto.randomUUID(),
+      id: createId(),
+      costPerHour: calculateMemberCostPerHour(employeeData),
       createdAt: new Date(),
       updatedAt: new Date()
     };
@@ -63,6 +66,7 @@ export class EmployeeRegistryService {
       id, // Ensure ID doesn't change
       updatedAt: new Date()
     };
+    updatedEmployee.costPerHour = calculateMemberCostPerHour(updatedEmployee);
 
     this.employees.set(id, updatedEmployee);
     await this.saveToStorage();
@@ -134,7 +138,7 @@ export class EmployeeRegistryService {
       salary: employee.salary,
       benefits: employee.benefits,
       workload: employee.workload,
-      costPerHour: employee.costPerHour
+      costPerHour: calculateMemberCostPerHour(employee)
     };
   }
 

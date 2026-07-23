@@ -15,12 +15,18 @@ export class NOCCalculationEngine {
     const monthlyOperationalCost = this.calculateMonthlyOperationalCost(data.operationalCosts);
     const monthlyInfrastructureCost = this.calculateMonthlyInfrastructureCost(data);
     const monthlyLicenseCost = this.calculateMonthlyLicenseCost(data);
-    const monthlyTotalCost = monthlyTeamCost + monthlyOperationalCost + monthlyInfrastructureCost + monthlyLicenseCost;
+    const monthlySOCCost = this.calculateMonthlySOCCost(data);
+    const monthlySIEMCost = this.calculateMonthlySIEMCost(data);
+    const monthlySecurityCost = monthlySOCCost + monthlySIEMCost;
+    const monthlyTotalCost = monthlyTeamCost + monthlyOperationalCost + monthlyInfrastructureCost + monthlyLicenseCost + monthlySecurityCost;
 
     // Custos por unidade
     const costPerDevice = data.totalDevices > 0 ? monthlyTotalCost / data.totalDevices : 0;
     const costPerMetric = data.totalMetrics > 0 ? monthlyTotalCost / data.totalMetrics : 0;
     const costPerAlert = data.estimatedAlertsPerMonth > 0 ? monthlyTotalCost / data.estimatedAlertsPerMonth : 0;
+    const totalSecurityAssets = this.getTotalSecurityAssets(data);
+    const costPerSecurityAsset = totalSecurityAssets > 0 ? monthlySecurityCost / totalSecurityAssets : 0;
+    const costPerGBIngested = data.security?.siem?.ingestionGBPerDay > 0 ? monthlySIEMCost / (data.security.siem.ingestionGBPerDay * 30) : 0;
 
     // Custos anuais
     const annualTotalCost = monthlyTotalCost * 12;
@@ -40,8 +46,16 @@ export class NOCCalculationEngine {
     ) / 100;
     const priceWithTaxes = priceWithMargin / (1 - totalTaxRate);
 
+    const marketSOCMonthly = this.getMarketSOCMonthly(data);
+    const marketSIEMMonthly = this.getMarketSIEMMonthly(data);
+    const enabledServices = data.security?.enabledServices || ['noc'];
+    const marketNOCMonthly = enabledServices.includes('noc')
+      ? this.getMarketAverage(data.project.serviceLevel, data.project.coverage, data.totalDevices) * Math.max(data.totalDevices, 1)
+      : 0;
+    const marketSuggestedMonthly = marketNOCMonthly + marketSOCMonthly + marketSIEMMonthly;
+
     // Preços finais
-    const finalMonthlyPrice = priceWithTaxes;
+    const finalMonthlyPrice = Math.max(priceWithTaxes, marketSuggestedMonthly);
     const finalAnnualPrice = finalMonthlyPrice * 12;
 
     // Métricas
@@ -50,18 +64,23 @@ export class NOCCalculationEngine {
     const profitability = ((finalMonthlyPrice - monthlyTotalCost) / finalMonthlyPrice) * 100;
 
     // Comparação de mercado
-    const marketAverage = this.getMarketAverage(data.project.serviceLevel, data.project.coverage, data.totalDevices);
-    const competitiveness = this.assessCompetitiveness(costPerDevice, marketAverage);
+    const marketAverage = marketSuggestedMonthly;
+    const competitiveness = this.assessCompetitiveness(finalMonthlyPrice, marketAverage);
 
     return {
       monthlyTeamCost,
       monthlyOperationalCost,
       monthlyInfrastructureCost,
       monthlyLicenseCost,
+      monthlySOCCost,
+      monthlySIEMCost,
+      monthlySecurityCost,
       monthlyTotalCost,
       costPerDevice,
       costPerMetric,
       costPerAlert,
+      costPerSecurityAsset,
+      costPerGBIngested,
       annualTotalCost,
       priceWithMargin,
       priceWithTaxes,
@@ -71,8 +90,107 @@ export class NOCCalculationEngine {
       paybackMonths,
       profitability,
       marketAverage,
+      marketSOCMonthly,
+      marketSIEMMonthly,
+      marketSuggestedMonthly,
       competitiveness
     };
+  }
+
+  private static getCoverageMultiplier(coverage: NOCCoverage): number {
+    const coverageMultipliers: Record<NOCCoverage, number> = {
+      '8x5': 0.65,
+      '12x5': 0.8,
+      '12x6': 0.9,
+      '24x5': 1.1,
+      '24x7': 1.35
+    };
+    return coverageMultipliers[coverage] || 1;
+  }
+
+  private static getTotalSecurityAssets(data: NOCPricingData): number {
+    const soc = data.security?.soc;
+    if (!soc?.enabled) return 0;
+    return (
+      (soc.endpoints || 0) +
+      (soc.servers || 0) +
+      (soc.networkDevices || 0) +
+      (soc.cloudWorkloads || 0) +
+      (soc.identities || 0)
+    );
+  }
+
+  private static calculateMonthlySOCCost(data: NOCPricingData): number {
+    const soc = data.security?.soc;
+    if (!soc?.enabled) return 0;
+
+    const assets = this.getTotalSecurityAssets(data);
+    const coverageMultiplier = this.getCoverageMultiplier(data.project.coverage);
+    const serviceMultiplier = this.getServiceLevelMultiplier(data.project.serviceLevel);
+    const assetMonitoring = assets * (soc.pricePerAsset || 0) * coverageMultiplier * serviceMultiplier;
+    const mdr = soc.mdrEnabled ? Math.max(assets * 8, 1500) : 0;
+    const threatHunting = (soc.threatHuntingHours || 0) * (soc.analystHourRate || 0);
+    const incidentRetainer = (soc.incidentResponseHours || 0) * (soc.analystHourRate || 0) * 1.25;
+    const vulnerabilityTriage = soc.vulnerabilityTriage ? Math.max(assets * 3, 750) : 0;
+    const compliance = (soc.complianceReports || 0) * 450;
+    const onboarding = this.calculateMonthlySetup(data);
+
+    return Math.max(soc.minimumMonthly || 0, assetMonitoring + mdr + threatHunting + incidentRetainer + vulnerabilityTriage + compliance + onboarding);
+  }
+
+  private static calculateMonthlySIEMCost(data: NOCPricingData): number {
+    const siem = data.security?.siem;
+    if (!siem?.enabled) return 0;
+
+    const billableGBPerDay = Math.max(0, (siem.ingestionGBPerDay || 0) - (siem.includedGBPerDay || 0));
+    const ingestion = billableGBPerDay * 30 * (siem.pricePerGBIngested || 0);
+    const hotRetentionFactor = Math.max(1, (siem.retentionHotDays || 30) / 90);
+    const archiveGB = (siem.ingestionGBPerDay || 0) * 30 * Math.max(0, siem.retentionArchiveMonths || 0);
+    const storage = archiveGB * (siem.storagePerGBMonth || 0) * (siem.dataLakeEnabled ? 0.35 : 1);
+    const rules = (siem.correlationRules || 0) * (siem.ruleMonthlyCost || 0);
+    const parsers = (siem.customParsers || 0) * (siem.parserMonthlyCost || 0);
+    const platformMultiplier = this.getSIEMPlatformMultiplier(siem.platform);
+    const logSourceComplexity = Math.max(0, (siem.logSources || 0) - 5) * 120;
+    const onboarding = this.calculateMonthlySetup(data) * 0.5;
+
+    return ((siem.baseMonthly || 0) + ingestion + storage + rules + parsers + logSourceComplexity + onboarding) * hotRetentionFactor * platformMultiplier;
+  }
+
+  private static calculateMonthlySetup(data: NOCPricingData): number {
+    const setup = data.security?.setup;
+    const months = Math.max(1, setup?.amortizationMonths || data.project.contractDuration || 12);
+    return (setup?.onboardingFee || 0) / months;
+  }
+
+  private static getSIEMPlatformMultiplier(platform: string): number {
+    const multipliers: Record<string, number> = {
+      sentinel: 1.05,
+      splunk: 1.35,
+      elastic: 0.9,
+      qradar: 1.2,
+      'google-secops': 1.15,
+      custom: 1
+    };
+    return multipliers[platform] || 1;
+  }
+
+  private static getMarketSOCMonthly(data: NOCPricingData): number {
+    const soc = data.security?.soc;
+    if (!soc?.enabled) return 0;
+    const assets = this.getTotalSecurityAssets(data);
+    const coverageMultiplier = this.getCoverageMultiplier(data.project.coverage);
+    const serviceMultiplier = data.project.serviceLevel === 'premium' ? 1.25 : data.project.serviceLevel === 'advanced' ? 1.12 : 1;
+    const marketPerAsset = 95;
+    return Math.max(9000, assets * marketPerAsset * coverageMultiplier * serviceMultiplier);
+  }
+
+  private static getMarketSIEMMonthly(data: NOCPricingData): number {
+    const siem = data.security?.siem;
+    if (!siem?.enabled) return 0;
+    const gbPerMonth = Math.max(0, siem.ingestionGBPerDay || 0) * 30;
+    const managedRatePerGB = 18;
+    const platformBase = siem.platform === 'splunk' ? 9000 : siem.platform === 'sentinel' ? 6500 : 5000;
+    return Math.max(7000, platformBase + (gbPerMonth * managedRatePerGB) + ((siem.logSources || 0) * 120));
   }
 
   /**
@@ -177,6 +295,10 @@ export class NOCCalculationEngine {
       dynatrace: 2.0,
       splunk: 2.5,
       elastic: 1.3,
+      sentinel: 1.6,
+      qradar: 1.9,
+      crowdstrike: 1.7,
+      defender: 1.4,
       custom: 1.0
     };
     
@@ -248,6 +370,7 @@ export class NOCCalculationEngine {
     pricePerDevice: number,
     marketAverage: number
   ): 'low' | 'competitive' | 'high' {
+    if (marketAverage <= 0) return 'competitive';
     const ratio = pricePerDevice / marketAverage;
     
     if (ratio < 0.85) return 'low'; // Muito abaixo do mercado

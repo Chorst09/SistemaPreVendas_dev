@@ -35,6 +35,7 @@ export interface ProposalClientData {
 interface ProposalClientDataFormProps {
   onSubmit: (data: ProposalClientData) => void;
   onBack: () => void;
+  onSkip?: () => void;
   moduleType: 'noc' | 'service-desk' | 'printer' | 'it-vls';
   initialData?: Partial<ProposalClientData>;
 }
@@ -46,7 +47,7 @@ const PROJECT_TYPES: Record<string, string[]> = {
   'it-vls': ['Venda', 'Locação', 'Serviços', 'Projeto Integrado de TI']
 };
 
-export function ProposalClientDataForm({ onSubmit, onBack, moduleType, initialData }: ProposalClientDataFormProps) {
+export function ProposalClientDataForm({ onSubmit, onBack, onSkip, moduleType, initialData }: ProposalClientDataFormProps) {
   const [formData, setFormData] = useState<ProposalClientData>({
     clientName: initialData?.clientName || '',
     clientEmail: initialData?.clientEmail || '',
@@ -330,8 +331,21 @@ export function ProposalClientDataForm({ onSubmit, onBack, moduleType, initialDa
             </Card>
           </div>
 
-          {/* Botão de Continuar */}
-          <div className="flex justify-center">
+          {/* Botões de navegação */}
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+            {onSkip && (
+              <Button
+                type="button"
+                size="lg"
+                variant="outline"
+                onClick={onSkip}
+                className="border-border bg-card/70 px-8 py-6 text-base font-semibold text-foreground hover:bg-card"
+              >
+                Pular e ir direto para precificar
+                <ArrowRight className="h-5 w-5 ml-3" />
+              </Button>
+            )}
+
             <Button
               type="submit"
               size="lg"

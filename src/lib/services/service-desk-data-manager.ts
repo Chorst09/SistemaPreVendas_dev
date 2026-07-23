@@ -9,9 +9,11 @@ import { MemoryManager, cleanupUnusedData, MemoryEfficientMap } from '@/lib/util
 import { prismaDataService } from './prisma-data-service';
 import { prisma } from '@/lib/prisma';
 import { safeLocalStorage } from '@/lib/utils/storage-helper';
+import { createId } from '@/lib/utils/id';
 
 export class ServiceDeskDataManager {
   private static readonly STORAGE_KEY = 'service-desk-pricing-data';
+  private static readonly CURRENT_PROJECT_KEY = 'service-desk-pricing-current-project-id';
   private static readonly DB_NAME = 'ServiceDeskPricingDB';
   private static readonly DB_VERSION = 1;
   private static readonly STORE_NAME = 'projects';
@@ -39,8 +41,8 @@ export class ServiceDeskDataManager {
     
     return {
       project: {
-        id: crypto.randomUUID(),
-        name: '',
+        id: createId(),
+        name: 'Novo Projeto de Service Desk',
         client: {
           name: '',
           document: '',
@@ -84,18 +86,20 @@ export class ServiceDeskDataManager {
           occupancyRate: 80,
           n1Distribution: 80,
           n1Capacity: 100,
+          n1Capacity6h: 75,
           n2Capacity: 75,
           n1SixHourShift: false,
           coverageType: CoverageType.BUSINESS_HOURS,
           suggestedN1: 2,
-          suggestedN2: 1
+          suggestedN2: 1,
+          suggestedFolguistas: 0
         },
         createdAt: now,
         updatedAt: now
       },
       forecast: {
-        id: crypto.randomUUID(),
-        projectId: crypto.randomUUID(),
+        id: createId(),
+        projectId: createId(),
         scenarios: [],
         assumptions: {
           contractDuration: 24,
@@ -428,6 +432,8 @@ export class ServiceDeskDataManager {
    * Persists data to Prisma with IndexedDB/localStorage fallback
    */
   async persistData(data: ServiceDeskData, userId?: string): Promise<void> {
+    let indexedDBError: unknown = null;
+
     try {
       // Try Prisma first if we have userId
       if (userId && data.project.id) {
@@ -439,13 +445,18 @@ export class ServiceDeskDataManager {
         }
       }
 
-      // Always save locally as backup
+      // Save to IndexedDB when available.
       await this.persistToIndexedDB(data);
     } catch (error) {
-      console.warn('IndexedDB failed, falling back to localStorage:', error);
-      // Final fallback to localStorage
-      await this.persistToLocalStorage(data);
+      indexedDBError = error;
+      console.warn('IndexedDB failed, keeping localStorage copy as source of truth:', error);
     }
+
+    // Keep localStorage synchronized even when IndexedDB succeeds. The app
+    // often reloads without a projectId, so this pointer is the restore path.
+    await this.persistToLocalStorage(data);
+
+    if (indexedDBError) return;
   }
 
   /**
@@ -498,6 +509,7 @@ export class ServiceDeskDataManager {
       });
       
       safeLocalStorage.setItem(`${ServiceDeskDataManager.STORAGE_KEY}-${data.project.id}`, serializedData);
+      safeLocalStorage.setItem(ServiceDeskDataManager.CURRENT_PROJECT_KEY, data.project.id);
     } catch (error) {
       console.error('Error persisting data to localStorage:', error);
       throw new Error('Failed to save data');
@@ -534,6 +546,15 @@ export class ServiceDeskDataManager {
           return projectId ? await this.loadFromLocalStorage(projectId) : ServiceDeskDataManager.createEmptyData();
         }
       } else {
+        const currentProjectId = safeLocalStorage.getItem(ServiceDeskDataManager.CURRENT_PROJECT_KEY);
+        if (currentProjectId) {
+          try {
+            return await this.loadFromLocalStorage(currentProjectId);
+          } catch (error) {
+            console.warn('Failed to load current local project, trying IndexedDB:', error);
+          }
+        }
+
         // Load most recent project or create empty
         try {
           return await this.loadMostRecentProject();

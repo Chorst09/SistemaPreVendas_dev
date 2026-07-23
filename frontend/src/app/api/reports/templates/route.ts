@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { ReportGenerationService } from '@/lib/services/report-generation-service';
 import { ReportConfig } from '@/components/service-desk-pricing/reports/ReportGenerator';
+import { createId } from '@/lib/utils/id';
 
 const reportService = ReportGenerationService.getInstance();
 
@@ -17,7 +18,7 @@ export async function POST(request: NextRequest) {
 
     // Ensure the config has an ID
     if (!config.id) {
-      config.id = crypto.randomUUID();
+      config.id = createId();
     }
 
     await reportService.saveTemplate(config);

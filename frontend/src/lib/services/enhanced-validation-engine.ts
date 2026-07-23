@@ -60,7 +60,7 @@ export class EnhancedValidationEngine extends ServiceDeskValidationEngine {
     const hasBlockingErrors = false; // Desabilitar bloqueio de navegação
 
     // Determinar se confirmação é necessária apenas para avisos importantes
-    const requiresConfirmation = warnings.length > 3 && userPreferences?.strictValidation;
+    const requiresConfirmation = warnings.length > 3 && (userPreferences?.strictValidation ?? false);
 
     return {
       canNavigate: true, // Sempre permitir navegação
@@ -78,15 +78,15 @@ export class EnhancedValidationEngine extends ServiceDeskValidationEngine {
   private validateCurrentTabCompleteness(
     fromTab: string,
     data: ServiceDeskData,
-    errors: ValidationError[],
+    _errors: ValidationError[],
     warnings: ValidationWarning[],
     suggestions: string[]
   ): void {
     const tabData = this.getTabDataForValidation(data, fromTab);
     const validation = this.validateTabData(fromTab, tabData);
 
-    // Check completion percentage
-    if (validation.completionPercentage < 50) {
+    // Check completion percentage only for tabs with visible, user-actionable required fields.
+    if (this.shouldWarnAboutCompletion(fromTab) && validation.completionPercentage < 50) {
       warnings.push({
         field: 'completion',
         message: `Aba atual está apenas ${validation.completionPercentage}% completa`,
@@ -109,7 +109,7 @@ export class EnhancedValidationEngine extends ServiceDeskValidationEngine {
       case 'team':
         if (!data.team || data.team.length === 0) {
           suggestions.push('Adicione pelo menos um membro à equipe');
-        } else if (data.team.some(member => !member.role)) {
+        } else if (data.team.some(member => !member.jobPositionId)) {
           suggestions.push('Defina os cargos de todos os membros da equipe');
         }
         break;
@@ -145,14 +145,12 @@ export class EnhancedValidationEngine extends ServiceDeskValidationEngine {
           code: 'DEPENDENCY_NOT_MET'
         });
         blockingIssues.push(depTab);
-      } else if (depValidation.completionPercentage < 80) {
-        warnings.push({
-          field: 'dependency_completion',
-          message: `Aba "${this.getTabDisplayName(depTab)}" está incompleta (${depValidation.completionPercentage}%)`,
-          suggestion: 'Complete as dependências para melhor experiência'
-        });
       }
     }
+  }
+
+  private shouldWarnAboutCompletion(tabId: string): boolean {
+    return ['data', 'team', 'taxes'].includes(tabId);
   }
 
   /**
@@ -191,7 +189,14 @@ export class EnhancedValidationEngine extends ServiceDeskValidationEngine {
   ): void {
     if (!data.team || !data.schedules) return;
 
-    const teamMemberIds = new Set(data.team.map(member => member.id));
+    const teamMemberIds = new Set<string>();
+    data.team.forEach(member => {
+      teamMemberIds.add(member.id);
+      const quantity = Math.max(1, Number((member as any).quantity) || 1);
+      for (let index = 0; index < quantity; index += 1) {
+        teamMemberIds.add(`${member.id}-${index}`);
+      }
+    });
     const assignedMemberIds = new Set<string>();
 
     data.schedules.forEach(schedule => {
@@ -210,7 +215,10 @@ export class EnhancedValidationEngine extends ServiceDeskValidationEngine {
       });
     });
 
-    const unassignedMembers = data.team.filter(member => !assignedMemberIds.has(member.id));
+    const unassignedMembers = Array.from(teamMemberIds).filter(memberId => {
+      if (data.team.some(member => member.id === memberId)) return false;
+      return !assignedMemberIds.has(memberId);
+    });
     if (unassignedMembers.length > 0) {
       warnings.push({
         field: 'unassigned_members',
@@ -341,47 +349,6 @@ export class EnhancedValidationEngine extends ServiceDeskValidationEngine {
         });
       }
     }
-  }
-
-  /**
-   * Determine if confirmation dialog should be shown
-   */
-  private shouldRequireConfirmation(
-    fromTab: string,
-    toTab: string,
-    errors: ValidationError[],
-    warnings: ValidationWarning[],
-    userPreferences?: ValidationContext['userPreferences']
-  ): boolean {
-    // Always require confirmation if there are errors
-    if (errors.length > 0) return true;
-
-    // Require confirmation for warnings unless user disabled it
-    if (warnings.length > 0 && !userPreferences?.allowNavigationWithWarnings) {
-      return true;
-    }
-
-    // Require confirmation when jumping multiple tabs
-    const tabOrder = ['data', 'team', 'scale', 'taxes', 'variables', 'other-costs', 'budget', 'result', 'negotiation', 'final-analysis'];
-    const fromIndex = tabOrder.indexOf(fromTab);
-    const toIndex = tabOrder.indexOf(toTab);
-    
-    if (Math.abs(toIndex - fromIndex) > 2) {
-      return true;
-    }
-
-    // Require confirmation for critical tabs
-    const criticalTabs = ['final-analysis', 'result', 'budget'];
-    if (criticalTabs.includes(toTab) && warnings.length > 0) {
-      return true;
-    }
-
-    // Strict validation mode
-    if (userPreferences?.strictValidation && warnings.length > 0) {
-      return true;
-    }
-
-    return false;
   }
 
   /**

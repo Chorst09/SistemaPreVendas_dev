@@ -1,5 +1,6 @@
 import { ServiceDeskData } from '@/lib/types/service-desk-pricing';
 import { ReportConfig, ReportSection } from '@/components/service-desk-pricing/reports/ReportGenerator';
+import { createId } from '@/lib/utils/id';
 
 export interface GeneratedReport {
   id: string;
@@ -35,7 +36,7 @@ export class ReportGenerationService {
   }
 
   async generateReport(config: ReportConfig, data: ServiceDeskData): Promise<GeneratedReport> {
-    const reportId = crypto.randomUUID();
+    const reportId = createId();
     
     const report: GeneratedReport = {
       id: reportId,
@@ -95,11 +96,9 @@ export class ReportGenerationService {
     // Calculate monthly recurring cost
     const monthlyRecurring = this.calculateMonthlyRecurring(data);
     
-    // Calculate team size
-    const teamSize = data.team?.members?.length || 0;
+    const teamSize = data.team?.length || 0;
     
-    // Calculate profit margin (simplified)
-    const revenue = data.budget?.totalValue || 0;
+    const revenue = data.budget?.totalPrice || 0;
     const profitMargin = revenue > 0 ? ((revenue - totalCost) / revenue) * 100 : 0;
     
     // Calculate ROI (simplified)
@@ -126,23 +125,22 @@ export class ReportGenerationService {
   private calculateTotalCost(data: ServiceDeskData): number {
     let total = 0;
     
-    // Team costs
-    if (data.team?.members) {
-      total += data.team.members.reduce((sum, member) => {
-        return sum + (member.salary || 0) + (member.benefits || 0);
+    if (data.team) {
+      total += data.team.reduce((sum, member) => {
+        const m = member as any;
+        return sum + (m.salary || 0) + (typeof m.benefits === 'number' ? m.benefits : 0);
       }, 0);
     }
     
-    // Other costs
     if (data.otherCosts) {
-      total += Object.values(data.otherCosts).reduce((sum: number, cost: any) => {
+      total += data.otherCosts.reduce((sum: number, cost: any) => {
         return sum + (typeof cost === 'number' ? cost : cost?.value || 0);
       }, 0);
     }
     
-    // Infrastructure costs
-    if (data.infrastructure) {
-      total += Object.values(data.infrastructure).reduce((sum: number, cost: any) => {
+    const infraData = (data as any).infrastructure;
+    if (infraData) {
+      total += Object.values(infraData).reduce((sum: number, cost: any) => {
         return sum + (typeof cost === 'number' ? cost : cost?.value || 0);
       }, 0);
     }
@@ -152,32 +150,28 @@ export class ReportGenerationService {
 
   private calculateMonthlyRecurring(data: ServiceDeskData): number {
     const totalCost = this.calculateTotalCost(data);
-    const contractMonths = data.project.contractDuration || 12;
+    const contractMonths = data.project.contractPeriod?.durationMonths || 12;
     return totalCost / contractMonths;
   }
 
   private calculateRiskScore(data: ServiceDeskData): number {
     let riskScore = 0;
     
-    // Team size risk
-    const teamSize = data.team?.members?.length || 0;
+    const teamSize = data.team?.length || 0;
     if (teamSize < 3) riskScore += 20;
     else if (teamSize > 20) riskScore += 10;
     
-    // Contract duration risk
-    const duration = data.project.contractDuration || 0;
+    const duration = data.project.contractPeriod?.durationMonths || 0;
     if (duration < 6) riskScore += 30;
     else if (duration > 36) riskScore += 15;
     
-    // Budget risk
-    const budget = data.budget?.totalValue || 0;
+    const budget = data.budget?.totalPrice || 0;
     const cost = this.calculateTotalCost(data);
     const margin = budget > 0 ? ((budget - cost) / budget) * 100 : 0;
     if (margin < 10) riskScore += 25;
     else if (margin < 20) riskScore += 10;
     
-    // Technology risk (simplified)
-    if (data.project.serviceType === 'advanced') riskScore += 15;
+    if ((data.project.serviceType as string) === 'advanced') riskScore += 15;
     
     return Math.min(riskScore, 100);
   }
@@ -356,7 +350,7 @@ export class ReportGenerationService {
           <tbody>
             <tr>
               <td>Custos de Pessoal</td>
-              <td>R$ ${(data.team?.members?.reduce((sum, m) => sum + (m.salary || 0), 0) || 0).toLocaleString('pt-BR')}</td>
+              <td>R$ ${(data.team?.reduce((sum, m) => sum + ((m as any).salary || 0), 0) || 0).toLocaleString('pt-BR')}</td>
               <td>70%</td>
             </tr>
             <tr>
@@ -382,7 +376,7 @@ export class ReportGenerationService {
         <p>Visão geral do projeto ${data.project.name}:</p>
         <p><strong>Cliente:</strong> ${data.project.client?.name}</p>
         <p><strong>Tipo de Serviço:</strong> ${data.project.serviceType}</p>
-        <p><strong>Duração do Contrato:</strong> ${data.project.contractDuration} meses</p>
+        <p><strong>Duração do Contrato:</strong> ${data.project.contractPeriod?.durationMonths} meses</p>
         <p><strong>Localização:</strong> ${data.project.location}</p>
       `
     };
@@ -415,7 +409,7 @@ export class ReportGenerationService {
   }
 
   private generateCostBreakdownData(data: ServiceDeskData): any[][] {
-    const teamCost = data.team?.members?.reduce((sum, m) => sum + (m.salary || 0), 0) || 0;
+    const teamCost = data.team?.reduce((sum, m) => sum + ((m as any).salary || 0), 0) || 0;
     
     return [
       ['Categoria', 'Valor', 'Percentual'],
@@ -427,12 +421,15 @@ export class ReportGenerationService {
 
   private generateTeamCompositionData(data: ServiceDeskData): any[][] {
     const headers = ['Nome', 'Cargo', 'Salário', 'Benefícios'];
-    const rows = data.team?.members?.map(member => [
-      member.name || 'N/A',
-      member.role || 'N/A',
-      `R$ ${(member.salary || 0).toLocaleString('pt-BR')}`,
-      `R$ ${(member.benefits || 0).toLocaleString('pt-BR')}`
-    ]) || [];
+    const rows = data.team?.map(member => {
+      const m = member as any;
+      return [
+        m.name || 'N/A',
+        m.role || 'N/A',
+        `R$ ${(m.salary || 0).toLocaleString('pt-BR')}`,
+        `R$ ${(typeof m.benefits === 'number' ? m.benefits : 0).toLocaleString('pt-BR')}`
+      ];
+    }) || [];
 
     return [headers, ...rows];
   }

@@ -1,7 +1,7 @@
 // @ts-nocheck
 'use client';
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -46,6 +46,7 @@ import { useComprehensiveMemoryOptimization } from '@/hooks/use-comprehensive-me
 import { useAutomaticDataCleanup } from '@/lib/services/automatic-data-cleanup';
 import { EmployeeRegistryManager } from '../employees/EmployeeRegistryManager';
 import { EmployeeRegistryService, EmployeeProfile } from '@/lib/services/employee-registry-service';
+import { DEFAULT_LABOR_CHARGES, calculateLaborCostBreakdown, calculateMemberCostPerHour as calculateLaborCostPerHourValue } from '@/lib/utils/labor-costs';
 
 export interface TeamTabModuleProps {
   team: TeamMember[];
@@ -66,10 +67,14 @@ const defaultBenefits: BenefitPackage = {
   mealVoucher: 0,
   transportVoucher: 0,
   lifeInsurance: 0,
-  vacation: 8.33, // 1/12 of salary
-  thirteenthSalary: 8.33, // 1/12 of salary
-  fgts: 8, // 8% of salary
-  inss: 11, // Average INSS rate
+  vacation: DEFAULT_LABOR_CHARGES.vacation,
+  vacationThird: DEFAULT_LABOR_CHARGES.vacationThird,
+  thirteenthSalary: DEFAULT_LABOR_CHARGES.thirteenthSalary,
+  fgts: DEFAULT_LABOR_CHARGES.fgts,
+  inss: DEFAULT_LABOR_CHARGES.employerSocialSecurity,
+  employerSocialSecurity: DEFAULT_LABOR_CHARGES.employerSocialSecurity,
+  fgtsOnProvisions: true,
+  socialSecurityOnProvisions: true,
   otherBenefits: []
 };
 
@@ -276,10 +281,14 @@ export function TeamTabModule({
     }
   }, [localTeam, hasChanges, onAutoSave]);
 
-  // Update local team when prop changes
+  // Update local team when prop changes (only if values actually changed)
+  const teamRef = useRef(team);
   useEffect(() => {
-    setLocalTeam(team || []);
-    setHasChanges(false);
+    if (JSON.stringify(team) !== JSON.stringify(teamRef.current)) {
+      setLocalTeam(team || []);
+      setHasChanges(false);
+    }
+    teamRef.current = team;
   }, [team]);
 
   const handleSave = useCallback(() => {
@@ -297,12 +306,7 @@ export function TeamTabModule({
       return cached;
     }
 
-    const monthlyHours = member.workload * 4.33; // weeks to month
-    if (monthlyHours === 0) return 0;
-    
-    const benefits = calculateMemberBenefits(member);
-    const totalMonthlyCost = member.salary + benefits;
-    const costPerHour = totalMonthlyCost / monthlyHours;
+    const costPerHour = calculateLaborCostPerHourValue(member);
     
     // Cache the result
     setCachedResult(cacheKey, costPerHour);
@@ -319,31 +323,7 @@ export function TeamTabModule({
   }, [debouncedCalculations]);
 
   const calculateMemberBenefits = useCallback((member: TeamMember): number => {
-    const benefits = member.benefits;
-    let totalBenefits = 0;
-
-    // Fixed benefits
-    totalBenefits += benefits.healthInsurance || 0;
-    totalBenefits += benefits.mealVoucher || 0;
-    totalBenefits += benefits.transportVoucher || 0;
-    totalBenefits += benefits.lifeInsurance || 0;
-
-    // Percentage-based benefits
-    totalBenefits += member.salary * (benefits.vacation / 100 || 0);
-    totalBenefits += member.salary * (benefits.thirteenthSalary / 100 || 0);
-    totalBenefits += member.salary * (benefits.fgts / 100 || 0);
-    totalBenefits += member.salary * (benefits.inss / 100 || 0);
-
-    // Custom benefits
-    benefits.otherBenefits?.forEach(benefit => {
-      if (benefit.type === 'fixed') {
-        totalBenefits += benefit.value;
-      } else {
-        totalBenefits += member.salary * (benefit.value / 100);
-      }
-    });
-
-    return totalBenefits;
+    return calculateLaborCostBreakdown(member.salary, member.benefits).totalBenefitsAndCharges;
   }, []);
 
   const resetMemberForm = useCallback(() => {
@@ -1206,7 +1186,7 @@ function MemberForm({
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="vacation">Férias (%)</Label>
+              <Label htmlFor="vacation">Provisão de Férias (%)</Label>
               <Input
                 id="vacation"
                 type="number"
@@ -1220,7 +1200,23 @@ function MemberForm({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="thirteenth-salary">13º Salário (%)</Label>
+              <Label htmlFor="vacation-third">1/3 Constitucional (%)</Label>
+              <Input
+                id="vacation-third"
+                type="number"
+                value={formData.benefits.vacationThird ?? DEFAULT_LABOR_CHARGES.vacationThird}
+                onChange={(e) => onFieldChange('benefits.vacationThird', parseFloat(e.target.value) || 0)}
+                placeholder="2.78"
+                min="0"
+                max="100"
+                step="0.01"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="thirteenth-salary">Provisão de 13º (%)</Label>
               <Input
                 id="thirteenth-salary"
                 type="number"
@@ -1232,11 +1228,9 @@ function MemberForm({
                 step="0.01"
               />
             </div>
-          </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="fgts">FGTS (%)</Label>
+              <Label htmlFor="fgts">FGTS Patronal (%)</Label>
               <Input
                 id="fgts"
                 type="number"
@@ -1248,15 +1242,21 @@ function MemberForm({
                 step="0.01"
               />
             </div>
+          </div>
 
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="inss">INSS (%)</Label>
+              <Label htmlFor="inss">INSS Patronal (%)</Label>
               <Input
                 id="inss"
                 type="number"
-                value={formData.benefits.inss}
-                onChange={(e) => onFieldChange('benefits.inss', parseFloat(e.target.value) || 0)}
-                placeholder="11.00"
+                value={formData.benefits.employerSocialSecurity ?? formData.benefits.inss}
+                onChange={(e) => {
+                  const value = parseFloat(e.target.value) || 0;
+                  onFieldChange('benefits.inss', value);
+                  onFieldChange('benefits.employerSocialSecurity', value);
+                }}
+                placeholder="20.00"
                 min="0"
                 max="100"
                 step="0.01"

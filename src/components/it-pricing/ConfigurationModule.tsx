@@ -8,11 +8,12 @@ import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
-import { Trash2, Plus, Settings, Building, Calculator, BarChart3, Users, Edit, Save } from "lucide-react"
+import { Trash2, Plus, Settings, Building, Calculator, BarChart3, Users, Edit, Save, Printer, Monitor, Headphones } from "lucide-react"
 import type { TaxRegime } from "@/lib/types/tax-regimes"
 import type { CostsExpenses } from "@/lib/types/costs-expenses"
 import type { LaborCosts } from "@/lib/types/labor-costs"
 import type { CompanyData } from "@/lib/types/company-data"
+import type { OutsourcingConfig, ModuleTaxConfig } from "@/lib/stores/configuration-store"
 import { defaultICMSRates, stateNames, type ICMSInterstateRates } from "@/lib/types/pricing"
 import { useConfigurationStore } from "@/lib/stores/configuration-store"
 
@@ -23,11 +24,17 @@ export function ConfigurationModule() {
     laborCosts, 
     companyData: storeCompanyData,
     icmsRates: storeIcmsRates,
+    outsourcingConfig: storeOutsourcingConfig,
+    nocConfig: storeNocConfig,
+    serviceDeskConfig: storeServiceDeskConfig,
     setTaxRegimes, 
     setCostsExpenses, 
     setLaborCosts,
     setCompanyData,
     setIcmsRates,
+    setOutsourcingConfig,
+    setNocConfig,
+    setServiceDeskConfig,
   } = useConfigurationStore()
   
   // Estados locais para edição
@@ -41,7 +48,11 @@ export function ConfigurationModule() {
   const [isEditingLabor, setIsEditingLabor] = useState(false)
   const [isEditingCompany, setIsEditingCompany] = useState(false)
   const [isEditingICMS, setIsEditingICMS] = useState(false)
+  const [isEditingOutsourcing, setIsEditingOutsourcing] = useState(false)
   const [editingRegime, setEditingRegime] = useState<TaxRegime | null>(null)
+  const [localOutsourcingConfig, setLocalOutsourcingConfig] = useState<OutsourcingConfig>(storeOutsourcingConfig)
+  const [localNocConfig, setLocalNocConfig] = useState<ModuleTaxConfig>(storeNocConfig)
+  const [localServiceDeskConfig, setLocalServiceDeskConfig] = useState<ModuleTaxConfig>(storeServiceDeskConfig)
 
   // Sincronizar estados locais quando o store muda
   useEffect(() => {
@@ -73,6 +84,18 @@ export function ConfigurationModule() {
       setIcmsRatesLocal(storeIcmsRates)
     }
   }, [storeIcmsRates])
+
+  useEffect(() => {
+    setLocalOutsourcingConfig(storeOutsourcingConfig)
+  }, [storeOutsourcingConfig])
+
+  useEffect(() => {
+    setLocalNocConfig(storeNocConfig)
+  }, [storeNocConfig])
+
+  useEffect(() => {
+    setLocalServiceDeskConfig(storeServiceDeskConfig)
+  }, [storeServiceDeskConfig])
 
   const handleToggleActive = (id: string) => {
     const current = (taxRegimes || []).find((r) => r.id === id)
@@ -145,7 +168,7 @@ export function ConfigurationModule() {
       </div>
 
       <Tabs defaultValue="regimes" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="flex flex-wrap w-full gap-1">
           <TabsTrigger value="regimes" className="flex items-center gap-2">
             <BarChart3 className="h-4 w-4" />
             Regimes Tributários
@@ -157,6 +180,18 @@ export function ConfigurationModule() {
           <TabsTrigger value="mao-obra" className="flex items-center gap-2">
             <Users className="h-4 w-4" />
             Mão de Obra
+          </TabsTrigger>
+          <TabsTrigger value="outsourcing" className="flex items-center gap-2">
+            <Printer className="h-4 w-4" />
+            Outsourcing
+          </TabsTrigger>
+          <TabsTrigger value="noc" className="flex items-center gap-2">
+            <Monitor className="h-4 w-4" />
+            NOC/SOC/SIEM
+          </TabsTrigger>
+          <TabsTrigger value="service-desk" className="flex items-center gap-2">
+            <Headphones className="h-4 w-4" />
+            Service Desk
           </TabsTrigger>
           <TabsTrigger value="icms" className="flex items-center gap-2">
             <Settings className="h-4 w-4" />
@@ -207,6 +242,7 @@ export function ConfigurationModule() {
                         <option value="real">Lucro Real</option>
                         <option value="simples">Simples Nacional</option>
                         <option value="mei">MEI</option>
+                        <option value="iva">IVA (IBS + CBS)</option>
                       </select>
                     </div>
                     <div className="space-y-2">
@@ -331,6 +367,48 @@ export function ConfigurationModule() {
                       </div>
                     </div>
                   </div>
+
+                  {/* IVA Fields - only visible when type is IVA */}
+                  {regime.type === 'iva' && (
+                    <div className="mt-4 p-4 border border-blue-200 bg-blue-50 rounded-lg">
+                      <h4 className="text-sm font-semibold text-blue-800 mb-3">IVA - Reforma Tributária (EC 132/2023)</h4>
+                      <div className="grid grid-cols-3 gap-4">
+                        <div className="space-y-2">
+                          <Label className="text-sm font-medium">CBS (Federal)</Label>
+                          <div className="flex items-center gap-1">
+                            <Input
+                              value={regime.ivaCbs}
+                              onChange={(e) => handleUpdateRegime('ivaCbs', Number(e.target.value), regime.id)}
+                              className="text-center"
+                            />
+                            <span className="text-sm text-muted-foreground">%</span>
+                          </div>
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="text-sm font-medium">IBS (Estadual/Municipal)</Label>
+                          <div className="flex items-center gap-1">
+                            <Input
+                              value={regime.ivaIbs}
+                              onChange={(e) => handleUpdateRegime('ivaIbs', Number(e.target.value), regime.id)}
+                              className="text-center"
+                            />
+                            <span className="text-sm text-muted-foreground">%</span>
+                          </div>
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="text-sm font-medium">Total IVA</Label>
+                          <div className="flex items-center gap-1">
+                            <Input
+                              value={regime.ivaTotal}
+                              onChange={(e) => handleUpdateRegime('ivaTotal', Number(e.target.value), regime.id)}
+                              className="text-center font-bold"
+                            />
+                            <span className="text-sm text-muted-foreground">%</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             ))}
@@ -700,6 +778,229 @@ export function ConfigurationModule() {
                   </Button>
                 </div>
               )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Outsourcing de Impressão */}
+        <TabsContent value="outsourcing">
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle>Configuração de Outsourcing de Impressão</CardTitle>
+                <Button onClick={() => {
+                  if (isEditingOutsourcing) {
+                    setOutsourcingConfig(localOutsourcingConfig)
+                    setIsEditingOutsourcing(false)
+                  } else {
+                    setIsEditingOutsourcing(true)
+                  }
+                }} className="flex items-center gap-2">
+                  <Settings className="h-4 w-4" />
+                  {isEditingOutsourcing ? 'Salvar' : 'Editar'} Configurações
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Regime Tributário */}
+              <div className="p-4 border rounded-lg bg-muted/30">
+                <h3 className="font-semibold mb-3">Regime Tributário para Outsourcing</h3>
+                <div className="space-y-2">
+                  <Label>Selecione o Regime Tributário</Label>
+                  <select
+                    value={localOutsourcingConfig.taxRegimeId || ''}
+                    onChange={(e) => setLocalOutsourcingConfig({
+                      ...localOutsourcingConfig,
+                      taxRegimeId: e.target.value || null
+                    })}
+                    disabled={!isEditingOutsourcing}
+                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  >
+                    <option value="">Usar regime ativo do sistema</option>
+                    {taxRegimes.map(r => (
+                      <option key={r.id} value={r.id}>
+                        {r.name} {r.active ? '(Ativo)' : ''}
+                      </option>
+                    ))}
+                  </select>
+                  <p className="text-xs text-muted-foreground">
+                    Se nenhum regime for selecionado, o regime ativo nas configurações gerais será usado.
+                  </p>
+                </div>
+              </div>
+
+              {/* Comissões e Custos */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label>Comissão de Venda (%)</Label>
+                  <Input
+                    value={localOutsourcingConfig.comissaoVenda}
+                    onChange={(e) => setLocalOutsourcingConfig({...localOutsourcingConfig, comissaoVenda: Number(e.target.value)})}
+                    readOnly={!isEditingOutsourcing}
+                    className="text-center"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Custos Operacionais (%)</Label>
+                  <Input
+                    value={localOutsourcingConfig.custosOperacionais}
+                    onChange={(e) => setLocalOutsourcingConfig({...localOutsourcingConfig, custosOperacionais: Number(e.target.value)})}
+                    readOnly={!isEditingOutsourcing}
+                    className="text-center"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Margem Padrão (%)</Label>
+                  <Input
+                    value={localOutsourcingConfig.margemPadrao}
+                    onChange={(e) => setLocalOutsourcingConfig({...localOutsourcingConfig, margemPadrao: Number(e.target.value)})}
+                    readOnly={!isEditingOutsourcing}
+                    className="text-center"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Taxa Financeira Mensal (%)</Label>
+                <div className="flex items-center gap-2 max-w-xs">
+                  <Input
+                    value={localOutsourcingConfig.taxaFinanceiraMensal}
+                    onChange={(e) => setLocalOutsourcingConfig({...localOutsourcingConfig, taxaFinanceiraMensal: Number(e.target.value)})}
+                    readOnly={!isEditingOutsourcing}
+                    className="text-center"
+                  />
+                  <span className="text-sm text-muted-foreground">%</span>
+                </div>
+              </div>
+
+              {/* Custos Base por Tipo de Impressão */}
+              <div className="p-4 border rounded-lg">
+                <h3 className="font-semibold mb-3">Custos Base por Tipo de Impressão (R$/página)</h3>
+                <p className="text-xs text-muted-foreground mb-3">
+                  Usados como referência quando não há cálculo detalhado disponível
+                </p>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {Object.entries(localOutsourcingConfig.custosBase).map(([key, value]) => (
+                    <div key={key} className="space-y-2">
+                      <Label className="text-sm">{key}</Label>
+                      <Input
+                        value={value}
+                        step="0.001"
+                        onChange={(e) => setLocalOutsourcingConfig({
+                          ...localOutsourcingConfig,
+                          custosBase: { ...localOutsourcingConfig.custosBase, [key]: Number(e.target.value) }
+                        })}
+                        readOnly={!isEditingOutsourcing}
+                        className="text-center"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {isEditingOutsourcing && (
+                <div className="flex justify-end">
+                  <Button onClick={() => {
+                    setOutsourcingConfig(localOutsourcingConfig)
+                    setIsEditingOutsourcing(false)
+                  }} className="flex items-center gap-2">
+                    <Save className="h-4 w-4" />
+                    Salvar Configurações
+                  </Button>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* NOC/SOC/SIEM */}
+        <TabsContent value="noc">
+          <Card>
+            <CardHeader>
+              <CardTitle>Configuração de NOC/SOC/SIEM</CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Selecione o regime tributário para os módulos de NOC, SOC e SIEM
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="p-4 border rounded-lg bg-muted/30">
+                <h3 className="font-semibold mb-3">Regime Tributário</h3>
+                <div className="space-y-2">
+                  <Label>Selecione o Regime</Label>
+                  <select
+                    value={localNocConfig.taxRegimeId || ''}
+                    onChange={(e) => setLocalNocConfig({
+                      taxRegimeId: e.target.value || null
+                    })}
+                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  >
+                    <option value="">Usar regime ativo do sistema</option>
+                    {taxRegimes.map(r => (
+                      <option key={r.id} value={r.id}>
+                        {r.name} {r.active ? '(Ativo)' : ''}
+                      </option>
+                    ))}
+                  </select>
+                  <p className="text-xs text-muted-foreground">
+                    Se nenhum regime for selecionado, o regime ativo nas configurações gerais será usado.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex justify-end">
+                <Button onClick={() => {
+                  setNocConfig(localNocConfig)
+                }} className="flex items-center gap-2">
+                  <Save className="h-4 w-4" />
+                  Salvar Configuração
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Service Desk */}
+        <TabsContent value="service-desk">
+          <Card>
+            <CardHeader>
+              <CardTitle>Configuração de Service Desk</CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Selecione o regime tributário para o módulo de Service Desk
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="p-4 border rounded-lg bg-muted/30">
+                <h3 className="font-semibold mb-3">Regime Tributário</h3>
+                <div className="space-y-2">
+                  <Label>Selecione o Regime</Label>
+                  <select
+                    value={localServiceDeskConfig.taxRegimeId || ''}
+                    onChange={(e) => setLocalServiceDeskConfig({
+                      taxRegimeId: e.target.value || null
+                    })}
+                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  >
+                    <option value="">Usar regime ativo do sistema</option>
+                    {taxRegimes.map(r => (
+                      <option key={r.id} value={r.id}>
+                        {r.name} {r.active ? '(Ativo)' : ''}
+                      </option>
+                    ))}
+                  </select>
+                  <p className="text-xs text-muted-foreground">
+                    Se nenhum regime for selecionado, o regime ativo nas configurações gerais será usado.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex justify-end">
+                <Button onClick={() => {
+                  setServiceDeskConfig(localServiceDeskConfig)
+                }} className="flex items-center gap-2">
+                  <Save className="h-4 w-4" />
+                  Salvar Configuração
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>

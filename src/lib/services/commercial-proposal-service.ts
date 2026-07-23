@@ -4,6 +4,7 @@
  */
 
 import { CommercialProposal, ProposalStatus, ProposalTemplate } from '@/lib/types/commercial-proposal';
+import { createId } from '@/lib/utils/id';
 
 export class CommercialProposalService {
   private static readonly STORAGE_KEY = 'commercial-proposals';
@@ -18,7 +19,7 @@ export class CommercialProposalService {
     validUntil.setDate(validUntil.getDate() + 15); // Válida por 15 dias
 
     return {
-      id: crypto.randomUUID(),
+      id: createId(),
       title: 'Nova Proposta Comercial',
       proposalNumber: this.generateProposalNumber(),
       version: '1.0',
@@ -242,7 +243,7 @@ export class CommercialProposalService {
 
     const duplicate: CommercialProposal = {
       ...original,
-      id: crypto.randomUUID(),
+      id: createId(),
       title: `${original.title} (Cópia)`,
       proposalNumber: this.generateProposalNumber(),
       status: ProposalStatus.DRAFT,
@@ -296,7 +297,7 @@ export class CommercialProposalService {
     const data = JSON.parse(json);
     return {
       ...data,
-      id: crypto.randomUUID(), // Novo ID
+      id: createId(), // Novo ID
       createdAt: new Date(),
       updatedAt: new Date(),
       status: ProposalStatus.DRAFT
@@ -349,7 +350,7 @@ export class CommercialProposalService {
     return {
       ...base,
       ...template.template,
-      id: crypto.randomUUID(),
+      id: createId(),
       createdAt: new Date(),
       updatedAt: new Date(),
       status: ProposalStatus.DRAFT

@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Printer, Calculator, Package, DollarSign } from "lucide-react"
+import { Printer, Calculator, Package, DollarSign, Settings } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -10,10 +10,11 @@ import { PrinterManagementModule } from "@/components/printer-outsourcing/Printe
 import { SupplyManagementModule } from "@/components/printer-outsourcing/SupplyManagementModule"
 import { CostCalculationModule } from "@/components/printer-outsourcing/CostCalculationModule"
 import { PrinterPricingModule } from "@/components/printer-outsourcing/PrinterPricingModule"
+import { ConfigurationModule } from "@/components/it-pricing/ConfigurationModule"
 import { Printer as PrinterType, Suprimento } from "./types"
 import type { ProposalClientData } from "@/components/shared/ProposalClientDataForm"
 
-type ModuleType = "home" | "calculator" | "printers" | "supplies" | "costs" | "pricing" | "proposals" | "new-printer"
+type ModuleType = "home" | "calculator" | "printers" | "supplies" | "costs" | "pricing" | "proposals" | "new-printer" | "config"
 
 interface PrinterOutsourcingModuleProps {
     onNavigateToProposals?: () => void
@@ -145,6 +146,8 @@ export function PrinterOutsourcingModule({ onNavigateToProposals, editingProposa
             onNavigateToProposals={onNavigateToProposals} 
             printers={printers} 
             suprimentos={suprimentos}
+            onUpdatePrinters={setPrinters}
+            onUpdateSuprimentos={setSuprimentos}
             editingProposalId={editingProposalId}
             onFinishEditing={onFinishEditing}
             proposalClientData={proposalClientData}
@@ -230,6 +233,19 @@ export function PrinterOutsourcingModule({ onNavigateToProposals, editingProposa
         )
     }
 
+    if (currentModule === "config") {
+        return (
+            <div className="printer-theme min-h-screen bg-background p-6">
+                <div className="mb-6">
+                    <Button onClick={handleBack} variant="outline">
+                        ← Voltar
+                    </Button>
+                </div>
+                <ConfigurationModule />
+            </div>
+        )
+    }
+
     return (
         <div className="printer-theme min-h-screen bg-gradient-to-br from-background via-muted/30 to-primary/5">
             <header className="glass-effect border-b sticky top-0 z-50">
@@ -256,6 +272,12 @@ export function PrinterOutsourcingModule({ onNavigateToProposals, editingProposa
                             {currentModule !== "home" && (
                                 <Button onClick={() => setCurrentModule("home")} variant="outline" size="sm">
                                     🏠 Início
+                                </Button>
+                            )}
+                            {currentModule === "home" && (
+                                <Button onClick={() => setCurrentModule("config")} variant="outline" size="sm">
+                                    <Settings className="h-4 w-4 mr-1" />
+                                    Config.
                                 </Button>
                             )}
                         </div>

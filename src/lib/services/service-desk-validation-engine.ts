@@ -83,26 +83,10 @@ export class ServiceDeskValidationEngine {
 
     // Required fields validation
     if (!data?.name?.trim()) {
-      errors.push({
+      warnings.push({
         field: 'name',
-        message: 'Nome do projeto é obrigatório',
-        code: 'REQUIRED_FIELD'
-      });
-    }
-
-    if (!data?.client?.name?.trim()) {
-      errors.push({
-        field: 'client.name',
-        message: 'Nome do cliente é obrigatório',
-        code: 'REQUIRED_FIELD'
-      });
-    }
-
-    if (!data?.client?.document?.trim()) {
-      errors.push({
-        field: 'client.document',
-        message: 'CNPJ/CPF do cliente é obrigatório',
-        code: 'REQUIRED_FIELD'
+        message: 'Nome do projeto não informado',
+        suggestion: 'Preencha em Dados da Proposta ou mantenha o nome padrão'
       });
     }
 
@@ -1294,17 +1278,40 @@ export class ServiceDeskValidationEngine {
    * Calculates completion percentage for a tab
    */
   private calculateCompletionPercentage(tabId: string, data: any): number {
-    // Basic implementation - will be refined for each tab
-    if (!data) return 0;
-
     switch (tabId) {
       case 'data':
         return this.calculateProjectDataCompletion(data);
       case 'team':
         return this.calculateTeamCompletion(data);
+      case 'scale':
+        return this.calculateScheduleCompletion(data);
+      case 'taxes':
+        return this.calculateTaxCompletion(data);
+      case 'other-costs':
+        return this.calculateAdditionalCostsCompletion(data);
+      case 'budget':
+        return this.calculateBudgetCompletion(data);
+      case 'variables':
+      case 'result':
+      case 'negotiation':
+      case 'final-analysis':
+        return this.calculateOptionalTabCompletion(data);
       default:
-        return data ? 50 : 0; // Basic completion check
+        return data ? 100 : 0;
     }
+  }
+
+  private hasCompletionValue(value: unknown): boolean {
+    if (typeof value === 'number') return Number.isFinite(value);
+    if (typeof value === 'boolean') return true;
+    if (value instanceof Date) return !Number.isNaN(value.getTime());
+    return value !== null && value !== undefined && String(value).trim().length > 0;
+  }
+
+  private calculateFieldsCompletion(fields: unknown[]): number {
+    if (fields.length === 0) return 100;
+    const completedFields = fields.filter(field => this.hasCompletionValue(field)).length;
+    return Math.round((completedFields / fields.length) * 100);
   }
 
   private calculateProjectDataCompletion(data: ProjectData): number {
@@ -1312,29 +1319,95 @@ export class ServiceDeskValidationEngine {
 
     const fields = [
       data.name,
-      data.client?.name,
-      data.client?.document,
-      data.client?.email,
-      data.description,
       data.contractPeriod?.startDate,
       data.contractPeriod?.endDate
     ];
 
-    const completedFields = fields.filter(field => field && String(field).trim()).length;
-    return Math.round((completedFields / fields.length) * 100);
+    return this.calculateFieldsCompletion(fields);
   }
 
-  private calculateTeamCompletion(team: TeamMember[]): number {
+  private calculateTeamCompletion(team: Array<TeamMember | any>): number {
     if (!team || team.length === 0) return 0;
 
     let totalCompletion = 0;
     team.forEach(member => {
-      const fields = [member.name, member.role, member.salary, member.workload];
-      const completedFields = fields.filter(field => field && String(field).trim()).length;
-      totalCompletion += (completedFields / fields.length) * 100;
+      const isPositionBased = this.hasCompletionValue(member.jobPositionId);
+      const fields = isPositionBased
+        ? [member.jobPositionId, member.quantity, member.workingHours]
+        : [member.name, member.role, member.salary, member.workload];
+      totalCompletion += this.calculateFieldsCompletion(fields);
     });
 
     return Math.round(totalCompletion / team.length);
+  }
+
+  private calculateScheduleCompletion(schedules: WorkSchedule[]): number {
+    if (!schedules || schedules.length === 0) return 100;
+
+    let totalCompletion = 0;
+    schedules.forEach(schedule => {
+      const fields = [
+        schedule.name,
+        schedule.shifts?.length,
+        schedule.coverage?.minimumStaff
+      ];
+      totalCompletion += this.calculateFieldsCompletion(fields);
+    });
+
+    return Math.round(totalCompletion / schedules.length);
+  }
+
+  private calculateTaxCompletion(taxes: TaxConfiguration): number {
+    if (!taxes) return 0;
+
+    const fields = [
+      taxes.region,
+      taxes.taxRegime,
+      taxes.icms,
+      taxes.pis,
+      taxes.cofins,
+      taxes.iss,
+      taxes.ir,
+      taxes.csll
+    ];
+
+    const baseCompletion = this.calculateFieldsCompletion(fields);
+    const customTaxes = Array.isArray(taxes.customTaxes) ? taxes.customTaxes : [];
+    if (customTaxes.length === 0) return baseCompletion;
+
+    const customCompletion = Math.round(
+      customTaxes.reduce((total, tax) => (
+        total + this.calculateFieldsCompletion([tax.name, tax.rate, tax.calculationBase])
+      ), 0) / customTaxes.length
+    );
+
+    return Math.round((baseCompletion + customCompletion) / 2);
+  }
+
+  private calculateAdditionalCostsCompletion(costs: AdditionalCost[]): number {
+    if (!costs || costs.length === 0) return 100;
+
+    return Math.round(
+      costs.reduce((total, cost) => total + this.calculateFieldsCompletion([cost.name, cost.value]), 0) / costs.length
+    );
+  }
+
+  private calculateBudgetCompletion(budget: ConsolidatedBudget): number {
+    if (!budget) return 100;
+
+    return this.calculateFieldsCompletion([
+      budget.teamCosts,
+      budget.taxes,
+      budget.totalCosts,
+      budget.margin,
+      budget.totalPrice
+    ]);
+  }
+
+  private calculateOptionalTabCompletion(data: any): number {
+    if (!data) return 100;
+    if (Array.isArray(data)) return data.length === 0 ? 100 : 100;
+    return 100;
   }
 
   private getTabDataForValidation(data: ServiceDeskData, tabId: string): any {

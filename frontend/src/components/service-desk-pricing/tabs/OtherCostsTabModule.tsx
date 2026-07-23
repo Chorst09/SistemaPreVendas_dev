@@ -32,6 +32,7 @@ import {
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
+import { calculateMonthlyAdditionalCost, normalizeAdditionalCost, normalizeContractPeriodMonths } from '@/lib/utils/cost-normalization';
 import { 
   AdditionalCost, 
   TabValidationStatus,
@@ -48,6 +49,7 @@ export interface OtherCostsTabModuleProps {
   validation?: TabValidationStatus;
   isLoading?: boolean;
   onAutoSave?: (data: AdditionalCost[]) => void;
+  contractPeriodMonths?: number;
 }
 
 interface CostFormData extends Omit<AdditionalCost, 'id'> {
@@ -171,7 +173,8 @@ export function OtherCostsTabModule({
   onUpdate,
   validation,
   isLoading = false,
-  onAutoSave
+  onAutoSave,
+  contractPeriodMonths = 12
 }: OtherCostsTabModuleProps) {
   const [localData, setLocalData] = useState<AdditionalCost[]>(data);
   const [hasChanges, setHasChanges] = useState(false);
@@ -185,6 +188,7 @@ export function OtherCostsTabModule({
   const [isTemplateDialogOpen, setIsTemplateDialogOpen] = useState(false);
   const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
   const [duplicateValidation, setDuplicateValidation] = useState<any>(null);
+  const normalizedContractPeriod = normalizeContractPeriodMonths(contractPeriodMonths);
 
   // Auto-save functionality with debouncing
   useEffect(() => {
@@ -208,7 +212,7 @@ export function OtherCostsTabModule({
   useEffect(() => {
     calculateCostSummary();
     validateDuplicates();
-  }, [localData]);
+  }, [localData, normalizedContractPeriod]);
 
   // Load templates and previous projects on mount
   useEffect(() => {
@@ -256,18 +260,11 @@ export function OtherCostsTabModule({
     });
 
     setCostSummary(summary);
-  }, [localData]);
+  }, [localData, normalizedContractPeriod]);
 
   const calculateMonthlyCost = useCallback((cost: AdditionalCost): number => {
-    const frequencyConfig = costFrequencyConfig[cost.frequency];
-    
-    if (cost.frequency === CostFrequency.ONE_TIME) {
-      // For one-time costs, distribute over contract period (assuming 12 months)
-      return cost.value / 12;
-    }
-    
-    return cost.value / frequencyConfig.multiplier;
-  }, []);
+    return calculateMonthlyAdditionalCost(cost, normalizedContractPeriod);
+  }, [normalizedContractPeriod]);
 
   const resetCostForm = useCallback(() => {
     setCostForm({ ...defaultCostData });
@@ -740,6 +737,7 @@ export function OtherCostsTabModule({
                     resetCostForm();
                   }}
                   submitLabel="Adicionar Custo"
+                  contractPeriodMonths={normalizedContractPeriod}
                 />
               </DialogContent>
             </Dialog>
@@ -791,6 +789,7 @@ export function OtherCostsTabModule({
               resetCostForm();
             }}
             submitLabel="Atualizar Custo"
+            contractPeriodMonths={normalizedContractPeriod}
           />
         </DialogContent>
       </Dialog>
@@ -917,7 +916,7 @@ function CostCard({ cost, onEdit, onRemove, onDuplicate, monthlyCost }: CostCard
                 <p className="font-medium">{categoryConfig.label}</p>
               </div>
               <div>
-                <p className="text-muted-foreground">Valor Original</p>
+                <p className="text-muted-foreground">Valor de Custo</p>
                 <p className="font-medium">{formatCurrency(cost.value)}</p>
               </div>
               <div>
@@ -925,7 +924,7 @@ function CostCard({ cost, onEdit, onRemove, onDuplicate, monthlyCost }: CostCard
                 <p className="font-medium">{frequencyConfig.label}</p>
               </div>
               <div>
-                <p className="text-muted-foreground">Custo Mensal</p>
+                <p className="text-muted-foreground">Custo Mensal Equiv.</p>
                 <p className="font-medium text-green-600 dark:text-green-400">{formatCurrency(monthlyCost)}</p>
               </div>
             </div>
@@ -969,6 +968,7 @@ interface CostFormProps {
   onSubmit: () => void;
   onCancel: () => void;
   submitLabel: string;
+  contractPeriodMonths: number;
 }
 
 function CostForm({
@@ -976,7 +976,8 @@ function CostForm({
   onFieldChange,
   onSubmit,
   onCancel,
-  submitLabel
+  submitLabel,
+  contractPeriodMonths
 }: CostFormProps) {
   const [selectedCategoryItems, setSelectedCategoryItems] = useState<string[]>([]);
 
@@ -1001,19 +1002,11 @@ function CostForm({
   };
 
   const calculatePreviewCost = () => {
-    const frequencyConfig = costFrequencyConfig[formData.frequency];
-    
-    if (formData.frequency === CostFrequency.ONE_TIME) {
-      return {
-        monthly: formData.value / 12,
-        annual: formData.value
-      };
-    }
-    
-    const monthly = formData.value / frequencyConfig.multiplier;
+    const normalized = normalizeAdditionalCost(formData, contractPeriodMonths);
     return {
-      monthly,
-      annual: monthly * 12
+      monthly: normalized.monthlyEquivalent,
+      annual: normalized.annualEquivalent,
+      contractTotal: normalized.contractTotal
     };
   };
 
@@ -1084,7 +1077,7 @@ function CostForm({
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="cost-value">Valor *</Label>
+              <Label htmlFor="cost-value">Valor de Custo *</Label>
               <Input
                 id="cost-value"
                 type="number"
@@ -1234,7 +1227,7 @@ function CostForm({
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="text-center p-4 bg-green-50 rounded-lg">
-              <p className="text-sm text-muted-foreground">Custo Mensal</p>
+              <p className="text-sm text-muted-foreground">Custo Mensal Equivalente</p>
               <p className="text-2xl font-bold text-green-600 dark:text-green-400">
                 {new Intl.NumberFormat('pt-BR', {
                   style: 'currency',
@@ -1243,12 +1236,12 @@ function CostForm({
               </p>
             </div>
             <div className="text-center p-4 bg-blue-50 rounded-lg">
-              <p className="text-sm text-muted-foreground">Custo Anual</p>
+              <p className="text-sm text-muted-foreground">Custo no Contrato</p>
               <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
                 {new Intl.NumberFormat('pt-BR', {
                   style: 'currency',
                   currency: 'BRL'
-                }).format(previewCost.annual)}
+                }).format(previewCost.contractTotal)}
               </p>
             </div>
           </div>

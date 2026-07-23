@@ -1,14 +1,13 @@
 // @ts-nocheck
 'use client';
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { CalendarIcon, AlertCircle, CheckCircle2, Clock } from 'lucide-react';
@@ -17,7 +16,9 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
+import { createId } from '@/lib/utils/id';
 import { ProjectData, TabValidationStatus, ServiceType, RenewalOption, CoverageType } from '@/lib/types/service-desk-pricing';
+import { calculateServiceDeskDimensioning } from '@/lib/services/service-desk-dimensioning';
 import styles from './DataTabModule.module.css';
 import { Checkbox } from '@/components/ui/checkbox';
 
@@ -27,7 +28,7 @@ export interface DataTabModuleProps {
   validation?: TabValidationStatus;
   isLoading?: boolean;
   onAutoSave?: (data: ProjectData) => void;
-  onDimensionTeam?: (projectData: ProjectData, dimensionedTeam: any[]) => void;
+  onDimensionTeam?: (projectData: ProjectData, dimensionedTeam: any[], generatedSchedules?: any[]) => void;
 }
 
 export function DataTabModule({ 
@@ -72,6 +73,44 @@ export function DataTabModule({
     return Math.max(1, agents);
   }
 
+  function getCoverageMultiplier(coverageType?: CoverageType | string): number {
+    switch (coverageType) {
+      case CoverageType.EXTENDED_HOURS:
+      case 'EXTENDED_HOURS':
+      case '12x5':
+        return 1.5;
+      case CoverageType.FULL_TIME:
+      case 'FULL_TIME':
+      case '24x7':
+        return 4.2;
+      case CoverageType.BUSINESS_HOURS:
+      case 'BUSINESS_HOURS':
+      case '8x5':
+      default:
+        return 1;
+    }
+  }
+
+  function calculateFolguistas(baseAgents: number, coverageType?: CoverageType | string): number {
+    const safeBase = Math.max(0, Math.ceil(baseAgents || 0));
+
+    switch (coverageType) {
+      case CoverageType.FULL_TIME:
+      case 'FULL_TIME':
+      case '24x7':
+        return Math.max(1, Math.ceil(safeBase * 0.4));
+      case CoverageType.EXTENDED_HOURS:
+      case 'EXTENDED_HOURS':
+      case '12x5':
+        return Math.max(1, Math.ceil(safeBase * 0.2));
+      case CoverageType.BUSINESS_HOURS:
+      case 'BUSINESS_HOURS':
+      case '8x5':
+      default:
+        return 0;
+    }
+  }
+
   // Auto-save functionality with debouncing
   useEffect(() => {
     if (hasChanges && onAutoSave) {
@@ -84,10 +123,14 @@ export function DataTabModule({
     }
   }, [localData, hasChanges, onAutoSave]);
 
-  // Update local data when prop changes
+  // Update local data when prop changes (only if values actually changed)
+  const dataRef = useRef(data);
   useEffect(() => {
-    setLocalData(data);
-    setHasChanges(false);
+    if (JSON.stringify(data) !== JSON.stringify(dataRef.current)) {
+      setLocalData(data);
+      setHasChanges(false);
+    }
+    dataRef.current = data;
   }, [data]);
 
   const handleFieldChange = useCallback((field: string, value: any) => {
@@ -121,20 +164,32 @@ export function DataTabModule({
 
       const n1Dist = newData.dimensioning?.n1Distribution ?? 80;
       const n1Cap = newData.dimensioning?.n1Capacity ?? 100;
+      const n1Cap6h = newData.dimensioning?.n1Capacity6h ?? Math.round(n1Cap * 0.75);
       const n2Cap = newData.dimensioning?.n2Capacity ?? 75;
       const sixHour = newData.dimensioning?.n1SixHourShift ?? false;
-
-      const n1Agents = calculateN1Agents(userQty, incidentsPerUser, n1Dist, n1Cap, sixHour);
-      const n2Agents = calculateN2Agents(userQty, incidentsPerUser, n1Dist, n2Cap);
+      const coverageType = newData.dimensioning?.coverageType || CoverageType.BUSINESS_HOURS;
+      const dimensioning = calculateServiceDeskDimensioning({
+        userQuantity: userQty,
+        incidentsPerUser,
+        tmaMinutes: newData.dimensioning?.tmaMinutes || 10,
+        occupancyRate: newData.dimensioning?.occupancyRate || 80,
+        n1Distribution: n1Dist,
+        n1SixHourShift: sixHour,
+        coverageType,
+        n1Capacity: n1Cap,
+        n1Capacity6h: n1Cap6h,
+        n2Capacity: n2Cap
+      });
       if (newData.dimensioning) {
-        newData.dimensioning.suggestedN1 = n1Agents;
-        newData.dimensioning.suggestedN2 = n2Agents;
+        newData.dimensioning.suggestedN1 = dimensioning.n1Agents;
+        newData.dimensioning.suggestedN2 = dimensioning.n2Agents;
+        newData.dimensioning.suggestedFolguistas = dimensioning.folguistas;
       }
       
       return newData;
     });
     setHasChanges(true);
-  }, [calculateMonthlyCalls, calculateN1Agents, calculateN2Agents]);
+  }, [calculateMonthlyCalls]);
 
   const toggleAdditionalService = useCallback((serviceField: 'needsSoftware' | 'needs0800' | 'needsDirectCall' | 'needsInfrastructure') => {
     const currentValue = !!localData.additionalServices?.[serviceField];
@@ -149,9 +204,17 @@ export function DataTabModule({
   const calculateContractDuration = useCallback((startDate: Date, endDate: Date): number => {
     const start = new Date(startDate);
     const end = new Date(endDate);
-    const diffTime = Math.abs(end.getTime() - start.getTime());
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return Math.ceil(diffDays / 30); // Convert to months
+    if (end <= start) return 1;
+    let months = (end.getFullYear() - start.getFullYear()) * 12 + (end.getMonth() - start.getMonth());
+    if (end.getDate() > start.getDate()) months += 1;
+    return Math.max(1, months);
+  }, []);
+
+  const addContractMonths = useCallback((startDate: Date, months: number): Date => {
+    const start = new Date(startDate);
+    const end = new Date(start);
+    end.setMonth(end.getMonth() + Math.max(1, months));
+    return end;
   }, []);
 
   // Função para calcular dimensionamento baseado em Erlang C (simplificado)
@@ -161,91 +224,61 @@ export function DataTabModule({
     tmaMinutes: number,
     occupancyRate: number,
     n1Distribution: number,
-    n1SixHourShift: boolean = false
+    n1SixHourShift: boolean = false,
+    coverageType: CoverageType | string = CoverageType.BUSINESS_HOURS
   ) => {
-    const totalCallsPerMonth = userQuantity * incidentsPerUser;
-    const totalCallsPerDay = totalCallsPerMonth / 22; // 22 dias úteis
-    const totalCallsPerHour = totalCallsPerDay / 8; // 8 horas de trabalho
-    
-    // Cálculo de carga de trabalho (Erlang) - versão mais realista
-    const workloadErlang = (totalCallsPerHour * tmaMinutes) / 60;
-    
-    // Ajustar pela taxa de ocupação e adicionar fatores de segurança
-    const occupancyFactor = occupancyRate / 100;
-    const safetyFactor = 1.2; // 20% de margem de segurança
-    const adjustedWorkload = (workloadErlang / occupancyFactor) * safetyFactor;
-    
-    // Distribuir entre N1 e N2
-    const n1Workload = adjustedWorkload * (n1Distribution / 100);
-    const n2Workload = adjustedWorkload * ((100 - n1Distribution) / 100);
-    
-    // Calcular agentes com base na capacidade real
-    const n1AgentsBasic = Math.ceil(n1Workload);
-    const n2AgentsBasic = Math.ceil(n2Workload);
-    
-    // Para volumes maiores, usar cálculo baseado em capacidade
-    const n1CallsPerMonth = totalCallsPerMonth * (n1Distribution / 100);
-    const n2CallsPerMonth = totalCallsPerMonth * ((100 - n1Distribution) / 100);
-    
-    // Capacidades padrão (chamados/mês por agente)
-    let n1MonthlyCapacity = 100;
-    const n2MonthlyCapacity = 75;
-    
-    // Ajustar capacidade N1 se for turno de 6 horas (75% da capacidade de 8h)
-    if (n1SixHourShift) {
-      n1MonthlyCapacity = Math.round(n1MonthlyCapacity * 0.75);
-    }
-    
-    const n1AgentsCapacity = Math.ceil(n1CallsPerMonth / n1MonthlyCapacity);
-    const n2AgentsCapacity = Math.ceil(n2CallsPerMonth / n2MonthlyCapacity);
-    
-    // Usar o maior entre os dois métodos para garantir capacidade adequada
-    const n1Agents = Math.max(1, Math.max(n1AgentsBasic, n1AgentsCapacity));
-    const n2Agents = Math.max(1, Math.max(n2AgentsBasic, n2AgentsCapacity));
-    
-    return {
-      totalCallsPerMonth,
-      n1Agents,
-      n2Agents,
-      workloadErlang: Math.round(adjustedWorkload * 100) / 100,
-      n1Capacity: n1MonthlyCapacity,
-      n2Capacity: n2MonthlyCapacity
-    };
-  }, []);
+    return calculateServiceDeskDimensioning({
+      userQuantity,
+      incidentsPerUser,
+      tmaMinutes,
+      occupancyRate,
+      n1Distribution,
+      n1SixHourShift,
+      coverageType,
+      n1Capacity: localData.dimensioning?.n1Capacity || 100,
+      n1Capacity6h: localData.dimensioning?.n1Capacity6h || Math.round((localData.dimensioning?.n1Capacity || 100) * 0.75),
+      n2Capacity: localData.dimensioning?.n2Capacity || 75
+    });
+  }, [localData.dimensioning?.n1Capacity, localData.dimensioning?.n1Capacity6h, localData.dimensioning?.n2Capacity]);
 
   // Função para criar escalas automáticas baseadas no tipo de cobertura
   const createAutomaticSchedules = useCallback((
     n1Agents: number,
     n2Agents: number,
     coverageType: string,
-    n1SixHourShift: boolean
+    n1SixHourShift: boolean,
+    n1MemberId: string = 'n1-agent',
+    n2MemberId: string = 'n2-agent'
   ) => {
     const schedules = [];
+    const n1MemberIds = Array.from({ length: n1Agents }, (_, i) => `${n1MemberId}-${i}`);
+    const n2MemberIds = Array.from({ length: n2Agents }, (_, i) => `${n2MemberId}-${i}`);
+    const allMemberIds = [...n1MemberIds, ...n2MemberIds];
     
     switch (coverageType) {
       case CoverageType.BUSINESS_HOURS: // 8x5
         // Turno único: Segunda a Sexta, 8h às 17h
         schedules.push({
-          id: crypto.randomUUID(),
+          id: createId(),
           name: 'Horário Comercial',
           shifts: [
             {
-              id: crypto.randomUUID(),
+              id: createId(),
               name: n1SixHourShift ? 'N1 - Manhã (6h)' : 'N1 - Comercial (8h)',
               startTime: '08:00',
               endTime: n1SixHourShift ? '14:00' : '17:00',
               daysOfWeek: [1, 2, 3, 4, 5], // Segunda a Sexta
-              teamMembers: Array.from({ length: n1Agents }, (_, i) => `n1-agent-${i + 1}`),
+              teamMembers: n1MemberIds,
               isSpecialShift: false,
               multiplier: 1.0
             },
             {
-              id: crypto.randomUUID(),
+              id: createId(),
               name: 'N2 - Comercial (8h)',
               startTime: '08:00',
               endTime: '17:00',
               daysOfWeek: [1, 2, 3, 4, 5],
-              teamMembers: Array.from({ length: n2Agents }, (_, i) => `n2-agent-${i + 1}`),
+              teamMembers: n2MemberIds,
               isSpecialShift: false,
               multiplier: 1.0
             }
@@ -269,36 +302,36 @@ export function DataTabModule({
 
       case CoverageType.EXTENDED_HOURS: // 12x5
         schedules.push({
-          id: crypto.randomUUID(),
+          id: createId(),
           name: 'Horário Estendido',
           shifts: [
             {
-              id: crypto.randomUUID(),
+              id: createId(),
               name: n1SixHourShift ? 'N1 - Manhã (6h)' : 'N1 - Manhã (8h)',
               startTime: '07:00',
               endTime: n1SixHourShift ? '13:00' : '15:00',
               daysOfWeek: [1, 2, 3, 4, 5],
-              teamMembers: Array.from({ length: Math.ceil(n1Agents / 2) }, (_, i) => `n1-morning-${i + 1}`),
+              teamMembers: n1MemberIds.slice(0, Math.ceil(n1Agents / 2)),
               isSpecialShift: false,
               multiplier: 1.0
             },
             {
-              id: crypto.randomUUID(),
+              id: createId(),
               name: n1SixHourShift ? 'N1 - Tarde (6h)' : 'N1 - Tarde (8h)',
               startTime: n1SixHourShift ? '13:00' : '11:00',
               endTime: '19:00',
               daysOfWeek: [1, 2, 3, 4, 5],
-              teamMembers: Array.from({ length: Math.floor(n1Agents / 2) }, (_, i) => `n1-afternoon-${i + 1}`),
+              teamMembers: n1MemberIds.slice(Math.ceil(n1Agents / 2)),
               isSpecialShift: false,
               multiplier: 1.0
             },
             {
-              id: crypto.randomUUID(),
+              id: createId(),
               name: 'N2 - Estendido (12h)',
               startTime: '07:00',
               endTime: '19:00',
               daysOfWeek: [1, 2, 3, 4, 5],
-              teamMembers: Array.from({ length: n2Agents }, (_, i) => `n2-extended-${i + 1}`),
+              teamMembers: n2MemberIds,
               isSpecialShift: false,
               multiplier: 1.0
             }
@@ -323,48 +356,51 @@ export function DataTabModule({
       case CoverageType.FULL_TIME: // 24x7
         const totalAgents = n1Agents + n2Agents;
         const agentsPerShift = Math.ceil(totalAgents / 4); // 4 turnos de 6h
+        const shiftMembers = [0, 1, 2, 3].map(shiftIndex =>
+          allMemberIds.filter((_, memberIndex) => memberIndex % 4 === shiftIndex)
+        );
         
         schedules.push({
-          id: crypto.randomUUID(),
+          id: createId(),
           name: 'Cobertura 24x7',
           shifts: [
             {
-              id: crypto.randomUUID(),
+              id: createId(),
               name: 'Turno 1 - Madrugada (00h-06h)',
               startTime: '00:00',
               endTime: '06:00',
               daysOfWeek: [0, 1, 2, 3, 4, 5, 6], // Todos os dias
-              teamMembers: Array.from({ length: agentsPerShift }, (_, i) => `shift1-agent-${i + 1}`),
+              teamMembers: shiftMembers[0],
               isSpecialShift: true,
               multiplier: 1.3 // Adicional noturno
             },
             {
-              id: crypto.randomUUID(),
+              id: createId(),
               name: 'Turno 2 - Manhã (06h-12h)',
               startTime: '06:00',
               endTime: '12:00',
               daysOfWeek: [0, 1, 2, 3, 4, 5, 6],
-              teamMembers: Array.from({ length: agentsPerShift }, (_, i) => `shift2-agent-${i + 1}`),
+              teamMembers: shiftMembers[1],
               isSpecialShift: false,
               multiplier: 1.0
             },
             {
-              id: crypto.randomUUID(),
+              id: createId(),
               name: 'Turno 3 - Tarde (12h-18h)',
               startTime: '12:00',
               endTime: '18:00',
               daysOfWeek: [0, 1, 2, 3, 4, 5, 6],
-              teamMembers: Array.from({ length: agentsPerShift }, (_, i) => `shift3-agent-${i + 1}`),
+              teamMembers: shiftMembers[2],
               isSpecialShift: false,
               multiplier: 1.0
             },
             {
-              id: crypto.randomUUID(),
+              id: createId(),
               name: 'Turno 4 - Noite (18h-00h)',
               startTime: '18:00',
               endTime: '23:59',
               daysOfWeek: [0, 1, 2, 3, 4, 5, 6],
-              teamMembers: Array.from({ length: agentsPerShift }, (_, i) => `shift4-agent-${i + 1}`),
+              teamMembers: shiftMembers[3],
               isSpecialShift: true,
               multiplier: 1.2 // Adicional noturno
             }
@@ -410,7 +446,8 @@ export function DataTabModule({
       localData.dimensioning?.tmaMinutes || 10,
       localData.dimensioning?.occupancyRate || 80,
       localData.dimensioning?.n1Distribution || 80,
-      localData.dimensioning?.n1SixHourShift || false
+      localData.dimensioning?.n1SixHourShift || false,
+      localData.dimensioning?.coverageType || CoverageType.BUSINESS_HOURS
     );
 
     const coverageType = localData.dimensioning?.coverageType || CoverageType.BUSINESS_HOURS;
@@ -428,36 +465,86 @@ export function DataTabModule({
         occupancyRate: localData.dimensioning?.occupancyRate || 80,
         n1Distribution: localData.dimensioning?.n1Distribution || 80,
         n1Capacity: localData.dimensioning?.n1Capacity || 100,
+        n1Capacity6h: localData.dimensioning?.n1Capacity6h || Math.round((localData.dimensioning?.n1Capacity || 100) * 0.75),
         n2Capacity: localData.dimensioning?.n2Capacity || 75,
         n1SixHourShift,
         coverageType,
         suggestedN1: erlangResult.n1Agents,
-        suggestedN2: erlangResult.n2Agents
+        suggestedN2: erlangResult.n2Agents,
+        suggestedFolguistas: erlangResult.folguistas,
+        suggestedLeader: erlangResult.suggestedLeader,
+        suggestedCoordinator: erlangResult.suggestedCoordinator
       }
     };
 
     const timestamp = Date.now();
+    const n1TeamMemberId = `auto-n1-${timestamp}`;
+    const n2TeamMemberId = `auto-n2-${timestamp + 1}`;
+    const generatedSchedules = createAutomaticSchedules(
+      erlangResult.n1Agents,
+      erlangResult.n2Agents,
+      coverageType,
+      n1SixHourShift,
+      n1TeamMemberId,
+      n2TeamMemberId
+    );
     const dimensionedTeam = [
       {
-        id: `auto-n1-${timestamp}`,
+        id: n1TeamMemberId,
         jobPositionId: 'pos-1',
         quantity: erlangResult.n1Agents,
         workingHours: n1SixHourShift ? 6 : 8,
         isActive: true,
-        notes: 'Dimensionado automaticamente na aba Dados'
+        role: 'Analista de Service Desk N1',
+        salary: n1SixHourShift ? 1580 : 1780,
+        workload: n1SixHourShift ? 30 : 40,
+        notes: erlangResult.folguistas > 0
+          ? `Dimensionado automaticamente na aba Dados, incluindo ${erlangResult.folguistas} folguistas para cobertura de folgas`
+          : 'Dimensionado automaticamente na aba Dados'
       },
       {
-        id: `auto-n2-${timestamp + 1}`,
+        id: n2TeamMemberId,
         jobPositionId: 'pos-2',
         quantity: erlangResult.n2Agents,
         workingHours: 8,
         isActive: true,
+        role: 'Analista de Service Desk N2',
+        salary: 2880,
+        workload: 40,
         notes: 'Dimensionado automaticamente na aba Dados'
       }
     ];
 
+    const totalAgents = erlangResult.n1Agents + erlangResult.n2Agents;
+    if (erlangResult.suggestedLeader || totalAgents >= 8) {
+      dimensionedTeam.push({
+        id: `auto-leader-${timestamp + 2}`,
+        jobPositionId: 'pos-4',
+        quantity: 1,
+        workingHours: 8,
+        isActive: true,
+        role: 'Líder Técnico',
+        salary: 5200,
+        workload: 40,
+        notes: 'Líder técnico adicionado automaticamente para equipe de grande porte'
+      });
+    }
+    if (erlangResult.suggestedCoordinator || totalAgents >= 15) {
+      dimensionedTeam.push({
+        id: `auto-coord-${timestamp + 3}`,
+        jobPositionId: 'pos-5',
+        quantity: 1,
+        workingHours: 8,
+        isActive: true,
+        role: 'Coordenador',
+        salary: 9800,
+        workload: 40,
+        notes: 'Coordenador adicionado automaticamente para equipe de grande porte'
+      });
+    }
+
     if (onDimensionTeam) {
-      onDimensionTeam(updatedData, dimensionedTeam);
+      onDimensionTeam(updatedData, dimensionedTeam, generatedSchedules);
       return;
     }
 
@@ -466,48 +553,61 @@ export function DataTabModule({
       `Dimensionamento aplicado com sucesso!\n\n` +
       `• N1: ${erlangResult.n1Agents} agentes${n1SixHourShift ? ' (6h)' : ' (8h)'}\n` +
       `• N2: ${erlangResult.n2Agents} agentes (8h)\n` +
+      `• Líderes: ${erlangResult.suggestedLeader || 0}\n` +
+      `• Coordenadores: ${erlangResult.suggestedCoordinator || 0}\n` +
+      `• Folguistas: ${erlangResult.folguistas}\n` +
       `• Cobertura: ${coverageType === CoverageType.BUSINESS_HOURS ? '8x5' :
         coverageType === CoverageType.EXTENDED_HOURS ? '12x5' : '24x7'}`
     );
-  }, [calculateErlangDimensioning, localData, onDimensionTeam, onUpdate]);
+  }, [calculateErlangDimensioning, createAutomaticSchedules, localData, onDimensionTeam, onUpdate]);
 
   // Preview dinâmico para cards de KPI no topo da aba
   const summary = useMemo(() => {
     const userQty = localData.generalInfo?.userQuantity || 0;
     const incidents = localData.dimensioning?.incidentsPerUser || localData.generalInfo?.incidentsPerUser || 0;
     const monthlyCalls = localData.generalInfo?.monthlyCalls ?? calculateMonthlyCalls(userQty, incidents);
-    const n1 = localData.dimensioning?.suggestedN1 || calculateN1Agents(
-      userQty,
-      incidents,
-      localData.dimensioning?.n1Distribution || 80,
-      localData.dimensioning?.n1Capacity || 100,
-      localData.dimensioning?.n1SixHourShift || false
-    );
-    const n2 = localData.dimensioning?.suggestedN2 || calculateN2Agents(
-      userQty,
-      incidents,
-      localData.dimensioning?.n1Distribution || 80,
-      localData.dimensioning?.n2Capacity || 75
-    );
     const coverage = localData.dimensioning?.coverageType || CoverageType.BUSINESS_HOURS;
+    const dimensioningPreview = calculateErlangDimensioning(
+      userQty || 100,
+      incidents || 1.5,
+      localData.dimensioning?.tmaMinutes || 10,
+      localData.dimensioning?.occupancyRate || 80,
+      localData.dimensioning?.n1Distribution || 80,
+      localData.dimensioning?.n1SixHourShift || false,
+      coverage
+    );
+    const n1 = localData.dimensioning?.suggestedN1 || dimensioningPreview.n1Agents;
+    const n2 = localData.dimensioning?.suggestedN2 || dimensioningPreview.n2Agents;
+    const folguistas = localData.dimensioning?.suggestedFolguistas ?? dimensioningPreview.folguistas;
 
-    return { monthlyCalls, n1, n2, coverage, userQty, incidents };
-  }, [localData, calculateMonthlyCalls, calculateN1Agents, calculateN2Agents]);
+    return { monthlyCalls, n1, n2, folguistas, coverage, userQty, incidents };
+  }, [localData, calculateMonthlyCalls, calculateErlangDimensioning]);
 
   const handleDateChange = useCallback((field: string, date: Date | undefined) => {
     if (!date) return;
     
     handleFieldChange(field, date);
     
-    // Auto-calculate duration when both dates are set
-    if (field === 'contractPeriod.startDate' && localData.contractPeriod.endDate) {
-      const duration = calculateContractDuration(date, localData.contractPeriod.endDate);
-      handleFieldChange('contractPeriod.durationMonths', duration);
+    if (field === 'contractPeriod.startDate') {
+      const duration = Math.max(1, Number(localData.contractPeriod.durationMonths || 12));
+      handleFieldChange('contractPeriod.endDate', addContractMonths(date, duration));
     } else if (field === 'contractPeriod.endDate' && localData.contractPeriod.startDate) {
       const duration = calculateContractDuration(localData.contractPeriod.startDate, date);
       handleFieldChange('contractPeriod.durationMonths', duration);
     }
-  }, [localData.contractPeriod, handleFieldChange, calculateContractDuration]);
+  }, [localData.contractPeriod, handleFieldChange, calculateContractDuration, addContractMonths]);
+
+  const handleContractDurationChange = useCallback((value: number) => {
+    const duration = Math.max(1, Math.min(120, Number(value) || 1));
+    handleFieldChange('contractPeriod.durationMonths', duration);
+    const startDate = asDate(localData.contractPeriod.startDate) || new Date();
+    handleFieldChange('contractPeriod.endDate', addContractMonths(startDate, duration));
+  }, [localData.contractPeriod.startDate, handleFieldChange, addContractMonths]);
+
+  const asDate = (value: any): Date | undefined => {
+    if (!value) return undefined;
+    return value instanceof Date ? value : new Date(value);
+  };
 
 
 
@@ -627,7 +727,9 @@ export function DataTabModule({
             <Card variant="surface" className="card-surface p-4 border border-border/50">
               <p className="text-xs uppercase tracking-[0.08em] text-muted-foreground">Equipe sugerida N1</p>
               <div className="text-xl font-semibold text-foreground">{summary.n1} analistas</div>
-              <p className="text-[11px] text-muted-foreground">Baseado em distribuição N1 e TMA</p>
+              <p className="text-[11px] text-muted-foreground">
+                {summary.folguistas > 0 ? `Inclui ${summary.folguistas} folguistas` : 'Baseado em distribuição N1 e TMA'}
+              </p>
             </Card>
             <Card variant="surface" className="card-surface p-4 border border-border/50">
               <p className="text-xs uppercase tracking-[0.08em] text-muted-foreground">Equipe sugerida N2</p>
@@ -641,10 +743,10 @@ export function DataTabModule({
             </Card>
           </div>
 
-          {/* Informações do Projeto e Cliente */}
+          {/* Informações do Projeto */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div className="space-y-4">
-              <h3 className={styles.sectionTitle}>Informações do Projeto e Cliente</h3>
+              <h3 className={styles.sectionTitle}>Informações do Projeto</h3>
               
               <div className="space-y-2">
                 <Label htmlFor="project-name">Nome do Projeto</Label>
@@ -676,28 +778,6 @@ export function DataTabModule({
                     <SelectItem value="CUSTOM">Personalizado</SelectItem>
                   </SelectContent>
                 </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="client-social-reason">Razão Social do Cliente</Label>
-                <Input
-                  id="client-social-reason"
-                  value={localData.client?.name || ''}
-                  onChange={(e) => handleFieldChange('client.name', e.target.value)}
-                  placeholder="Nome da empresa cliente"
-                  disabled={isLoading}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="client-contact">Contato do Cliente</Label>
-                <Input
-                  id="client-contact"
-                  value={localData.client?.contactPerson || ''}
-                  onChange={(e) => handleFieldChange('client.contactPerson', e.target.value)}
-                  placeholder="Nome do responsável"
-                  disabled={isLoading}
-                />
               </div>
             </div>
 
@@ -958,6 +1038,26 @@ export function DataTabModule({
                 Referência (80-120): Média 100 chamados/mês por atendente.
               </p>
             </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="n1-capacity-6h">Capacidade N1 (chamados/mês/6h)</Label>
+              <div className={styles.inputWithIcon}>
+                <Input
+                  id="n1-capacity-6h"
+                  type="number"
+                  value={localData.dimensioning?.n1Capacity6h || Math.round((localData.dimensioning?.n1Capacity || 100) * 0.75)}
+                  onChange={(e) => handleFieldChange('dimensioning.n1Capacity6h', parseInt(e.target.value) || 0)}
+                  placeholder="75"
+                  disabled={isLoading}
+                />
+                <div className={styles.lockIcon}>
+                  <span>🔒</span>
+                </div>
+              </div>
+              <p className={styles.referenceText}>
+                Usada quando N1 fizer 6h. Base Erlang/capacidade: 75% da jornada de 8h.
+              </p>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -982,16 +1082,41 @@ export function DataTabModule({
             </div>
 
             <div className="space-y-3">
-              <div className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
+              <div
+                role="button"
+                tabIndex={0}
+                onClick={() => {
+                  if (!isLoading) {
+                    handleFieldChange('dimensioning.n1SixHourShift', !localData.dimensioning?.n1SixHourShift);
+                  }
+                }}
+                onKeyDown={(e) => {
+                  if (!isLoading && (e.key === 'Enter' || e.key === ' ')) {
+                    e.preventDefault();
+                    handleFieldChange('dimensioning.n1SixHourShift', !localData.dimensioning?.n1SixHourShift);
+                  }
+                }}
+                className={cn(
+                  "flex items-start gap-3 rounded-lg border bg-background/60 p-3 transition-colors",
+                  isLoading ? "cursor-not-allowed opacity-60" : "cursor-pointer hover:border-cyan-400/40",
+                  localData.dimensioning?.n1SixHourShift ? "border-cyan-400/70" : "border-border/60"
+                )}
+              >
+                <Checkbox
                   id="n1-6hour-shift"
-                  checked={localData.dimensioning?.n1SixHourShift || false}
-                  onChange={(e) => handleFieldChange('dimensioning.n1SixHourShift', e.target.checked)}
-                  className="rounded"
+                  checked={!!localData.dimensioning?.n1SixHourShift}
+                  onCheckedChange={(checked) => handleFieldChange('dimensioning.n1SixHourShift', checked === true)}
+                  onClick={(e) => e.stopPropagation()}
                   disabled={isLoading}
                 />
-                <Label htmlFor="n1-6hour-shift">Analista N1 fará turno de 6 horas?</Label>
+                <div className="space-y-1">
+                  <Label htmlFor="n1-6hour-shift" className="leading-5 cursor-pointer">
+                    Analista N1 fará turno de 6 horas?
+                  </Label>
+                  <p className="text-xs text-muted-foreground">
+                    Ajusta automaticamente capacidade, dimensionamento e escala sugerida do N1.
+                  </p>
+                </div>
               </div>
               
               <div className="space-y-2">
@@ -1031,7 +1156,8 @@ export function DataTabModule({
                       localData.dimensioning?.tmaMinutes || 10,
                       localData.dimensioning?.occupancyRate || 80,
                       localData.dimensioning?.n1Distribution || 80,
-                      localData.dimensioning?.n1SixHourShift || false
+                      localData.dimensioning?.n1SixHourShift || false,
+                      localData.dimensioning?.coverageType || CoverageType.BUSINESS_HOURS
                     );
                     return erlangResult.n1Agents;
                   })()}
@@ -1040,6 +1166,7 @@ export function DataTabModule({
                 <p className="text-xs text-slate-400 mt-1">
                   {Math.round((localData.generalInfo?.userQuantity || 100) * (localData.dimensioning?.incidentsPerUser || 1.5) * (localData.dimensioning?.n1Distribution || 80) / 100)} chamados/mês
                   {localData.dimensioning?.n1SixHourShift && ' (6h/dia)'}
+                  {summary.folguistas > 0 && ` + ${summary.folguistas} folguistas`}
                 </p>
               </CardContent>
             </Card>
@@ -1054,7 +1181,8 @@ export function DataTabModule({
                       localData.dimensioning?.tmaMinutes || 10,
                       localData.dimensioning?.occupancyRate || 80,
                       localData.dimensioning?.n1Distribution || 80,
-                      localData.dimensioning?.n1SixHourShift || false
+                      localData.dimensioning?.n1SixHourShift || false,
+                      localData.dimensioning?.coverageType || CoverageType.BUSINESS_HOURS
                     );
                     return erlangResult.n2Agents;
                   })()}
@@ -1085,7 +1213,8 @@ export function DataTabModule({
                       localData.dimensioning?.tmaMinutes || 10,
                       localData.dimensioning?.occupancyRate || 80,
                       localData.dimensioning?.n1Distribution || 80,
-                      localData.dimensioning?.n1SixHourShift || false
+                      localData.dimensioning?.n1SixHourShift || false,
+                      localData.dimensioning?.coverageType || CoverageType.BUSINESS_HOURS
                     );
                     return erlangResult.workloadErlang;
                   })()} Erlangs
@@ -1096,180 +1225,6 @@ export function DataTabModule({
                     localData.dimensioning?.incidentsPerUser || 1.5
                   )} chamados/mês
                 </p>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Client Information */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Informações do Cliente</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="client-name">
-                Nome do Cliente *
-              </Label>
-              <Input
-                id="client-name"
-                value={localData.client.name}
-                onChange={(e) => handleFieldChange('client.name', e.target.value)}
-                placeholder="Nome da empresa ou pessoa"
-                className={cn(getFieldError('client.name') && "border-red-500")}
-                disabled={isLoading}
-              />
-              {getFieldError('client.name') && (
-                <p className="text-sm text-red-500">{getFieldError('client.name')?.message}</p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="client-document">
-                CNPJ/CPF *
-              </Label>
-              <Input
-                id="client-document"
-                value={localData.client.document}
-                onChange={(e) => handleFieldChange('client.document', e.target.value)}
-                placeholder="00.000.000/0000-00"
-                className={cn(getFieldError('client.document') && "border-red-500")}
-                disabled={isLoading}
-              />
-              {getFieldError('client.document') && (
-                <p className="text-sm text-red-500">{getFieldError('client.document')?.message}</p>
-              )}
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="client-email">Email</Label>
-              <Input
-                id="client-email"
-                type="email"
-                value={localData.client.email}
-                onChange={(e) => handleFieldChange('client.email', e.target.value)}
-                placeholder="contato@empresa.com"
-                className={cn(getFieldError('client.email') && "border-red-500")}
-                disabled={isLoading}
-              />
-              {getFieldError('client.email') && (
-                <p className="text-sm text-red-500">{getFieldError('client.email')?.message}</p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="client-phone">Telefone</Label>
-              <Input
-                id="client-phone"
-                value={localData.client.phone}
-                onChange={(e) => handleFieldChange('client.phone', e.target.value)}
-                placeholder="(11) 99999-9999"
-                disabled={isLoading}
-              />
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="contact-person">Pessoa de Contato</Label>
-            <Input
-              id="contact-person"
-              value={localData.client.contactPerson}
-              onChange={(e) => handleFieldChange('client.contactPerson', e.target.value)}
-              placeholder="Nome do responsável"
-              disabled={isLoading}
-            />
-          </div>
-
-          <Separator />
-
-          {/* Client Address */}
-          <div className="space-y-4">
-            <h4 className="font-medium">Endereço</h4>
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="md:col-span-2 space-y-2">
-                <Label htmlFor="address-street">Logradouro</Label>
-                <Input
-                  id="address-street"
-                  value={localData.client.address.street}
-                  onChange={(e) => handleFieldChange('client.address.street', e.target.value)}
-                  placeholder="Rua, Avenida, etc."
-                  disabled={isLoading}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="address-number">Número</Label>
-                <Input
-                  id="address-number"
-                  value={localData.client.address.number}
-                  onChange={(e) => handleFieldChange('client.address.number', e.target.value)}
-                  placeholder="123"
-                  disabled={isLoading}
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="address-complement">Complemento</Label>
-                <Input
-                  id="address-complement"
-                  value={localData.client.address.complement || ''}
-                  onChange={(e) => handleFieldChange('client.address.complement', e.target.value)}
-                  placeholder="Sala, Andar, etc."
-                  disabled={isLoading}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="address-neighborhood">Bairro</Label>
-                <Input
-                  id="address-neighborhood"
-                  value={localData.client.address.neighborhood}
-                  onChange={(e) => handleFieldChange('client.address.neighborhood', e.target.value)}
-                  placeholder="Nome do bairro"
-                  disabled={isLoading}
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="address-city">Cidade</Label>
-                <Input
-                  id="address-city"
-                  value={localData.client.address.city}
-                  onChange={(e) => handleFieldChange('client.address.city', e.target.value)}
-                  placeholder="Nome da cidade"
-                  disabled={isLoading}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="address-state">Estado</Label>
-                <Input
-                  id="address-state"
-                  value={localData.client.address.state}
-                  onChange={(e) => handleFieldChange('client.address.state', e.target.value)}
-                  placeholder="SP"
-                  disabled={isLoading}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="address-zipcode">CEP</Label>
-                <Input
-                  id="address-zipcode"
-                  value={localData.client.address.zipCode}
-                  onChange={(e) => handleFieldChange('client.address.zipCode', e.target.value)}
-                  placeholder="00000-000"
-                  disabled={isLoading}
-                />
               </div>
             </div>
           </div>
@@ -1298,7 +1253,7 @@ export function DataTabModule({
                   >
                     <CalendarIcon className="mr-2 h-4 w-4" />
                     {localData.contractPeriod.startDate ? (
-                      format(localData.contractPeriod.startDate, "dd/MM/yyyy", { locale: ptBR })
+                      format(asDate(localData.contractPeriod.startDate) || new Date(), "dd/MM/yyyy", { locale: ptBR })
                     ) : (
                       <span>Selecione a data</span>
                     )}
@@ -1307,7 +1262,7 @@ export function DataTabModule({
                 <PopoverContent className="w-auto p-0">
                   <Calendar
                     mode="single"
-                    selected={localData.contractPeriod.startDate}
+                    selected={asDate(localData.contractPeriod.startDate)}
                     onSelect={(date) => handleDateChange('contractPeriod.startDate', date)}
                     initialFocus
                   />
@@ -1330,7 +1285,7 @@ export function DataTabModule({
                   >
                     <CalendarIcon className="mr-2 h-4 w-4" />
                     {localData.contractPeriod.endDate ? (
-                      format(localData.contractPeriod.endDate, "dd/MM/yyyy", { locale: ptBR })
+                      format(asDate(localData.contractPeriod.endDate) || new Date(), "dd/MM/yyyy", { locale: ptBR })
                     ) : (
                       <span>Selecione a data</span>
                     )}
@@ -1339,7 +1294,7 @@ export function DataTabModule({
                 <PopoverContent className="w-auto p-0">
                   <Calendar
                     mode="single"
-                    selected={localData.contractPeriod.endDate}
+                    selected={asDate(localData.contractPeriod.endDate)}
                     onSelect={(date) => handleDateChange('contractPeriod.endDate', date)}
                     initialFocus
                   />
@@ -1353,7 +1308,7 @@ export function DataTabModule({
                 id="duration"
                 type="number"
                 value={localData.contractPeriod.durationMonths}
-                onChange={(e) => handleFieldChange('contractPeriod.durationMonths', parseInt(e.target.value) || 0)}
+                onChange={(e) => handleContractDurationChange(parseInt(e.target.value, 10))}
                 placeholder="12"
                 min="1"
                 max="120"

@@ -1,4 +1,5 @@
 import { AdditionalCost, CostCategory, CostType, CostFrequency } from '@/lib/types/service-desk-pricing';
+import { calculateMonthlyAdditionalCost } from '@/lib/utils/cost-normalization';
 
 export interface CostTemplate {
   id: string;
@@ -553,19 +554,6 @@ export class CostTemplateService {
    * Calculate monthly cost for a given cost item
    */
   private static calculateMonthlyCost(cost: AdditionalCost): number {
-    switch (cost.frequency) {
-      case CostFrequency.MONTHLY:
-        return cost.value;
-      case CostFrequency.QUARTERLY:
-        return cost.value / 3;
-      case CostFrequency.SEMI_ANNUAL:
-        return cost.value / 6;
-      case CostFrequency.ANNUAL:
-        return cost.value / 12;
-      case CostFrequency.ONE_TIME:
-        return cost.value / 12; // Distribute over a year
-      default:
-        return cost.value;
-    }
+    return calculateMonthlyAdditionalCost(cost);
   }
 }

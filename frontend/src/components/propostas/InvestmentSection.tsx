@@ -6,6 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Plus, Trash2 } from 'lucide-react';
+import { createId } from '@/lib/utils/id';
 
 interface InvestmentSectionProps {
   proposal: CommercialProposal;
@@ -17,7 +18,7 @@ export function InvestmentSection({ proposal, onUpdate }: InvestmentSectionProps
 
   const addPlan = () => {
     const newPlan: InvestmentPlan = {
-      id: crypto.randomUUID(),
+      id: createId(),
       name: '',
       value: 0,
       recurrence: 'monthly',

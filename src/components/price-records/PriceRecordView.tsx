@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -9,7 +9,25 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Plus, Search, Filter, Eye, Edit, Trash2, FileText, Calendar, DollarSign, Users, Award } from 'lucide-react';
+import {
+  AlertTriangle,
+  Award,
+  Building2,
+  Calendar,
+  CheckCircle,
+  Clock,
+  DollarSign,
+  Edit,
+  Eye,
+  FileText,
+  Filter,
+  Plus,
+  Search,
+  ShieldCheck,
+  Trash2,
+  Users,
+  XCircle
+} from 'lucide-react';
 import { PriceRecord } from '@/lib/types';
 import PriceRecordForm from './PriceRecordForm';
 
@@ -19,6 +37,38 @@ interface PriceRecordViewProps {
   onUpdate: (id: string, priceRecord: Omit<PriceRecord, 'id'>) => void;
   onDelete: (id: string) => void;
 }
+
+const statusStyles: Record<string, string> = {
+  Ativo: 'border-emerald-400/30 bg-emerald-400/10 text-emerald-300',
+  Suspenso: 'border-amber-400/30 bg-amber-400/10 text-amber-300',
+  Vencido: 'border-red-400/30 bg-red-400/10 text-red-300',
+  Cancelado: 'border-muted bg-muted text-muted-foreground',
+  Renovado: 'border-cyan-400/30 bg-cyan-400/10 text-cyan-300'
+};
+
+const typeStyles: Record<string, string> = {
+  'Ata de Registro de Preços': 'border-purple-400/30 bg-purple-400/10 text-purple-300',
+  'Pregão Eletrônico': 'border-orange-400/30 bg-orange-400/10 text-orange-300',
+  Concorrência: 'border-cyan-400/30 bg-cyan-400/10 text-cyan-300'
+};
+
+const formatCurrency = (value: number) =>
+  new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
+
+const formatDate = (date: string) => new Date(date).toLocaleDateString('pt-BR');
+
+const getDaysUntilValidity = (validityDate: string) => {
+  const today = new Date();
+  const validity = new Date(validityDate);
+  return Math.ceil((validity.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+};
+
+const statusIcon = (status: string) => {
+  if (status === 'Ativo' || status === 'Renovado') return CheckCircle;
+  if (status === 'Suspenso') return AlertTriangle;
+  if (status === 'Vencido' || status === 'Cancelado') return XCircle;
+  return Clock;
+};
 
 const PriceRecordView: React.FC<PriceRecordViewProps> = ({ priceRecords, onAdd, onUpdate, onDelete }) => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -31,18 +81,29 @@ const PriceRecordView: React.FC<PriceRecordViewProps> = ({ priceRecords, onAdd, 
 
   const filteredPriceRecords = useMemo(() => {
     return priceRecords.filter(record => {
-      const matchesSearch = 
-        record.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        record.client.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        record.description.toLowerCase().includes(searchTerm.toLowerCase());
-      
+      const normalizedSearch = searchTerm.toLowerCase();
+      const matchesSearch =
+        record.title.toLowerCase().includes(normalizedSearch) ||
+        record.client.toLowerCase().includes(normalizedSearch) ||
+        record.description.toLowerCase().includes(normalizedSearch) ||
+        record.accountManager.toLowerCase().includes(normalizedSearch);
       const matchesStatus = statusFilter === 'all' || record.status === statusFilter;
       const matchesType = typeFilter === 'all' || record.type === typeFilter;
       const matchesCategory = categoryFilter === 'all' || record.category === categoryFilter;
-
       return matchesSearch && matchesStatus && matchesType && matchesCategory;
     });
   }, [priceRecords, searchTerm, statusFilter, typeFilter, categoryFilter]);
+
+  const stats = {
+    total: priceRecords.length,
+    active: priceRecords.filter(r => r.status === 'Ativo').length,
+    expiring: priceRecords.filter(r => {
+      const days = getDaysUntilValidity(r.validityDate);
+      return days >= 0 && days <= 30;
+    }).length,
+    totalValue: priceRecords.reduce((sum, r) => sum + r.totalValue, 0),
+    participants: priceRecords.reduce((sum, r) => sum + r.participants.length, 0)
+  };
 
   const handleCreate = () => {
     setEditingPriceRecord(null);
@@ -54,153 +115,156 @@ const PriceRecordView: React.FC<PriceRecordViewProps> = ({ priceRecords, onAdd, 
     setShowForm(true);
   };
 
-  const handleView = (priceRecord: PriceRecord) => {
-    setViewingPriceRecord(priceRecord);
-  };
-
   const handleDelete = (id: string) => {
-    if (confirm('Tem certeza que deseja excluir esta ata de registro de preços?')) {
-      onDelete(id);
-    }
+    if (confirm('Tem certeza que deseja excluir esta ata de registro de preços?')) onDelete(id);
   };
 
   const handleSubmit = (priceRecordData: Omit<PriceRecord, 'id'>) => {
-    if (editingPriceRecord) {
-      onUpdate(editingPriceRecord.id, priceRecordData);
-    } else {
-      onAdd(priceRecordData);
-    }
+    if (editingPriceRecord) onUpdate(editingPriceRecord.id, priceRecordData);
+    else onAdd(priceRecordData);
     setShowForm(false);
     setEditingPriceRecord(null);
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'Ativo': return 'bg-green-100 text-green-800';
-      case 'Suspenso': return 'bg-yellow-100 text-yellow-800';
-      case 'Vencido': return 'bg-red-100 text-red-800';
-      case 'Cancelado': return 'bg-gray-100 text-gray-800';
-      case 'Renovado': return 'bg-blue-100 text-blue-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
-  };
-
-  const getTypeColor = (type: string) => {
-    switch (type) {
-      case 'Ata de Registro de Preços': return 'bg-purple-100 text-purple-800';
-      case 'Pregão Eletrônico': return 'bg-orange-100 text-orange-800';
-      case 'Concorrência': return 'bg-indigo-100 text-indigo-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
-  };
-
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL'
-    }).format(value);
-  };
-
-  const formatDate = (date: string) => {
-    return new Date(date).toLocaleDateString('pt-BR');
-  };
-
-  const getDaysUntilValidity = (validityDate: string) => {
-    const today = new Date();
-    const validity = new Date(validityDate);
-    const diffTime = validity.getTime() - today.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays;
+  const badgeForStatus = (status: string) => {
+    const Icon = statusIcon(status);
+    return (
+      <Badge variant="outline" className={statusStyles[status] || 'border-border bg-muted text-muted-foreground'}>
+        <Icon className="mr-1 h-3 w-3" />
+        {status}
+      </Badge>
+    );
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h2 className="text-2xl font-bold tracking-tight">Atas de Registro de Preços</h2>
-          <p className="text-muted-foreground">
-            Gerencie atas de registro de preços, pregões e concorrências
-          </p>
-        </div>
-        <Button onClick={handleCreate}>
-          <Plus className="h-4 w-4 mr-2" />
-          Nova Ata
-        </Button>
-      </div>
+    <div className="space-y-7 p-4 sm:p-6">
+      <section className="relative overflow-hidden rounded-lg border border-cyan-400/20 bg-card shadow-xl">
+        <div className="absolute inset-0 bg-[linear-gradient(115deg,rgba(6,14,30,0.96)_0%,rgba(11,24,48,0.86)_50%,rgba(255,115,45,0.16)_100%)]" />
+        <div
+          className="absolute inset-0 bg-cover bg-center opacity-25"
+          style={{ backgroundImage: "url('https://images.unsplash.com/photo-1450101499163-c8848c66ca85?auto=format&fit=crop&w=1600&q=80')" }}
+        />
+        <div className="relative z-10 grid gap-6 p-6 text-white lg:grid-cols-[1fr_360px] lg:p-8">
+          <div>
+            <div className="mb-5 inline-flex w-fit items-center gap-2 rounded-full border border-cyan-300/35 bg-cyan-300/10 px-4 py-2 text-sm font-medium text-cyan-100">
+              <Award className="h-4 w-4 text-cyan-300" />
+              Governança de atas, preços registrados e validade contratual
+            </div>
+            <h1 className="text-3xl font-bold leading-tight sm:text-4xl lg:text-5xl">Atas de Registro de Preços</h1>
+            <p className="mt-4 max-w-3xl text-base leading-7 text-slate-200">
+              Controle atas, pregões e concorrências com visibilidade de validade, valor contratado, participantes, itens e riscos de vencimento.
+            </p>
+            <div className="mt-6 flex flex-wrap gap-3">
+              <Button onClick={handleCreate} className="bg-orange-500 text-white hover:bg-orange-600">
+                <Plus className="mr-2 h-4 w-4" />
+                Nova Ata
+              </Button>
+              <Button variant="outline" className="border-cyan-300/50 bg-slate-950/30 text-white hover:bg-cyan-300/10 hover:text-white">
+                <FileText className="mr-2 h-4 w-4" />
+                Relatório de Atas
+              </Button>
+            </div>
+          </div>
 
-      {/* Filtros */}
-      <Card>
+          <Card className="border-white/15 bg-slate-950/50 text-white backdrop-blur">
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2 text-lg text-white">
+                <ShieldCheck className="h-5 w-5 text-cyan-300" />
+                Carteira monitorada
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="rounded-md border border-white/10 bg-white/5 p-3">
+                  <p className="text-xs text-slate-300">Ativas</p>
+                  <p className="mt-1 text-2xl font-bold text-emerald-300">{stats.active}</p>
+                </div>
+                <div className="rounded-md border border-white/10 bg-white/5 p-3">
+                  <p className="text-xs text-slate-300">A vencer</p>
+                  <p className="mt-1 text-2xl font-bold text-amber-300">{stats.expiring}</p>
+                </div>
+              </div>
+              <div className="rounded-md border border-white/10 bg-white/5 p-3">
+                <p className="text-xs text-slate-300">Valor total registrado</p>
+                <p className="mt-1 text-xl font-bold">{formatCurrency(stats.totalValue)}</p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </section>
+
+      <section className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+        {[
+          { label: 'Total de Atas', value: stats.total, icon: Award, accent: 'text-cyan-300' },
+          { label: 'Ativas', value: stats.active, icon: CheckCircle, accent: 'text-emerald-300' },
+          { label: 'Valor Total', value: formatCurrency(stats.totalValue), icon: DollarSign, accent: 'text-orange-300' },
+          { label: 'Participantes', value: stats.participants, icon: Users, accent: 'text-purple-300' }
+        ].map((item) => {
+          const Icon = item.icon;
+          return (
+            <Card key={item.label} className="border-border bg-card shadow-sm">
+              <CardContent className="p-5">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">{item.label}</p>
+                    <p className="mt-2 text-2xl font-bold text-foreground">{item.value}</p>
+                  </div>
+                  <div className={`flex h-12 w-12 items-center justify-center rounded-md bg-background ${item.accent}`}>
+                    <Icon className="h-6 w-6" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })}
+      </section>
+
+      <Card className="border-border bg-card shadow-sm">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Filter className="h-5 w-5" />
-            Filtros
+            <Filter className="h-5 w-5 text-cyan-300" />
+            Filtros e Pesquisa
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
             <div>
               <Label htmlFor="search">Buscar</Label>
               <div className="relative">
-                <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                <Input
-                  id="search"
-                  placeholder="Buscar por título, cliente..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
+                <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                <Input id="search" placeholder="Título, cliente, gerente..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-10" />
               </div>
             </div>
-
             <div>
-              <Label htmlFor="status">Status</Label>
+              <Label>Status</Label>
               <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Todos os status" />
-                </SelectTrigger>
+                <SelectTrigger><SelectValue placeholder="Todos os status" /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Todos os status</SelectItem>
-                  <SelectItem value="Ativo">Ativo</SelectItem>
-                  <SelectItem value="Suspenso">Suspenso</SelectItem>
-                  <SelectItem value="Vencido">Vencido</SelectItem>
-                  <SelectItem value="Cancelado">Cancelado</SelectItem>
-                  <SelectItem value="Renovado">Renovado</SelectItem>
+                  {['all', 'Ativo', 'Suspenso', 'Vencido', 'Cancelado', 'Renovado'].map((status) => (
+                    <SelectItem key={status} value={status}>{status === 'all' ? 'Todos os status' : status}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
-
             <div>
-              <Label htmlFor="type">Tipo</Label>
+              <Label>Tipo</Label>
               <Select value={typeFilter} onValueChange={setTypeFilter}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Todos os tipos" />
-                </SelectTrigger>
+                <SelectTrigger><SelectValue placeholder="Todos os tipos" /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Todos os tipos</SelectItem>
-                  <SelectItem value="Ata de Registro de Preços">Ata de Registro de Preços</SelectItem>
-                  <SelectItem value="Pregão Eletrônico">Pregão Eletrônico</SelectItem>
-                  <SelectItem value="Concorrência">Concorrência</SelectItem>
+                  {['all', 'Ata de Registro de Preços', 'Pregão Eletrônico', 'Concorrência'].map((type) => (
+                    <SelectItem key={type} value={type}>{type === 'all' ? 'Todos os tipos' : type}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
-
             <div>
-              <Label htmlFor="category">Categoria</Label>
+              <Label>Categoria</Label>
               <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Todas as categorias" />
-                </SelectTrigger>
+                <SelectTrigger><SelectValue placeholder="Todas as categorias" /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Todas as categorias</SelectItem>
-                  <SelectItem value="Tecnologia">Tecnologia</SelectItem>
-                  <SelectItem value="Serviços">Serviços</SelectItem>
-                  <SelectItem value="Educação">Educação</SelectItem>
-                  <SelectItem value="Saúde">Saúde</SelectItem>
-                  <SelectItem value="Segurança">Segurança</SelectItem>
-                  <SelectItem value="Administrativo">Administrativo</SelectItem>
-                  <SelectItem value="Infraestrutura">Infraestrutura</SelectItem>
-                  <SelectItem value="Transporte">Transporte</SelectItem>
-                  <SelectItem value="Outros">Outros</SelectItem>
+                  {['all', 'Tecnologia', 'Serviços', 'Educação', 'Saúde', 'Segurança', 'Administrativo', 'Infraestrutura', 'Transporte', 'Outros'].map((category) => (
+                    <SelectItem key={category} value={category}>{category === 'all' ? 'Todas as categorias' : category}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -208,69 +272,11 @@ const PriceRecordView: React.FC<PriceRecordViewProps> = ({ priceRecords, onAdd, 
         </CardContent>
       </Card>
 
-      {/* Estatísticas */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center space-x-2">
-              <Award className="h-5 w-5 text-blue-600" />
-              <div>
-                <p className="text-sm font-medium text-gray-600">Total de Atas</p>
-                <p className="text-2xl font-bold">{priceRecords.length}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center space-x-2">
-              <Calendar className="h-5 w-5 text-green-600" />
-              <div>
-                <p className="text-sm font-medium text-gray-600">Ativas</p>
-                <p className="text-2xl font-bold">
-                  {priceRecords.filter(r => r.status === 'Ativo').length}
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center space-x-2">
-              <DollarSign className="h-5 w-5 text-yellow-600" />
-              <div>
-                <p className="text-sm font-medium text-gray-600">Valor Total</p>
-                <p className="text-2xl font-bold">
-                  {formatCurrency(priceRecords.reduce((sum, r) => sum + r.totalValue, 0))}
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center space-x-2">
-              <Users className="h-5 w-5 text-purple-600" />
-              <div>
-                <p className="text-sm font-medium text-gray-600">Participantes</p>
-                <p className="text-2xl font-bold">
-                  {priceRecords.reduce((sum, r) => sum + r.participants.length, 0)}
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Tabela */}
-      <Card>
+      <Card className="border-border bg-card shadow-sm">
         <CardHeader>
-          <CardTitle>Atas de Registro de Preços ({filteredPriceRecords.length})</CardTitle>
+          <CardTitle>Atas Encontradas ({filteredPriceRecords.length})</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
@@ -278,7 +284,6 @@ const PriceRecordView: React.FC<PriceRecordViewProps> = ({ priceRecords, onAdd, 
                 <TableHead>Cliente</TableHead>
                 <TableHead>Tipo</TableHead>
                 <TableHead>Status</TableHead>
-                <TableHead>Categoria</TableHead>
                 <TableHead>Validade</TableHead>
                 <TableHead>Valor Total</TableHead>
                 <TableHead>Itens</TableHead>
@@ -288,69 +293,35 @@ const PriceRecordView: React.FC<PriceRecordViewProps> = ({ priceRecords, onAdd, 
             </TableHeader>
             <TableBody>
               {filteredPriceRecords.map((record) => {
-                const daysUntilValidity = getDaysUntilValidity(record.validityDate);
-                const isExpired = daysUntilValidity < 0;
-                const isExpiringSoon = daysUntilValidity <= 30 && daysUntilValidity >= 0;
-
+                const days = getDaysUntilValidity(record.validityDate);
+                const isExpired = days < 0;
+                const isExpiringSoon = days <= 30 && days >= 0;
                 return (
                   <TableRow key={record.id}>
                     <TableCell>
                       <div>
-                        <div className="font-medium">{record.title}</div>
-                        <div className="text-sm text-gray-500 truncate max-w-xs">
-                          {record.description}
-                        </div>
+                        <div className="font-semibold text-foreground">{record.title}</div>
+                        <div className="max-w-xs truncate text-sm text-muted-foreground">{record.description}</div>
                       </div>
                     </TableCell>
-                    <TableCell>{record.client}</TableCell>
+                    <TableCell className="text-foreground">{record.client}</TableCell>
+                    <TableCell><Badge variant="outline" className={typeStyles[record.type] || 'border-border bg-muted text-muted-foreground'}>{record.type}</Badge></TableCell>
+                    <TableCell>{badgeForStatus(record.status)}</TableCell>
                     <TableCell>
-                      <Badge className={getTypeColor(record.type)}>
-                        {record.type}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Badge className={getStatusColor(record.status)}>
-                        {record.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>{record.category}</TableCell>
-                    <TableCell>
-                      <div className={`text-sm ${isExpired ? 'text-red-600 font-semibold' : isExpiringSoon ? 'text-orange-600 font-semibold' : ''}`}>
+                      <div className={`text-sm ${isExpired ? 'font-semibold text-red-300' : isExpiringSoon ? 'font-semibold text-amber-300' : 'text-foreground'}`}>
                         {formatDate(record.validityDate)}
-                        {isExpired && <div className="text-xs">Vencida há {Math.abs(daysUntilValidity)} dias</div>}
-                        {isExpiringSoon && <div className="text-xs">Vence em {daysUntilValidity} dias</div>}
+                        {isExpired && <div className="text-xs text-red-300">Vencida há {Math.abs(days)} dias</div>}
+                        {isExpiringSoon && <div className="text-xs text-amber-300">Vence em {days} dias</div>}
                       </div>
                     </TableCell>
+                    <TableCell className="font-semibold text-foreground">{formatCurrency(record.totalValue)}</TableCell>
+                    <TableCell className="text-muted-foreground">{record.items.length} itens</TableCell>
+                    <TableCell className="text-foreground">{record.accountManager}</TableCell>
                     <TableCell>
-                      <div className="font-semibold">{formatCurrency(record.totalValue)}</div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="text-sm">{record.items.length} itens</div>
-                    </TableCell>
-                    <TableCell>{record.accountManager}</TableCell>
-                    <TableCell>
-                      <div className="flex space-x-1">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleView(record)}
-                        >
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleEdit(record)}
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleDelete(record.id)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                      <div className="flex gap-1">
+                        <Button variant="ghost" size="sm" onClick={() => setViewingPriceRecord(record)}><Eye className="h-4 w-4" /></Button>
+                        <Button variant="ghost" size="sm" onClick={() => handleEdit(record)}><Edit className="h-4 w-4" /></Button>
+                        <Button variant="ghost" size="sm" onClick={() => handleDelete(record.id)}><Trash2 className="h-4 w-4 text-red-300" /></Button>
                       </div>
                     </TableCell>
                   </TableRow>
@@ -361,7 +332,6 @@ const PriceRecordView: React.FC<PriceRecordViewProps> = ({ priceRecords, onAdd, 
         </CardContent>
       </Card>
 
-      {/* Formulário */}
       {showForm && (
         <PriceRecordForm
           priceRecord={editingPriceRecord || undefined}
@@ -373,132 +343,76 @@ const PriceRecordView: React.FC<PriceRecordViewProps> = ({ priceRecords, onAdd, 
         />
       )}
 
-      {/* Visualização Detalhada */}
       {viewingPriceRecord && (
         <Dialog open={true} onOpenChange={() => setViewingPriceRecord(null)}>
-          <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="max-h-[90vh] max-w-6xl overflow-y-auto">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
-                <Award className="h-5 w-5" />
+                <Award className="h-5 w-5 text-cyan-300" />
                 Detalhes da {viewingPriceRecord.type}
               </DialogTitle>
             </DialogHeader>
 
             <div className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label className="text-sm font-medium text-gray-600">Título</Label>
-                  <p className="text-lg font-semibold">{viewingPriceRecord.title}</p>
-                </div>
-                <div>
-                  <Label className="text-sm font-medium text-gray-600">Cliente</Label>
-                  <p className="text-lg">{viewingPriceRecord.client}</p>
-                </div>
-                <div>
-                  <Label className="text-sm font-medium text-gray-600">Tipo</Label>
-                  <Badge className={getTypeColor(viewingPriceRecord.type)}>
-                    {viewingPriceRecord.type}
-                  </Badge>
-                </div>
-                <div>
-                  <Label className="text-sm font-medium text-gray-600">Status</Label>
-                  <Badge className={getStatusColor(viewingPriceRecord.status)}>
-                    {viewingPriceRecord.status}
-                  </Badge>
-                </div>
-                <div>
-                  <Label className="text-sm font-medium text-gray-600">Data de Publicação</Label>
-                  <p>{formatDate(viewingPriceRecord.publishDate)}</p>
-                </div>
-                <div>
-                  <Label className="text-sm font-medium text-gray-600">Data de Validade</Label>
-                  <p className={getDaysUntilValidity(viewingPriceRecord.validityDate) < 0 ? 'text-red-600 font-semibold' : ''}>
-                    {formatDate(viewingPriceRecord.validityDate)}
-                  </p>
-                </div>
-                {viewingPriceRecord.renewalDate && (
-                  <div>
-                    <Label className="text-sm font-medium text-gray-600">Data de Renovação</Label>
-                    <p>{formatDate(viewingPriceRecord.renewalDate)}</p>
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                {[
+                  ['Título', viewingPriceRecord.title],
+                  ['Cliente', viewingPriceRecord.client],
+                  ['Gerente de Conta', viewingPriceRecord.accountManager],
+                  ['Publicação', formatDate(viewingPriceRecord.publishDate)],
+                  ['Validade', formatDate(viewingPriceRecord.validityDate)],
+                  ['Valor Total', formatCurrency(viewingPriceRecord.totalValue)]
+                ].map(([label, value]) => (
+                  <div key={label} className="rounded-md border border-border bg-background/50 p-4">
+                    <Label className="text-xs text-muted-foreground">{label}</Label>
+                    <p className="mt-1 font-semibold text-foreground">{value}</p>
                   </div>
-                )}
-                <div>
-                  <Label className="text-sm font-medium text-gray-600">Valor Total</Label>
-                  <p className="text-lg font-semibold">{formatCurrency(viewingPriceRecord.totalValue)}</p>
-                </div>
-                <div>
-                  <Label className="text-sm font-medium text-gray-600">Gerente de Conta</Label>
-                  <p>{viewingPriceRecord.accountManager}</p>
-                </div>
-                <div>
-                  <Label className="text-sm font-medium text-gray-600">Categoria</Label>
-                  <p>{viewingPriceRecord.category}</p>
-                </div>
+                ))}
+              </div>
+
+              <div className="rounded-md border border-border bg-background/50 p-4">
+                <Label className="text-xs text-muted-foreground">Descrição</Label>
+                <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-foreground">{viewingPriceRecord.description}</p>
               </div>
 
               <div>
-                <Label className="text-sm font-medium text-gray-600">Descrição</Label>
-                <p className="text-gray-700 whitespace-pre-wrap">{viewingPriceRecord.description}</p>
-              </div>
-
-              {/* Itens da Ata */}
-              <div>
-                <Label className="text-sm font-medium text-gray-600">Itens da Ata</Label>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Descrição</TableHead>
-                      <TableHead>Unidade</TableHead>
-                      <TableHead>Quantidade</TableHead>
-                      <TableHead>Preço Unit.</TableHead>
-                      <TableHead>Total</TableHead>
-                      <TableHead>Fornecedor</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {viewingPriceRecord.items.map((item) => (
-                      <TableRow key={item.id}>
-                        <TableCell>{item.description}</TableCell>
-                        <TableCell>{item.unit}</TableCell>
-                        <TableCell>{item.quantity}</TableCell>
-                        <TableCell>{formatCurrency(item.unitPrice)}</TableCell>
-                        <TableCell>{formatCurrency(item.totalPrice)}</TableCell>
-                        <TableCell>{item.supplier}</TableCell>
+                <Label className="text-xs text-muted-foreground">Itens da Ata</Label>
+                <div className="mt-2 overflow-x-auto rounded-md border border-border">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Descrição</TableHead>
+                        <TableHead>Unidade</TableHead>
+                        <TableHead>Qtd</TableHead>
+                        <TableHead>Preço Unit.</TableHead>
+                        <TableHead>Total</TableHead>
+                        <TableHead>Fornecedor</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                    </TableHeader>
+                    <TableBody>
+                      {viewingPriceRecord.items.map((item) => (
+                        <TableRow key={item.id}>
+                          <TableCell>{item.description}</TableCell>
+                          <TableCell>{item.unit}</TableCell>
+                          <TableCell>{item.quantity}</TableCell>
+                          <TableCell>{formatCurrency(item.unitPrice)}</TableCell>
+                          <TableCell>{formatCurrency(item.totalPrice)}</TableCell>
+                          <TableCell>{item.supplier}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
               </div>
 
-              {/* Participantes */}
               {viewingPriceRecord.participants.length > 0 && (
                 <div>
-                  <Label className="text-sm font-medium text-gray-600">Participantes</Label>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                    {viewingPriceRecord.participants.map((participant, index) => (
-                      <div key={index} className="p-2 bg-gray-50 rounded">
-                        <span className="text-sm">{participant}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {viewingPriceRecord.notes && (
-                <div>
-                  <Label className="text-sm font-medium text-gray-600">Observações</Label>
-                  <p className="text-gray-700 whitespace-pre-wrap">{viewingPriceRecord.notes}</p>
-                </div>
-              )}
-
-              {viewingPriceRecord.attachments && viewingPriceRecord.attachments.length > 0 && (
-                <div>
-                  <Label className="text-sm font-medium text-gray-600">Anexos</Label>
-                  <div className="space-y-2">
-                    {viewingPriceRecord.attachments.map((attachment, index) => (
-                      <div key={index} className="flex items-center gap-2 p-2 bg-gray-50 rounded">
-                        <FileText className="h-4 w-4 text-gray-500" />
-                        <span className="text-sm">{attachment}</span>
+                  <Label className="text-xs text-muted-foreground">Participantes</Label>
+                  <div className="mt-2 grid grid-cols-1 gap-2 md:grid-cols-2">
+                    {viewingPriceRecord.participants.map((participant) => (
+                      <div key={participant} className="rounded-md border border-border bg-background/50 p-3 text-sm text-foreground">
+                        <Building2 className="mr-2 inline h-4 w-4 text-cyan-300" />
+                        {participant}
                       </div>
                     ))}
                   </div>
@@ -512,4 +426,4 @@ const PriceRecordView: React.FC<PriceRecordViewProps> = ({ priceRecords, onAdd, 
   );
 };
 
-export default PriceRecordView; 
+export default PriceRecordView;

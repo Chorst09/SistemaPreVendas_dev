@@ -60,46 +60,36 @@ describe('ServiceDeskValidationEngine', () => {
       expect(result.errors).toHaveLength(0);
     });
 
-    it('should require project name', () => {
+    it('should warn when project name is missing in pricing tab data', () => {
       const invalidData = { ...validProjectData, name: '' };
       const result = engine.validateProjectData(invalidData);
 
-      expect(result.isValid).toBe(false);
-      expect(result.errors).toContainEqual({
+      expect(result.isValid).toBe(true);
+      expect(result.warnings).toContainEqual({
         field: 'name',
-        message: 'Nome do projeto é obrigatório',
-        code: 'REQUIRED_FIELD'
+        message: 'Nome do projeto não informado',
+        suggestion: 'Preencha em Dados da Proposta ou mantenha o nome padrão'
       });
     });
 
-    it('should require client name', () => {
+    it('should allow missing client name in pricing tab data', () => {
       const invalidData = { 
         ...validProjectData, 
         client: { ...validProjectData.client, name: '' }
       };
       const result = engine.validateProjectData(invalidData);
 
-      expect(result.isValid).toBe(false);
-      expect(result.errors).toContainEqual({
-        field: 'client.name',
-        message: 'Nome do cliente é obrigatório',
-        code: 'REQUIRED_FIELD'
-      });
+      expect(result.errors.some(error => error.field === 'client.name')).toBe(false);
     });
 
-    it('should require client document', () => {
+    it('should allow missing client document in pricing tab data', () => {
       const invalidData = { 
         ...validProjectData, 
         client: { ...validProjectData.client, document: '' }
       };
       const result = engine.validateProjectData(invalidData);
 
-      expect(result.isValid).toBe(false);
-      expect(result.errors).toContainEqual({
-        field: 'client.document',
-        message: 'CNPJ/CPF do cliente é obrigatório',
-        code: 'REQUIRED_FIELD'
-      });
+      expect(result.errors.some(error => error.field === 'client.document')).toBe(false);
     });
 
     it('should validate email format', () => {

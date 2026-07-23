@@ -95,7 +95,7 @@ export function ResultTabModule({
   });
 
   const calculationEngine = useMemo(() => new ServiceDeskCalculationEngine(), []);
-  const reportTemplates = useMemo(() => ReportExportService.getTemplates(), []);
+  const reportTemplates = useMemo(() => ReportExportService.getInstance().getTemplates(), []);
   const areEqual = (left: any, right: any) => {
     if (left === right) return true;
     try {
@@ -310,7 +310,7 @@ export function ResultTabModule({
       },
       {
         name: 'Outros Custos',
-        baseValue: data.otherCosts.reduce((sum, cost) => sum + cost.value, 0),
+        baseValue: data.budget.otherCosts,
         variations: [-30, -15, -10, 10, 15, 30],
         impacts: [-5, -2.5, -1.7, 1.7, 2.5, 5]
       }

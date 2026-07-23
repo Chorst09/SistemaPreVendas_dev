@@ -31,6 +31,7 @@ import {
   Share2
 } from 'lucide-react';
 import { ServiceDeskData } from '@/lib/types/service-desk-pricing';
+import { createId } from '@/lib/utils/id';
 
 export interface ReportConfig {
   id: string;
@@ -172,7 +173,7 @@ export function ReportGenerator({
   isGenerating = false 
 }: ReportGeneratorProps) {
   const [currentConfig, setCurrentConfig] = useState<ReportConfig>({
-    id: crypto.randomUUID(),
+    id: createId(),
     name: 'Novo Relatório',
     description: '',
     type: 'custom',
@@ -214,7 +215,7 @@ export function ReportGenerator({
     setCurrentConfig(prev => ({
       ...prev,
       ...template,
-      id: crypto.randomUUID(),
+      id: createId(),
       sections: template.sections ? [...template.sections] : prev.sections
     }));
   }, []);

@@ -48,6 +48,47 @@ export class NOCDataManager {
         reportingFrequency: 'monthly',
         escalationLevels: 3
       },
+      security: {
+        enabledServices: ['noc'],
+        soc: {
+          enabled: false,
+          endpoints: 0,
+          servers: 0,
+          networkDevices: 0,
+          cloudWorkloads: 0,
+          identities: 0,
+          users: 0,
+          mdrEnabled: true,
+          threatHuntingHours: 8,
+          incidentResponseHours: 4,
+          vulnerabilityTriage: true,
+          complianceReports: 1,
+          pricePerAsset: 65,
+          minimumMonthly: 12000,
+          analystHourRate: 280
+        },
+        siem: {
+          enabled: false,
+          platform: 'sentinel',
+          ingestionGBPerDay: 25,
+          includedGBPerDay: 10,
+          retentionHotDays: 90,
+          retentionArchiveMonths: 12,
+          logSources: 8,
+          correlationRules: 40,
+          customParsers: 2,
+          dataLakeEnabled: false,
+          pricePerGBIngested: 28,
+          baseMonthly: 5000,
+          storagePerGBMonth: 0.85,
+          ruleMonthlyCost: 35,
+          parserMonthlyCost: 180
+        },
+        setup: {
+          onboardingFee: 15000,
+          amortizationMonths: 12
+        }
+      },
       team: [],
       teamSize: 0,
       operationalCosts: {
@@ -162,6 +203,13 @@ export class NOCDataManager {
       project: { ...empty.project, ...data.project },
       monitoring: { ...empty.monitoring, ...data.monitoring },
       sla: { ...empty.sla, ...data.sla },
+      security: {
+        ...empty.security,
+        ...data.security,
+        soc: { ...empty.security.soc, ...data.security?.soc },
+        siem: { ...empty.security.siem, ...data.security?.siem },
+        setup: { ...empty.security.setup, ...data.security?.setup }
+      },
       operationalCosts: { ...empty.operationalCosts, ...data.operationalCosts },
       taxes: { ...empty.taxes, ...data.taxes },
       variables: { ...empty.variables, ...data.variables }
@@ -189,6 +237,9 @@ export class NOCDataManager {
         break;
       case 'sla':
         updated.sla = tabData;
+        break;
+      case 'security':
+        updated.security = tabData;
         break;
       case 'team':
         updated.team = tabData.team || [];
@@ -228,6 +279,8 @@ export class NOCDataManager {
         return data.monitoring;
       case 'sla':
         return data.sla;
+      case 'security':
+        return data.security;
       case 'team':
         return {
           team: data.team,

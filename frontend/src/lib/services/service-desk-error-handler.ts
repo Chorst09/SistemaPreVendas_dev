@@ -4,20 +4,12 @@ import {
   ServiceDeskErrorContext,
   ErrorRecoveryOption,
   ErrorHandlingConfig,
-  ValidationErrorDetail,
-  CalculationErrorDetail,
-  DataPersistenceErrorDetail,
-  NavigationErrorDetail,
-  IntegrationErrorDetail,
   ErrorLog,
   ErrorReporter,
   createServiceDeskError,
-  getErrorSeverity,
-  isErrorRecoverable,
-  getErrorRecoveryOptions,
-  getErrorMessage
+  getErrorRecoveryOptions
 } from '../types/service-desk-errors'
-import { ServiceDeskData, ValidationResult, ValidationError } from '../types/service-desk-pricing'
+import { ServiceDeskData, ValidationResult, ValidationError, ValidationWarning } from '../types/service-desk-pricing'
 
 /**
  * Comprehensive error handling service for Service Desk Pricing System
@@ -129,7 +121,7 @@ export class ServiceDeskErrorHandler implements ErrorReporter {
    */
   validateServiceDeskData(data: ServiceDeskData, tabId?: string): ValidationResult {
     const errors: ValidationError[] = []
-    const warnings: ValidationError[] = []
+    const warnings: ValidationWarning[] = []
 
     try {
       // Validate project data
@@ -206,7 +198,7 @@ export class ServiceDeskErrorHandler implements ErrorReporter {
    */
   private validateProjectData(project: any): ValidationResult {
     const errors: ValidationError[] = []
-    const warnings: ValidationError[] = []
+    const warnings: ValidationWarning[] = []
 
     if (!project.name || project.name.trim() === '') {
       errors.push({
@@ -242,8 +234,7 @@ export class ServiceDeskErrorHandler implements ErrorReporter {
       if (project.client.phone && !this.isValidPhone(project.client.phone)) {
         warnings.push({
           field: 'project.client.phone',
-          message: 'Formato do telefone pode estar incorreto',
-          code: 'INVALID_PHONE_FORMAT'
+          message: 'Formato do telefone pode estar incorreto'
         })
       }
     }
@@ -287,8 +278,7 @@ export class ServiceDeskErrorHandler implements ErrorReporter {
         if (durationMonths < 1) {
           warnings.push({
             field: 'project.contractPeriod',
-            message: 'Contrato muito curto (menos de 1 mês)',
-            code: 'SHORT_CONTRACT_WARNING'
+            message: 'Contrato muito curto (menos de 1 mês)'
           })
         }
       }
@@ -302,7 +292,7 @@ export class ServiceDeskErrorHandler implements ErrorReporter {
    */
   private validateTeamData(team: any[]): ValidationResult {
     const errors: ValidationError[] = []
-    const warnings: ValidationError[] = []
+    const warnings: ValidationWarning[] = []
 
     team.forEach((member, index) => {
       const prefix = `team[${index}]`
@@ -342,8 +332,7 @@ export class ServiceDeskErrorHandler implements ErrorReporter {
       if (member.workload > 44) {
         warnings.push({
           field: `${prefix}.workload`,
-          message: `Carga horária do membro ${index + 1} excede 44 horas semanais`,
-          code: 'HIGH_WORKLOAD_WARNING'
+          message: `Carga horária do membro ${index + 1} excede 44 horas semanais`
         })
       }
 
@@ -354,8 +343,7 @@ export class ServiceDeskErrorHandler implements ErrorReporter {
         if (startDate > now) {
           warnings.push({
             field: `${prefix}.startDate`,
-            message: `Data de início do membro ${index + 1} é futura`,
-            code: 'FUTURE_START_DATE'
+            message: `Data de início do membro ${index + 1} é futura`
           })
         }
       }
@@ -369,7 +357,7 @@ export class ServiceDeskErrorHandler implements ErrorReporter {
    */
   private validateScheduleData(schedules: any[]): ValidationResult {
     const errors: ValidationError[] = []
-    const warnings: ValidationError[] = []
+    const warnings: ValidationWarning[] = []
 
     schedules.forEach((schedule, index) => {
       const prefix = `schedules[${index}]`
@@ -419,7 +407,7 @@ export class ServiceDeskErrorHandler implements ErrorReporter {
    */
   private validateTaxConfiguration(taxes: any): ValidationResult {
     const errors: ValidationError[] = []
-    const warnings: ValidationError[] = []
+    const warnings: ValidationWarning[] = []
 
     const taxFields = ['icms', 'pis', 'cofins', 'iss', 'ir', 'csll']
     
@@ -445,8 +433,7 @@ export class ServiceDeskErrorHandler implements ErrorReporter {
     if (totalTaxRate > 50) {
       warnings.push({
         field: 'taxes',
-        message: 'Carga tributária total muito alta (acima de 50%)',
-        code: 'HIGH_TAX_BURDEN'
+        message: 'Carga tributária total muito alta (acima de 50%)'
       })
     }
 
@@ -456,9 +443,9 @@ export class ServiceDeskErrorHandler implements ErrorReporter {
   /**
    * Validate budget consistency
    */
-  private validateBudgetConsistency(budget: any, team: any[], otherCosts: any[]): ValidationResult {
+  private validateBudgetConsistency(budget: any, _team: any[], _otherCosts: any[]): ValidationResult {
     const errors: ValidationError[] = []
-    const warnings: ValidationError[] = []
+    const warnings: ValidationWarning[] = []
 
     if (typeof budget.totalCosts !== 'number' || budget.totalCosts <= 0) {
       errors.push({
@@ -479,8 +466,7 @@ export class ServiceDeskErrorHandler implements ErrorReporter {
     if (budget.totalPrice && budget.totalCosts && budget.totalPrice < budget.totalCosts) {
       warnings.push({
         field: 'budget',
-        message: 'Preço total é menor que o custo total (margem negativa)',
-        code: 'NEGATIVE_MARGIN'
+        message: 'Preço total é menor que o custo total (margem negativa)'
       })
     }
 
@@ -667,39 +653,32 @@ export class ServiceDeskErrorHandler implements ErrorReporter {
   /**
    * Recovery methods
    */
-  private async recoverCalculation(error: ServiceDeskError, context: any): Promise<{ success: boolean; result?: any }> {
-    // Implement calculation recovery logic
+  private async recoverCalculation(_error: ServiceDeskError, _context: any): Promise<{ success: boolean; result?: any }> {
     return { success: false }
   }
 
-  private async retryDataPersistence(error: ServiceDeskError, context: any): Promise<{ success: boolean; result?: any }> {
-    // Implement data persistence retry logic
+  private async retryDataPersistence(_error: ServiceDeskError, _context: any): Promise<{ success: boolean; result?: any }> {
     return { success: false }
   }
 
-  private useDefaultValues(error: ServiceDeskError, context: any): { success: boolean; result?: any } {
-    // Implement default values logic
+  private useDefaultValues(_error: ServiceDeskError, _context: any): { success: boolean; result?: any } {
     return { success: false }
   }
 
-  private suggestValidationFixes(error: ServiceDeskError, context: any): { success: boolean; result?: any } {
-    // Implement validation fix suggestions
+  private suggestValidationFixes(_error: ServiceDeskError, _context: any): { success: boolean; result?: any } {
     return { success: false }
   }
 
-  private clearCache(error: ServiceDeskError, context: any): { success: boolean; result?: any } {
+  private clearCache(_error: ServiceDeskError, _context: any): { success: boolean; result?: any } {
     try {
-      // Clear localStorage
       localStorage.clear()
-      
-      // Clear sessionStorage
       sessionStorage.clear()
       
       return { 
         success: true, 
         result: 'Cache limpo com sucesso' 
       }
-    } catch (clearError) {
+    } catch (_clearError) {
       return { success: false }
     }
   }
@@ -763,15 +742,6 @@ export class ServiceDeskErrorHandler implements ErrorReporter {
 export const serviceDeskErrorHandler = ServiceDeskErrorHandler.getInstance()
 
 // Export utility functions
-export const createServiceDeskError = (
-  type: ServiceDeskErrorType,
-  message: string,
-  context?: ServiceDeskErrorContext,
-  details?: any
-): ServiceDeskError => {
-  return serviceDeskErrorHandler.createError(type, message, context, details)
-}
-
 export const validateServiceDeskData = (data: ServiceDeskData, tabId?: string): ValidationResult => {
   return serviceDeskErrorHandler.validateServiceDeskData(data, tabId)
 }

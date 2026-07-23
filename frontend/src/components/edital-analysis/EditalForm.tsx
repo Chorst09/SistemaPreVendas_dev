@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { X, Plus, FileText, Trash2, Upload, Brain, FileUp } from 'lucide-react';
 import { Edital, EditalDocument, EditalProduct, EditalFile } from '@/lib/types';
+import { EditalStatus, EditalDocumentType, EditalDocumentStatus, EditalProductStatus } from '@/lib/types/enums';
 
 interface EditalFormProps {
   edital?: Edital;
@@ -28,7 +29,7 @@ const EditalForm: React.FC<EditalFormProps> = ({ edital, onSubmit, onCancel }) =
     submissionDeadline: edital?.submissionDeadline || '',
     estimatedValue: edital?.estimatedValue || 0,
     category: edital?.category || '',
-    status: edital?.status || 'Aberto',
+    status: edital?.status || EditalStatus.OPEN,
     description: edital?.description || '',
     requirements: edital?.requirements || '',
     documents: edital?.documents || [],
@@ -43,10 +44,10 @@ const EditalForm: React.FC<EditalFormProps> = ({ edital, onSubmit, onCancel }) =
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [newDocument, setNewDocument] = useState<Omit<EditalDocument, 'id'>>({
     name: '',
-    type: 'Obrigatório',
+    type: EditalDocumentType.MANDATORY,
     description: '',
     deadline: '',
-    status: 'Pendente',
+    status: EditalDocumentStatus.PENDING,
     notes: ''
   });
 
@@ -59,7 +60,7 @@ const EditalForm: React.FC<EditalFormProps> = ({ edital, onSubmit, onCancel }) =
     brand: '',
     model: '',
     supplier: '',
-    status: 'Disponível'
+    status: EditalProductStatus.AVAILABLE
   });
 
   const categories = [
@@ -191,7 +192,7 @@ const EditalForm: React.FC<EditalFormProps> = ({ edital, onSubmit, onCancel }) =
       submissionDeadline: formData.submissionDeadline,
       estimatedValue: formData.estimatedValue,
       category: formData.category,
-      status: formData.status as 'Aberto' | 'Em Análise' | 'Fechado' | 'Vencido' | 'Cancelado',
+      status: formData.status as EditalStatus,
       description: formData.description,
       requirements: formData.requirements,
       documents: formData.documents,
@@ -233,10 +234,10 @@ const EditalForm: React.FC<EditalFormProps> = ({ edital, onSubmit, onCancel }) =
 
       setNewDocument({
         name: '',
-        type: 'Obrigatório',
+        type: EditalDocumentType.MANDATORY,
         description: '',
         deadline: '',
-        status: 'Pendente',
+        status: EditalDocumentStatus.PENDING,
         notes: ''
       });
     }
@@ -273,7 +274,7 @@ const EditalForm: React.FC<EditalFormProps> = ({ edital, onSubmit, onCancel }) =
         brand: '',
         model: '',
         supplier: '',
-        status: 'Disponível'
+        status: EditalProductStatus.AVAILABLE
       });
     }
   };

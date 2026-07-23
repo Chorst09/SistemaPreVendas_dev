@@ -83,6 +83,11 @@ const CHART_COLORS = [
   '#ff00ff', '#00ffff', '#ff0000', '#0000ff', '#ffff00'
 ];
 
+const parseDiscountPercentage = (value: string): number => {
+  const parsed = Number(value.replace(',', '.'));
+  return Number.isFinite(parsed) ? parsed : Number.NaN;
+};
+
 export function NegotiationTabModule({
   data,
   onUpdate,
@@ -99,6 +104,7 @@ export function NegotiationTabModule({
   const [showVersionHistory, setShowVersionHistory] = useState(false);
   const [newScenarioName, setNewScenarioName] = useState('');
   const [newScenarioDescription, setNewScenarioDescription] = useState('');
+  const [newScenarioDiscount, setNewScenarioDiscount] = useState('');
   const [scenarioVersions, setScenarioVersions] = useState<Record<string, NegotiationVersion[]>>({});
   const [versionComparison, setVersionComparison] = useState<VersionComparison | null>(null);
   const [showVersionComparison, setShowVersionComparison] = useState(false);
@@ -182,16 +188,26 @@ export function NegotiationTabModule({
 
     // Calculate results
     const teamCosts = calculationEngine.calculateTeamCosts(adjustedData.team, adjustedData.schedules);
-    const taxes = calculationEngine.calculateTaxes(adjustedData.budget.totalPrice, adjustedData.taxes);
     const margins = calculationEngine.calculateMargins(
       teamCosts.totalMonthlyCost,
       adjustedData.budget.margin,
       adjustedData.otherCosts
     );
+    const negotiatedPriceAdjustment = [...adjustments]
+      .reverse()
+      .find(adjustment => (
+        adjustment.category === 'price' &&
+        adjustment.field === 'totalPrice' &&
+        Number.isFinite(Number(adjustment.adjustedValue))
+      ));
+    const negotiatedMonthlyPrice = negotiatedPriceAdjustment
+      ? Math.max(0, Number(negotiatedPriceAdjustment.adjustedValue))
+      : margins.totalPrice;
+    const taxes = calculationEngine.calculateTaxes(negotiatedMonthlyPrice, adjustedData.taxes);
 
     const totalCost = teamCosts.totalMonthlyCost * 12 + taxes.totalTaxes;
-    const profit = margins.totalPrice - totalCost;
-    const margin = margins.totalPrice > 0 ? (profit / margins.totalPrice) * 100 : 0;
+    const profit = negotiatedMonthlyPrice - totalCost;
+    const margin = negotiatedMonthlyPrice > 0 ? (profit / negotiatedMonthlyPrice) * 100 : 0;
     
     const roi = calculationEngine.calculateROI(
       totalCost * 0.2, // Simplified investment calculation
@@ -209,7 +225,7 @@ export function NegotiationTabModule({
     else if (margin > 25) riskLevel = 'low';
 
     return {
-      totalPrice: margins.totalPrice,
+      totalPrice: negotiatedMonthlyPrice,
       totalCost,
       profit,
       margin,
@@ -251,16 +267,45 @@ export function NegotiationTabModule({
     }
   };
 
+  const getBaseMonthlyPrice = useCallback(() => {
+    const baseScenario = scenarios.find(scenario => scenario.baseScenario) || scenarios[0];
+    return baseScenario?.results?.totalPrice || fullData?.budget?.totalPrice || 0;
+  }, [scenarios, fullData]);
+
   const createNewScenario = useCallback(() => {
-    if (!newScenarioName.trim() || !fullData) return;
+    if (!fullData) return;
+
+    const discountPercentage = parseDiscountPercentage(newScenarioDiscount);
+    if (!Number.isFinite(discountPercentage) || discountPercentage < 0 || discountPercentage > 100) return;
+
+    const baseMonthlyPrice = getBaseMonthlyPrice();
+    if (baseMonthlyPrice <= 0) return;
+
+    const adjustedMonthlyPrice = baseMonthlyPrice * (1 - discountPercentage / 100);
+    const scenarioNumber = scenarios.length + 1;
+    const discountLabel = discountPercentage.toLocaleString('pt-BR', {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 2
+    });
+    const scenarioName = newScenarioName.trim() || `Cenário ${scenarioNumber} - Desconto ${discountLabel}%`;
+    const scenarioDescription = newScenarioDescription.trim()
+      || `Negociação com desconto de ${discountLabel}% sobre o valor mensal inicial.`;
+    const discountAdjustment: NegotiationAdjustment = {
+      category: 'price',
+      field: 'totalPrice',
+      originalValue: baseMonthlyPrice,
+      adjustedValue: adjustedMonthlyPrice,
+      impact: -discountPercentage,
+      reason: scenarioDescription
+    };
 
     const newScenario: NegotiationScenario = {
       id: `scenario-${Date.now()}`,
-      name: newScenarioName,
-      description: newScenarioDescription,
+      name: scenarioName,
+      description: scenarioDescription,
       baseScenario: false,
-      adjustments: [],
-      results: calculateScenarioResults(fullData, []),
+      adjustments: [discountAdjustment],
+      results: calculateScenarioResults(fullData, [discountAdjustment]),
       createdAt: new Date(),
       version: 1
     };
@@ -271,8 +316,9 @@ export function NegotiationTabModule({
     setIsCreatingScenario(false);
     setNewScenarioName('');
     setNewScenarioDescription('');
+    setNewScenarioDiscount('');
     onUpdate(updatedScenarios);
-  }, [newScenarioName, newScenarioDescription, fullData, scenarios, calculateScenarioResults, onUpdate]);
+  }, [newScenarioName, newScenarioDescription, newScenarioDiscount, fullData, scenarios, getBaseMonthlyPrice, calculateScenarioResults, onUpdate]);
 
   const duplicateScenario = useCallback((scenarioId: string) => {
     const originalScenario = scenarios.find(s => s.id === scenarioId);
@@ -574,6 +620,15 @@ export function NegotiationTabModule({
 
   const currentScenario = scenarios.find(s => s.id === selectedScenario);
   const comparison = generateComparison();
+  const baseMonthlyPrice = getBaseMonthlyPrice();
+  const parsedScenarioDiscount = parseDiscountPercentage(newScenarioDiscount);
+  const hasValidScenarioDiscount = Number.isFinite(parsedScenarioDiscount)
+    && parsedScenarioDiscount >= 0
+    && parsedScenarioDiscount <= 100;
+  const discountedMonthlyPrice = hasValidScenarioDiscount
+    ? baseMonthlyPrice * (1 - parsedScenarioDiscount / 100)
+    : baseMonthlyPrice;
+  const nextScenarioNumber = scenarios.length + 1;
 
   return (
     <div className="space-y-6">
@@ -582,7 +637,7 @@ export function NegotiationTabModule({
         <div>
           <h2 className="text-2xl font-bold">Simulador de Negociação</h2>
           <p className="text-muted-foreground">
-            Crie e compare diferentes cenários de negociação
+            O primeiro cenário é o valor mensal inicial. Do segundo em diante, salve cenários por desconto.
           </p>
         </div>
         <div className="flex gap-2">
@@ -592,7 +647,7 @@ export function NegotiationTabModule({
             variant="outline"
           >
             <Plus className="w-4 h-4 mr-2" />
-            Novo Cenário
+            Novo Desconto
           </Button>
           
           {currentScenario && !currentScenario.baseScenario && (
@@ -699,7 +754,9 @@ export function NegotiationTabModule({
                         {scenario.description}
                       </p>
                       <div className="text-xs text-muted-foreground">
-                        {scenario.adjustments.length} ajuste(s) • v{scenario.version}
+                        {scenario.baseScenario
+                          ? `${formatCurrency(scenario.results.totalPrice)} mensais • valor inicial`
+                          : `${scenario.adjustments.length} ajuste(s) • v${scenario.version}`}
                       </div>
                     </div>
                   ))}
@@ -721,7 +778,7 @@ export function NegotiationTabModule({
                 <CardContent>
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
                     <div className="text-center">
-                      <p className="text-sm text-muted-foreground">Preço Total</p>
+                      <p className="text-sm text-muted-foreground">Valor Mensal</p>
                       <p className="text-xl font-bold text-green-600">
                         {formatCurrency(currentScenario.results.totalPrice)}
                       </p>
@@ -793,7 +850,7 @@ export function NegotiationTabModule({
                   <Alert>
                     <AlertTriangle className="h-4 w-4" />
                     <AlertDescription>
-                      O cenário base não pode ser editado. Crie um novo cenário ou duplique este para fazer ajustes.
+                      O primeiro cenário é o valor mensal inicial calculado e não pode ser editado. Para negociar, crie um novo cenário informando o desconto.
                     </AlertDescription>
                   </Alert>
                 ) : (
@@ -1018,7 +1075,7 @@ export function NegotiationTabModule({
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 w-full max-w-md">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold">Novo Cenário</h3>
+              <h3 className="text-lg font-semibold">Novo Cenário de Desconto</h3>
               <Button
                 variant="ghost"
                 size="sm"
@@ -1035,8 +1092,34 @@ export function NegotiationTabModule({
                   id="scenario-name"
                   value={newScenarioName}
                   onChange={(e) => setNewScenarioName(e.target.value)}
-                  placeholder="Ex: Negociação Cliente A"
+                  placeholder={`Ex: Cenário ${nextScenarioNumber} - Desconto negociado`}
                 />
+              </div>
+
+              <div className="grid grid-cols-1 gap-3 rounded-md border bg-muted/40 p-3">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">Valor mensal inicial</span>
+                  <span className="font-semibold">{formatCurrency(baseMonthlyPrice)}</span>
+                </div>
+                <div>
+                  <Label htmlFor="scenario-discount">Desconto negociado (%)</Label>
+                  <Input
+                    id="scenario-discount"
+                    type="number"
+                    min="0"
+                    max="100"
+                    step="0.01"
+                    value={newScenarioDiscount}
+                    onChange={(e) => setNewScenarioDiscount(e.target.value)}
+                    placeholder="Ex: 10"
+                  />
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">Valor mensal negociado</span>
+                  <span className="font-semibold text-green-600">
+                    {formatCurrency(discountedMonthlyPrice)}
+                  </span>
+                </div>
               </div>
 
               <div>
@@ -1045,7 +1128,7 @@ export function NegotiationTabModule({
                   id="scenario-description"
                   value={newScenarioDescription}
                   onChange={(e) => setNewScenarioDescription(e.target.value)}
-                  placeholder="Descreva o objetivo deste cenário..."
+                  placeholder="Opcional: descreva a condição negociada..."
                   rows={3}
                 />
               </div>
@@ -1059,9 +1142,9 @@ export function NegotiationTabModule({
                 </Button>
                 <Button
                   onClick={createNewScenario}
-                  disabled={!newScenarioName.trim()}
+                  disabled={!hasValidScenarioDiscount || baseMonthlyPrice <= 0}
                 >
-                  Criar Cenário
+                  Salvar Cenário {nextScenarioNumber}
                 </Button>
               </div>
             </div>

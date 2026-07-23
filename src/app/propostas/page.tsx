@@ -26,6 +26,7 @@ import { ProposalCoverPage } from '@/components/propostas/ProposalCoverPage';
 import { ProposalAboutPage } from '@/components/propostas/ProposalAboutPage';
 import { ProposalClientsPage } from '@/components/propostas/ProposalClientsPage';
 import { ProposalContentPage } from '@/components/propostas/ProposalContentPage';
+import { AuthGate } from '@/components/auth/AuthGate';
 
 export default function PropostasPage() {
   const router = useRouter();
@@ -333,70 +334,79 @@ export default function PropostasPage() {
   // Se estiver mostrando a página de capa, renderizar apenas ela
   if (showCoverPage) {
     return (
-      <ProposalCoverPage
-        onContinue={handleCoverPageContinue}
-        onBack={() => setShowCoverPage(false)}
-      />
+      <AuthGate>
+        <ProposalCoverPage
+          onContinue={handleCoverPageContinue}
+          onBack={() => setShowCoverPage(false)}
+        />
+      </AuthGate>
     );
   }
 
   // Se estiver mostrando a página "Quem Somos", renderizar apenas ela
   if (showAboutPage) {
     return (
-      <ProposalAboutPage
-        onContinue={handleAboutPageContinue}
-        onBack={() => {
-          setShowAboutPage(false);
-          setShowCoverPage(true);
-        }}
-      />
+      <AuthGate>
+        <ProposalAboutPage
+          onContinue={handleAboutPageContinue}
+          onBack={() => {
+            setShowAboutPage(false);
+            setShowCoverPage(true);
+          }}
+        />
+      </AuthGate>
     );
   }
 
   // Se estiver mostrando a página "Nossos Clientes", renderizar apenas ela
   if (showClientsPage) {
     return (
-      <ProposalClientsPage
-        onContinue={handleClientsPageContinue}
-        onBack={() => {
-          setShowClientsPage(false);
-          setShowAboutPage(true);
-        }}
-      />
+      <AuthGate>
+        <ProposalClientsPage
+          onContinue={handleClientsPageContinue}
+          onBack={() => {
+            setShowClientsPage(false);
+            setShowAboutPage(true);
+          }}
+        />
+      </AuthGate>
     );
   }
 
   // Se estiver mostrando a página de conteúdo (página 4+), renderizar apenas ela
   if (showContentPage) {
     return (
-      <ProposalContentPage
-        pageNumber={4}
-        title="Sumário Executivo"
-        content={
-          <div className="space-y-6">
-            <p>
-              Esta é uma página de exemplo com o layout padrão (cabeçalho e rodapé).
-            </p>
-            <p>
-              Você pode adicionar qualquer conteúdo aqui: texto, imagens, tabelas, gráficos, etc.
-            </p>
-            <div className="bg-gray-50 p-6 rounded-lg border-l-4 border-cyan-500">
-              <h3 className="font-bold text-lg mb-2">Exemplo de Destaque</h3>
-              <p>Conteúdo importante em destaque.</p>
+      <AuthGate>
+        <ProposalContentPage
+          pageNumber={4}
+          title="Sumário Executivo"
+          content={
+            <div className="space-y-6">
+              <p>
+                Esta é uma página de exemplo com o layout padrão (cabeçalho e rodapé).
+              </p>
+              <p>
+                Você pode adicionar qualquer conteúdo aqui: texto, imagens, tabelas, gráficos, etc.
+              </p>
+              <div className="bg-gray-50 p-6 rounded-lg border-l-4 border-cyan-500">
+                <h3 className="font-bold text-lg mb-2">Exemplo de Destaque</h3>
+                <p>Conteúdo importante em destaque.</p>
+              </div>
             </div>
-          </div>
-        }
-        onContinue={handleContentPageContinue}
-        onBack={() => {
-          setShowContentPage(false);
-          setShowClientsPage(true);
-        }}
-      />
+          }
+          onContinue={handleContentPageContinue}
+          onBack={() => {
+            setShowContentPage(false);
+            setShowClientsPage(true);
+          }}
+        />
+      </AuthGate>
     );
   }
 
   return (
-    <div className="container mx-auto py-8 px-4">
+    <AuthGate>
+      <div className="container mx-auto py-8 px-4">
       {/* Modal de Seleção de Proposta NOC */}
       {showNOCSelector && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
@@ -689,6 +699,7 @@ export default function PropostasPage() {
           ))}
         </div>
       )}
-    </div>
+      </div>
+    </AuthGate>
   );
 }

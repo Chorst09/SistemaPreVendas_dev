@@ -213,9 +213,8 @@ export class ServiceDeskProposalTemplate {
     this.currentY += 10;
     this.renderInfoBox('VISÃO GERAL', [
       `Total de Profissionais: ${teamComposition.totalMembers}`,
-      `Custo Mensal da Equipe: ${this.formatCurrency(teamComposition.totalMonthlyCost)}`,
-      `Custo Anual da Equipe: ${this.formatCurrency(teamComposition.totalAnnualCost)}`,
-      `Custo por Hora: ${this.formatCurrency(teamComposition.costPerHour)}`
+      'Equipe dimensionada conforme volume, SLA e cobertura contratada',
+      'Composição apresentada apenas para escopo operacional'
     ]);
 
     // Roles breakdown
@@ -332,45 +331,20 @@ export class ServiceDeskProposalTemplate {
   private renderFinancialBreakdown(financialBreakdown: FinancialBreakdownSection): void {
     this.currentY = this.margin;
     
-    this.renderSectionHeader('ANÁLISE FINANCEIRA DETALHADA');
+    this.renderSectionHeader('INVESTIMENTO COMERCIAL');
 
-    // Cost breakdown chart (simplified as table)
     this.currentY += 10;
-    this.renderSubHeader('Composição de Custos');
+    this.renderSubHeader('Resumo de Venda');
     this.currentY += 10;
 
-    const costItems = [
-      ['Custos da Equipe', ''],
-      ['  - Salários', this.formatCurrency(financialBreakdown.teamCosts.salaries)],
-      ['  - Benefícios', this.formatCurrency(financialBreakdown.teamCosts.benefits)],
-      ['  - Subtotal Equipe', this.formatCurrency(financialBreakdown.teamCosts.total)],
-      ['', ''],
-      ['Outros Custos', ''],
-      ['  - Infraestrutura', this.formatCurrency(financialBreakdown.otherCosts.infrastructure)],
-      ['  - Licenças', this.formatCurrency(financialBreakdown.otherCosts.licenses)],
-      ['  - Treinamentos', this.formatCurrency(financialBreakdown.otherCosts.training)],
-      ['  - Outros', this.formatCurrency(financialBreakdown.otherCosts.other)],
-      ['  - Subtotal Outros', this.formatCurrency(financialBreakdown.otherCosts.total)],
-      ['', ''],
-      ['Impostos', ''],
-      ['  - Federais', this.formatCurrency(financialBreakdown.taxes.federal)],
-      ['  - Estaduais', this.formatCurrency(financialBreakdown.taxes.state)],
-      ['  - Municipais', this.formatCurrency(financialBreakdown.taxes.municipal)],
-      ['  - Subtotal Impostos', this.formatCurrency(financialBreakdown.taxes.total)],
-      ['', ''],
-      ['TOTAL GERAL', this.formatCurrency(financialBreakdown.totals.totalCosts)]
+    const saleItems = [
+      ['Valor total da proposta', this.formatCurrency(financialBreakdown.totals.totalPrice)],
+      ['Impostos inclusos', this.formatCurrency(financialBreakdown.taxes.total)],
+      ['Condição', 'Valores de venda com margem e impostos já considerados']
     ];
 
-    costItems.forEach(([item, value], index) => {
-      if (item === '' && value === '') {
-        this.currentY += 3;
-        return;
-      }
-
-      const isTotal = item.includes('TOTAL') || item.includes('Subtotal');
-      const isSubItem = item.startsWith('  -');
-
-      if (isTotal) {
+    saleItems.forEach(([item, value], index) => {
+      if (index === 0) {
         this.doc.setFont('helvetica', 'bold');
         this.doc.setFillColor(...this.colors.lightGray);
         this.doc.rect(this.margin, this.currentY - 2, this.pageWidth - (this.margin * 2), 8, 'F');
@@ -380,22 +354,18 @@ export class ServiceDeskProposalTemplate {
 
       this.doc.setFontSize(9);
       this.doc.setTextColor(...this.colors.text);
-      this.doc.text(item, this.margin + (isSubItem ? 10 : 5), this.currentY + 3);
+      this.doc.text(item, this.margin + 5, this.currentY + 3);
       if (value) {
-        this.doc.text(value, this.pageWidth - this.margin - 40, this.currentY + 3);
+        this.doc.text(value, this.pageWidth - this.margin - 70, this.currentY + 3);
       }
 
       this.currentY += 8;
     });
 
-    // Profitability analysis
     this.currentY += 10;
-    this.renderHighlightBox('ANÁLISE DE RENTABILIDADE', [
-      `Receita Total: ${this.formatCurrency(financialBreakdown.totals.totalPrice)}`,
-      `Custo Total: ${this.formatCurrency(financialBreakdown.totals.totalCosts)}`,
-      `Lucro Bruto: ${this.formatCurrency(financialBreakdown.totals.profit)}`,
-      `Margem de Lucro: ${financialBreakdown.totals.profitMargin.toFixed(1)}%`,
-      `Margem Alvo: ${financialBreakdown.margins.targetMargin.toFixed(1)}%`
+    this.renderHighlightBox('OBSERVAÇÃO COMERCIAL', [
+      'A proposta apresenta somente valores de venda ao cliente.',
+      'Custos internos, margem e DRE permanecem restritos ao módulo de precificação.'
     ]);
   }
 

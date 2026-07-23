@@ -95,10 +95,11 @@ describe('ServiceDeskCalculationEngine', () => {
       const memberBreakdown = result.breakdown[0];
 
       expect(memberBreakdown.benefits).toBeGreaterThan(0);
-      // Benefits should include fixed amounts plus percentage-based benefits
+      // Benefits should include fixed amounts, labor provisions, and charges over salary + provisions.
       const expectedFixedBenefits = 300 + 500 + 200 + 50; // 1050
-      const expectedPercentageBenefits = mockTeamMember.salary * (8.33 + 8.33 + 8 + 11) / 100; // 35.66% of salary
-      expect(memberBreakdown.benefits).toBeCloseTo(expectedFixedBenefits + expectedPercentageBenefits, 0);
+      const provisions = mockTeamMember.salary * (8.33 + 2.78 + 8.33) / 100;
+      const expectedCharges = (mockTeamMember.salary + provisions) * (8 + 11) / 100;
+      expect(memberBreakdown.benefits).toBeCloseTo(expectedFixedBenefits + provisions + expectedCharges, 0);
     });
 
     it('should apply shift multipliers correctly', () => {
@@ -523,8 +524,8 @@ describe('ServiceDeskCalculationEngine', () => {
       expect(result).toHaveProperty('totalPrice');
       expect(result).toHaveProperty('monthlyBreakdown');
 
-      expect(result.infrastructureCosts).toBe(2000);
-      expect(result.otherCosts).toBe(3000); // 2000 + 1000
+      expect(result.infrastructureCosts).toBe(2000 * 12);
+      expect(result.otherCosts).toBe((2000 * 12) + (1000 * 12));
       expect(result.monthlyBreakdown).toHaveLength(12);
     });
 

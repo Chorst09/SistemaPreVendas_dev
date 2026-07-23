@@ -51,9 +51,23 @@ export function ForecastTabModule({ data, onUpdate, isLoading = false, fullData 
   const [selectedTimeframe, setSelectedTimeframe] = useState<ProjectionTimeframe>(
     ProjectionTimeframe.MEDIUM_TERM
   );
+  const contractDuration = Math.max(
+    1,
+    Number(fullData?.project?.contractPeriod?.durationMonths || data.assumptions.contractDuration || 12)
+  );
+
+  React.useEffect(() => {
+    if (data.assumptions.contractDuration === contractDuration) return;
+    onUpdate({
+      ...data,
+      assumptions: {
+        ...data.assumptions,
+        contractDuration
+      }
+    });
+  }, [data, contractDuration, onUpdate]);
 
   const baseFinancials = useMemo(() => {
-    const contractDuration = Math.max(1, data.assumptions.contractDuration || 12);
     const monthlyFromBudget = fullData?.budget?.monthlyBreakdown?.[0];
 
     if (monthlyFromBudget) {
@@ -70,12 +84,10 @@ export function ForecastTabModule({ data, onUpdate, isLoading = false, fullData 
       baseRevenue: totalRevenue > 0 ? totalRevenue / contractDuration : 100000,
       baseCosts: totalCosts > 0 ? totalCosts / contractDuration : 80000
     };
-  }, [data.assumptions.contractDuration, fullData]);
+  }, [contractDuration, fullData]);
 
   // Calcular projeções usando o serviço
   const calculateProjections = useCallback((scenario: ForecastScenario) => {
-    const contractDuration = data.assumptions.contractDuration;
-    
     return ForecastService.calculateMonthlyProjections(
       scenario,
       baseFinancials.baseRevenue,
@@ -83,7 +95,7 @@ export function ForecastTabModule({ data, onUpdate, isLoading = false, fullData 
       contractDuration,
       data.assumptions.seasonalFactors
     );
-  }, [data.assumptions.contractDuration, data.assumptions.seasonalFactors, baseFinancials]);
+  }, [contractDuration, data.assumptions.seasonalFactors, baseFinancials]);
 
   // Cenários padrão usando o serviço
   const defaultScenarios: ForecastScenario[] = useMemo(() => 

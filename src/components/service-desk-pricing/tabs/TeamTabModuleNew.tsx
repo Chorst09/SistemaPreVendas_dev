@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -26,7 +26,22 @@ import {
   Save,
   X
 } from 'lucide-react';
-import { JobPositionsManager, JobPosition } from '../positions/JobPositionsManager';
+import { JobPositionsManager } from '../positions/JobPositionsManager';
+import { useJobPositions } from '@/hooks/use-job-positions';
+import { CoverageType } from '@/lib/types/service-desk-pricing';
+import { calculateServiceDeskDimensioning } from '@/lib/services/service-desk-dimensioning';
+
+export interface JobPosition {
+  id: string;
+  name: string;
+  level?: string;
+  salary8h: number;
+  salary6h?: number;
+  description?: string;
+  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
 
 export interface TeamMemberNew {
   id: string;
@@ -58,6 +73,29 @@ export interface TeamTabModuleNewProps {
   };
 }
 
+const normalizeText = (value?: string) => (value || '')
+  .normalize('NFD')
+  .replace(/[\u0300-\u036f]/g, '')
+  .toLowerCase();
+
+const isOperationalPosition = (position?: JobPosition) => {
+  const level = normalizeText(position?.level);
+  return ['n1', 'n2', 'n3'].includes(level);
+};
+
+const isLeaderPosition = (position?: JobPosition) => {
+  const level = normalizeText(position?.level);
+  const name = normalizeText(position?.name);
+  return position?.id === 'pos-4' || level.includes('lider') || name.includes('lider') || name.includes('supervisor');
+};
+
+const isCoordinatorPosition = (position?: JobPosition) => {
+  const level = normalizeText(position?.level);
+  const name = normalizeText(position?.name);
+  if (isLeaderPosition(position)) return false;
+  return position?.id === 'pos-5' || name.includes('coordenador') || name.includes('gerente') || level.includes('gestao');
+};
+
 export function TeamTabModuleNew({ 
   data: teamProp, 
   onUpdate, 
@@ -73,7 +111,6 @@ export function TeamTabModuleNew({
   const [selectedPosition, setSelectedPosition] = useState<JobPosition | null>(null);
   const [isAddingMember, setIsAddingMember] = useState(false);
   const [editingMember, setEditingMember] = useState<TeamMemberNew | null>(null);
-  const [jobPositions, setJobPositions] = useState<JobPosition[]>([]);
   
   const [memberForm, setMemberForm] = useState({
     jobPositionId: '',
@@ -82,63 +119,11 @@ export function TeamTabModuleNew({
     notes: ''
   });
 
-  // Load job positions (in a real app, this would come from API)
-  useEffect(() => {
-    const defaultPositions: JobPosition[] = [
-      {
-        id: 'pos-1',
-        name: 'Analista de Service Desk N1',
-        level: 'N1',
-        salary8h: 1780.00,
-        salary6h: 1580.00,
-        description: 'Analista responsável pelo primeiro nível de atendimento',
-        isActive: true,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      },
-      {
-        id: 'pos-2',
-        name: 'Analista de Service Desk N2',
-        level: 'N2',
-        salary8h: 2880.00,
-        description: 'Analista responsável pelo segundo nível de atendimento',
-        isActive: true,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      },
-      {
-        id: 'pos-3',
-        name: 'Analista de Service Desk N3',
-        level: 'N3',
-        salary8h: 7380.00,
-        description: 'Analista responsável pelo terceiro nível de atendimento',
-        isActive: true,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      },
-      {
-        id: 'pos-4',
-        name: 'Líder Técnico',
-        level: 'Liderança',
-        salary8h: 5200.00,
-        description: 'Líder técnico responsável pela coordenação da equipe técnica',
-        isActive: true,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      },
-      {
-        id: 'pos-5',
-        name: 'Coordenador',
-        level: 'Gestão',
-        salary8h: 9800.00,
-        description: 'Coordenador responsável pela gestão geral do projeto',
-        isActive: true,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      }
-    ];
-    setJobPositions(defaultPositions);
-  }, []);
+  const {
+    jobPositions,
+    isLoading: isLoadingPositions,
+    error: positionsError
+  } = useJobPositions();
 
   const handleAddMember = () => {
     setIsAddingMember(true);
@@ -246,7 +231,11 @@ export function TeamTabModuleNew({
     // Criar escala baseada no tipo de cobertura
     if (coverageType === 'BUSINESS_HOURS' || coverageType === '8x5') {
       // Escala 8x5 (Segunda a Sexta, 8h às 18h)
-      const totalMembers = teamMembers.reduce((sum, member) => sum + member.quantity, 0);
+      const operationalTeamMembers = teamMembers.filter(member => {
+        const position = jobPositions.find(p => p.id === member.jobPositionId);
+        return isOperationalPosition(position);
+      });
+      const totalMembers = operationalTeamMembers.reduce((sum, member) => sum + member.quantity, 0);
       schedules.push({
         id: `schedule-${Date.now()}`,
         name: 'Horário Comercial',
@@ -257,7 +246,7 @@ export function TeamTabModuleNew({
             startTime: '08:00',
             endTime: '18:00',
             daysOfWeek: [1, 2, 3, 4, 5], // Segunda a Sexta
-            teamMembers: teamMembers.flatMap(member => {
+            teamMembers: operationalTeamMembers.flatMap(member => {
               const entries = [];
               for (let i = 0; i < member.quantity; i++) {
                 entries.push(`${member.id}-${i}`);
@@ -285,7 +274,11 @@ export function TeamTabModuleNew({
       });
     } else if (coverageType === 'EXTENDED_HOURS' || coverageType === '12x5') {
       // Escala 12x5 (Segunda a Sexta, 6h às 18h)
-      const totalMembers = teamMembers.reduce((sum, member) => sum + member.quantity, 0);
+      const operationalTeamMembers = teamMembers.filter(member => {
+        const position = jobPositions.find(p => p.id === member.jobPositionId);
+        return isOperationalPosition(position);
+      });
+      const totalMembers = operationalTeamMembers.reduce((sum, member) => sum + member.quantity, 0);
       schedules.push({
         id: `schedule-${Date.now()}`,
         name: 'Horário Estendido',
@@ -296,7 +289,7 @@ export function TeamTabModuleNew({
             startTime: '06:00',
             endTime: '14:00',
             daysOfWeek: [1, 2, 3, 4, 5],
-            teamMembers: teamMembers.filter(member => {
+            teamMembers: operationalTeamMembers.filter(member => {
               const pos = jobPositions.find(p => p.id === member.jobPositionId);
               return pos?.level === 'N1';
             }).flatMap(member => {
@@ -316,7 +309,7 @@ export function TeamTabModuleNew({
             startTime: '10:00',
             endTime: '18:00',
             daysOfWeek: [1, 2, 3, 4, 5],
-            teamMembers: teamMembers.flatMap(member => {
+            teamMembers: operationalTeamMembers.flatMap(member => {
               const pos = jobPositions.find(p => p.id === member.jobPositionId);
               if (pos?.level === 'N1') {
                 const entries = [];
@@ -325,7 +318,7 @@ export function TeamTabModuleNew({
                   entries.push(`${member.id}-${i}`);
                 }
                 return entries;
-              } else {
+              } else if (pos?.level === 'N2') {
                 // N2 trabalha no turno da tarde
                 const entries = [];
                 for (let i = 0; i < member.quantity; i++) {
@@ -333,6 +326,7 @@ export function TeamTabModuleNew({
                 }
                 return entries;
               }
+              return [];
             }),
             isSpecialShift: false,
             multiplier: 1.0
@@ -355,7 +349,11 @@ export function TeamTabModuleNew({
       });
     } else if (coverageType === 'FULL_TIME' || coverageType === '24x7') {
       // Escala 24x7 com 3 turnos
-      const totalMembers = teamMembers.reduce((sum, member) => sum + member.quantity, 0);
+      const operationalTeamMembers = teamMembers.filter(member => {
+        const position = jobPositions.find(p => p.id === member.jobPositionId);
+        return isOperationalPosition(position);
+      });
+      const totalMembers = operationalTeamMembers.reduce((sum, member) => sum + member.quantity, 0);
       schedules.push({
         id: `schedule-${Date.now()}`,
         name: 'Atendimento 24x7',
@@ -366,7 +364,7 @@ export function TeamTabModuleNew({
             startTime: '06:00',
             endTime: '14:00',
             daysOfWeek: [0, 1, 2, 3, 4, 5, 6], // Todos os dias
-            teamMembers: teamMembers.flatMap(member => {
+            teamMembers: operationalTeamMembers.flatMap(member => {
               const entries = [];
               const thirdQuantity = Math.ceil(member.quantity / 3);
               for (let i = 0; i < thirdQuantity; i++) {
@@ -383,7 +381,7 @@ export function TeamTabModuleNew({
             startTime: '14:00',
             endTime: '22:00',
             daysOfWeek: [0, 1, 2, 3, 4, 5, 6],
-            teamMembers: teamMembers.flatMap(member => {
+            teamMembers: operationalTeamMembers.flatMap(member => {
               const entries = [];
               const thirdQuantity = Math.ceil(member.quantity / 3);
               const startIndex = Math.ceil(member.quantity / 3);
@@ -401,7 +399,7 @@ export function TeamTabModuleNew({
             startTime: '22:00',
             endTime: '06:00',
             daysOfWeek: [0, 1, 2, 3, 4, 5, 6],
-            teamMembers: teamMembers.flatMap(member => {
+            teamMembers: operationalTeamMembers.flatMap(member => {
               const entries = [];
               const thirdQuantity = Math.ceil(member.quantity / 3);
               const startIndex = Math.ceil(member.quantity / 3) * 2;
@@ -459,49 +457,18 @@ export function TeamTabModuleNew({
       return;
     }
 
-    // Calcular dimensionamento usando Erlang C (simplificado)
-    const calculateErlangDimensioning = (
-      userQuantity: number,
-      incidentsPerUser: number,
-      tmaMinutes: number,
-      occupancyRate: number,
-      n1Distribution: number,
-      n1SixHourShift: boolean
-    ) => {
-      const totalCallsPerMonth = userQuantity * incidentsPerUser;
-      const totalCallsPerDay = totalCallsPerMonth / 22; // 22 working days
-      const totalMinutesPerDay = totalCallsPerDay * tmaMinutes;
-      
-      // Calcular agentes N1
-      const workingMinutesPerDay = n1SixHourShift ? 360 : 480; // 6h = 360min, 8h = 480min
-      const effectiveMinutes = workingMinutesPerDay * (occupancyRate / 100);
-      const n1CallsPerMonth = totalCallsPerMonth * (n1Distribution / 100);
-      const n1CallsPerDay = n1CallsPerMonth / 22;
-      const n1MinutesPerDay = n1CallsPerDay * tmaMinutes;
-      const n1Agents = Math.ceil(n1MinutesPerDay / effectiveMinutes);
-      
-      // Calcular agentes N2 (sempre 8h)
-      const n2CallsPerMonth = totalCallsPerMonth * ((100 - n1Distribution) / 100);
-      const n2CallsPerDay = n2CallsPerMonth / 22;
-      const n2MinutesPerDay = n2CallsPerDay * tmaMinutes;
-      const n2EffectiveMinutes = 480 * (occupancyRate / 100); // N2 sempre 8h
-      const n2Agents = Math.ceil(n2MinutesPerDay / n2EffectiveMinutes);
-      
-      return {
-        n1Agents: Math.max(1, n1Agents),
-        n2Agents: Math.max(1, n2Agents),
-        totalCallsPerMonth
-      };
-    };
-
-    const erlangResult = calculateErlangDimensioning(
-      fullData.project.generalInfo?.userQuantity || 100,
-      fullData.project.dimensioning?.incidentsPerUser || 1.5,
-      fullData.project.dimensioning?.tmaMinutes || 10,
-      fullData.project.dimensioning?.occupancyRate || 80,
-      fullData.project.dimensioning?.n1Distribution || 80,
-      fullData.project.dimensioning?.n1SixHourShift || false
-    );
+    const erlangResult = calculateServiceDeskDimensioning({
+      userQuantity: fullData.project.generalInfo?.userQuantity || 100,
+      incidentsPerUser: fullData.project.dimensioning?.incidentsPerUser || 1.5,
+      tmaMinutes: fullData.project.dimensioning?.tmaMinutes || 10,
+      occupancyRate: fullData.project.dimensioning?.occupancyRate || 80,
+      n1Distribution: fullData.project.dimensioning?.n1Distribution || 80,
+      n1SixHourShift: fullData.project.dimensioning?.n1SixHourShift || false,
+      coverageType: fullData.project.dimensioning?.coverageType || CoverageType.BUSINESS_HOURS,
+      n1Capacity: fullData.project.dimensioning?.n1Capacity || 100,
+      n1Capacity6h: fullData.project.dimensioning?.n1Capacity6h || Math.round((fullData.project.dimensioning?.n1Capacity || 100) * 0.75),
+      n2Capacity: fullData.project.dimensioning?.n2Capacity || 75
+    });
 
     // Encontrar IDs dos cargos N1 e N2
     const n1Position = jobPositions.find(p => p.level === 'N1');
@@ -523,7 +490,9 @@ export function TeamTabModuleNew({
         quantity: erlangResult.n1Agents,
         workingHours: fullData.project.dimensioning?.n1SixHourShift ? 6 : 8,
         isActive: true,
-        notes: 'Dimensionado automaticamente'
+        notes: erlangResult.folguistas > 0
+          ? `Dimensionado automaticamente, incluindo ${erlangResult.folguistas} folguistas`
+          : 'Dimensionado automaticamente'
       });
     }
 
@@ -539,11 +508,46 @@ export function TeamTabModuleNew({
       });
     }
 
-    // Manter outros cargos (N3, Líder, Coordenador) se já existirem
+    // Verificar se líder/coordenador já existem na equipe
+    const leaderPosition = jobPositions.find(isLeaderPosition) || jobPositions.find(position => position.id === 'pos-4');
+    const coordinatorPosition = jobPositions.find(isCoordinatorPosition) || jobPositions.find(position => position.id === 'pos-5');
+
     const otherPositions = team.filter(member => {
       const position = jobPositions.find(p => p.id === member.jobPositionId);
       return position && !['N1', 'N2'].includes(position.level || '');
     });
+
+    // Adicionar líder automaticamente para equipes grandes
+    const totalAgents = erlangResult.n1Agents + erlangResult.n2Agents;
+    const hasLeader = otherPositions.some(m => {
+      const p = jobPositions.find(j => j.id === m.jobPositionId);
+      return isLeaderPosition(p);
+    });
+    const hasCoordinator = otherPositions.some(m => {
+      const p = jobPositions.find(j => j.id === m.jobPositionId);
+      return isCoordinatorPosition(p);
+    });
+
+    if ((erlangResult.suggestedLeader || totalAgents >= 8) && leaderPosition && !hasLeader) {
+      dimensionedTeam.push({
+        id: `leader-${Date.now()}`,
+        jobPositionId: leaderPosition.id,
+        quantity: 1,
+        workingHours: 8,
+        isActive: true,
+        notes: 'Líder técnico adicionado automaticamente para equipe de grande porte'
+      });
+    }
+    if ((erlangResult.suggestedCoordinator || totalAgents >= 15) && coordinatorPosition && !hasCoordinator) {
+      dimensionedTeam.push({
+        id: `coord-${Date.now() + 1}`,
+        jobPositionId: coordinatorPosition.id,
+        quantity: 1,
+        workingHours: 8,
+        isActive: true,
+        notes: 'Coordenador adicionado automaticamente para equipe de grande porte'
+      });
+    }
 
     const finalTeam = [...dimensionedTeam, ...otherPositions];
     onUpdate(enrichTeamMembers(finalTeam));
@@ -551,7 +555,7 @@ export function TeamTabModuleNew({
     // Gerar escala básica automaticamente
     generateBasicSchedule(finalTeam, fullData);
 
-    alert(`Equipe dimensionada com sucesso!\\n\\nN1: ${erlangResult.n1Agents} pessoas\\nN2: ${erlangResult.n2Agents} pessoas\\n\\nEscala básica gerada automaticamente!\\n\\nBaseado em ${Math.round(erlangResult.totalCallsPerMonth)} chamados/mês`);
+    alert(`Equipe dimensionada com sucesso!\\n\\nN1: ${erlangResult.n1Agents} pessoas\\nN2: ${erlangResult.n2Agents} pessoas\\nLíderes: ${erlangResult.suggestedLeader || 0}\\nCoordenadores: ${erlangResult.suggestedCoordinator || 0}\\nFolguistas: ${erlangResult.folguistas}\\n\\nEscala básica gerada automaticamente somente com cargos operacionais.\\n\\nBaseado em ${Math.round(erlangResult.totalCallsPerMonth)} chamados/mês`);
   }, [fullData, jobPositions, team, onUpdate, enrichTeamMembers]);
 
   // Calculate team costs
@@ -932,7 +936,23 @@ export function TeamTabModuleNew({
         </TabsContent>
 
         <TabsContent value="positions" className="space-y-6">
-          <JobPositionsManager readOnly />
+          {isLoadingPositions ? (
+            <Card>
+              <CardContent className="flex items-center justify-center py-12">
+                <div className="text-center">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+                  <p>Carregando cargos...</p>
+                </div>
+              </CardContent>
+            </Card>
+          ) : positionsError ? (
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>{positionsError}</AlertDescription>
+            </Alert>
+          ) : (
+            <JobPositionsManager />
+          )}
         </TabsContent>
 
         <TabsContent value="costs" className="space-y-6">

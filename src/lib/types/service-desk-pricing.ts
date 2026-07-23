@@ -65,11 +65,15 @@ export interface DimensioningConfig {
   occupancyRate: number;
   n1Distribution: number;
   n1Capacity: number;
+  n1Capacity6h?: number;
   n2Capacity: number;
   n1SixHourShift: boolean;
   coverageType: CoverageType;
   suggestedN1?: number;
   suggestedN2?: number;
+  suggestedFolguistas?: number;
+  suggestedLeader?: number;
+  suggestedCoordinator?: number;
 }
 
 export enum CoverageType {
@@ -471,9 +475,13 @@ export interface BenefitPackage {
   transportVoucher: number;
   lifeInsurance: number;
   vacation: number;
+  vacationThird?: number;
   thirteenthSalary: number;
   fgts: number; // 8%
   inss: number;
+  employerSocialSecurity?: number;
+  fgtsOnProvisions?: boolean;
+  socialSecurityOnProvisions?: boolean;
   otherBenefits: CustomBenefit[];
 }
 
@@ -1016,6 +1024,7 @@ export interface TeamMemberCostCalculation {
   memberId: string;
   baseSalary: number;
   benefits: number;
+  laborCharges?: number;
   totalCost: number;
   hourlyRate: number;
   annualCost: number;

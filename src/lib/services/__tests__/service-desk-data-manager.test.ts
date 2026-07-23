@@ -80,12 +80,9 @@ Object.defineProperty(global, 'BroadcastChannel', {
   writable: true
 });
 
-Object.defineProperty(global, 'crypto', {
-  value: {
-    randomUUID: () => 'test-uuid-123'
-  },
-  writable: true
-});
+vi.mock('uuid', () => ({
+  v4: () => 'test-uuid-123'
+}));
 
 describe('ServiceDeskDataManager', () => {
   let dataManager: ServiceDeskDataManager;

@@ -1,6 +1,7 @@
-import { prisma } from '@/lib/prisma';
+import { prisma as prismaClient } from '@/lib/prisma';
 import { ServiceDeskData } from '@/lib/types/service-desk-pricing';
-import { Prisma } from '@prisma/client';
+
+const prisma = prismaClient as any;
 
 export class PrismaDataService {
   // Project CRUD operations
@@ -83,7 +84,7 @@ export class PrismaDataService {
     }
   }
 
-  async getProject(projectId: string, userId: string) {
+  async getProject(projectId: string) {
     try {
       // Use API instead of direct Prisma in browser
       const response = await fetch(`/api/projects/${projectId}`, {
@@ -100,14 +101,14 @@ export class PrismaDataService {
       
       // Get job positions separately
       const jobPositionsResponse = await fetch('/api/job-positions');
-      const jobPositions = jobPositionsResponse.ok ? await jobPositionsResponse.json() : [];
+      const jobPositionsData = jobPositionsResponse.ok ? await jobPositionsResponse.json() : { jobPositions: [] };
 
       if (!project) {
         throw new Error('Project not found');
       }
 
       const serviceDeskData = this.transformPrismaToServiceDeskData(project);
-      serviceDeskData.jobPositions = jobPositions;
+      serviceDeskData.jobPositions = Array.isArray(jobPositionsData) ? jobPositionsData : (jobPositionsData.jobPositions || []);
 
       return serviceDeskData;
     } catch (error) {
@@ -183,7 +184,7 @@ export class PrismaDataService {
       ]);
 
       return {
-        projects: projects.map(project => ({
+        projects: projects.map((project: any) => ({
           id: project.id,
           name: project.name,
           description: project.description,
@@ -733,7 +734,6 @@ export class PrismaDataService {
         sensitivityAnalysis: {
           variables: [],
           scenarios: [],
-          results: [],
         },
         charts: [],
       } : {
@@ -741,7 +741,7 @@ export class PrismaDataService {
         payback: { simplePayback: 0, discountedPayback: 0, breakEvenPoint: 0, cashFlowAnalysis: [] },
         margins: { grossMargin: 0, netMargin: 0, ebitdaMargin: 0, contributionMargin: 0, marginTrend: [] },
         riskAnalysis: { riskFactors: [], overallRisk: 'low' as const, mitigation: [] },
-        sensitivityAnalysis: { variables: [], scenarios: [], results: [] },
+        sensitivityAnalysis: { variables: [], scenarios: [] },
         charts: [],
       },
       negotiations: project.negotiations?.map((negotiation: any) => ({

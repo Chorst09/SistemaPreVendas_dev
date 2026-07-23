@@ -53,7 +53,7 @@ import {
   ExportCustomization
 } from '@/lib/types/service-desk-pricing';
 import { ServiceDeskCalculationEngine } from '@/lib/services/service-desk-calculation-engine';
-import { ReportExportService, ReportTemplate, ScheduledReport } from '@/lib/services/report-export-service';
+import { ReportExportService, ExportTemplate, ScheduledReport } from '@/lib/services/report-export-service';
 
 export interface ResultTabModuleProps {
   data: ProfitabilityAnalysis;
@@ -94,7 +94,8 @@ export function ResultTabModule({
   });
 
   const calculationEngine = useMemo(() => new ServiceDeskCalculationEngine(), []);
-  const reportTemplates = useMemo(() => ReportExportService.getTemplates(), []);
+  const reportService = useMemo(() => ReportExportService.getInstance(), []);
+  const reportTemplates = useMemo(() => reportService.getTemplates(), [reportService]);
   const areEqual = (left: any, right: any) => {
     if (left === right) return true;
     try {
@@ -276,7 +277,7 @@ export function ResultTabModule({
     const variables = [
       {
         name: 'Salários da Equipe',
-        baseValue: data.team.reduce((sum, member) => sum + member.salary, 0),
+        baseValue: data.team.reduce((sum, member) => sum + ((member as { salary?: number }).salary ?? 0), 0),
         variations: [-20, -10, -5, 5, 10, 20],
         impacts: [-15, -7.5, -3.75, 3.75, 7.5, 15]
       },
@@ -288,7 +289,7 @@ export function ResultTabModule({
       },
       {
         name: 'Outros Custos',
-        baseValue: data.otherCosts.reduce((sum, cost) => sum + cost.value, 0),
+        baseValue: data.budget.otherCosts,
         variations: [-30, -15, -10, 10, 15, 30],
         impacts: [-5, -2.5, -1.7, 1.7, 2.5, 5]
       }
@@ -315,7 +316,16 @@ export function ResultTabModule({
       }
     ];
 
-    return { variables, scenarios };
+    const firstVar = variables[0];
+    return {
+      variable: firstVar.name,
+      baseValue: firstVar.baseValue,
+      variations: firstVar.variations,
+      impacts: firstVar.impacts,
+      elasticity: firstVar.variations[0] !== 0 ? firstVar.impacts[0] / firstVar.variations[0] : 0,
+      variables,
+      scenarios
+    };
   };
 
   const generateChartConfigurations = (
@@ -410,21 +420,21 @@ export function ResultTabModule({
 
     setIsExporting(true);
     try {
-      const blob = await ReportExportService.exportReport(
+      const blob = await reportService.exportData(
         fullData,
-        calculatedAnalysis,
         templateId,
         exportCustomization
       );
 
-      const template = ReportExportService.getTemplate(templateId);
+      const template = reportService.getTemplate(templateId);
       if (template) {
-        const filename = ReportExportService.generateFilename(
-          fullData.project.name,
-          template.name,
-          template.format
-        );
-        ReportExportService.downloadBlob(blob, filename);
+        const filename = `${fullData.project.name}-${template.name}.${template.format === 'pdf' ? 'pdf' : template.format === 'excel' ? 'xlsx' : 'json'}`;
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        a.click();
+        URL.revokeObjectURL(url);
       }
     } catch (error) {
       console.error('Error exporting report:', error);
@@ -447,7 +457,7 @@ export function ResultTabModule({
 
   const handleScheduleReport = (reportData: Omit<ScheduledReport, 'id'>) => {
     try {
-      ReportExportService.scheduleReport(reportData);
+      reportService.scheduleReport(reportData);
       alert('Relatório agendado com sucesso!');
       setShowScheduleDialog(false);
     } catch (error) {
@@ -993,7 +1003,7 @@ export function ResultTabModule({
                         </div>
                         <div className="flex items-center gap-2">
                           <Badge variant="outline">{template.format.toUpperCase()}</Badge>
-                          {template.isExecutive && (
+                          {'isExecutive' in template && template.isExecutive && (
                             <Badge variant="default">Executivo</Badge>
                           )}
                         </div>

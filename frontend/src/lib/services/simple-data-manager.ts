@@ -1,4 +1,5 @@
 import { ServiceDeskData, ProjectStatus, ServiceType, TaxRegime, CoverageType } from '@/lib/types/service-desk-pricing';
+import { createId } from '@/lib/utils/id';
 
 /**
  * Simplified data manager that works only with localStorage
@@ -13,7 +14,7 @@ export class SimpleDataManager {
    */
   static createEmptyData(): ServiceDeskData {
     const now = new Date();
-    const projectId = crypto.randomUUID();
+    const projectId = createId();
     
     return {
       project: {
@@ -62,6 +63,7 @@ export class SimpleDataManager {
           occupancyRate: 80,
           n1Distribution: 80,
           n1Capacity: 100,
+          n1Capacity6h: 75,
           n2Capacity: 75,
           n1SixHourShift: false,
           coverageType: CoverageType.BUSINESS_HOURS,
@@ -86,18 +88,16 @@ export class SimpleDataManager {
         taxRegime: TaxRegime.SIMPLES_NACIONAL
       },
       variables: {
-        inflation: 6.5,
-        salaryAdjustment: 8.0,
-        marketGrowth: 5.0,
-        competitionFactor: 1.0,
-        economicScenario: 'stable',
-        customVariables: []
+        inflation: { annualRate: 6.5, monthlyRate: 0.54, projectionPeriod: 12, source: 'IPCA', lastUpdate: new Date() },
+        salaryAdjustments: { annualAdjustment: 8.0, adjustmentDate: new Date(), adjustmentType: 'inflation', minimumAdjustment: 0, maximumAdjustment: 20 },
+        marketFactors: [],
+        scenarios: []
       },
       otherCosts: [],
       budget: {
         totalCost: 0,
         totalRevenue: 0,
-        margin: 0,
+        margin: { type: 'percentage', value: 0, minimumMargin: 0, targetMargin: 0, maximumMargin: 100 },
         breakdown: {
           personnel: 0,
           infrastructure: 0,
@@ -107,7 +107,7 @@ export class SimpleDataManager {
         }
       },
       forecast: {
-        id: crypto.randomUUID(),
+        id: createId(),
         projectId: projectId,
         scenarios: [],
         assumptions: {
@@ -121,14 +121,17 @@ export class SimpleDataManager {
         },
         projections: [],
         riskAnalysis: {
-          riskFactors: [],
-          overallRisk: 'medium',
-          mitigation: []
+          risks: [],
+          mitigations: [],
+          sensitivityAnalysis: [],
+          monteCarloResults: undefined
         },
         dashboard: {
           kpis: [],
           charts: [],
-          insights: []
+          alerts: [],
+          insights: [],
+          lastUpdated: now
         },
         createdAt: now,
         updatedAt: now
@@ -151,8 +154,9 @@ export class SimpleDataManager {
         margins: {
           grossMargin: 0,
           netMargin: 0,
-          operationalMargin: 0,
-          ebitda: 0
+          ebitdaMargin: 0,
+          contributionMargin: 0,
+          marginTrend: []
         },
         riskAnalysis: {
           riskFactors: [],

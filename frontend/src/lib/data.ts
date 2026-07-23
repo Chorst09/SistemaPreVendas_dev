@@ -1,13 +1,14 @@
 import type { Partner, Quote, RO, Training, BidDocs, Proposal, RFP, PriceRecord, Edital } from './types';
+import { GeneralStatus, PartnerType, QuoteStatus, ProposalStatus, ROStatus, TrainingType, RFPType, RFPStatus, PriceRecordType, PriceRecordStatus, EditalStatus, EditalDocumentType, EditalDocumentStatus, EditalProductStatus, FileType, RiskLevel, PublicBodyType, PaymentHistory, AnalysisRecommendation } from './types/enums';
 
 export const initialPartners: Partner[] = [
   {
     id: 1,
     name: 'Distribuidor TechData',
-    type: 'Distribuidor',
+    type: PartnerType.DISTRIBUTOR,
     contact: 'joao@techdata.com',
     phone: '(11) 98765-4321',
-    status: 'Ativo',
+    status: GeneralStatus.ACTIVE,
     site: 'https://portal.techdata.com',
     siteEcommerce: 'https://shop.techdata.com',
     login: 'user_techdata',
@@ -16,19 +17,19 @@ export const initialPartners: Partner[] = [
     passwordEcommerce: 'shop123',
     products: 'Licenças Microsoft, Hardware Dell, Cisco',
     vendedoresResponsaveis: [
-      { id: '1', fornecedor: 'Microsoft', vendedor: 'Ana Silva', telefone: '(11) 99999-1111', email: 'ana.silva@techdata.com' },
-      { id: '2', fornecedor: 'Dell', vendedor: 'Carlos Santos', telefone: '(11) 99999-2222', email: 'carlos.santos@techdata.com' },
-      { id: '3', fornecedor: 'Cisco', vendedor: 'Maria Oliveira', telefone: '(11) 99999-3333', email: 'maria.oliveira@techdata.com' }
+      { id: '1', fornecedor: 'Microsoft', vendedor: 'Ana Silva', name: 'Ana Silva', phone: '(11) 99999-1111', email: 'ana.silva@techdata.com' },
+      { id: '2', fornecedor: 'Dell', vendedor: 'Carlos Santos', name: 'Carlos Santos', phone: '(11) 99999-2222', email: 'carlos.santos@techdata.com' },
+      { id: '3', fornecedor: 'Cisco', vendedor: 'Maria Oliveira', name: 'Maria Oliveira', phone: '(11) 99999-3333', email: 'maria.oliveira@techdata.com' }
     ]
   },
-  { id: 2, name: 'Fornecedor AWS', type: 'Fornecedor', contact: 'maria@aws.com', phone: '(11) 91234-5678', status: 'Ativo', sitePartner: 'https://partner.aws.amazon.com', login: 'aws_partner', password: 'aws_password', siteRO: 'https://partner.aws.amazon.com/ro', templateRO: 'template_aws_ro.pdf', procedimentoRO: '1. Logar no portal de parceiros.\n2. Ir para a seção de registro de oportunidades.\n3. Preencher o formulário com os dados do cliente.' },
+  { id: 2, name: 'Fornecedor AWS', type: PartnerType.SUPPLIER, contact: 'maria@aws.com', phone: '(11) 91234-5678', status: GeneralStatus.ACTIVE, sitePartner: 'https://partner.aws.amazon.com', login: 'aws_partner', password: 'aws_password', siteRO: 'https://partner.aws.amazon.com/ro', templateRO: 'template_aws_ro.pdf', procedimentoRO: '1. Logar no portal de parceiros.\n2. Ir para a seção de registro de oportunidades.\n3. Preencher o formulário com os dados do cliente.' },
   {
     id: 3,
     name: 'Distribuidor Ingram Micro',
-    type: 'Distribuidor',
+    type: PartnerType.DISTRIBUTOR,
     contact: 'carlos@ingram.com',
     phone: '(21) 99999-8888',
-    status: 'Inativo',
+    status: GeneralStatus.INACTIVE,
     site: 'https://www.ingrammicro.com.br',
     siteEcommerce: 'https://ecommerce.ingrammicro.com.br',
     login: 'user_ingram',
@@ -37,19 +38,19 @@ export const initialPartners: Partner[] = [
     passwordEcommerce: 'ecom456',
     products: 'HP, IBM, Lenovo',
     vendedoresResponsaveis: [
-      { id: '4', fornecedor: 'HP', vendedor: 'Roberto Lima', telefone: '(21) 98888-1111', email: 'roberto.lima@ingram.com' },
-      { id: '5', fornecedor: 'IBM', vendedor: 'Fernanda Costa', telefone: '(21) 98888-2222', email: 'fernanda.costa@ingram.com' },
-      { id: '6', fornecedor: 'Lenovo', vendedor: 'Paulo Mendes', telefone: '(21) 98888-3333', email: 'paulo.mendes@ingram.com' }
+      { id: '4', fornecedor: 'HP', vendedor: 'Roberto Lima', name: 'Roberto Lima', phone: '(21) 98888-1111', email: 'roberto.lima@ingram.com' },
+      { id: '5', fornecedor: 'IBM', vendedor: 'Fernanda Costa', name: 'Fernanda Costa', phone: '(21) 98888-2222', email: 'fernanda.costa@ingram.com' },
+      { id: '6', fornecedor: 'Lenovo', vendedor: 'Paulo Mendes', name: 'Paulo Mendes', phone: '(21) 98888-3333', email: 'paulo.mendes@ingram.com' }
     ]
   },
-  { id: 4, name: 'Fornecedor Microsoft', type: 'Fornecedor', contact: 'ana@microsoft.com', phone: '(41) 98877-6655', status: 'Ativo', sitePartner: 'https://partner.microsoft.com', login: 'ms_partner', password: 'ms_password', siteRO: 'https://partner.microsoft.com/ro', templateRO: 'procedimento_ro_ms.docx', procedimentoRO: 'Utilizar o Partner Center para registrar a oportunidade. É necessário o tenant ID do cliente.' },
+  { id: 4, name: 'Fornecedor Microsoft', type: PartnerType.SUPPLIER, contact: 'ana@microsoft.com', phone: '(41) 98877-6655', status: GeneralStatus.ACTIVE, sitePartner: 'https://partner.microsoft.com', login: 'ms_partner', password: 'ms_password', siteRO: 'https://partner.microsoft.com/ro', templateRO: 'procedimento_ro_ms.docx', procedimentoRO: 'Utilizar o Partner Center para registrar a oportunidade. É necessário o tenant ID do cliente.' },
   {
     id: 5,
     name: 'Distribuidor Westcon',
-    type: 'Distribuidor',
+    type: PartnerType.DISTRIBUTOR,
     contact: 'pedro@westcon.com',
     phone: '(31) 98765-1234',
-    status: 'Ativo',
+    status: GeneralStatus.ACTIVE,
     site: 'https://www.westcon.com',
     siteEcommerce: 'https://store.westcon.com',
     login: 'user_westcon',
@@ -58,21 +59,21 @@ export const initialPartners: Partner[] = [
     passwordEcommerce: 'store789',
     products: 'Palo Alto, F5, Juniper',
     vendedoresResponsaveis: [
-      { id: '7', fornecedor: 'Fortinet', vendedor: 'Pedro Almeida', telefone: '(31) 97777-1111', email: 'pedro.almeida@westcon.com' },
-      { id: '8', fornecedor: 'Palo Alto', vendedor: 'Juliana Rocha', telefone: '(31) 97777-2222', email: 'juliana.rocha@westcon.com' },
-      { id: '9', fornecedor: 'F5', vendedor: 'Ricardo Ferreira', telefone: '(31) 97777-3333', email: 'ricardo.ferreira@westcon.com' },
-      { id: '10', fornecedor: 'Juniper', vendedor: 'Camila Souza', telefone: '(31) 97777-4444', email: 'camila.souza@westcon.com' }
+      { id: '7', fornecedor: 'Fortinet', vendedor: 'Pedro Almeida', name: 'Pedro Almeida', phone: '(31) 97777-1111', email: 'pedro.almeida@westcon.com' },
+      { id: '8', fornecedor: 'Palo Alto', vendedor: 'Juliana Rocha', name: 'Juliana Rocha', phone: '(31) 97777-2222', email: 'juliana.rocha@westcon.com' },
+      { id: '9', fornecedor: 'F5', vendedor: 'Ricardo Ferreira', name: 'Ricardo Ferreira', phone: '(31) 97777-3333', email: 'ricardo.ferreira@westcon.com' },
+      { id: '10', fornecedor: 'Juniper', vendedor: 'Camila Souza', name: 'Camila Souza', phone: '(31) 97777-4444', email: 'camila.souza@westcon.com' }
     ]
   },
-  { id: 6, name: 'Fornecedor Oracle', type: 'Fornecedor', contact: 'lucia@oracle.com', phone: '(51) 91234-8765', status: 'Inativo', sitePartner: 'https://partner.oracle.com', login: 'ora_partner', password: 'ora_password', siteRO: 'https://partner.oracle.com/ro', templateRO: '', procedimentoRO: 'Registro de oportunidade feito diretamente pelo gerente de canais.' },
+  { id: 6, name: 'Fornecedor Oracle', type: PartnerType.SUPPLIER, contact: 'lucia@oracle.com', phone: '(51) 91234-8765', status: GeneralStatus.INACTIVE, sitePartner: 'https://partner.oracle.com', login: 'ora_partner', password: 'ora_password', siteRO: 'https://partner.oracle.com/ro', templateRO: '', procedimentoRO: 'Registro de oportunidade feito diretamente pelo gerente de canais.' },
 ];
 
 export const initialQuotes: Quote[] = [
-  { id: 'ORC-001', client: 'Empresa Alpha', projectName: 'Migração de Servidores', accountManager: 'João da Silva', status: 'Enviado', total: 15000, date: '2024-07-28', distributorId: 1, quotationFile: 'cotacao_alpha.pdf', pricingFile: 'precificacao_alpha.xlsx' },
-  { id: 'ORC-002', client: 'Startup Beta', projectName: 'Novo App Mobile', accountManager: 'Maria Oliveira', status: 'Aprovado', total: 7500, date: '2024-07-25', distributorId: 3, quotationFile: '', pricingFile: '' },
-  { id: 'ORC-003', client: 'Indústria Gama', projectName: 'Upgrade de Rede', accountManager: 'João da Silva', status: 'Pendente', total: 32000, date: '2024-07-22', distributorId: 5, quotationFile: 'cotacao_gama.xlsx', pricingFile: 'custos_gama.xlsx' },
-  { id: 'ORC-004', client: 'Comércio Delta', projectName: 'Sistema de E-commerce', accountManager: 'Carlos Pereira', status: 'Rejeitado', total: 5000, date: '2024-07-20', distributorId: 1, quotationFile: '', pricingFile: '' },
-  { id: 'ORC-005', client: 'Consultoria Epsilon', projectName: 'Licenciamento de Software', accountManager: 'Maria Oliveira', status: 'Aguardando Distribuidor', total: 9200, date: '2024-07-29', distributorId: 1, quotationFile: '', pricingFile: '' },
+  { id: 'ORC-001', client: 'Empresa Alpha', projectName: 'Migração de Servidores', accountManager: 'João da Silva', status: QuoteStatus.SENT, total: 15000, date: '2024-07-28', distributorId: 1, quotationFile: 'cotacao_alpha.pdf', pricingFile: 'precificacao_alpha.xlsx' },
+  { id: 'ORC-002', client: 'Startup Beta', projectName: 'Novo App Mobile', accountManager: 'Maria Oliveira', status: QuoteStatus.APPROVED, total: 7500, date: '2024-07-25', distributorId: 3, quotationFile: '', pricingFile: '' },
+  { id: 'ORC-003', client: 'Indústria Gama', projectName: 'Upgrade de Rede', accountManager: 'João da Silva', status: QuoteStatus.PENDING, total: 32000, date: '2024-07-22', distributorId: 5, quotationFile: 'cotacao_gama.xlsx', pricingFile: 'custos_gama.xlsx' },
+  { id: 'ORC-004', client: 'Comércio Delta', projectName: 'Sistema de E-commerce', accountManager: 'Carlos Pereira', status: QuoteStatus.REJECTED, total: 5000, date: '2024-07-20', distributorId: 1, quotationFile: '', pricingFile: '' },
+  { id: 'ORC-005', client: 'Consultoria Epsilon', projectName: 'Licenciamento de Software', accountManager: 'Maria Oliveira', status: QuoteStatus.WAITING_DISTRIBUTOR, total: 9200, date: '2024-07-29', distributorId: 1, quotationFile: '', pricingFile: '' },
 ];
 
 export const initialProposals: Proposal[] = [
@@ -81,7 +82,7 @@ export const initialProposals: Proposal[] = [
     title: 'Solução de Infraestrutura Cloud',
     client: 'Empresa Alpha',
     description: 'Migração completa da infraestrutura para nuvem AWS com serviços de consultoria e suporte técnico.',
-    status: 'Aprovada',
+    status: ProposalStatus.APPROVED,
     value: 85000,
     date: '2024-07-15',
     expiryDate: '2024-08-15',
@@ -96,7 +97,7 @@ export const initialProposals: Proposal[] = [
     title: 'Sistema de Gestão Empresarial',
     client: 'Startup Beta',
     description: 'Implementação de ERP completo com módulos de gestão financeira, estoque e recursos humanos.',
-    status: 'Em Análise',
+    status: ProposalStatus.UNDER_REVIEW,
     value: 45000,
     date: '2024-07-20',
     expiryDate: '2024-08-20',
@@ -111,7 +112,7 @@ export const initialProposals: Proposal[] = [
     title: 'Segurança da Informação',
     client: 'Indústria Gama',
     description: 'Implementação de soluções de segurança cibernética incluindo firewall, antivírus e treinamento de equipe.',
-    status: 'Rascunho',
+    status: ProposalStatus.DRAFT,
     value: 28000,
     date: '2024-07-25',
     expiryDate: '2024-08-25',
@@ -126,7 +127,7 @@ export const initialProposals: Proposal[] = [
     title: 'Modernização de Rede',
     client: 'Comércio Delta',
     description: 'Upgrade completo da infraestrutura de rede com equipamentos de última geração e configuração avançada.',
-    status: 'Enviada',
+    status: ProposalStatus.SENT,
     value: 65000,
     date: '2024-07-18',
     expiryDate: '2024-08-18',
@@ -141,7 +142,7 @@ export const initialProposals: Proposal[] = [
     title: 'Licenciamento Microsoft 365',
     client: 'Consultoria Epsilon',
     description: 'Migração para Microsoft 365 com licenças E5 e serviços de migração e treinamento.',
-    status: 'Rejeitada',
+    status: ProposalStatus.REJECTED,
     value: 15000,
     date: '2024-07-10',
     expiryDate: '2024-08-10',
@@ -154,15 +155,15 @@ export const initialProposals: Proposal[] = [
 ];
 
 export const initialRos: RO[] = [
-  { id: 1, supplierId: 2, roNumber: 'AWS-12345', openDate: '2024-07-15', expiryDate: '2024-10-15', clientName: 'Empresa Alpha', product: 'AWS EC2 Instances', value: 25000, status: 'Aprovado', accountManager: 'João Silva' },
-  { id: 2, supplierId: 4, roNumber: 'MS-ABC-678', openDate: '2024-06-20', expiryDate: '2024-09-20', clientName: 'Startup Beta', product: 'Microsoft 365 E5', value: 12000, status: 'Expirado', accountManager: 'Maria Santos' },
-  { id: 3, supplierId: 6, roNumber: 'ORA-789-XYZ', openDate: '2024-08-01', expiryDate: '2024-11-01', clientName: 'Indústria Gama', product: 'Oracle Database Enterprise', value: 45000, status: 'Negado', accountManager: 'Carlos Oliveira' },
+  { id: 1, supplierId: 2, roNumber: 'AWS-12345', openDate: '2024-07-15', expiryDate: '2024-10-15', clientName: 'Empresa Alpha', product: 'AWS EC2 Instances', value: 25000, status: ROStatus.APPROVED, accountManager: 'João Silva' },
+  { id: 2, supplierId: 4, roNumber: 'MS-ABC-678', openDate: '2024-06-20', expiryDate: '2024-09-20', clientName: 'Startup Beta', product: 'Microsoft 365 E5', value: 12000, status: ROStatus.EXPIRED, accountManager: 'Maria Santos' },
+  { id: 3, supplierId: 6, roNumber: 'ORA-789-XYZ', openDate: '2024-08-01', expiryDate: '2024-11-01', clientName: 'Indústria Gama', product: 'Oracle Database Enterprise', value: 45000, status: ROStatus.DENIED, accountManager: 'Carlos Oliveira' },
 ];
 
 export const initialTrainings: Training[] = [
-  { id: 1, supplierId: 2, trainingName: 'AWS Certified Cloud Practitioner', type: 'Técnico', participantName: 'Carlos Silva', expiryDate: '2025-08-01' },
-  { id: 2, supplierId: 4, trainingName: 'MS-900: Microsoft 365 Fundamentals', type: 'Comercial', participantName: 'Mariana Oliveira', expiryDate: '2026-01-15' },
-  { id: 3, supplierId: 4, trainingName: 'AZ-104: Microsoft Azure Administrator', type: 'Técnico', participantName: 'Carlos Silva', expiryDate: '2025-11-20' },
+  { id: 1, supplierId: 2, trainingName: 'AWS Certified Cloud Practitioner', type: TrainingType.TECHNICAL, participantName: 'Carlos Silva', expiryDate: '2025-08-01' },
+  { id: 2, supplierId: 4, trainingName: 'MS-900: Microsoft 365 Fundamentals', type: TrainingType.COMMERCIAL, participantName: 'Mariana Oliveira', expiryDate: '2026-01-15' },
+  { id: 3, supplierId: 4, trainingName: 'AZ-104: Microsoft Azure Administrator', type: TrainingType.TECHNICAL, participantName: 'Carlos Silva', expiryDate: '2025-11-20' },
 ];
 
 export const initialBidDocs: BidDocs = {
@@ -186,7 +187,7 @@ export const quoteStatusData = [
   { name: 'Pendente', value: 300 },
   { name: 'Enviado', value: 300 },
   { name: 'Rejeitado', value: 200 },
-  { name: 'Aguardando Distribuidor', value: 150 },
+  { name: QuoteStatus.WAITING_DISTRIBUTOR, value: 150 },
 ];
 
 export const initialRFPs: RFP[] = [
@@ -194,9 +195,9 @@ export const initialRFPs: RFP[] = [
     id: 'RFP-001',
     title: 'Sistema de Gestão Hospitalar',
     client: 'Hospital Municipal',
-    type: 'RFP',
+    type: RFPType.RFP,
     description: 'Aquisição de sistema completo de gestão hospitalar incluindo prontuário eletrônico, gestão de leitos e faturamento.',
-    status: 'Aberto',
+    status: RFPStatus.OPEN,
     publishDate: '2024-07-15',
     deadlineDate: '2024-08-30',
     value: 500000,
@@ -210,9 +211,9 @@ export const initialRFPs: RFP[] = [
     id: 'RFI-001',
     title: 'Infraestrutura de TI para Prefeitura',
     client: 'Prefeitura Municipal',
-    type: 'RFI',
+    type: RFPType.RFI,
     description: 'Levantamento de informações sobre soluções de infraestrutura de TI para modernização da gestão municipal.',
-    status: 'Em Análise',
+    status: RFPStatus.UNDER_REVIEW,
     publishDate: '2024-07-10',
     deadlineDate: '2024-08-15',
     accountManager: 'Maria Oliveira',
@@ -225,9 +226,9 @@ export const initialRFPs: RFP[] = [
     id: 'RFP-002',
     title: 'Sistema de Controle de Tráfego',
     client: 'Departamento de Trânsito',
-    type: 'RFP',
+    type: RFPType.RFP,
     description: 'Implementação de sistema inteligente de controle de tráfego com câmeras e semáforos conectados.',
-    status: 'Respondido',
+    status: RFPStatus.RESPONDED,
     publishDate: '2024-06-20',
     deadlineDate: '2024-07-25',
     submissionDate: '2024-07-20',
@@ -242,9 +243,9 @@ export const initialRFPs: RFP[] = [
     id: 'RFI-002',
     title: 'Soluções de Segurança Cibernética',
     client: 'Banco Nacional',
-    type: 'RFI',
+    type: RFPType.RFI,
     description: 'Levantamento de soluções de segurança cibernética para proteção de dados bancários e transações.',
-    status: 'Fechado',
+    status: RFPStatus.CLOSED,
     publishDate: '2024-05-15',
     deadlineDate: '2024-06-30',
     submissionDate: '2024-06-25',
@@ -258,9 +259,9 @@ export const initialRFPs: RFP[] = [
     id: 'RFP-003',
     title: 'Plataforma de E-learning',
     client: 'Universidade Federal',
-    type: 'RFP',
+    type: RFPType.RFP,
     description: 'Desenvolvimento de plataforma de ensino a distância com recursos de videoconferência e gestão de cursos.',
-    status: 'Vencido',
+    status: RFPStatus.EXPIRED,
     publishDate: '2024-06-01',
     deadlineDate: '2024-07-15',
     value: 300000,
@@ -277,9 +278,9 @@ export const initialPriceRecords: PriceRecord[] = [
     id: 'ATA-001',
     title: 'Ata de Registro de Preços - Equipamentos de TI',
     client: 'Prefeitura Municipal',
-    type: 'Ata de Registro de Preços',
+    type: PriceRecordType.PRICE_RECORD,
     description: 'Ata para aquisição de equipamentos de informática, incluindo computadores, impressoras e periféricos.',
-    status: 'Ativo',
+    status: PriceRecordStatus.ACTIVE,
     publishDate: '2024-06-15',
     validityDate: '2025-06-15',
     totalValue: 2500000,
@@ -328,9 +329,9 @@ export const initialPriceRecords: PriceRecord[] = [
     id: 'ATA-002',
     title: 'Pregão Eletrônico - Serviços de Manutenção',
     client: 'Secretaria de Educação',
-    type: 'Pregão Eletrônico',
+    type: PriceRecordType.ELECTRONIC_AUCTION,
     description: 'Pregão para contratação de serviços de manutenção preventiva e corretiva de equipamentos de informática.',
-    status: 'Ativo',
+    status: PriceRecordStatus.ACTIVE,
     publishDate: '2024-05-20',
     validityDate: '2025-05-20',
     totalValue: 800000,
@@ -368,9 +369,9 @@ export const initialPriceRecords: PriceRecord[] = [
     id: 'ATA-003',
     title: 'Concorrência - Sistema de Gestão Escolar',
     client: 'Secretaria de Educação Estadual',
-    type: 'Concorrência',
+    type: PriceRecordType.COMPETITION,
     description: 'Concorrência para aquisição de sistema de gestão escolar com módulos de matrícula, notas e frequência.',
-    status: 'Vencido',
+    status: PriceRecordStatus.EXPIRED,
     publishDate: '2023-12-01',
     validityDate: '2024-12-01',
     totalValue: 1500000,
@@ -408,9 +409,9 @@ export const initialPriceRecords: PriceRecord[] = [
     id: 'ATA-004',
     title: 'Ata de Registro de Preços - Material de Escritório',
     client: 'Tribunal de Justiça',
-    type: 'Ata de Registro de Preços',
+    type: PriceRecordType.PRICE_RECORD,
     description: 'Ata para aquisição de material de escritório e papelaria para uso administrativo.',
-    status: 'Suspenso',
+    status: PriceRecordStatus.SUSPENDED,
     publishDate: '2024-07-01',
     validityDate: '2025-07-01',
     totalValue: 300000,
@@ -448,9 +449,9 @@ export const initialPriceRecords: PriceRecord[] = [
     id: 'ATA-005',
     title: 'Pregão Eletrônico - Segurança Eletrônica',
     client: 'Secretaria de Segurança Pública',
-    type: 'Pregão Eletrônico',
+    type: PriceRecordType.ELECTRONIC_AUCTION,
     description: 'Pregão para aquisição de sistemas de segurança eletrônica, câmeras e equipamentos de monitoramento.',
-    status: 'Renovado',
+    status: PriceRecordStatus.RENEWED,
     publishDate: '2023-08-15',
     validityDate: '2024-08-15',
     renewalDate: '2025-08-15',
@@ -522,35 +523,35 @@ export const initialEditais: Edital[] = [
     submissionDeadline: '2024-08-10',
     estimatedValue: 2500000,
     category: 'Tecnologia',
-    status: 'Em Análise',
+    status: EditalStatus.UNDER_REVIEW,
     description: 'Pregão eletrônico para aquisição de equipamentos de informática para escolas municipais.',
     requirements: 'Empresa com experiência mínima de 3 anos no setor de TI.',
     documents: [
       {
         id: '1',
         name: 'Proposta Comercial',
-        type: 'Obrigatório',
+        type: EditalDocumentType.MANDATORY,
         description: 'Proposta comercial detalhada com preços e condições',
         deadline: '2024-08-10',
-        status: 'Em Preparação',
+        status: EditalDocumentStatus.IN_PREPARATION,
         notes: 'Aguardando cotação dos fornecedores'
       },
       {
         id: '2',
         name: 'Certificado de Registro Cadastral',
-        type: 'Obrigatório',
+        type: EditalDocumentType.MANDATORY,
         description: 'CRC válido junto ao órgão',
         deadline: '2024-08-10',
-        status: 'Pronto',
+        status: EditalDocumentStatus.READY,
         notes: 'Documento já disponível'
       },
       {
         id: '3',
         name: 'Certificado de Capacidade Técnica',
-        type: 'Obrigatório',
+        type: EditalDocumentType.MANDATORY,
         description: 'Comprovante de experiência em projetos similares',
         deadline: '2024-08-10',
-        status: 'Pendente',
+        status: EditalDocumentStatus.PENDING,
         notes: 'Precisa coletar referências de clientes'
       }
     ],
@@ -566,7 +567,7 @@ export const initialEditais: Edital[] = [
         brand: 'Dell',
         model: 'Latitude 5520',
         supplier: 'Dell Brasil',
-        status: 'Disponível'
+        status: EditalProductStatus.AVAILABLE
       },
       {
         id: '2',
@@ -579,7 +580,7 @@ export const initialEditais: Edital[] = [
         brand: 'HP',
         model: 'LaserJet Pro M404n',
         supplier: 'HP Brasil',
-        status: 'Em Cotação'
+        status: EditalProductStatus.UNDER_QUOTATION
       }
     ],
     analysis: {
@@ -606,18 +607,18 @@ export const initialEditais: Edital[] = [
         daysUntilOpening: 25,
         daysUntilDeadline: 20,
         isUrgent: false,
-        timelineRisk: 'Baixo',
+        timelineRisk: RiskLevel.LOW,
         notes: 'Prazo adequado para preparação'
       },
       publishingBodyAnalysis: {
-        bodyType: 'Municipal',
+        bodyType: PublicBodyType.MUNICIPAL,
         previousExperience: 'Já participamos de 3 licitações com este órgão',
-        paymentHistory: 'Bom',
+        paymentHistory: PaymentHistory.GOOD,
         notes: 'Órgão confiável com histórico positivo'
       },
       overallAssessment: {
         score: 75,
-        recommendation: 'Participar',
+        recommendation: AnalysisRecommendation.PARTICIPATE,
         strengths: ['Boa relação com fornecedores', 'Experiência prévia com o órgão'],
         weaknesses: ['Documentação ainda incompleta'],
         opportunities: ['Possibilidade de parcerias futuras'],
@@ -629,7 +630,7 @@ export const initialEditais: Edital[] = [
       {
         id: 'FILE-001',
         name: 'edital_001.pdf',
-        type: 'pdf',
+        type: FileType.PDF,
         size: 2048576, // 2MB
         uploadDate: '2024-07-20',
         aiAnalysis: {
@@ -692,26 +693,26 @@ export const initialEditais: Edital[] = [
     submissionDeadline: '2024-08-15',
     estimatedValue: 1800000,
     category: 'Educação',
-    status: 'Aberto',
+    status: EditalStatus.OPEN,
     description: 'Licitação para aquisição de sistema de gestão escolar com módulos de matrícula, notas e frequência.',
     requirements: 'Empresa com certificação ISO 27001 e experiência em projetos educacionais.',
     documents: [
       {
         id: '1',
         name: 'Proposta Técnica',
-        type: 'Obrigatório',
+        type: EditalDocumentType.MANDATORY,
         description: 'Proposta técnica detalhada do sistema',
         deadline: '2024-08-15',
-        status: 'Pendente',
+        status: EditalDocumentStatus.PENDING,
         notes: 'Aguardando desenvolvimento da proposta'
       },
       {
         id: '2',
         name: 'Certificado ISO 27001',
-        type: 'Obrigatório',
+        type: EditalDocumentType.MANDATORY,
         description: 'Certificação de segurança da informação',
         deadline: '2024-08-15',
-        status: 'Pronto',
+        status: EditalDocumentStatus.READY,
         notes: 'Certificação válida até 2025'
       }
     ],
@@ -727,7 +728,7 @@ export const initialEditais: Edital[] = [
         brand: 'EduTech',
         model: 'Gestão Escolar v3.0',
         supplier: 'EduTech Sistemas',
-        status: 'Disponível'
+        status: EditalProductStatus.AVAILABLE
       },
       {
         id: '2',
@@ -738,7 +739,7 @@ export const initialEditais: Edital[] = [
         totalEstimatedPrice: 30000,
         specifications: 'Treinamento presencial e online',
         supplier: 'EduTech Sistemas',
-        status: 'Disponível'
+        status: EditalProductStatus.AVAILABLE
       }
     ],
     attachments: ['edital_002.pdf', 'especificacoes_sistema.pdf'],
@@ -754,26 +755,26 @@ export const initialEditais: Edital[] = [
     submissionDeadline: '2024-08-05',
     estimatedValue: 3200000,
     category: 'Segurança',
-    status: 'Fechado',
+    status: EditalStatus.CLOSED,
     description: 'Pregão para aquisição de sistemas de segurança eletrônica e câmeras de monitoramento.',
     requirements: 'Empresa com experiência mínima de 5 anos em segurança eletrônica.',
     documents: [
       {
         id: '1',
         name: 'Proposta Comercial',
-        type: 'Obrigatório',
+        type: EditalDocumentType.MANDATORY,
         description: 'Proposta comercial com preços e condições',
         deadline: '2024-08-05',
-        status: 'Enviado',
+        status: EditalDocumentStatus.SENT,
         notes: 'Proposta enviada com sucesso'
       },
       {
         id: '2',
         name: 'Certificado de Registro Cadastral',
-        type: 'Obrigatório',
+        type: EditalDocumentType.MANDATORY,
         description: 'CRC válido junto ao órgão',
         deadline: '2024-08-05',
-        status: 'Enviado',
+        status: EditalDocumentStatus.SENT,
         notes: 'Documento enviado'
       }
     ],
@@ -789,7 +790,7 @@ export const initialEditais: Edital[] = [
         brand: 'Hikvision',
         model: 'DS-2CD2142FWD-I',
         supplier: 'SecurityTech',
-        status: 'Disponível'
+        status: EditalProductStatus.AVAILABLE
       },
       {
         id: '2',
@@ -802,7 +803,7 @@ export const initialEditais: Edital[] = [
         brand: 'Hikvision',
         model: 'DS-9664NI-I8',
         supplier: 'SecurityTech',
-        status: 'Disponível'
+        status: EditalProductStatus.AVAILABLE
       }
     ],
     analysis: {
@@ -829,18 +830,18 @@ export const initialEditais: Edital[] = [
         daysUntilOpening: 5,
         daysUntilDeadline: 0,
         isUrgent: true,
-        timelineRisk: 'Alto',
+        timelineRisk: RiskLevel.HIGH,
         notes: 'Prazo muito apertado'
       },
       publishingBodyAnalysis: {
-        bodyType: 'Federal',
+        bodyType: PublicBodyType.FEDERAL,
         previousExperience: 'Primeira participação com este órgão',
-        paymentHistory: 'Excelente',
+        paymentHistory: PaymentHistory.EXCELLENT,
         notes: 'Órgão federal com excelente histórico de pagamento'
       },
       overallAssessment: {
         score: 85,
-        recommendation: 'Participar',
+        recommendation: AnalysisRecommendation.PARTICIPATE,
         strengths: ['Produtos disponíveis', 'Documentação completa'],
         weaknesses: ['Prazo apertado'],
         opportunities: ['Abertura de mercado federal'],

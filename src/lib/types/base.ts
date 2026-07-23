@@ -85,6 +85,20 @@ export interface Quote extends BaseEntity {
   distributorId: ID
   quotationFile?: string
   pricingFile?: string
+  module?: string
+  modality?: QuoteModality
+  quotedProducts?: QuoteProductItem[]
+  technicalSpecs?: any
+  clientData?: any
+}
+
+export type QuoteModality = 'Venda' | 'Locação' | 'Serviços'
+
+export interface QuoteProductItem {
+  id: string
+  description: string
+  quantity: number
+  unitCost: number
 }
 
 // Propostas

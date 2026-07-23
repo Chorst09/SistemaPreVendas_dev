@@ -57,6 +57,8 @@ import { useLogo } from '@/hooks/use-logo';
 import { QuoteProvider } from '@/contexts/QuoteContext';
 
 
+const ACTIVE_TAB_STORAGE_KEY = 'sistema-pre-active-tab';
+
 export default function App() { // Ou Home
     // Chamada e uso de useAuth removidos
     // const { user, loading, logout } = useAuth();
@@ -67,6 +69,14 @@ export default function App() { // Ou Home
     const { logoSrc } = useLogo(); // Hook para gerenciar logo personalizado
 
     const [activeTab, setActiveTab] = useState('dashboard'); // Estado da aba ativa
+    const [activeTabRestored, setActiveTabRestored] = useState(false);
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            const stored = window.localStorage.getItem(ACTIVE_TAB_STORAGE_KEY);
+            if (stored) setActiveTab(stored);
+        }
+        setActiveTabRestored(true);
+    }, []);
     const [editingProposalId, setEditingProposalId] = useState<string | null>(null); // Estado para edição de propostas
     // Você pode remover ou adaptar estes estados se os componentes de view gerenciarem seus próprios dados carregados do Firestore
     const [partners, setPartners] = useState<Partner[]>(initialPartners); // Exemplo: Manter se necessário para dados locais/testes
@@ -91,6 +101,13 @@ export default function App() { // Ou Home
     useEffect(() => {
         setMounted(true);
     }, []);
+
+    useEffect(() => {
+        if (!activeTabRestored) return;
+        if (typeof window !== 'undefined') {
+            window.localStorage.setItem(ACTIVE_TAB_STORAGE_KEY, activeTab);
+        }
+    }, [activeTab, activeTabRestored]);
 
 
     // Efeito para redirecionamento removido
@@ -122,7 +139,7 @@ export default function App() { // Ou Home
             icon: <Calculator size={20} />,
             subItems: [
                 { id: 'calculator-ti-vls', label: 'Venda/Locação/Serviços', icon: <Briefcase size={16} />, openInNewTab: false } as NavSubItem & { openInNewTab?: boolean; url?: string },
-                { id: 'calculator-noc', label: 'NOC', icon: <Headset size={16} />, openInNewTab: false } as NavSubItem & { openInNewTab?: boolean; url?: string },
+                { id: 'calculator-noc', label: 'NOC/SOC/SIEM', icon: <Headset size={16} />, openInNewTab: false } as NavSubItem & { openInNewTab?: boolean; url?: string },
                 { id: 'calculator-servicedesk-advanced', label: 'Service Desk Avançado', icon: <Server size={16} />, openInNewTab: false } as NavSubItem & { openInNewTab?: boolean; url?: string },
                 { id: 'calculator-printer', label: 'Outsourcing de Impressão', icon: <Printer size={16} />, openInNewTab: false } as NavSubItem & { openInNewTab?: boolean; url?: string },
                 { id: 'simuladores', label: 'Simuladores', icon: <BarChart size={16} />, openInNewTab: true, url: 'https://simuladores-double-neon.vercel.app/' } as NavSubItem & { openInNewTab?: boolean; url?: string },
@@ -261,7 +278,7 @@ export default function App() { // Ou Home
                     <div className="text-center">
                         <h2 className="text-2xl font-bold mb-4">Gestão de Propostas</h2>
                         <p className="text-muted-foreground mb-6">
-                            Gerencie todas as suas propostas: Comerciais, NOC, Service Desk, Outsourcing de Impressão e Venda/Locação/Serviços
+                            Gerencie todas as suas propostas: Comerciais, NOC/SOC/SIEM, Service Desk, Outsourcing de Impressão e Venda/Locação/Serviços
                         </p>
                         <div className="flex items-center justify-center space-x-4">
                             <a

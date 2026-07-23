@@ -13,7 +13,7 @@ import {
     BarChart2, TrendingUp, Percent, ShoppingBag, Repeat, Wrench, Zap,
     CheckCircle, Award, Gavel, Moon, Sun, Brain, CheckSquare, BarChart3,
     Home, ArrowRight, Layers, ClipboardCheck, ShieldCheck, Network, Target,
-    Shield, Lock
+    Shield, Lock, RefreshCw, Globe, Cpu, AlertTriangle, HardDrive
 } from 'lucide-react'; // Importe todos os ícones usados diretamente aqui
 
 // Importe seus componentes de UI
@@ -345,6 +345,10 @@ function PublicHomePage({ logoSrc, onLoginClick }: PublicHomePageProps) {
                     </div>
                     <div className="hidden items-center gap-6 text-sm font-medium text-muted-foreground lg:flex">
                         <a href="#jornada" className="hover:text-foreground transition-colors">Jornada</a>
+                        <a href="#seguranca" className="flex items-center gap-1.5 hover:text-foreground transition-colors">
+                            <Shield className="h-3.5 w-3.5 text-emerald-500" />
+                            Segurança
+                        </a>
                         <a href="#modulos" className="hover:text-foreground transition-colors">Módulos</a>
                         <a href="#valor" className="hover:text-foreground transition-colors">Valor</a>
                     </div>
@@ -390,7 +394,7 @@ function PublicHomePage({ logoSrc, onLoginClick }: PublicHomePageProps) {
                             </div>
                             <div className="mt-6 flex items-center gap-3 rounded-xl border border-emerald-500/20 bg-emerald-500/5 px-5 py-3">
                                 <Shield className="h-5 w-5 text-emerald-500" />
-                                <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
                                     <span className="flex items-center gap-1.5">
                                         <Lock className="h-3.5 w-3.5 text-emerald-500" />
                                         Firewall de última geração
@@ -398,9 +402,17 @@ function PublicHomePage({ logoSrc, onLoginClick }: PublicHomePageProps) {
                                     <span className="hidden text-border sm:inline">|</span>
                                     <span className="flex items-center gap-1.5">
                                         <ShieldCheck className="h-3.5 w-3.5 text-emerald-500" />
-                                        Proteção Anti DDoS
+                                        Proteção Anti-DDoS
+                                    </span>
+                                    <span className="hidden text-border sm:inline">|</span>
+                                    <span className="flex items-center gap-1.5">
+                                        <HardDrive className="h-3.5 w-3.5 text-emerald-500" />
+                                        Backup automático
                                     </span>
                                 </div>
+                                <a href="#seguranca" className="ml-auto hidden shrink-0 text-xs font-medium text-emerald-500 underline-offset-2 hover:underline sm:block">
+                                    Ver detalhes
+                                </a>
                             </div>
                         </div>
 
@@ -446,6 +458,133 @@ function PublicHomePage({ logoSrc, onLoginClick }: PublicHomePageProps) {
                                 <p className="mt-2 text-sm leading-6 text-muted-foreground">{item.text}</p>
                             </div>
                         ))}
+                    </div>
+                </section>
+
+                {/* Cybersecurity Section */}
+                <section id="seguranca" className="relative overflow-hidden bg-[radial-gradient(ellipse_at_top_left,_var(--tw-gradient-stops))] from-emerald-950/40 via-background to-background border-y border-emerald-500/15">
+                    <div className="absolute inset-0 bg-grid-pattern opacity-10" />
+                    <div className="relative z-10 mx-auto max-w-7xl px-4 md:px-6 py-14">
+
+                        {/* Header */}
+                        <div className="mb-10 flex flex-col items-start gap-4 sm:flex-row sm:items-end sm:justify-between">
+                            <div>
+                                <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-emerald-500/25 bg-emerald-500/8 px-4 py-2 text-sm font-semibold text-emerald-500">
+                                    <Shield className="h-4 w-4" />
+                                    Infraestrutura protegida
+                                </div>
+                                <h2 className="text-3xl font-bold text-foreground sm:text-4xl">
+                                    Seus dados protegidos.<br className="hidden sm:inline" /> Nossa responsabilidade.
+                                </h2>
+                                <p className="mt-4 max-w-2xl text-base leading-7 text-muted-foreground">
+                                    O Sistema Pré-Venda TI opera sobre infraestrutura com múltiplas camadas de segurança ativa — proteção contra ataques, firewall gerenciado e backup automático das suas informações.
+                                </p>
+                            </div>
+                            <div className="flex shrink-0 items-center gap-2 rounded-xl border border-emerald-500/20 bg-emerald-500/5 px-4 py-2.5">
+                                <div className="h-2 w-2 animate-pulse rounded-full bg-emerald-500" />
+                                <span className="text-sm font-medium text-emerald-500">Proteção ativa 24/7</span>
+                            </div>
+                        </div>
+
+                        {/* 3 main pillars */}
+                        <div className="grid gap-5 md:grid-cols-3">
+
+                            {/* Firewall */}
+                            <div className="group relative overflow-hidden rounded-2xl border border-emerald-500/20 bg-card/80 p-6 shadow-sm transition-all duration-300 hover:border-emerald-500/40 hover:shadow-emerald-500/10 hover:shadow-lg">
+                                <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-emerald-500/5 transition-all group-hover:bg-emerald-500/10" />
+                                <div className="relative z-10">
+                                    <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-xl border border-emerald-500/20 bg-emerald-500/10">
+                                        <Lock className="h-6 w-6 text-emerald-500" />
+                                    </div>
+                                    <h3 className="text-xl font-bold text-foreground">Firewall de Última Geração</h3>
+                                    <p className="mt-3 text-sm leading-6 text-muted-foreground">
+                                        Tráfego inspecionado em tempo real com regras granulares de controle de acesso. Bloqueio automático de tentativas de intrusão, varredura de portas e acessos não autorizados.
+                                    </p>
+                                    <div className="mt-5 space-y-2">
+                                        {[
+                                            { icon: <Globe className="h-3.5 w-3.5" />, label: 'Inspeção deep packet (DPI)' },
+                                            { icon: <Cpu className="h-3.5 w-3.5" />, label: 'Bloqueio de intrusões (IPS/IDS)' },
+                                            { icon: <Lock className="h-3.5 w-3.5" />, label: 'Controle de acesso por perfil' },
+                                        ].map((item) => (
+                                            <div key={item.label} className="flex items-center gap-2 text-xs text-muted-foreground">
+                                                <span className="text-emerald-500">{item.icon}</span>
+                                                {item.label}
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Anti-DDoS */}
+                            <div className="group relative overflow-hidden rounded-2xl border border-blue-500/20 bg-card/80 p-6 shadow-sm transition-all duration-300 hover:border-blue-500/40 hover:shadow-blue-500/10 hover:shadow-lg">
+                                <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-blue-500/5 transition-all group-hover:bg-blue-500/10" />
+                                <div className="relative z-10">
+                                    <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-xl border border-blue-500/20 bg-blue-500/10">
+                                        <ShieldCheck className="h-6 w-6 text-blue-400" />
+                                    </div>
+                                    <h3 className="text-xl font-bold text-foreground">Proteção Anti-DDoS</h3>
+                                    <p className="mt-3 text-sm leading-6 text-muted-foreground">
+                                        Mitigação automática de ataques volumétricos e de camada de aplicação. O sistema absorve e filtra tráfego malicioso antes que ele atinja a plataforma, garantindo disponibilidade contínua.
+                                    </p>
+                                    <div className="mt-5 space-y-2">
+                                        {[
+                                            { icon: <Network className="h-3.5 w-3.5" />, label: 'Mitigação volumétrica (L3/L4)' },
+                                            { icon: <AlertTriangle className="h-3.5 w-3.5" />, label: 'Proteção de camada de aplicação (L7)' },
+                                            { icon: <RefreshCw className="h-3.5 w-3.5" />, label: 'Ativação automática em segundos' },
+                                        ].map((item) => (
+                                            <div key={item.label} className="flex items-center gap-2 text-xs text-muted-foreground">
+                                                <span className="text-blue-400">{item.icon}</span>
+                                                {item.label}
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Backup */}
+                            <div className="group relative overflow-hidden rounded-2xl border border-amber-500/20 bg-card/80 p-6 shadow-sm transition-all duration-300 hover:border-amber-500/40 hover:shadow-amber-500/10 hover:shadow-lg">
+                                <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-amber-500/5 transition-all group-hover:bg-amber-500/10" />
+                                <div className="relative z-10">
+                                    <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-xl border border-amber-500/20 bg-amber-500/10">
+                                        <HardDrive className="h-6 w-6 text-amber-400" />
+                                    </div>
+                                    <h3 className="text-xl font-bold text-foreground">Backup Automático</h3>
+                                    <p className="mt-3 text-sm leading-6 text-muted-foreground">
+                                        Seus dados são copiados automaticamente em intervalos regulares, com armazenamento redundante em múltiplas regiões. Recuperação rápida em caso de qualquer incidente.
+                                    </p>
+                                    <div className="mt-5 space-y-2">
+                                        {[
+                                            { icon: <RefreshCw className="h-3.5 w-3.5" />, label: 'Backup diário automatizado' },
+                                            { icon: <HardDrive className="h-3.5 w-3.5" />, label: 'Redundância em múltiplas regiões' },
+                                            { icon: <CheckCircle className="h-3.5 w-3.5" />, label: 'Restauração pontual (PITR)' },
+                                        ].map((item) => (
+                                            <div key={item.label} className="flex items-center gap-2 text-xs text-muted-foreground">
+                                                <span className="text-amber-400">{item.icon}</span>
+                                                {item.label}
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Bottom trust bar */}
+                        <div className="mt-8 grid gap-4 rounded-2xl border border-border/60 bg-card/60 p-5 sm:grid-cols-4">
+                            {[
+                                { icon: <ShieldCheck className="h-5 w-5 text-emerald-500" />, title: 'HTTPS / TLS 1.3', text: 'Toda comunicação criptografada em trânsito' },
+                                { icon: <Lock className="h-5 w-5 text-emerald-500" />, title: 'Dados em repouso', text: 'Banco de dados criptografado (AES-256)' },
+                                { icon: <Users className="h-5 w-5 text-emerald-500" />, title: 'Acesso por credencial', text: 'Login com gestão de usuários e perfis' },
+                                { icon: <RefreshCw className="h-5 w-5 text-emerald-500" />, title: 'Monitoramento contínuo', text: 'Alertas e logs de atividade 24/7' },
+                            ].map((item) => (
+                                <div key={item.title} className="flex items-start gap-3">
+                                    <div className="mt-0.5 shrink-0">{item.icon}</div>
+                                    <div>
+                                        <p className="text-sm font-semibold text-foreground">{item.title}</p>
+                                        <p className="mt-0.5 text-xs leading-5 text-muted-foreground">{item.text}</p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
                     </div>
                 </section>
 
@@ -828,9 +967,9 @@ export default function App() { // Ou Home
 
     // Estado para controlar se as seções colapsáveis estão abertas (adapte)
     const [openSections, setOpenSections] = useState({
-        suppliers: true,
-        pricing: true,
-        bids: true,
+        suppliers: false,
+        pricing: false,
+        bids: false,
     });
 
 
@@ -1156,123 +1295,179 @@ export default function App() { // Ou Home
         return <PublicHomePage logoSrc={logoSrc} onLoginClick={() => setShowLogin(true)} />;
     }
 
+    // Mapeamento de categoria → classe de cor do ícone
+    const categoryIconClass: Record<string, string> = {
+        gestao:     'nav-icon-gestao',
+        comercial:  'nav-icon-comercial',
+        financeiro: 'nav-icon-financeiro',
+        b2g:        'nav-icon-b2g',
+        tecnico:    'nav-icon-tecnico',
+        sistema:    'nav-icon-sistema',
+    };
+
+    // Grupos de navegação com categoria
+    const navGroups: Array<{
+        category: string;
+        label: string;
+        iconClass: string;
+        items: typeof filteredNavItems;
+    }> = [
+        { category: 'gestao',     label: 'Gestão',        iconClass: 'nav-icon-gestao',     items: filteredNavItems.filter(i => ['dashboard','projects'].includes(i.id)) },
+        { category: 'comercial',  label: 'Comercial',     iconClass: 'nav-icon-comercial',  items: filteredNavItems.filter(i => ['distributors','suppliers','quotes','proposals','generated-proposals'].includes(i.id)) },
+        { category: 'financeiro', label: 'Precificação',  iconClass: 'nav-icon-financeiro', items: filteredNavItems.filter(i => ['pricing'].includes(i.id)) },
+        { category: 'b2g',        label: 'B2G / Editais', iconClass: 'nav-icon-b2g',        items: filteredNavItems.filter(i => ['bids','price-records','rfp'].includes(i.id)) },
+        { category: 'tecnico',    label: 'Técnico',       iconClass: 'nav-icon-tecnico',    items: filteredNavItems.filter(i => ['it-assessment','poc'].includes(i.id)) },
+        { category: 'sistema',    label: 'Sistema',       iconClass: 'nav-icon-sistema',    items: filteredNavItems.filter(i => ['settings'].includes(i.id)) },
+    ].filter(g => g.items.length > 0);
+
     // **Renderização da UI completa da página principal autenticada**
     return (
         <QuoteProvider initialData={quotes}>
-            <div className="min-h-screen font-body bg-background text-foreground transition-colors duration-500">
-                <div className="flex">
+            <div className="flex h-screen overflow-hidden font-body bg-background text-foreground">
 
-                    {/* Sidebar */}
-                    <aside className="w-64 shadow-xl flex-col h-screen sticky top-0 hidden md:flex border-r border-sidebar-border sidebar-bg">
-                        {/* Cabeçalho da Sidebar */}
-                        <div className="flex items-center justify-center h-24 border-b border-sidebar-border/60 sidebar-brand relative">
-                            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/10 to-transparent"></div>
-                            <Briefcase className="w-8 h-8 text-accent-cyan relative z-10 drop-shadow-sm" />
-                            <span className="ml-3 text-xl font-bold text-sidebar-foreground relative z-10 drop-shadow-sm">Menu</span>
+                {/* ════════════════════════════════════════════════════
+                    SIDEBAR MODERNA
+                ════════════════════════════════════════════════════ */}
+                <aside className="sidebar-modern hidden md:flex w-60 lg:w-64 flex-col h-screen flex-shrink-0">
+
+                    {/* ── Brand header ── */}
+                    <div className="sidebar-brand-modern flex h-14 flex-shrink-0 items-center gap-3 px-4">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary/10 ring-1 ring-primary/20 flex-shrink-0">
+                            {logoSrc
+                                ? <img src={logoSrc} alt="Logo" className="h-6 w-6 rounded-lg object-contain" />
+                                : <Briefcase className="h-4 w-4 text-primary" />
+                            }
                         </div>
-                        {/* Navegação da Sidebar */}
-                        <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
-                            {filteredNavItems.map(item => (
-                                !item.subItems ? (
-                                    <Button
-                                        key={item.id}
-                                        variant="ghost"
-                                        className={`w-full justify-start px-4 py-3 h-auto text-sm transition-all duration-300 rounded-lg ${activeTab === item.id
-                                            ? 'bg-gradient-to-r from-accent-cyan/20 to-accent-orange/10 text-accent-cyan border border-accent-cyan/40 shadow-lg shadow-accent-cyan/15'
-                                            : 'text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent/70 hover:border-accent-cyan/30 hover:shadow-md hover:shadow-accent-cyan/10 border border-transparent'
-                                            }`}
-                                        onClick={() => setActiveTab(item.id)}
-                                    >
-                                        <span className={activeTab === item.id ? 'text-accent-cyan' : 'text-sidebar-foreground/75 group-hover:text-accent-cyan transition-colors duration-300'}>{item.icon}</span>
-                                        <span className="ml-4 font-medium">{item.label}</span>
-                                    </Button>
-                                ) : (
-                                    // Collapsible para itens com sub-itens
-                                    <Collapsible
-                                        key={item.id}
-                                        open={openSections[item.id as keyof typeof openSections] || item.subItems.some(sub => sub.id === activeTab)}
-                                        onOpenChange={(isOpen) => setOpenSections(prev => ({ ...prev, [item.id]: isOpen }))}
-                                    >
-                                        <CollapsibleTrigger asChild>
-                                            <Button
-                                                variant="ghost"
-                                                className={`w-full justify-between px-4 py-3 h-auto text-sm transition-all duration-300 rounded-lg group ${item.subItems.some(sub => sub.id === activeTab)
-                                                    ? 'bg-gradient-to-r from-accent-cyan/20 to-accent-orange/10 text-accent-cyan border border-accent-cyan/40 shadow-lg shadow-accent-cyan/15'
-                                                    : 'text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent/70 hover:border-accent-cyan/30 hover:shadow-md hover:shadow-accent-cyan/10 border border-transparent'
-                                                    }`}
-                                            >
-                                                <div className="flex items-center">
-                                                    <span className={item.subItems.some(sub => sub.id === activeTab) ? 'text-accent-cyan' : 'text-sidebar-foreground/75 group-hover:text-accent-cyan transition-colors duration-300'}>{item.icon}</span>
-                                                    <span className="ml-4 font-medium">{item.label}</span>
-                                                </div>
-                                                <ChevronDown className={`w-5 h-5 transition-all duration-300 ${openSections[item.id as keyof typeof openSections] || item.subItems.some(sub => sub.id === activeTab) ? 'rotate-180 text-accent-cyan' : 'text-sidebar-foreground/60 group-hover:text-accent-cyan'
-                                                    }`} />
-                                            </Button>
-                                        </CollapsibleTrigger>
-                                        <CollapsibleContent className="pl-8 pt-2 space-y-1">
-                                            {item.subItems.map(subItem => (
-                                                <Button
-                                                    key={subItem.id}
-                                                    variant="ghost"
-                                                    onClick={() => handleNavigation(subItem)}
-                                                    className={`w-full justify-start h-auto px-3 py-2 text-sm transition-all duration-300 rounded-md group ${activeTab === subItem.id
-                                                        ? 'text-accent-cyan font-semibold bg-accent-cyan/15 border-l-4 border-accent-cyan shadow-sm shadow-accent-cyan/20'
-                                                        : 'text-sidebar-foreground/65 hover:text-sidebar-foreground hover:bg-sidebar-accent/60 hover:border-l-4 hover:border-accent-orange/60 border-l-4 border-transparent'
-                                                        }`}
+                        <div className="min-w-0">
+                            <p className="truncate text-[13px] font-bold text-sidebar-foreground leading-tight">Pré-Venda TI</p>
+                            <p className="truncate text-[10px] text-muted-foreground/70 leading-tight">Sistema Comercial</p>
+                        </div>
+                    </div>
+
+                    {/* ── Nav scrollável ── */}
+                    <nav className="flex-1 overflow-y-auto sidebar-scroll py-2 px-2">
+                        {navGroups.map((group) => (
+                            <div key={group.category}>
+                                {/* Category label */}
+                                <div className="sidebar-category-label">{group.label}</div>
+
+                                {group.items.map((item) => (
+                                    !item.subItems ? (
+                                        /* ── Item simples ── */
+                                        <button
+                                            key={item.id}
+                                            onClick={() => setActiveTab(item.id)}
+                                            className={`nav-item ${activeTab === item.id ? 'active' : ''}`}
+                                        >
+                                            <span className={`flex-shrink-0 ${activeTab === item.id ? 'text-primary' : group.iconClass}`}>
+                                                {item.icon}
+                                            </span>
+                                            <span className="min-w-0 truncate">{item.label}</span>
+                                        </button>
+                                    ) : (
+                                        /* ── Grupo colapsável ── */
+                                        <Collapsible
+                                            key={item.id}
+                                            open={openSections[item.id as keyof typeof openSections] || item.subItems.some(s => s.id === activeTab)}
+                                            onOpenChange={(o) => setOpenSections(prev => ({ ...prev, [item.id]: o }))}
+                                        >
+                                            <CollapsibleTrigger asChild>
+                                                <button
+                                                    className={`nav-group-trigger ${item.subItems.some(s => s.id === activeTab) ? 'has-active' : ''}`}
                                                 >
-                                                    <span className={activeTab === subItem.id ? 'text-accent-cyan' : 'text-sidebar-foreground/65 group-hover:text-accent-orange transition-colors duration-300'}>{subItem.icon}</span>
-                                                    <span className="ml-3">{subItem.label}</span>
-                                                </Button>
-                                            ))}
-                                        </CollapsibleContent>
-                                    </Collapsible>
-                                )
-                            ))}
-                        </nav>
-                        {/* Parte inferior da Sidebar */}
-                        <div className="p-4 border-t border-sidebar-border bg-sidebar/90 flex flex-col gap-2">
-                            <Button
-                                onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-                                variant="outline"
-                                className="w-full bg-sidebar-accent/70 border-sidebar-border text-sidebar-foreground hover:bg-sidebar-accent hover:border-accent-cyan/50 hover:text-sidebar-foreground hover:shadow-md hover:shadow-accent-cyan/20 transition-all duration-300"
-                            >
-                                {mounted ? (
-                                    <>
-                                        {theme === 'dark' ? <Sun className="mr-2 h-4 w-4 text-accent-orange" /> : <Moon className="mr-2 h-4 w-4 text-accent-cyan" />}
-                                        <span className="font-medium">{theme === 'dark' ? 'Modo Claro' : 'Modo Escuro'}</span>
-                                    </>
-                                ) : (
-                                    <>
-                                        <Sun className="mr-2 h-4 w-4 text-accent-orange" />
-                                        <span className="font-medium">Mudar Tema</span>
-                                    </>
-                                )}
-                            </Button>
+                                                    <div className="flex items-center gap-2.5 min-w-0">
+                                                        <span className={`flex-shrink-0 ${item.subItems.some(s => s.id === activeTab) ? 'text-primary' : group.iconClass}`}>
+                                                            {item.icon}
+                                                        </span>
+                                                        <span className="min-w-0 truncate">{item.label}</span>
+                                                    </div>
+                                                    <ChevronDown
+                                                        className={`h-3.5 w-3.5 flex-shrink-0 transition-transform duration-200 ${
+                                                            openSections[item.id as keyof typeof openSections] || item.subItems.some(s => s.id === activeTab)
+                                                                ? 'rotate-180 text-primary'
+                                                                : 'text-muted-foreground/50'
+                                                        }`}
+                                                    />
+                                                </button>
+                                            </CollapsibleTrigger>
+                                            <CollapsibleContent>
+                                                <div className="nav-subitems-container">
+                                                    {item.subItems.map((sub) => (
+                                                        <button
+                                                            key={sub.id}
+                                                            onClick={() => handleNavigation(sub)}
+                                                            className={`nav-subitem ${activeTab === sub.id ? 'active' : ''}`}
+                                                        >
+                                                            <span className={`flex-shrink-0 ${activeTab === sub.id ? 'text-primary' : 'text-muted-foreground/50'}`}>
+                                                                {sub.icon}
+                                                            </span>
+                                                            <span className="min-w-0 truncate">{sub.label}</span>
+                                                            {(sub as any).openInNewTab && (
+                                                                <ExternalLink className="ml-auto h-3 w-3 flex-shrink-0 text-muted-foreground/40" />
+                                                            )}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            </CollapsibleContent>
+                                        </Collapsible>
+                                    )
+                                ))}
+                            </div>
+                        ))}
+                    </nav>
+
+                    {/* ── Sidebar footer ── */}
+                    <div className="sidebar-footer-modern flex flex-col gap-2">
+                        {/* User info compacto */}
+                        <div className="flex items-center gap-2 rounded-lg px-2 py-2">
+                            <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-primary/10 text-[11px] font-bold text-primary ring-1 ring-primary/20">
+                                {(currentUser?.name ?? 'U').split(' ').slice(0,2).map(n=>n[0]).join('').toUpperCase()}
+                            </div>
+                            <div className="min-w-0 flex-1">
+                                <p className="truncate text-[12px] font-semibold text-sidebar-foreground leading-tight">
+                                    {currentUser?.name ?? 'Usuário'}
+                                </p>
+                                <p className="text-[10px] text-muted-foreground/60 leading-tight">
+                                    {currentUser?.role === 'admin' ? 'Administrador' : 'Usuário'}
+                                </p>
+                            </div>
                         </div>
-                    </aside>
 
+                        {/* Theme toggle */}
+                        <button
+                            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                            className="flex w-full items-center gap-2.5 rounded-lg border border-border/40 bg-muted/30 px-3 py-2 text-[12px] font-medium text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground"
+                        >
+                            {mounted
+                                ? theme === 'dark'
+                                    ? <><Sun className="h-3.5 w-3.5 text-amber-400" /><span>Modo Claro</span></>
+                                    : <><Moon className="h-3.5 w-3.5 text-primary" /><span>Modo Escuro</span></>
+                                : <><Sun className="h-3.5 w-3.5" /><span>Tema</span></>
+                            }
+                        </button>
+                    </div>
+                </aside>
 
-                    {/* Conteúdo Principal da Página (Main) */}
-                    <main className="flex-1 max-h-screen overflow-y-auto">
-                        {/* Header Elegante com Logo */}
-                        <Header
-                            currentTitle={currentNavItem.parentLabel || currentNavItem.label}
-                            currentSubtitle={currentNavItem.parentLabel ? currentNavItem.label : undefined}
-                            logoSrc={logoSrc}
-                            currentUser={currentUser}
-                            onNavigateSettings={() => setActiveTab('settings')}
-                            onLogout={handleLogout}
-                        />
+                {/* ════════════════════════════════════════════════════
+                    CONTEÚDO PRINCIPAL
+                ════════════════════════════════════════════════════ */}
+                <div className="main-content-area">
+                    {/* Header */}
+                    <Header
+                        currentTitle={currentNavItem.parentLabel || currentNavItem.label}
+                        currentSubtitle={currentNavItem.parentLabel ? currentNavItem.label : undefined}
+                        logoSrc={logoSrc}
+                        currentUser={currentUser}
+                        onNavigateSettings={() => setActiveTab('settings')}
+                        onLogout={handleLogout}
+                    />
 
-                        {/* Área de conteúdo com padding */}
-                        <div className="p-6 sm:p-10 h-[calc(100vh-200px)] overflow-y-auto">
-
-                            {/* Área de Conteúdo Principal - Renderiza a view ativa */}
-                            {renderContent()} {/* Chama a função para renderizar a view ativa */}
-                        </div>
-
-                    </main>
+                    {/* Conteúdo com animação de entrada e scroll customizado */}
+                    <div key={activeTab} className="content-wrapper content-scroll content-animate">
+                        {renderContent()}
+                    </div>
                 </div>
+
             </div>
         </QuoteProvider>
     );

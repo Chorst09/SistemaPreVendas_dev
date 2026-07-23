@@ -18,6 +18,7 @@ import {
 } from '@/lib/types/service-desk-templates';
 import { ServiceDeskData, TaxRegime, ServiceType } from '@/lib/types/service-desk-pricing';
 import { ServiceDeskDataManager } from './service-desk-data-manager';
+import { createId } from '@/lib/utils/id';
 
 export class ServiceDeskTemplateService {
   private static readonly STORAGE_KEY = 'service-desk-templates';
@@ -661,7 +662,7 @@ export class ServiceDeskTemplateService {
       } else {
         // Apply team roles
         targetData.team = teamTemplate.roles.map((roleTemplate: any) => ({
-          id: crypto.randomUUID(),
+          id: createId(),
           name: '',
           role: roleTemplate.role,
           salary: roleTemplate.baseSalaryRange.average,
@@ -701,7 +702,7 @@ export class ServiceDeskTemplateService {
   private applyCostsTemplate(costsTemplate: any, targetData: ServiceDeskData, application: TemplateApplication): void {
     if (costsTemplate.commonCosts && costsTemplate.commonCosts.length > 0) {
       const newCosts = costsTemplate.commonCosts.map((costTemplate: any) => ({
-        id: crypto.randomUUID(),
+        id: createId(),
         name: costTemplate.name,
         category: costTemplate.category,
         value: costTemplate.estimatedValue,
@@ -735,7 +736,7 @@ export class ServiceDeskTemplateService {
     const now = new Date();
     
     const template: ServiceDeskTemplate = {
-      id: crypto.randomUUID(),
+      id: createId(),
       name: templateInfo.name,
       description: templateInfo.description,
       category: templateInfo.category,

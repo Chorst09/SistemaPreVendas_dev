@@ -15,6 +15,7 @@ export interface Printer {
     custoBase: number
     margemDesejada: number
     regimeTributario: string
+    regimeTributarioId?: string | null
     icmsCompra: number
     icmsVenda: number
     ipiCompra: number

@@ -176,6 +176,15 @@ export class ServiceDeskPDFIntegration {
     this.serviceDeskPDFGenerator = new ServiceDeskPDFGenerator();
   }
 
+  private getTeamMemberQuantity(member: any): number {
+    const quantity = Number(member?.quantity ?? 1);
+    return Number.isFinite(quantity) ? Math.max(0, quantity) : 0;
+  }
+
+  private getTotalTeamQuantity(team: any[] = []): number {
+    return team.reduce((sum, member) => sum + this.getTeamMemberQuantity(member), 0);
+  }
+
   /**
    * Maps Service Desk data to PDF-compatible proposal data
    */
@@ -298,7 +307,7 @@ export class ServiceDeskPDFIntegration {
         managerName: clientData.managerName || clientData.contactName,
         managerEmail: clientData.managerEmail || clientData.email,
         managerPhone: clientData.managerPhone || clientData.phone,
-        employeeCount: proposalData.serviceDeskData.team.length,
+        employeeCount: this.getTotalTeamQuantity(proposalData.serviceDeskData.team),
         businessHours: {
           start: '08:00',
           end: '18:00',
@@ -309,11 +318,11 @@ export class ServiceDeskPDFIntegration {
       serviceLevel: this.determineServiceLevel(proposalData.serviceDeskData),
       serviceItems: this.createServiceItems(proposalData.serviceDeskData),
       totals: {
-        totalUsers: proposalData.serviceDeskData.team.length,
+        totalUsers: this.getTotalTeamQuantity(proposalData.serviceDeskData.team),
         totalSetupCost: proposalData.financialBreakdown.otherCosts.total,
         monthlyCost: proposalData.totalMonthly,
         annualCost: proposalData.totalAnnual,
-        totalIncludedHours: proposalData.serviceDeskData.team.length * 160,
+        totalIncludedHours: this.getTotalTeamQuantity(proposalData.serviceDeskData.team) * 160,
         estimatedAdditionalHours: 0,
         additionalHoursCost: 0
       },
@@ -356,21 +365,28 @@ export class ServiceDeskPDFIntegration {
    * Maps team members to equipment items for PDF compatibility
    */
   private mapTeamToEquipments(team: any[]): any[] {
-    return team.map((member, index) => ({
-      id: member.id || `member-${index}`,
-      model: member.role,
-      brand: 'Recurso Humano',
-      type: 'Profissional',
-      monthlyVolume: member.workload || 160, // hours per month
-      monthlyCost: member.salary + (member.benefits ? Object.values(member.benefits).reduce((sum: number, val: any) => sum + (typeof val === 'number' ? val : 0), 0) : 0),
-      specifications: {
-        name: member.name,
-        skills: member.skills || [],
-        certifications: member.certifications || [],
-        startDate: member.startDate,
-        endDate: member.endDate
-      }
-    }));
+    return team.map((member, index) => {
+      const quantity = this.getTeamMemberQuantity(member);
+      const benefitsTotal = member.benefits
+        ? Object.values(member.benefits).reduce((sum: number, val: any) => sum + (typeof val === 'number' ? val : 0), 0)
+        : 0;
+
+      return {
+        id: member.id || `member-${index}`,
+        model: member.role,
+        brand: 'Recurso Humano',
+        type: 'Profissional',
+        monthlyVolume: (member.workload || 160) * quantity, // hours per month
+        monthlyCost: ((member.salary || 0) + benefitsTotal) * quantity,
+        specifications: {
+          name: member.name,
+          skills: member.skills || [],
+          certifications: member.certifications || [],
+          startDate: member.startDate,
+          endDate: member.endDate
+        }
+      };
+    });
   }
 
   /**
@@ -378,7 +394,8 @@ export class ServiceDeskPDFIntegration {
    */
   private createTeamCompositionSection(serviceDeskData: ServiceDeskData): TeamCompositionSection {
     const roleGroups = serviceDeskData.team.reduce((groups, member) => {
-      const role = member.role;
+      const m = member as any;
+      const role = m.role || member.name || 'Unknown';
       if (!groups[role]) {
         groups[role] = [];
       }
@@ -387,12 +404,13 @@ export class ServiceDeskPDFIntegration {
     }, {} as Record<string, any[]>);
 
     const roles = Object.entries(roleGroups).map(([role, members]) => {
-      const avgSalary = members.reduce((sum, member) => sum + member.salary, 0) / members.length;
-      const totalCost = members.reduce((sum, member) => sum + member.salary, 0);
+      const count = members.reduce((sum, member) => sum + this.getTeamMemberQuantity(member), 0);
+      const totalCost = members.reduce((sum, member) => sum + (((member as any).salary || 0) * this.getTeamMemberQuantity(member)), 0);
+      const avgSalary = count > 0 ? totalCost / count : 0;
       
       return {
         role,
-        count: members.length,
+        count,
         avgSalary,
         totalCost
       };
@@ -400,11 +418,13 @@ export class ServiceDeskPDFIntegration {
 
     const totalMonthlyCost = serviceDeskData.budget.teamCosts.total;
     const totalAnnualCost = totalMonthlyCost * 12;
-    const totalHours = serviceDeskData.team.reduce((sum, member) => sum + member.workload, 0) * 4.33; // weeks to month
+    const totalHours = serviceDeskData.team.reduce((sum, member) => {
+      return sum + ((Number((member as any).workload) || 0) * this.getTeamMemberQuantity(member));
+    }, 0) * 4.33;
     const costPerHour = totalHours > 0 ? totalMonthlyCost / totalHours : 0;
 
     return {
-      totalMembers: serviceDeskData.team.length,
+      totalMembers: this.getTotalTeamQuantity(serviceDeskData.team),
       roles,
       totalMonthlyCost,
       totalAnnualCost,
@@ -517,7 +537,7 @@ export class ServiceDeskPDFIntegration {
     let riskScore = 0;
 
     // Team size risk
-    if (serviceDeskData.team.length < 3) {
+    if (this.getTotalTeamQuantity(serviceDeskData.team) < 3) {
       riskFactors.push({
         factor: 'Equipe muito pequena',
         impact: 'high' as const,
@@ -662,13 +682,15 @@ export class ServiceDeskPDFIntegration {
   }
 
   private createServiceItems(serviceDeskData: ServiceDeskData): any[] {
+    const totalTeamQuantity = this.getTotalTeamQuantity(serviceDeskData.team);
+
     return [{
       serviceName: 'Service Desk Completo',
       serviceLevel: this.determineServiceLevel(serviceDeskData),
-      userCount: serviceDeskData.team.length,
-      costPerUser: serviceDeskData.team.length > 0 ? serviceDeskData.budget.totalPrice / serviceDeskData.team.length : 0,
+      userCount: totalTeamQuantity,
+      costPerUser: totalTeamQuantity > 0 ? serviceDeskData.budget.totalPrice / totalTeamQuantity : 0,
       includedHours: 160, // Standard hours per month
-      monthlyTickets: serviceDeskData.team.length * 50, // Estimated tickets per user
+      monthlyTickets: totalTeamQuantity * 50, // Estimated tickets per user
       monthlyCost: serviceDeskData.budget.totalPrice / serviceDeskData.project.contractPeriod.durationMonths
     }];
   }

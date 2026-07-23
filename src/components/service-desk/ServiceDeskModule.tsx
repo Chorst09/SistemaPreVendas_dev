@@ -208,20 +208,22 @@ export function ServiceDeskModule({
 
   if (currentModule === "calculator") {
     return (
-      <ServiceDeskCalculatorModule 
-        onBack={handleBack} 
-        onNavigateToProposals={onNavigateToProposals} 
-        services={services} 
-        slas={slas}
-        editingProposalId={editingProposalId}
-        onFinishEditing={onFinishEditing}
-      />
+      <div className="service-desk-theme min-h-screen">
+        <ServiceDeskCalculatorModule 
+          onBack={handleBack} 
+          onNavigateToProposals={onNavigateToProposals} 
+          services={services} 
+          slas={slas}
+          editingProposalId={editingProposalId}
+          onFinishEditing={onFinishEditing}
+        />
+      </div>
     )
   }
 
   if (currentModule === "services") {
     return (
-      <div className="min-h-screen bg-background p-6">
+      <div className="service-desk-theme min-h-screen bg-background p-6">
         <div className="mb-6">
           <Button onClick={handleBack} variant="outline">
             ← Voltar
@@ -245,7 +247,7 @@ export function ServiceDeskModule({
 
   if (currentModule === "sla") {
     return (
-      <div className="min-h-screen bg-background p-6">
+      <div className="service-desk-theme min-h-screen bg-background p-6">
         <div className="mb-6">
           <Button onClick={handleBack} variant="outline">
             ← Voltar
@@ -261,7 +263,7 @@ export function ServiceDeskModule({
 
   if (currentModule === "reports") {
     return (
-      <div className="min-h-screen bg-background p-6">
+      <div className="service-desk-theme min-h-screen bg-background p-6">
         <div className="mb-6">
           <Button onClick={handleBack} variant="outline">
             ← Voltar
@@ -277,35 +279,39 @@ export function ServiceDeskModule({
 
   if (currentModule === "pricing" && selectedService) {
     return (
-      <ServiceDeskPricingModule
-        service={selectedService}
-        onBack={handleBack}
-        onUpdateService={(updatedService) => {
-          const updatedServices = services.map(s =>
-            s.id === updatedService.id ? updatedService : s
-          )
-          setServices(updatedServices)
-          setCurrentModule("services")
-        }}
-      />
+      <div className="service-desk-theme min-h-screen">
+        <ServiceDeskPricingModule
+          service={selectedService}
+          onBack={handleBack}
+          onUpdateService={(updatedService) => {
+            const updatedServices = services.map(s =>
+              s.id === updatedService.id ? updatedService : s
+            )
+            setServices(updatedServices)
+            setCurrentModule("services")
+          }}
+        />
+      </div>
     )
   }
 
   if (currentModule === "new-service") {
     return (
-      <ServiceDeskPricingModule
-        service={null}
-        onBack={handleBack}
-        onUpdateService={(newService) => {
-          setServices([...services, newService])
-          setCurrentModule("services")
-        }}
-      />
+      <div className="service-desk-theme min-h-screen">
+        <ServiceDeskPricingModule
+          service={null}
+          onBack={handleBack}
+          onUpdateService={(newService) => {
+            setServices([...services, newService])
+            setCurrentModule("services")
+          }}
+        />
+      </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-muted/30 to-primary/5">
+    <div className="service-desk-theme min-h-screen bg-gradient-to-br from-background via-muted/30 to-primary/5">
       <header className="glass-effect border-b sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">

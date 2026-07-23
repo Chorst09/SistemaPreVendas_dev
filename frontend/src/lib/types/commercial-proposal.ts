@@ -56,6 +56,9 @@ export interface CommercialProposal {
 
   // Aprovações
   approvals: ProposalApproval[];
+
+  // Precificação
+  pricing?: ProposalPricing;
 }
 
 export enum ProposalStatus {

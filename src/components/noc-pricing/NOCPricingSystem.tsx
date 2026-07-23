@@ -5,18 +5,18 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Loader2, Activity, Download, Save, Calculator, TrendingUp, TrendingDown } from 'lucide-react';
-import { NOCPricingData, NOCTabValidationStatus } from '@/lib/types/noc-pricing';
+import { Loader2, Activity, Download, Save } from 'lucide-react';
+import { NOCPricingData, NOCTabValidationStatus, NOCServiceScope } from '@/lib/types/noc-pricing';
 import { NOCDataManager } from '@/lib/services/noc-data-manager';
 import { NOCValidationEngine } from '@/lib/services/noc-validation-engine';
 import { NOCCalculationEngine } from '@/lib/services/noc-calculation-engine';
-import type { NOCPDFExportPayload } from '@/lib/services/noc-pdf-generator';
 
 // Import tabs
 import { ProjectTab } from './tabs/ProjectTab';
 import { DevicesTab } from './tabs/DevicesTab';
 import { MonitoringTab } from './tabs/MonitoringTab';
 import { SLATab } from './tabs/SLATab';
+import { SecurityTab } from './tabs/SecurityTab';
 import { TeamTab } from './tabs/TeamTab';
 import { CostsTab } from './tabs/CostsTab';
 import { TaxesTab } from './tabs/TaxesTab';
@@ -33,12 +33,12 @@ import { QuoteStatus } from '@/lib/types/enums';
 import { useToast } from '@/hooks/use-toast';
 import { usePricingIntegration } from '@/hooks/use-pricing-integration';
 
-// Tabs do sistema NOC
-const NOC_TABS = [
-  { id: 'project', label: 'Projeto', description: 'Dados básicos do projeto NOC' },
+const ALL_TABS = [
+  { id: 'project', label: 'Projeto', description: 'Dados básicos do projeto' },
   { id: 'devices', label: 'Dispositivos', description: 'Dispositivos e infraestrutura monitorada' },
   { id: 'monitoring', label: 'Monitoramento', description: 'Configuração de ferramentas e alertas' },
   { id: 'sla', label: 'SLA', description: 'Acordo de nível de serviço' },
+  { id: 'security', label: 'Segurança', description: 'SOC, SIEM, MDR e retenção de logs' },
   { id: 'team', label: 'Equipe', description: 'Equipe NOC e turnos' },
   { id: 'costs', label: 'Custos', description: 'Custos operacionais' },
   { id: 'taxes', label: 'Impostos', description: 'Impostos e encargos' },
@@ -47,44 +47,31 @@ const NOC_TABS = [
   { id: 'report', label: 'Relatório', description: 'Relatório final' }
 ];
 
+const TABS_BY_SERVICE: Record<NOCServiceScope, string[]> = {
+  noc: ['project', 'devices', 'monitoring', 'sla', 'team', 'costs', 'taxes', 'variables', 'calculations', 'report'],
+  soc: ['project', 'security', 'sla', 'team', 'costs', 'taxes', 'variables', 'calculations', 'report'],
+  siem: ['project', 'security', 'monitoring', 'sla', 'team', 'costs', 'taxes', 'variables', 'calculations', 'report']
+};
+
+const SERVICE_LABELS: Record<NOCServiceScope, string> = {
+  noc: 'NOC',
+  soc: 'SOC',
+  siem: 'SIEM'
+};
+
+const SERVICE_DESCRIPTIONS: Record<NOCServiceScope, string> = {
+  noc: 'Network Operations Center - monitoramento de rede, infraestrutura, métricas e disponibilidade',
+  soc: 'Security Operations Center - MDR, triagem, hunting e resposta a incidentes',
+  siem: 'SIEM Gerenciado - ingestão de logs, correlação, retenção e regras de detecção'
+};
+
 const NOC_CONTRACT_DURATION_OPTIONS = [12, 24, 36, 48, 60] as const;
 
 const roundCurrency = (value: number) => Math.round(value * 100) / 100;
-const toFiniteNumber = (value: unknown): number => {
-  const numericValue = typeof value === 'number' ? value : Number(value);
-  return Number.isFinite(numericValue) ? numericValue : 0;
-};
-const isValidNumericValue = (value: unknown): boolean => {
-  const numericValue = typeof value === 'number' ? value : Number(value);
-  return Number.isFinite(numericValue);
-};
-const formatCurrencyValue = (value: unknown) =>
-  toFiniteNumber(value).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
-const formatPercentageValue = (value: unknown) => toFiniteNumber(value).toFixed(1);
-const formatDateTimeValue = (value: Date) =>
-  value.toLocaleString('pt-BR', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-const formatSignedCurrencyValue = (value: number) => {
-  const absoluteValue = Math.abs(toFiniteNumber(value));
-  const formatted = absoluteValue.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
-  return value < 0 ? `- ${formatted}` : formatted;
-};
-
-const NOC_CALCULATION_REQUIRED_TAB_IDS = [
-  'project',
-  'devices',
-  'monitoring',
-  'sla',
-  'team',
-  'costs',
-  'taxes',
-  'variables',
-] as const;
+const safeNumber = (value: unknown, fallback = 0) =>
+  typeof value === 'number' && Number.isFinite(value) ? value : fallback;
+const formatPercent = (value: unknown, fractionDigits = 1) =>
+  safeNumber(value).toFixed(fractionDigits);
 
 type CreateQuoteFn = ReturnType<typeof usePricingIntegration>['createQuoteFromPricingData'];
 
@@ -93,6 +80,7 @@ interface CreateNOCQuotesParams {
   monthlyPrice: number;
   clientData: ClientData;
   createQuoteFromPricingData: CreateQuoteFn;
+  serviceMode: NOCServiceScope;
 }
 
 function buildNOCQuoteBasicSpecs(data: NOCPricingData) {
@@ -103,6 +91,10 @@ function buildNOCQuoteBasicSpecs(data: NOCPricingData) {
     monthlyInfrastructureCost: roundCurrency(calculations?.monthlyInfrastructureCost ?? 0),
     monthlyLicenseCost: roundCurrency(calculations?.monthlyLicenseCost ?? 0),
     monthlyOperationalCost: roundCurrency(calculations?.monthlyOperationalCost ?? 0),
+    monthlySOCCost: roundCurrency(calculations?.monthlySOCCost ?? 0),
+    monthlySIEMCost: roundCurrency(calculations?.monthlySIEMCost ?? 0),
+    monthlySecurityCost: roundCurrency(calculations?.monthlySecurityCost ?? 0),
+    marketSuggestedMonthly: roundCurrency(calculations?.marketSuggestedMonthly ?? 0),
     totalDevices: data.totalDevices,
     totalMetrics: data.totalMetrics,
     estimatedAlertsPerMonth: data.estimatedAlertsPerMonth,
@@ -114,6 +106,9 @@ function buildNOCQuoteBasicSpecs(data: NOCPricingData) {
     teamSize: data.teamSize,
     monitoringTools: data.monitoring.tools,
     monitoringAi: data.monitoring.aiEnabled,
+    enabledServices: data.security?.enabledServices || ['noc'],
+    soc: data.security?.soc,
+    siem: data.security?.siem,
   };
 }
 
@@ -121,21 +116,23 @@ function createQuotesForNOCContracts({
   data,
   monthlyPrice,
   clientData,
-  createQuoteFromPricingData
+  createQuoteFromPricingData,
+  serviceMode
 }: CreateNOCQuotesParams): Quote[] {
   if (!monthlyPrice || monthlyPrice <= 0) return [];
 
   const specs = buildNOCQuoteBasicSpecs(data);
   const quotes: Quote[] = [];
 
+  const serviceLabel = SERVICE_LABELS[serviceMode];
   for (const duration of NOC_CONTRACT_DURATION_OPTIONS) {
     try {
       const totalPrice = roundCurrency(monthlyPrice * duration);
       const quote = createQuoteFromPricingData({
-        name: `NOC - ${duration} meses`,
-        clientName: clientData.razaoSocial || data.project.clientName || 'Cliente NOC',
+        name: `${serviceLabel} - ${duration} meses`,
+        clientName: clientData.razaoSocial || data.project.clientName || `Cliente ${serviceLabel}`,
         totalPrice,
-        module: 'NOC',
+        module: serviceLabel,
         technicalSpecs: {
           ...specs,
           monthlyPrice,
@@ -160,22 +157,51 @@ interface NOCPricingSystemProps {
   onBack?: () => void;
   proposalClientData?: ProposalClientData | null;
   onNavigateToQuotes?: () => void;
+  serviceMode?: NOCServiceScope;
 }
 
-export function NOCPricingSystem({ onBack, proposalClientData, onNavigateToQuotes }: NOCPricingSystemProps = {}) {
+function applyServiceMode(data: NOCPricingData, serviceMode: NOCServiceScope): NOCPricingData {
+  const next: NOCPricingData = {
+    ...data,
+    security: {
+      ...data.security,
+      enabledServices: [serviceMode],
+      soc: {
+        ...data.security.soc,
+        enabled: serviceMode === 'soc',
+        endpoints: serviceMode === 'soc' && !data.security.soc.endpoints ? 100 : data.security.soc.endpoints,
+        identities: serviceMode === 'soc' && !data.security.soc.identities ? 100 : data.security.soc.identities,
+        users: serviceMode === 'soc' && !data.security.soc.users ? 100 : data.security.soc.users
+      },
+      siem: {
+        ...data.security.siem,
+        enabled: serviceMode === 'siem',
+        ingestionGBPerDay: serviceMode === 'siem' && !data.security.siem.ingestionGBPerDay ? 25 : data.security.siem.ingestionGBPerDay,
+        logSources: serviceMode === 'siem' && !data.security.siem.logSources ? 8 : data.security.siem.logSources
+      }
+    }
+  };
+
+  return {
+    ...next,
+    calculations: NOCCalculationEngine.calculateAll(next)
+  };
+}
+
+export function NOCPricingSystem({ onBack, proposalClientData, onNavigateToQuotes, serviceMode = 'noc' }: NOCPricingSystemProps = {}) {
   const [isMounted, setIsMounted] = useState(false);
   const [data, setData] = useState<NOCPricingData>(NOCDataManager.createEmptyData());
   const [validationStatus, setValidationStatus] = useState<Record<string, NOCTabValidationStatus>>({});
   const [activeTab, setActiveTab] = useState('project');
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [isGeneratingCalculations, setIsGeneratingCalculations] = useState(false);
-  const [lastCalculationAt, setLastCalculationAt] = useState<Date | null>(null);
 
   const dataManager = useMemo(() => new NOCDataManager(), []);
   const validationEngine = useMemo(() => new NOCValidationEngine(), []);
   const { toast } = useToast();
   const { createQuoteFromPricingData } = usePricingIntegration();
+  const serviceLabel = SERVICE_LABELS[serviceMode];
+  const visibleTabs = useMemo(() => ALL_TABS.filter(tab => TABS_BY_SERVICE[serviceMode].includes(tab.id)), [serviceMode]);
 
   // Previne erros de SSR
   useEffect(() => {
@@ -187,26 +213,13 @@ export function NOCPricingSystem({ onBack, proposalClientData, onNavigateToQuote
     const loadData = async () => {
       try {
         setIsLoading(true);
-        const loadedData = await dataManager.loadData();
-        const hasValidMetrics =
-          isValidNumericValue(loadedData.calculations?.roi) &&
-          isValidNumericValue(loadedData.calculations?.profitability);
-        const normalizedData = hasValidMetrics
-          ? loadedData
-          : {
-              ...loadedData,
-              calculations: NOCCalculationEngine.calculateAll(loadedData),
-            };
-
-        setData(normalizedData);
-        if (!hasValidMetrics) {
-          await dataManager.persistData(normalizedData);
-        }
+        const loadedData = applyServiceMode(await dataManager.loadData(), serviceMode);
+        setData(loadedData);
 
         // Valida todas as abas
         const validations: Record<string, NOCTabValidationStatus> = {};
-        NOC_TABS.forEach(tab => {
-          const tabData = dataManager.getTabData(normalizedData, tab.id);
+        visibleTabs.forEach(tab => {
+          const tabData = dataManager.getTabData(loadedData, tab.id);
           validations[tab.id] = validationEngine.validateTabData(tab.id, tabData);
         });
         setValidationStatus(validations);
@@ -220,7 +233,13 @@ export function NOCPricingSystem({ onBack, proposalClientData, onNavigateToQuote
     if (isMounted) {
       loadData();
     }
-  }, [isMounted, dataManager, validationEngine]);
+  }, [isMounted, dataManager, validationEngine, serviceMode, visibleTabs]);
+
+  useEffect(() => {
+    if (!visibleTabs.some(tab => tab.id === activeTab)) {
+      setActiveTab('project');
+    }
+  }, [activeTab, visibleTabs]);
 
   // Atualiza dados de uma aba
   const handleDataUpdate = useCallback(async (tabId: string, tabData: any) => {
@@ -266,8 +285,8 @@ export function NOCPricingSystem({ onBack, proposalClientData, onNavigateToQuote
     }
   }, [data, dataManager]);
 
-  // Exporta dados em JSON (backup técnico)
-  const handleExportJSON = useCallback(() => {
+  // Exporta dados
+  const handleExport = useCallback(() => {
     const json = dataManager.exportToJSON(data);
     const blob = new Blob([json], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
@@ -277,89 +296,6 @@ export function NOCPricingSystem({ onBack, proposalClientData, onNavigateToQuote
     a.click();
     URL.revokeObjectURL(url);
   }, [data, dataManager]);
-
-  const resolveDataForPDF = useCallback(async () => {
-    const dataForExport = data.calculations
-      ? data
-      : {
-          ...data,
-          calculations: NOCCalculationEngine.calculateAll(data),
-        };
-
-    if (!data.calculations) {
-      setData(dataForExport);
-      await dataManager.persistData(dataForExport);
-    }
-
-    return dataForExport;
-  }, [data, dataManager]);
-
-  const handleGenerateCalculations = useCallback(async () => {
-    try {
-      setIsGeneratingCalculations(true);
-      const recalculated = NOCCalculationEngine.calculateAll(data);
-      const updatedData = {
-        ...data,
-        calculations: recalculated,
-      };
-
-      setData(updatedData);
-      setLastCalculationAt(new Date());
-      await dataManager.persistData(updatedData);
-
-      const tabsWithErrors: string[] = [];
-      const tabsPendingCompletion: string[] = [];
-
-      NOC_CALCULATION_REQUIRED_TAB_IDS.forEach((tabId) => {
-        const currentTabStatus = validationStatus[tabId];
-        const tabLabel = NOC_TABS.find((tab) => tab.id === tabId)?.label ?? tabId;
-        if (!currentTabStatus) {
-          tabsPendingCompletion.push(tabLabel);
-          return;
-        }
-        if (currentTabStatus.errors.length > 0) {
-          tabsWithErrors.push(tabLabel);
-          return;
-        }
-        if (!currentTabStatus.isComplete) {
-          tabsPendingCompletion.push(tabLabel);
-        }
-      });
-
-      if (tabsWithErrors.length > 0) {
-        toast({
-          title: 'Cálculo gerado com pendências críticas',
-          description: `Revise as abas: ${tabsWithErrors.join(', ')}.`,
-          variant: 'destructive',
-        });
-        return;
-      }
-
-      if (tabsPendingCompletion.length > 0) {
-        toast({
-          title: 'Cálculo gerado',
-          description: `Ainda há campos para completar: ${tabsPendingCompletion.join(', ')}.`,
-          variant: 'default',
-        });
-        return;
-      }
-
-      toast({
-        title: 'Cálculo gerado com sucesso',
-        description: 'Resultados e DRE atualizados com os dados atuais do projeto.',
-        variant: 'default',
-      });
-    } catch (error) {
-      console.error('NOCPricingSystem.handleGenerateCalculations - Error:', error);
-      toast({
-        title: 'Erro ao gerar cálculo',
-        description: 'Não foi possível recalcular os resultados. Tente novamente.',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsGeneratingCalculations(false);
-    }
-  }, [data, dataManager, toast, validationStatus]);
 
   // Salva como proposta
   const handleSaveProposal = useCallback(async (proposalData: any) => {
@@ -373,7 +309,7 @@ export function NOCPricingSystem({ onBack, proposalClientData, onNavigateToQuote
             nomeContato: data.project.clientName || 'Contato não informado',
             telefoneCliente: '',
             emailCliente: '',
-            nomeProjeto: data.project.projectName || proposalData.title || 'Projeto NOC',
+            nomeProjeto: data.project.projectName || proposalData.title || `Projeto ${serviceLabel}`,
             nomeGerente: '',
             telefoneGerente: '',
             emailGerente: '',
@@ -397,15 +333,16 @@ export function NOCPricingSystem({ onBack, proposalClientData, onNavigateToQuote
         data,
         monthlyPrice: computedMonthlyPrice,
         clientData: mappedClientData,
-        createQuoteFromPricingData
+        createQuoteFromPricingData,
+        serviceMode
       });
       if (generatedQuotes.length === 0) {
         try {
           const fallbackQuote = createQuoteFromPricingData({
-            name: `NOC - ${contractMonths} meses`,
-            clientName: mappedClientData.razaoSocial || data.project.clientName || 'Cliente NOC',
+            name: `${serviceLabel} - ${contractMonths} meses`,
+            clientName: mappedClientData.razaoSocial || data.project.clientName || `Cliente ${serviceLabel}`,
             totalPrice: totalProjectValue,
-            module: 'NOC',
+            module: serviceLabel,
             technicalSpecs: {
               monthlyPrice: computedMonthlyPrice,
               contractDurationMonths: contractMonths,
@@ -430,7 +367,7 @@ export function NOCPricingSystem({ onBack, proposalClientData, onNavigateToQuote
           const fallbackQuote: Quote = {
             id: `QUO-${Date.now()}-${Math.random().toString(36).slice(2, 7).toUpperCase()}`,
             client: mappedClientData.razaoSocial || data.project.clientName || 'Cliente não informado',
-            projectName: mappedClientData.nomeProjeto || data.project.projectName || 'Projeto NOC',
+            projectName: mappedClientData.nomeProjeto || data.project.projectName || `Projeto ${serviceLabel}`,
             accountManager: mappedClientData.nomeGerente || 'Não informado',
             status: QuoteStatus.PENDING,
             total: Number.isFinite(totalProjectValue) ? totalProjectValue : 0,
@@ -460,14 +397,14 @@ export function NOCPricingSystem({ onBack, proposalClientData, onNavigateToQuote
 
       if (savedInUnifiedProposals && proposal) {
         toast({
-          title: 'Proposta NOC Salva!',
+          title: `Proposta ${serviceLabel} Salva!`,
           description: `A proposta "${proposal.title}" foi salva em Propostas e Orçamentos.`,
           variant: 'default'
         });
       } else {
         toast({
           title: 'Orçamento salvo em Orçamentos',
-          description: 'A proposta NOC não foi persistida em Propostas, mas o orçamento foi salvo.',
+          description: `A proposta ${serviceLabel} não foi persistida em Propostas, mas o orçamento foi salvo.`,
           variant: 'default'
         });
       }
@@ -488,7 +425,7 @@ export function NOCPricingSystem({ onBack, proposalClientData, onNavigateToQuote
       });
       throw error;
     }
-  }, [toast, proposalClientData, data, createQuoteFromPricingData, onNavigateToQuotes]);
+  }, [toast, proposalClientData, data, createQuoteFromPricingData, onNavigateToQuotes, serviceMode, serviceLabel]);
 
   const handleGenerateBudget = useCallback(async () => {
     try {
@@ -508,7 +445,7 @@ export function NOCPricingSystem({ onBack, proposalClientData, onNavigateToQuote
             nomeContato: data.project.clientName || 'Contato não informado',
             telefoneCliente: '',
             emailCliente: '',
-            nomeProjeto: data.project.projectName || 'Projeto NOC',
+            nomeProjeto: data.project.projectName || `Projeto ${serviceLabel}`,
             nomeGerente: '',
             telefoneGerente: '',
             emailGerente: '',
@@ -523,15 +460,16 @@ export function NOCPricingSystem({ onBack, proposalClientData, onNavigateToQuote
         data,
         monthlyPrice: computedMonthlyPrice,
         clientData: mappedClientData,
-        createQuoteFromPricingData
+        createQuoteFromPricingData,
+        serviceMode
       });
 
       if (generatedQuotes.length === 0) {
         const fallbackQuote = createQuoteFromPricingData({
-          name: `NOC - ${contractMonths} meses`,
-          clientName: mappedClientData.razaoSocial || data.project.clientName || 'Cliente NOC',
+          name: `${serviceLabel} - ${contractMonths} meses`,
+          clientName: mappedClientData.razaoSocial || data.project.clientName || `Cliente ${serviceLabel}`,
           totalPrice: totalProjectValue,
-          module: 'NOC',
+          module: serviceLabel,
           technicalSpecs: {
             monthlyPrice: computedMonthlyPrice,
             contractDurationMonths: contractMonths,
@@ -551,7 +489,7 @@ export function NOCPricingSystem({ onBack, proposalClientData, onNavigateToQuote
           const fallbackQuote: Quote = {
             id: `QUO-${Date.now()}-${Math.random().toString(36).slice(2, 7).toUpperCase()}`,
             client: mappedClientData.razaoSocial || data.project.clientName || 'Cliente não informado',
-            projectName: mappedClientData.nomeProjeto || data.project.projectName || 'Projeto NOC',
+            projectName: mappedClientData.nomeProjeto || data.project.projectName || `Projeto ${serviceLabel}`,
             accountManager: mappedClientData.nomeGerente || 'Não informado',
             status: QuoteStatus.PENDING,
             total: Number.isFinite(totalProjectValue) ? totalProjectValue : 0,
@@ -579,7 +517,7 @@ export function NOCPricingSystem({ onBack, proposalClientData, onNavigateToQuote
 
       toast({
         title: 'Orçamento gerado!',
-        description: 'O orçamento NOC foi salvo em Orçamentos.',
+        description: `O orçamento ${serviceLabel} foi salvo em Orçamentos.`,
         variant: 'default'
       });
 
@@ -595,69 +533,16 @@ export function NOCPricingSystem({ onBack, proposalClientData, onNavigateToQuote
       });
       throw error;
     }
-  }, [toast, proposalClientData, data, createQuoteFromPricingData, onNavigateToQuotes]);
+  }, [toast, proposalClientData, data, createQuoteFromPricingData, onNavigateToQuotes, serviceMode, serviceLabel]);
 
   // Exporta PDF
-  const handleExportPDF = useCallback(async (payload?: NOCPDFExportPayload) => {
-    try {
-      const dataForExport = await resolveDataForPDF();
-
-      const { NOCPDFGenerator } = await import('@/lib/services/noc-pdf-generator');
-      const pdfGenerator = new NOCPDFGenerator();
-      await pdfGenerator.downloadPDF(dataForExport, payload);
-
-      toast({
-        title: 'PDF exportado com sucesso',
-        description: 'A proposta final NOC com DRE foi baixada.',
-        variant: 'default'
-      });
-    } catch (error) {
-      console.error('NOCPricingSystem.handleExportPDF - Erro ao exportar PDF:', error);
-      toast({
-        title: 'Erro ao exportar PDF',
-        description: 'Não foi possível gerar o PDF da proposta NOC.',
-        variant: 'destructive'
-      });
-    }
-  }, [resolveDataForPDF, toast]);
-
-  const handlePreviewPDF = useCallback(async (payload?: NOCPDFExportPayload) => {
-    try {
-      const dataForExport = await resolveDataForPDF();
-      const { NOCPDFGenerator } = await import('@/lib/services/noc-pdf-generator');
-      const pdfGenerator = new NOCPDFGenerator();
-      const blob = await pdfGenerator.generate(dataForExport, payload);
-      const previewUrl = URL.createObjectURL(blob);
-      const previewWindow = window.open(previewUrl, '_blank', 'noopener,noreferrer');
-
-      if (!previewWindow) {
-        URL.revokeObjectURL(previewUrl);
-        await pdfGenerator.downloadPDF(dataForExport, payload);
-        toast({
-          title: 'Pop-up bloqueado',
-          description: 'O PDF foi baixado automaticamente.',
-          variant: 'default'
-        });
-        return;
-      }
-
-      previewWindow.focus();
-      setTimeout(() => URL.revokeObjectURL(previewUrl), 120000);
-
-      toast({
-        title: 'Pré-visualização aberta',
-        description: 'Confira o DRE e os detalhes da proposta no PDF.',
-        variant: 'default'
-      });
-    } catch (error) {
-      console.error('NOCPricingSystem.handlePreviewPDF - Erro ao visualizar PDF:', error);
-      toast({
-        title: 'Erro ao visualizar PDF',
-        description: 'Não foi possível abrir a pré-visualização do PDF.',
-        variant: 'destructive'
-      });
-    }
-  }, [resolveDataForPDF, toast]);
+  const handleExportPDF = useCallback(() => {
+    toast({
+      title: 'Exportando PDF',
+      description: 'A funcionalidade de exportação PDF será implementada em breve.',
+      variant: 'default'
+    });
+  }, [toast]);
 
   // Obtém status da aba
   const getTabStatus = (tabId: string) => {
@@ -696,140 +581,6 @@ export function NOCPricingSystem({ onBack, proposalClientData, onNavigateToQuote
     }
   };
 
-  const calculationReadiness = useMemo(() => {
-    const tabsWithErrors: string[] = [];
-    const tabsPendingCompletion: string[] = [];
-
-    NOC_CALCULATION_REQUIRED_TAB_IDS.forEach((tabId) => {
-      const currentTabStatus = validationStatus[tabId];
-      const tabLabel = NOC_TABS.find((tab) => tab.id === tabId)?.label ?? tabId;
-
-      if (!currentTabStatus) {
-        tabsPendingCompletion.push(tabLabel);
-        return;
-      }
-
-      if (currentTabStatus.errors.length > 0) {
-        tabsWithErrors.push(tabLabel);
-        return;
-      }
-
-      if (!currentTabStatus.isComplete) {
-        tabsPendingCompletion.push(tabLabel);
-      }
-    });
-
-    const totalTabs = NOC_CALCULATION_REQUIRED_TAB_IDS.length;
-    const completedTabs = totalTabs - tabsWithErrors.length - tabsPendingCompletion.length;
-
-    return {
-      tabsWithErrors,
-      tabsPendingCompletion,
-      completedTabs,
-      totalTabs,
-      isReady: tabsWithErrors.length === 0 && tabsPendingCompletion.length === 0,
-    };
-  }, [validationStatus]);
-
-  const dreSummary = useMemo(() => {
-    if (!data.calculations) return null;
-
-    const calculations = data.calculations;
-    const monthlyTaxAmount = calculations.finalMonthlyPrice - calculations.priceWithMargin;
-    const monthlyNetRevenue = calculations.finalMonthlyPrice - monthlyTaxAmount;
-    const monthlyContributionMargin = monthlyNetRevenue - calculations.monthlyTotalCost;
-    const monthlyRiskProvision = calculations.monthlyTotalCost * (toFiniteNumber(data.variables.riskMargin) / 100);
-    const monthlyOperatingResult = monthlyContributionMargin - monthlyRiskProvision;
-    const monthlyOperatingMargin = monthlyNetRevenue > 0
-      ? (monthlyOperatingResult / monthlyNetRevenue) * 100
-      : 0;
-    const contractMonths = Math.max(toFiniteNumber(data.project.contractDuration), 1);
-
-    const rows = [
-      {
-        label: 'Receita Bruta de Serviços',
-        monthly: calculations.finalMonthlyPrice,
-        annual: calculations.finalMonthlyPrice * 12,
-        emphasized: false,
-      },
-      {
-        label: '(-) Impostos sobre Receita',
-        monthly: -monthlyTaxAmount,
-        annual: -(monthlyTaxAmount * 12),
-        emphasized: false,
-      },
-      {
-        label: 'Receita Líquida',
-        monthly: monthlyNetRevenue,
-        annual: monthlyNetRevenue * 12,
-        emphasized: true,
-      },
-      {
-        label: '(-) Custos Operacionais Totais',
-        monthly: -calculations.monthlyTotalCost,
-        annual: -(calculations.monthlyTotalCost * 12),
-        emphasized: false,
-      },
-      {
-        label: 'Margem de Contribuição',
-        monthly: monthlyContributionMargin,
-        annual: monthlyContributionMargin * 12,
-        emphasized: true,
-      },
-      {
-        label: '(-) Provisão de Risco',
-        monthly: -monthlyRiskProvision,
-        annual: -(monthlyRiskProvision * 12),
-        emphasized: false,
-      },
-      {
-        label: 'Resultado Operacional (Lucro)',
-        monthly: monthlyOperatingResult,
-        annual: monthlyOperatingResult * 12,
-        emphasized: true,
-      },
-    ];
-
-    return {
-      rows,
-      contractMonths,
-      monthlyOperatingMargin,
-      contractResult: monthlyOperatingResult * contractMonths,
-    };
-  }, [data.calculations, data.project.contractDuration, data.variables.riskMargin]);
-
-  const calculationInsights = useMemo(() => {
-    if (!data.calculations) return [];
-
-    const insights: string[] = [];
-    const calculations = data.calculations;
-
-    if (calculations.profitability < 15) {
-      insights.push('Rentabilidade abaixo de 15%: avalie margem de lucro e composição de custos.');
-    } else if (calculations.profitability > 35) {
-      insights.push('Rentabilidade elevada: valide aderência ao mercado para não perder competitividade.');
-    }
-
-    if (calculations.paybackMonths > 18) {
-      insights.push('Payback acima de 18 meses: revise custos fixos e escopo de cobertura.');
-    }
-
-    if (calculations.competitiveness === 'high') {
-      insights.push('Preço acima da média de mercado: destaque diferenciais de SLA e capacidade técnica.');
-    }
-
-    if (calculations.competitiveness === 'low') {
-      insights.push('Preço abaixo do mercado: confirme se todos os custos e riscos foram considerados.');
-    }
-
-    if (data.totalDevices > 0 && data.teamSize > 0) {
-      const devicesPerAnalyst = data.totalDevices / data.teamSize;
-      insights.push(`Produtividade atual: ${devicesPerAnalyst.toFixed(1)} dispositivos por profissional.`);
-    }
-
-    return insights.slice(0, 4);
-  }, [data.calculations, data.totalDevices, data.teamSize]);
-
   if (!isMounted) {
     return (
       <div className="noc-theme w-full max-w-7xl mx-auto p-6 flex items-center justify-center min-h-screen rounded-2xl">
@@ -840,25 +591,25 @@ export function NOCPricingSystem({ onBack, proposalClientData, onNavigateToQuote
 
   return (
     <div className="noc-theme w-full max-w-7xl mx-auto p-6 space-y-6 rounded-2xl">
-      <Card className="card-surface border-border/70 bg-card/95 backdrop-blur-md">
+      <Card className="card-surface border-border/60 backdrop-blur-md">
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
               <Activity className="h-6 w-6 text-blue-600" />
               <div>
-                <h1 className="text-2xl font-bold">Sistema de Precificação NOC</h1>
-                <p className="text-sm text-slate-600 dark:text-slate-300 font-normal">
-                  Network Operations Center - Monitoramento e Gestão de Infraestrutura
+                <h1 className="text-2xl font-bold">Sistema de Precificação {serviceLabel}</h1>
+                <p className="text-sm text-gray-400 font-normal">
+                  {SERVICE_DESCRIPTIONS[serviceMode]}
                 </p>
               </div>
             </div>
             
-            <div className="flex flex-wrap items-center justify-end gap-2">
+            <div className="flex items-center space-x-2">
               {onBack && (
                 <Button
                   variant="outline"
                   onClick={onBack}
-                  className="flex items-center space-x-2 border-border/80 bg-card/80 hover:bg-card"
+                  className="flex items-center space-x-2"
                 >
                   <span>← Voltar</span>
                 </Button>
@@ -868,7 +619,7 @@ export function NOCPricingSystem({ onBack, proposalClientData, onNavigateToQuote
                 variant="outline"
                 onClick={handleSave}
                 disabled={isSaving}
-                className="flex items-center space-x-2 border-border/80 bg-card/80 hover:bg-card"
+                className="flex items-center space-x-2"
               >
                 {isSaving ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
@@ -880,19 +631,11 @@ export function NOCPricingSystem({ onBack, proposalClientData, onNavigateToQuote
               
               <Button
                 variant="outline"
-                onClick={() => { void handlePreviewPDF(); }}
-                className="flex items-center space-x-2 border-blue-500/40 bg-blue-500/10 text-blue-700 hover:bg-blue-500/20 dark:text-blue-200"
+                onClick={handleExport}
+                className="flex items-center space-x-2"
               >
                 <Download className="h-4 w-4" />
-                <span>Visualizar PDF</span>
-              </Button>
-
-              <Button
-                variant="outline"
-                onClick={handleExportJSON}
-                className="flex items-center space-x-2 border-border/80 bg-card/80 hover:bg-card"
-              >
-                <span>Exportar JSON</span>
+                <span>Exportar</span>
               </Button>
             </div>
           </CardTitle>
@@ -900,14 +643,14 @@ export function NOCPricingSystem({ onBack, proposalClientData, onNavigateToQuote
 
         <CardContent>
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid grid-cols-5 lg:grid-cols-10 gap-2 h-auto bg-white/90 dark:bg-card/80 border border-slate-300/80 dark:border-border/60 p-2 rounded-xl shadow-sm">
-              {NOC_TABS.map(tab => {
+            <TabsList className="grid grid-cols-3 lg:grid-cols-10 gap-2 h-auto bg-card/80 border border-border/60 p-2 rounded-xl">
+              {visibleTabs.map(tab => {
                 const status = getTabStatus(tab.id);
                 return (
                   <TabsTrigger
                     key={tab.id}
                     value={tab.id}
-                    className="flex flex-col items-center space-y-1 p-2 border border-transparent data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:border-blue-700 dark:data-[state=active]:bg-blue-500 dark:data-[state=active]:border-blue-300/50"
+                    className="flex flex-col items-center space-y-1 p-2 data-[state=active]:bg-blue-500/25 data-[state=active]:border data-[state=active]:border-blue-300/30"
                   >
                     <span className="text-xs">{tab.label}</span>
                     <Badge variant="outline" className={`text-xs ${getStatusBadgeClass(status)}`}>
@@ -928,13 +671,15 @@ export function NOCPricingSystem({ onBack, proposalClientData, onNavigateToQuote
               </TabsContent>
 
               <TabsContent value="devices">
-                <DevicesTab
-                  devices={data.devices}
-                  totalDevices={data.totalDevices}
-                  totalMetrics={data.totalMetrics}
-                  estimatedAlertsPerMonth={data.estimatedAlertsPerMonth}
-                  onChange={(devicesData) => handleDataUpdate('devices', devicesData)}
-                />
+                {serviceMode === 'noc' && (
+                  <DevicesTab
+                    devices={data.devices}
+                    totalDevices={data.totalDevices}
+                    totalMetrics={data.totalMetrics}
+                    estimatedAlertsPerMonth={data.estimatedAlertsPerMonth}
+                    onChange={(devicesData) => handleDataUpdate('devices', devicesData)}
+                  />
+                )}
               </TabsContent>
 
               <TabsContent value="monitoring">
@@ -949,6 +694,17 @@ export function NOCPricingSystem({ onBack, proposalClientData, onNavigateToQuote
                   data={data.sla}
                   onChange={(slaData) => handleDataUpdate('sla', slaData)}
                 />
+              </TabsContent>
+
+              <TabsContent value="security">
+                {serviceMode !== 'noc' && (
+                  <SecurityTab
+                    data={data.security}
+                    currency={data.project.currency}
+                    mode={serviceMode}
+                    onChange={(securityData) => handleDataUpdate('security', securityData)}
+                  />
+                )}
               </TabsContent>
 
               <TabsContent value="team">
@@ -988,311 +744,117 @@ export function NOCPricingSystem({ onBack, proposalClientData, onNavigateToQuote
                   data={data}
                   onSaveProposal={handleSaveProposal}
                   onGenerateBudget={handleGenerateBudget}
-                  onPreviewPDF={handlePreviewPDF}
                   onExportPDF={handleExportPDF}
                 />
               </TabsContent>
 
               <TabsContent value="calculations">
-                <div className="p-6 border rounded-lg space-y-6">
-                  <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-                    <div>
-                      <h3 className="text-lg font-semibold">Cálculos e Resultados</h3>
-                      <p className="text-sm text-muted-foreground">
-                        Consolide os dados financeiros e gere o DRE da proposta NOC.
-                      </p>
-                    </div>
-
-                    <div className="flex flex-col gap-2 sm:items-end">
-                      <Button
-                        onClick={handleGenerateCalculations}
-                        disabled={isGeneratingCalculations || isLoading}
-                        className="flex items-center gap-2"
-                      >
-                        {isGeneratingCalculations ? (
-                          <>
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                            <span>Gerando cálculo...</span>
-                          </>
-                        ) : (
-                          <>
-                            <Calculator className="h-4 w-4" />
-                            <span>Gerar Cálculo</span>
-                          </>
-                        )}
-                      </Button>
-                      {lastCalculationAt && (
-                        <p className="text-xs text-muted-foreground">
-                          Último cálculo: {formatDateTimeValue(lastCalculationAt)}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="flex flex-wrap items-center gap-2">
-                    <Badge
-                      variant="outline"
-                      className={calculationReadiness.isReady
-                        ? 'border-green-500/40 bg-green-500/10 text-green-700 dark:text-green-200'
-                        : 'border-yellow-500/40 bg-yellow-500/10 text-yellow-700 dark:text-yellow-200'}
-                    >
-                      {calculationReadiness.isReady ? 'Dados prontos para cálculo' : 'Dados com pendências'}
-                    </Badge>
-                    <Badge variant="outline">
-                      Abas concluídas: {calculationReadiness.completedTabs}/{calculationReadiness.totalTabs}
-                    </Badge>
-                    {calculationReadiness.tabsWithErrors.length > 0 && (
-                      <Badge variant="outline" className="border-destructive/40 bg-destructive/10 text-destructive">
-                        {calculationReadiness.tabsWithErrors.length} com erro
-                      </Badge>
-                    )}
-                    {calculationReadiness.tabsPendingCompletion.length > 0 && (
-                      <Badge variant="outline" className="border-yellow-500/40 bg-yellow-500/10 text-yellow-700 dark:text-yellow-200">
-                        {calculationReadiness.tabsPendingCompletion.length} pendentes
-                      </Badge>
-                    )}
-                  </div>
-
-                  {calculationReadiness.tabsWithErrors.length > 0 && (
-                    <p className="text-sm text-destructive">
-                      Corrigir antes do cálculo final: {calculationReadiness.tabsWithErrors.join(', ')}.
-                    </p>
-                  )}
-
-                  {calculationReadiness.tabsPendingCompletion.length > 0 && (
-                    <p className="text-sm text-yellow-700 dark:text-yellow-200">
-                      Abas com preenchimento parcial: {calculationReadiness.tabsPendingCompletion.join(', ')}.
-                    </p>
-                  )}
-
+                <div className="p-6 border rounded-lg">
+                  <h3 className="text-lg font-semibold mb-4">Cálculos e Resultados</h3>
                   {data.calculations ? (
-                    <>
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        <Card>
-                          <CardHeader>
-                            <CardTitle className="text-sm">Custo Mensal Total</CardTitle>
-                          </CardHeader>
-                          <CardContent>
-                            <p className="text-2xl font-bold">
-                              {data.project.currency} {formatCurrencyValue(data.calculations.monthlyTotalCost)}
-                            </p>
-                          </CardContent>
-                        </Card>
-
-                        <Card>
-                          <CardHeader>
-                            <CardTitle className="text-sm">Preço Final Mensal</CardTitle>
-                          </CardHeader>
-                          <CardContent>
-                            <p className="text-2xl font-bold text-blue-600">
-                              {data.project.currency} {formatCurrencyValue(data.calculations.finalMonthlyPrice)}
-                            </p>
-                          </CardContent>
-                        </Card>
-
-                        <Card>
-                          <CardHeader>
-                            <CardTitle className="text-sm">Custo por Dispositivo</CardTitle>
-                          </CardHeader>
-                          <CardContent>
-                            <p className="text-2xl font-bold">
-                              {data.project.currency} {formatCurrencyValue(data.calculations.costPerDevice)}
-                            </p>
-                          </CardContent>
-                        </Card>
-
-                        <Card>
-                          <CardHeader>
-                            <CardTitle className="text-sm">Rentabilidade</CardTitle>
-                          </CardHeader>
-                          <CardContent>
-                            <p className="text-2xl font-bold">
-                              {formatPercentageValue(data.calculations.profitability)}%
-                            </p>
-                          </CardContent>
-                        </Card>
-
-                        <Card>
-                          <CardHeader>
-                            <CardTitle className="text-sm">ROI</CardTitle>
-                          </CardHeader>
-                          <CardContent>
-                            <p className="text-2xl font-bold">
-                              {formatPercentageValue(data.calculations.roi)}%
-                            </p>
-                          </CardContent>
-                        </Card>
-
-                        <Card>
-                          <CardHeader>
-                            <CardTitle className="text-sm">Competitividade</CardTitle>
-                          </CardHeader>
-                          <CardContent>
-                            <Badge
-                              variant="outline"
-                              className={getCompetitivenessBadgeClass(data.calculations.competitiveness)}
-                            >
-                              {data.calculations.competitiveness === 'competitive' ? 'Competitivo' :
-                               data.calculations.competitiveness === 'low' ? 'Abaixo do Mercado' : 'Acima do Mercado'}
-                            </Badge>
-                          </CardContent>
-                        </Card>
-                      </div>
-
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <Card>
-                          <CardHeader>
-                            <CardTitle className="text-sm">Payback</CardTitle>
-                          </CardHeader>
-                          <CardContent>
-                            <p className="text-2xl font-bold">
-                              {toFiniteNumber(data.calculations.paybackMonths).toLocaleString('pt-BR', {
-                                minimumFractionDigits: 1,
-                                maximumFractionDigits: 1,
-                              })} meses
-                            </p>
-                          </CardContent>
-                        </Card>
-
-                        <Card>
-                          <CardHeader>
-                            <CardTitle className="text-sm">Preço Final Anual</CardTitle>
-                          </CardHeader>
-                          <CardContent>
-                            <p className="text-2xl font-bold text-blue-600">
-                              {data.project.currency} {formatCurrencyValue(data.calculations.finalAnnualPrice)}
-                            </p>
-                          </CardContent>
-                        </Card>
-
-                        <Card>
-                          <CardHeader>
-                            <CardTitle className="text-sm">Resultado no Contrato</CardTitle>
-                          </CardHeader>
-                          <CardContent>
-                            <p className={`text-2xl font-bold ${(dreSummary?.contractResult ?? 0) < 0 ? 'text-destructive' : 'text-green-600'}`}>
-                              {data.project.currency} {formatSignedCurrencyValue(dreSummary?.contractResult ?? 0)}
-                            </p>
-                            <p className="text-xs text-muted-foreground mt-2">
-                              Baseado em {Math.max(toFiniteNumber(data.project.contractDuration), 1)} meses
-                            </p>
-                          </CardContent>
-                        </Card>
-                      </div>
-
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                       <Card>
                         <CardHeader>
-                          <CardTitle className="text-base">Composição de Custos Mensais</CardTitle>
+                          <CardTitle className="text-sm">Custo Mensal Total</CardTitle>
                         </CardHeader>
-                        <CardContent className="space-y-3">
-                          {[
-                            { label: 'Equipe', value: data.calculations.monthlyTeamCost },
-                            { label: 'Infraestrutura', value: data.calculations.monthlyInfrastructureCost },
-                            { label: 'Licenças', value: data.calculations.monthlyLicenseCost },
-                            { label: 'Operacional', value: data.calculations.monthlyOperationalCost },
-                          ].map((row) => {
-                            const weight = data.calculations && data.calculations.monthlyTotalCost > 0
-                              ? (row.value / data.calculations.monthlyTotalCost) * 100
-                              : 0;
-
-                            return (
-                              <div key={row.label} className="space-y-1">
-                                <div className="flex items-center justify-between text-sm">
-                                  <span>{row.label}</span>
-                                  <span className="font-medium">
-                                    {data.project.currency} {formatCurrencyValue(row.value)} ({formatPercentageValue(weight)}%)
-                                  </span>
-                                </div>
-                                <div className="h-2 rounded-full bg-muted overflow-hidden">
-                                  <div
-                                    className="h-full rounded-full bg-blue-500/80"
-                                    style={{ width: `${Math.min(Math.max(weight, 0), 100)}%` }}
-                                  />
-                                </div>
-                              </div>
-                            );
-                          })}
+                        <CardContent>
+                          <p className="text-2xl font-bold">
+                            {data.project.currency} {data.calculations.monthlyTotalCost.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                          </p>
                         </CardContent>
                       </Card>
 
-                      {calculationInsights.length > 0 && (
-                        <Card>
-                          <CardHeader>
-                            <CardTitle className="text-base">Insights Automáticos</CardTitle>
-                          </CardHeader>
-                          <CardContent className="space-y-2">
-                            {calculationInsights.map((insight, index) => (
-                              <div
-                                key={`${insight}-${index}`}
-                                className="flex items-start gap-2 rounded-md border border-border/60 p-3"
-                              >
-                                {insight.includes('abaixo') || insight.includes('acima') ? (
-                                  <TrendingDown className="mt-0.5 h-4 w-4 text-yellow-600" />
-                                ) : (
-                                  <TrendingUp className="mt-0.5 h-4 w-4 text-green-600" />
-                                )}
-                                <p className="text-sm text-muted-foreground">{insight}</p>
-                              </div>
-                            ))}
-                          </CardContent>
-                        </Card>
-                      )}
+                      <Card>
+                        <CardHeader>
+                          <CardTitle className="text-sm">Preço Final Mensal</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <p className="text-2xl font-bold text-blue-300">
+                            {data.project.currency} {data.calculations.finalMonthlyPrice.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                          </p>
+                        </CardContent>
+                      </Card>
 
                       <Card>
                         <CardHeader>
-                          <CardTitle className="text-base">DRE (Demonstrativo de Resultado)</CardTitle>
+                          <CardTitle className="text-sm">Custo por Dispositivo</CardTitle>
                         </CardHeader>
-                        <CardContent className="space-y-4">
-                          <div className="overflow-x-auto">
-                            <table className="w-full min-w-[620px] text-sm">
-                              <thead>
-                                <tr className="border-b border-border/70">
-                                  <th className="py-2 text-left font-semibold">Linha</th>
-                                  <th className="py-2 text-right font-semibold">Mensal</th>
-                                  <th className="py-2 text-right font-semibold">Anual</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {dreSummary?.rows.map((row) => (
-                                  <tr key={row.label} className={`border-b border-border/50 ${row.emphasized ? 'bg-blue-500/5' : ''}`}>
-                                    <td className="py-2 pr-4">{row.label}</td>
-                                    <td className={`py-2 text-right font-medium ${row.monthly < 0 ? 'text-destructive' : ''}`}>
-                                      {data.project.currency} {formatSignedCurrencyValue(row.monthly)}
-                                    </td>
-                                    <td className={`py-2 text-right font-medium ${row.annual < 0 ? 'text-destructive' : ''}`}>
-                                      {data.project.currency} {formatSignedCurrencyValue(row.annual)}
-                                    </td>
-                                  </tr>
-                                ))}
-                              </tbody>
-                            </table>
-                          </div>
-
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="rounded-lg border border-border/70 p-4">
-                              <p className="text-xs text-muted-foreground mb-1">Margem Operacional Mensal</p>
-                              <p className={`text-2xl font-bold ${(dreSummary?.monthlyOperatingMargin ?? 0) < 0 ? 'text-destructive' : 'text-green-600'}`}>
-                                {formatPercentageValue(dreSummary?.monthlyOperatingMargin ?? 0)}%
-                              </p>
-                            </div>
-                            <div className="rounded-lg border border-border/70 p-4">
-                              <p className="text-xs text-muted-foreground mb-1">Lucro no Período Contratado</p>
-                              <p className={`text-2xl font-bold ${(dreSummary?.contractResult ?? 0) < 0 ? 'text-destructive' : 'text-green-600'}`}>
-                                {data.project.currency} {formatSignedCurrencyValue(dreSummary?.contractResult ?? 0)}
-                              </p>
-                              <p className="text-xs text-muted-foreground mt-1">
-                                Projeção para {dreSummary?.contractMonths ?? Math.max(toFiniteNumber(data.project.contractDuration), 1)} meses
-                              </p>
-                            </div>
-                          </div>
+                        <CardContent>
+                          <p className="text-2xl font-bold">
+                            {data.project.currency} {data.calculations.costPerDevice.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                          </p>
                         </CardContent>
                       </Card>
-                    </>
+
+                      <Card>
+                        <CardHeader>
+                          <CardTitle className="text-sm">SOC/SIEM Mensal</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <p className="text-2xl font-bold">
+                            {data.project.currency} {data.calculations.monthlySecurityCost.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                          </p>
+                        </CardContent>
+                      </Card>
+
+                      <Card>
+                        <CardHeader>
+                          <CardTitle className="text-sm">Benchmark Mensal</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <p className="text-2xl font-bold">
+                            {data.project.currency} {data.calculations.marketSuggestedMonthly.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                          </p>
+                        </CardContent>
+                      </Card>
+
+                      <Card>
+                        <CardHeader>
+                          <CardTitle className="text-sm">Rentabilidade</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <p className="text-2xl font-bold">
+                            {formatPercent(data.calculations?.profitability)}%
+                          </p>
+                        </CardContent>
+                      </Card>
+
+                      <Card>
+                        <CardHeader>
+                          <CardTitle className="text-sm">ROI</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <p className="text-2xl font-bold">
+                            {formatPercent(data.calculations?.roi)}%
+                          </p>
+                        </CardContent>
+                      </Card>
+
+                      <Card>
+                        <CardHeader>
+                          <CardTitle className="text-sm">Competitividade</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <Badge
+                            variant="outline"
+                            className={getCompetitivenessBadgeClass(data.calculations.competitiveness)}
+                          >
+                            {data.calculations.competitiveness === 'competitive' ? 'Competitivo' :
+                             data.calculations.competitiveness === 'low' ? 'Abaixo do Mercado' : 'Acima do Mercado'}
+                          </Badge>
+                        </CardContent>
+                      </Card>
+                    </div>
                   ) : (
-                    <p className="text-muted-foreground">
-                      Preencha as abas anteriores e clique em <strong>Gerar Cálculo</strong> para visualizar resultados e DRE.
-                    </p>
+                    <p className="text-gray-500">Preencha os dados para ver os cálculos</p>
                   )}
+                </div>
+              </TabsContent>
+
+              <TabsContent value="report">
+                <div className="p-6 border rounded-lg">
+                  <h3 className="text-lg font-semibold mb-4">Relatório Final</h3>
+                  <p className="text-gray-500">Componente em desenvolvimento...</p>
                 </div>
               </TabsContent>
             </div>

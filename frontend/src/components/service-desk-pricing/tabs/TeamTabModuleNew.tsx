@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { FormSection, MetricCard, EnhancedInput } from '../shared';
 import { JobPositionsManager, JobPosition } from '../positions/JobPositionsManager';
+import { useJobPositions } from '@/hooks/use-job-positions';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Table,
@@ -52,6 +53,24 @@ export interface TeamTabModuleNewProps {
   };
 }
 
+const normalizeText = (value?: string) => (value || '')
+  .normalize('NFD')
+  .replace(/[\u0300-\u036f]/g, '')
+  .toLowerCase();
+
+const isLeaderPosition = (position?: JobPosition) => {
+  const level = normalizeText(position?.level);
+  const name = normalizeText(position?.name);
+  return position?.id === 'pos-4' || level.includes('lider') || name.includes('lider') || name.includes('supervisor');
+};
+
+const isCoordinatorPosition = (position?: JobPosition) => {
+  const level = normalizeText(position?.level);
+  const name = normalizeText(position?.name);
+  if (isLeaderPosition(position)) return false;
+  return position?.id === 'pos-5' || name.includes('coordenador') || name.includes('gerente') || level.includes('gestao');
+};
+
 export function TeamTabModuleNew({ 
   data: teamProp, 
   onUpdate, 
@@ -62,7 +81,7 @@ export function TeamTabModuleNew({
   const [activeTab, setActiveTab] = useState('team');
   const [isAddingMember, setIsAddingMember] = useState(false);
   const [editingMember, setEditingMember] = useState<TeamMemberNew | null>(null);
-  const [jobPositions, setJobPositions] = useState<JobPosition[]>([]);
+  const { jobPositions } = useJobPositions();
   const [hasChanges, setHasChanges] = useState(false);
   const [requiredQuantities, setRequiredQuantities] = useState({
     n1: 0,
@@ -95,66 +114,6 @@ export function TeamTabModuleNew({
 
     window.addEventListener('scheduleGenerated', handleScheduleGenerated);
     return () => window.removeEventListener('scheduleGenerated', handleScheduleGenerated);
-  }, []);
-
-  // Load default job positions
-  useEffect(() => {
-    const defaultPositions: JobPosition[] = [
-      {
-        id: 'pos-1',
-        name: 'Analista Service Desk N1',
-        level: 'N1',
-        salary8h: 1780.00,
-        salary6h: 1580.00,
-        description: 'Primeiro nível de atendimento',
-        isActive: true,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      },
-      {
-        id: 'pos-2',
-        name: 'Analista Service Desk N2',
-        level: 'N2',
-        salary8h: 2880.00,
-        salary6h: 2580.00,
-        description: 'Segundo nível de atendimento',
-        isActive: true,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      },
-      {
-        id: 'pos-3',
-        name: 'Analista Service Desk N3',
-        level: 'N3',
-        salary8h: 7380.00,
-        salary6h: 6580.00,
-        description: 'Terceiro nível de atendimento',
-        isActive: true,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      },
-      {
-        id: 'pos-4',
-        name: 'Líder Técnico',
-        level: 'Liderança',
-        salary8h: 5200.00,
-        description: 'Coordenação técnica da equipe',
-        isActive: true,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      },
-      {
-        id: 'pos-5',
-        name: 'Coordenador',
-        level: 'Gestão',
-        salary8h: 9800.00,
-        description: 'Gestão geral do projeto',
-        isActive: true,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      }
-    ];
-    setJobPositions(defaultPositions);
   }, []);
 
   // Calculate team metrics
@@ -248,6 +207,9 @@ export function TeamTabModuleNew({
     const n2Qty = requiredQuantities.n2 > 0 ? requiredQuantities.n2 : 2;
     const n3Qty = requiredQuantities.n3 > 0 ? requiredQuantities.n3 : 1;
     const folguistasQty = requiredQuantities.folguistas > 0 ? requiredQuantities.folguistas : 2;
+    const totalOperationalAgents = n1Qty + n2Qty + n3Qty + folguistasQty;
+    const leaderPosition = jobPositions.find(isLeaderPosition) || jobPositions.find(position => position.id === 'pos-4');
+    const coordinatorPosition = jobPositions.find(isCoordinatorPosition) || jobPositions.find(position => position.id === 'pos-5');
     
     switch (template) {
       case 'n1':
@@ -314,15 +276,25 @@ export function TeamTabModuleNew({
           });
         }
         
-        // Add leader if team is large enough
-        if (requiredQuantities.total >= 10) {
+        if (totalOperationalAgents >= 8 && leaderPosition) {
           newMembers.push({
             id: `member-${Date.now()}-5`,
-            jobPositionId: 'pos-4',
+            jobPositionId: leaderPosition.id,
             quantity: 1,
             workingHours: 8,
             isActive: true,
-            notes: 'Líder Técnico'
+            notes: 'Líder técnico adicionado automaticamente para equipe de grande porte'
+          });
+        }
+
+        if (totalOperationalAgents >= 15 && coordinatorPosition) {
+          newMembers.push({
+            id: `member-${Date.now()}-6`,
+            jobPositionId: coordinatorPosition.id,
+            quantity: 1,
+            workingHours: 8,
+            isActive: true,
+            notes: 'Coordenador adicionado automaticamente para equipe de grande porte'
           });
         }
         break;

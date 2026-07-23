@@ -127,7 +127,7 @@ export function MemoryOptimizedTable<T extends Record<string, any>>({
     `${tableId}-virtual`
   );
 
-  const displayData = shouldVirtualize ? virtualScrollResult.visibleItems : paginatedData;
+  const displayData: T[] = shouldVirtualize ? (virtualScrollResult.visibleItems as T[]) : paginatedData;
   const totalPages = Math.ceil(sortedData.length / pageSize);
 
   // Handle search

@@ -50,22 +50,22 @@ export class ProposalPDFGenerator {
     this.currentY = this.margin
   }
 
-  private setTextColor(color: number[]) {
+  private setTextColor(color: readonly number[]) {
     this.doc.setTextColor(color[0], color[1], color[2])
   }
 
-  private setDrawColor(color: number[]) {
+  private setDrawColor(color: readonly number[]) {
     this.doc.setDrawColor(color[0], color[1], color[2])
   }
 
-  private setFillColor(color: number[]) {
+  private setFillColor(color: readonly number[]) {
     this.doc.setFillColor(color[0], color[1], color[2])
   }
 
   private addText(text: string, x: number, y: number, options?: { 
     fontSize?: number, 
     fontStyle?: string,
-    color?: number[],
+    color?: readonly number[],
     align?: 'left' | 'center' | 'right'
   }) {
     if (options?.fontSize) {
@@ -82,7 +82,7 @@ export class ProposalPDFGenerator {
     this.doc.text(text, x, y, { align })
   }
 
-  private addLine(y: number, color?: number[], thickness?: number) {
+  private addLine(y: number, color?: readonly number[], thickness?: number) {
     if (color) {
       this.setDrawColor(color)
     }
@@ -95,7 +95,7 @@ export class ProposalPDFGenerator {
     this.doc.setLineWidth(0.2)
   }
 
-  private addColoredSection(x: number, y: number, width: number, height: number, fillColor: number[], borderColor?: number[]) {
+  private addColoredSection(x: number, y: number, width: number, height: number, fillColor: readonly number[], borderColor?: readonly number[]) {
     this.setFillColor(fillColor)
     if (borderColor) {
       this.setDrawColor(borderColor)
@@ -119,7 +119,7 @@ export class ProposalPDFGenerator {
     }).format(value)
   }
 
-  private formatDate(date: Date): string {
+  private formatDate(date: Date | string): string {
     return new Date(date).toLocaleDateString('pt-BR')
   }
 

@@ -3,10 +3,11 @@
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Server, FileText, TrendingUp, Shield, Clock, Users } from 'lucide-react';
+import { Server, FileText, TrendingUp, Shield, Database, Users } from 'lucide-react';
+import { NOCServiceScope } from '@/lib/types/noc-pricing';
 
 interface NOCLandingPageProps {
-  onNewProposal: () => void;
+  onNewProposal: (mode: NOCServiceScope) => void;
   onAdminPanel: () => void;
 }
 
@@ -29,10 +30,54 @@ export function NOCLandingPage({ onNewProposal, onAdminPanel }: NOCLandingPagePr
             </span>
           </h1>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-            Nossa solução inovadora de precificação NOC foi projetada para profissionais de TI que
-            exigem precisão e flexibilidade. Personalize sua estratégia de preços sem esforço e
-            eleve o potencial do seu negócio.
+            Precifique NOC, SOC e SIEM em um único fluxo, com cálculo por dispositivos, ativos,
+            ingestão de logs, retenção, SLA, equipe, impostos e benchmark de mercado.
           </p>
+        </div>
+
+        {/* Service Choice */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+          {[
+            {
+              id: 'noc' as NOCServiceScope,
+              title: 'NOC',
+              icon: Server,
+              description: 'Monitoramento de rede, infraestrutura, disponibilidade, métricas, alertas e operação 24x7.'
+            },
+            {
+              id: 'soc' as NOCServiceScope,
+              title: 'SOC',
+              icon: Shield,
+              description: 'Operação de segurança por ativo, MDR, triagem, threat hunting e resposta a incidentes.'
+            },
+            {
+              id: 'siem' as NOCServiceScope,
+              title: 'SIEM',
+              icon: Database,
+              description: 'Ingestão de logs em GB/dia, correlação, retenção, fontes, parsers e regras gerenciadas.'
+            }
+          ].map(option => {
+            const Icon = option.icon;
+            return (
+              <Card key={option.id} className="card-surface border-border/60 backdrop-blur-sm hover:bg-card/95 transition-all">
+                <CardContent className="p-6 text-center space-y-5">
+                  <div className="flex justify-center">
+                    <div className="p-3 bg-blue-500/20 rounded-lg">
+                      <Icon className="h-8 w-8 text-blue-400" />
+                    </div>
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-semibold text-foreground mb-2">{option.title}</h3>
+                    <p className="text-muted-foreground text-sm min-h-[72px]">{option.description}</p>
+                  </div>
+                  <Button onClick={() => onNewProposal(option.id)} className="w-full">
+                    <FileText className="h-4 w-4 mr-2" />
+                    Precificar {option.title}
+                  </Button>
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
 
         {/* Features Grid */}
@@ -58,9 +103,9 @@ export function NOCLandingPage({ onNewProposal, onAdminPanel }: NOCLandingPagePr
                   <Shield className="h-8 w-8 text-cyan-400" />
                 </div>
               </div>
-              <h3 className="text-lg font-semibold text-foreground mb-2">SLA Personalizável</h3>
+              <h3 className="text-lg font-semibold text-foreground mb-2">SOC e SIEM Gerenciado</h3>
               <p className="text-muted-foreground text-sm">
-                Configure níveis de serviço adaptados às necessidades do cliente
+                Modelo por ativo, GB/dia, retenção, MDR, hunting e resposta a incidentes
               </p>
             </CardContent>
           </Card>
@@ -69,7 +114,7 @@ export function NOCLandingPage({ onNewProposal, onAdminPanel }: NOCLandingPagePr
             <CardContent className="p-6 text-center">
               <div className="flex justify-center mb-4">
                 <div className="p-3 bg-blue-500/20 rounded-lg">
-                  <Clock className="h-8 w-8 text-blue-300" />
+                  <Database className="h-8 w-8 text-blue-300" />
                 </div>
               </div>
               <h3 className="text-lg font-semibold text-foreground mb-2">Cobertura 24x7</h3>
@@ -80,17 +125,7 @@ export function NOCLandingPage({ onNewProposal, onAdminPanel }: NOCLandingPagePr
           </Card>
         </div>
 
-        {/* CTA Buttons */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
-          <Button
-            onClick={onNewProposal}
-            size="lg"
-            className="bg-gradient-to-r from-blue-700 to-blue-500 hover:from-blue-600 hover:to-cyan-500 text-white px-12 py-6 text-lg font-semibold rounded-xl shadow-2xl shadow-blue-500/25 hover:shadow-blue-400/40 transition-all transform hover:scale-105"
-          >
-            <FileText className="h-6 w-6 mr-3" />
-            Nova Proposta
-          </Button>
-
           <Button
             onClick={onAdminPanel}
             size="lg"
@@ -105,8 +140,8 @@ export function NOCLandingPage({ onNewProposal, onAdminPanel }: NOCLandingPagePr
         {/* Stats Section */}
         <div className="mt-16 grid grid-cols-1 md:grid-cols-4 gap-6">
           {[
-            { label: 'Dispositivos Monitorados', value: '1000+' },
-            { label: 'Métricas Coletadas', value: '50K+' },
+            { label: 'Ativos Monitorados', value: '1000+' },
+            { label: 'Eventos e Métricas', value: '50K+' },
             { label: 'Uptime Garantido', value: '99.9%' },
             { label: 'Clientes Satisfeitos', value: '200+' }
           ].map((stat, index) => (

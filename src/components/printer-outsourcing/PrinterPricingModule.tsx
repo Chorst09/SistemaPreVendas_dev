@@ -1,7 +1,7 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { Calculator, DollarSign, TrendingUp, Save, ArrowLeft, Percent, FileText, Printer as PrinterIcon, Package } from "lucide-react"
+import { useState, useEffect, useMemo } from "react"
+import { Calculator, DollarSign, TrendingUp, Save, ArrowLeft, Percent, FileText, Printer as PrinterIcon, Package, Settings } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { Printer } from "./types"
+import { useConfigurationStore } from "@/lib/stores/configuration-store"
 
 interface PrinterPricingModuleProps {
   printer: Printer | null
@@ -18,6 +19,8 @@ interface PrinterPricingModuleProps {
 }
 
 export function PrinterPricingModule({ printer, onBack, onUpdatePrinter }: PrinterPricingModuleProps) {
+  const { taxRegimes, outsourcingConfig, getOutsourcingTaxRegime } = useConfigurationStore()
+  
   // Estados para dados básicos da impressora (quando é nova)
   const [isNewPrinter, setIsNewPrinter] = useState(!printer)
   const [printerData, setPrinterData] = useState({
@@ -86,12 +89,17 @@ export function PrinterPricingModule({ printer, onBack, onUpdatePrinter }: Print
   const [dre, setDre] = useState<any>({})
   const TAXA_FINANCEIRA_MENSAL = 1.17
 
-  // Regimes tributários disponíveis
-  const regimesTributarios = [
-    'Simples Nacional',
-    'Lucro Presumido',
-    'Lucro Real'
-  ]
+  // Regimes tributários disponíveis (do store centralizado)
+  const regimesTributarios = useMemo(() => 
+    taxRegimes.map(r => r.name),
+    [taxRegimes]
+  )
+
+  // Regime selecionado (objeto completo)
+  const regimeSelecionado = useMemo(() => 
+    taxRegimes.find(r => r.name === regimeTributario),
+    [taxRegimes, regimeTributario]
+  )
 
   // Função para calcular custo por página dos suprimentos
   const calcularCustoSuprimentos = () => {
@@ -146,18 +154,26 @@ export function PrinterPricingModule({ printer, onBack, onUpdatePrinter }: Print
     const creditoIcmsCompra = custoBase * (icmsCompra / 100)
     const custoTotalEntrada = Math.max(custoComIpi - creditoIcmsCompra, 0)
 
-    // Cálculo de impostos de saída baseado no regime
+    // Cálculo de impostos de saída baseado no regime (centralizado + IVA)
     let aliquotaImpostos = 0
-    switch (regimeTributario) {
-      case 'Simples Nacional':
-        aliquotaImpostos = 6.0 // Anexo I - Comércio
-        break
-      case 'Lucro Presumido':
-        aliquotaImpostos = icmsVenda + pisCofinsSaida + 1.2 // IRPJ + CSLL presumido
-        break
-      case 'Lucro Real':
-        aliquotaImpostos = icmsVenda + pisCofinsSaida + 2.5 // IRPJ + CSLL real
-        break
+    const regimeType = regimeSelecionado?.type
+
+    if (regimeType === 'iva') {
+      aliquotaImpostos = regimeSelecionado?.ivaTotal || 27.1
+    } else {
+      switch (regimeTributario) {
+        case 'Simples Nacional':
+          aliquotaImpostos = regimeSelecionado?.anexoI || 6.0
+          break
+        case 'Lucro Presumido':
+          aliquotaImpostos = (regimeSelecionado?.icms || icmsVenda) + (regimeSelecionado?.pis || 0) + (regimeSelecionado?.cofins || 0) + 1.2
+          break
+        case 'Lucro Real':
+          aliquotaImpostos = (regimeSelecionado?.icms || icmsVenda) + (regimeSelecionado?.pis || 0) + (regimeSelecionado?.cofins || 0) + 2.5
+          break
+        default:
+          aliquotaImpostos = icmsVenda + pisCofinsSaida + 1.2
+      }
     }
 
     const aliquotaImpostosRate = aliquotaImpostos / 100
@@ -288,6 +304,7 @@ export function PrinterPricingModule({ printer, onBack, onUpdatePrinter }: Print
         custoBase,
         margemDesejada,
         regimeTributario,
+        regimeTributarioId: regimeSelecionado?.id || null,
         icmsCompra,
         icmsVenda,
         ipiCompra,
@@ -306,6 +323,7 @@ export function PrinterPricingModule({ printer, onBack, onUpdatePrinter }: Print
         custoBase,
         margemDesejada,
         regimeTributario,
+        regimeTributarioId: regimeSelecionado?.id || null,
         icmsCompra,
         icmsVenda,
         ipiCompra,
@@ -681,6 +699,16 @@ export function PrinterPricingModule({ printer, onBack, onUpdatePrinter }: Print
                     ))}
                   </SelectContent>
                 </Select>
+                {regimeSelecionado?.type === 'iva' && (
+                  <p className="text-xs text-blue-400 mt-1">
+                    IVA: CBS {regimeSelecionado?.ivaCbs}% + IBS {regimeSelecionado?.ivaIbs}% = {regimeSelecionado?.ivaTotal}%
+                  </p>
+                )}
+                {regimeSelecionado?.type === 'simples' && (
+                  <p className="text-xs text-green-400 mt-1">
+                    Anexo I: {regimeSelecionado?.anexoI}% | Anexo III: {regimeSelecionado?.anexoIII}%
+                  </p>
+                )}
               </div>
 
               <div>

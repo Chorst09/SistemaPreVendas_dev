@@ -4,22 +4,20 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const cardVariants = cva(
-  "rounded-lg text-card-foreground transition-all duration-300",
+  "rounded-xl text-card-foreground transition-all duration-200 ease-out",
   {
     variants: {
       variant: {
-        default: "bg-card border border-border shadow-sm hover:shadow-md hover:shadow-primary/10",
-        glass: "glass-effect hover:shadow-lg hover:shadow-primary/20 hover:-translate-y-1",
-        gradient: "gradient-card border border-border/50 shadow-lg hover:shadow-xl hover:shadow-primary/20 hover:-translate-y-1",
-        modern: "card-modern hover:shadow-xl hover:shadow-primary/25 hover:-translate-y-1",
-        glow: "bg-card border border-primary/20 shadow-lg shadow-primary/10 hover:shadow-xl hover:shadow-primary/30 hover:-translate-y-1",
-        premium: "bg-gradient-to-br from-card to-accent-green/5 border border-accent-green/30 shadow-lg shadow-accent-green/10 hover:shadow-xl hover:shadow-accent-green/20 hover:-translate-y-1",
-        surface: "card-surface border border-border/60 shadow-xl hover:-translate-y-[2px]",
-        contrast: "card-surface-strong border border-primary/30 shadow-2xl hover:-translate-y-[2px]",
+        default: "bg-card border border-border/80 shadow-sm hover:shadow-md",
+        glass: "bg-card/80 backdrop-blur-xl border border-border/50 shadow-lg hover:shadow-xl hover:-translate-y-0.5",
+        gradient: "bg-gradient-to-br from-card to-muted/50 border border-border/60 shadow-md hover:shadow-lg hover:-translate-y-0.5",
+        glow: "bg-card border border-primary/20 shadow-lg shadow-primary/5 hover:shadow-xl hover:shadow-primary/15 hover:-translate-y-0.5",
+        premium: "bg-gradient-to-br from-card to-accent/5 border border-accent/20 shadow-lg hover:shadow-xl hover:-translate-y-0.5",
+        surface: "bg-gradient-to-br from-card via-card to-muted/30 border border-border/60 shadow-xl hover:shadow-2xl hover:-translate-y-1",
       },
     },
     defaultVariants: {
-      variant: "premium",
+      variant: "default",
     },
   }
 )
@@ -45,7 +43,7 @@ const CardHeader = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn("flex flex-col space-y-1.5 p-6", className)}
+    className={cn("flex flex-col space-y-1.5 p-6 pb-4", className)}
     {...props}
   />
 ))
@@ -58,7 +56,7 @@ const CardTitle = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      "text-2xl font-semibold leading-none tracking-tight",
+      "text-xl font-bold leading-none tracking-tight",
       className
     )}
     {...props}
@@ -72,7 +70,7 @@ const CardDescription = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn("text-sm text-muted-foreground", className)}
+    className={cn("text-sm text-muted-foreground leading-relaxed", className)}
     {...props}
   />
 ))

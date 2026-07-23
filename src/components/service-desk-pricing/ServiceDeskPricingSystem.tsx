@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
-import { Loader2, BookOpen, BarChart3, Download, X, Users, Save } from 'lucide-react';
+import { Loader2, BookOpen, BarChart3, Download, X, Users, Save, FileText } from 'lucide-react';
 import { ServiceDeskData, TabValidationStatus } from '@/lib/types/service-desk-pricing';
 import { ServiceDeskDataManager } from '@/lib/services/service-desk-data-manager';
 import { ServiceDeskValidationEngine } from '@/lib/services/service-desk-validation-engine';
@@ -29,10 +29,10 @@ import { useDebouncedCalculations, batchCalculationManager } from '@/lib/utils/d
 // Template Components
 import { TemplateManager } from './templates/TemplateManager';
 import { TemplateApplicationDialog } from './templates/TemplateApplicationDialog';
-import { 
-  ServiceDeskTemplate, 
-  TemplateApplication, 
-  ConflictResolution 
+import {
+  ServiceDeskTemplate,
+  TemplateApplication,
+  ConflictResolution
 } from '@/lib/types/service-desk-templates';
 
 // Analytics Components
@@ -43,10 +43,8 @@ import { ServiceDeskAnalyticsService } from '@/lib/services/service-desk-analyti
 import { UnifiedExportInterface } from './export/UnifiedExportInterface';
 
 // UX Enhancement Components
-import { TabTransition, FormFieldAnimation, AnimatedCard, NotificationAnimation } from './ui/AnimationsAndTransitions';
+import { NotificationAnimation } from './ui/AnimationsAndTransitions';
 import { Tooltip, HelpIcon, ContextualHelp, QuickHelpCard } from './ui/TooltipsAndHelp';
-import { GuidedTour, TourConfig } from './ui/GuidedTour';
-import { basicServiceDeskTour, advancedFeaturesTour, quickTipsTour, TourLauncher } from './ui/ServiceDeskTours';
 
 // Documentation and Help Components
 import { DocumentationSystem } from './documentation/DocumentationSystem';
@@ -55,6 +53,8 @@ import { EmployeeRegistryManager } from './employees/EmployeeRegistryManager';
 import type { ProposalClientData } from '@/components/shared/ProposalClientDataForm';
 import { mapProposalClientDataToLegacyClientData } from '@/components/shared/proposalClientDataMapper';
 import { usePricingIntegration } from '@/hooks/use-pricing-integration';
+import { ServiceDeskPDFIntegration } from '@/lib/services/service-desk-pdf-integration';
+import { storePDF, blobToBase64 } from '@/lib/services/pdf-storage-service';
 
 export interface ServiceDeskPricingSystemProps {
   initialData?: ServiceDeskData;
@@ -63,92 +63,117 @@ export interface ServiceDeskPricingSystemProps {
   integrationMode?: 'standalone' | 'integrated';
   proposalClientData?: ProposalClientData | null;
   onNavigateToQuotes?: () => void;
+  onNavigateToProposals?: () => void;
+}
+
+const SERVICE_DESK_ACTIVE_PRICING_TAB_KEY = 'service-desk-active-pricing-tab';
+const ACTIVE_TAB_STORAGE_KEY = 'sistema-pre-active-tab';
+const SERVICE_DESK_VIEW_STORAGE_KEY = 'service-desk-module-view';
+const SERVICE_DESK_ACTIVE_TAB_ID = 'calculator-servicedesk-advanced';
+
+function persistServiceDeskPricingRoute() {
+  if (typeof window === 'undefined') return;
+  window.localStorage.setItem(ACTIVE_TAB_STORAGE_KEY, SERVICE_DESK_ACTIVE_TAB_ID);
+  window.localStorage.setItem(SERVICE_DESK_VIEW_STORAGE_KEY, 'pricing');
+}
+
+function readStoredPricingTab(): string {
+  if (typeof window === 'undefined') return 'data';
+  const storedTab = window.localStorage.getItem(SERVICE_DESK_ACTIVE_PRICING_TAB_KEY);
+  return TAB_CONFIG.some(tab => tab.id === storedTab) ? storedTab! : 'data';
+}
+
+function persistPricingTab(tabId: string) {
+  if (typeof window === 'undefined') return;
+  if (TAB_CONFIG.some(tab => tab.id === tabId)) {
+    window.localStorage.setItem(SERVICE_DESK_ACTIVE_PRICING_TAB_KEY, tabId);
+  }
 }
 
 const TAB_CONFIG = [
-  { 
-    id: 'data', 
-    label: 'Dados', 
+  {
+    id: 'data',
+    label: 'Dados',
     shortLabel: 'Dados',
     description: 'Configuração dos dados básicos do projeto, cliente e período de contrato',
     component: LazyTabModules.DataTab,
     weight: 1
   },
-  { 
-    id: 'team', 
-    label: 'Equipe', 
+  {
+    id: 'team',
+    label: 'Equipe',
     shortLabel: 'Equipe',
     description: 'Definição da equipe, cargos, salários e benefícios',
     component: LazyTabModules.TeamTab,
     dependencies: ['data'],
     weight: 2
   },
-  { 
-    id: 'scale', 
-    label: 'Escala', 
+  {
+    id: 'scale',
+    label: 'Escala',
     shortLabel: 'Escala',
     description: 'Configuração de horários de atendimento e escalas de trabalho',
     component: LazyTabModules.ScaleTab,
     dependencies: ['team'],
     weight: 2
   },
-  { 
-    id: 'taxes', 
-    label: 'Impostos', 
+  {
+    id: 'taxes',
+    label: 'Impostos',
     shortLabel: 'Impostos',
     description: 'Configuração de impostos e tributação aplicável',
     component: LazyTabModules.TaxesTab,
     dependencies: ['data'],
     weight: 1
   },
-  { 
-    id: 'variables', 
-    label: 'Variáveis', 
+  {
+    id: 'variables',
+    label: 'Variáveis',
     shortLabel: 'Variáveis',
     description: 'Definição de variáveis de mercado e cenários econômicos',
     component: LazyTabModules.VariablesTab,
     dependencies: ['data'],
     weight: 1
   },
-  { 
-    id: 'other-costs', 
-    label: 'Outros Custos', 
+  {
+    id: 'other-costs',
+    label: 'Outros Custos',
     shortLabel: 'Custos',
     description: 'Configuração de custos adicionais e despesas diversas',
     component: LazyTabModules.OtherCostsTab,
     dependencies: ['data'],
     weight: 1
   },
-  { 
-    id: 'budget', 
-    label: 'Orçamento', 
+  {
+    id: 'budget',
+    label: 'Orçamento',
     shortLabel: 'Orçamento',
     description: 'Consolidação de custos e definição de margens',
     component: LazyTabModules.BudgetTab,
     dependencies: ['team', 'taxes', 'other-costs'],
     weight: 2
   },
-  { 
-    id: 'forecast', 
-    label: 'Forecast', 
+  {
+    id: 'forecast',
+    label: 'Forecast',
     shortLabel: 'Forecast',
     description: 'Projeções financeiras e análise de cenários futuros',
     component: LazyTabModules.ForecastTab,
     dependencies: ['budget'],
     weight: 2
   },
-  { 
-    id: 'result', 
-    label: 'Resultado', 
+  {
+    id: 'result',
+    label: 'Resultado',
     shortLabel: 'Resultado',
     description: 'Análise de rentabilidade, ROI e indicadores financeiros',
     component: LazyTabModules.ResultTab,
     dependencies: ['forecast'],
     weight: 2
   },
-  { 
-    id: 'negotiation', 
-    label: 'Negociação', 
+  {
+    id: 'negotiation',
+    label: 'Negociação',
     shortLabel: 'Negociação',
     description: 'Simulação de cenários de negociação e ajustes comerciais',
     component: LazyTabModules.NegotiationTab,
@@ -156,18 +181,18 @@ const TAB_CONFIG = [
     weight: 1,
     isOptional: true
   },
-  { 
-    id: 'final-analysis', 
-    label: 'Análise Final', 
+  {
+    id: 'final-analysis',
+    label: 'Análise Final',
     shortLabel: 'Análise',
     description: 'Dashboard executivo e análise final do projeto',
     component: LazyTabModules.FinalAnalysisTab,
     dependencies: ['result'],
     weight: 2
   },
-  { 
-    id: 'reports', 
-    label: 'Relatórios', 
+  {
+    id: 'reports',
+    label: 'Relatórios',
     shortLabel: 'Relatórios',
     description: 'Geração de relatórios personalizados e profissionais',
     component: LazyTabModules.ReportsTab,
@@ -183,19 +208,19 @@ export function ServiceDeskPricingSystem({
   onBack,
   integrationMode = 'integrated',
   proposalClientData,
-  onNavigateToQuotes
+  onNavigateToQuotes,
+  onNavigateToProposals
 }: ServiceDeskPricingSystemProps) {
-  // Early return for SSR - prevent localStorage access on server
-  const [isMounted, setIsMounted] = useState(false);
-
   const [data, setData] = useState<ServiceDeskData>(
     initialData || ServiceDeskDataManager.createEmptyData()
   );
   const [validationStatus, setValidationStatus] = useState<Record<string, TabValidationStatus>>({});
+  const [revealedValidationTabs, setRevealedValidationTabs] = useState<Set<string>>(() => new Set());
   const [isLoading, setIsLoading] = useState(false);
   const isComponentMountedRef = useRef(false);
   const dataRef = useRef<ServiceDeskData>(data);
   const loadingOperationsRef = useRef(0);
+  const dataInitializedRef = useRef(false);
 
   // Template management state
   const [showTemplateManager, setShowTemplateManager] = useState(false);
@@ -211,15 +236,12 @@ export function ServiceDeskPricingSystem({
 
   // UX Enhancement state
   const [showContextualHelp, setShowContextualHelp] = useState(false);
-  const [activeTour, setActiveTour] = useState<string | null>(null);
-  const [showTourLauncher, setShowTourLauncher] = useState(false);
   const [notifications, setNotifications] = useState<Array<{
     id: string;
     type: 'success' | 'error' | 'warning' | 'info';
     message: string;
     isVisible: boolean;
   }>>([]);
-  const [isFirstTimeUser, setIsFirstTimeUser] = useState(false);
 
   // Documentation and Help state
   const [showDocumentation, setShowDocumentation] = useState(false);
@@ -238,7 +260,7 @@ export function ServiceDeskPricingSystem({
 
   useEffect(() => {
     isComponentMountedRef.current = true;
-    setIsMounted(true);
+    persistServiceDeskPricingRoute();
 
     return () => {
       isComponentMountedRef.current = false;
@@ -275,13 +297,56 @@ export function ServiceDeskPricingSystem({
     }
   }, []);
 
+  useEffect(() => {
+    if (!proposalClientData) return;
+
+    dataInitializedRef.current = true;
+
+    setData(prev => {
+      const mappedClient = {
+        ...prev.project.client,
+        name: proposalClientData.companyName || proposalClientData.clientName || prev.project.client.name,
+        document: proposalClientData.cnpj || prev.project.client.document,
+        email: proposalClientData.clientEmail || prev.project.client.email,
+        phone: proposalClientData.clientPhone || prev.project.client.phone,
+        contactPerson: proposalClientData.clientName || prev.project.client.contactPerson,
+        address: {
+          ...prev.project.client.address,
+          street: proposalClientData.address || prev.project.client.address.street
+        }
+      };
+
+      const mappedProject = {
+        ...prev.project,
+        name: proposalClientData.projectName || prev.project.name || 'Novo Projeto de Service Desk',
+        description: proposalClientData.projectDescription || prev.project.description,
+        client: mappedClient,
+        updatedAt: new Date()
+      };
+
+      const nextData = {
+        ...prev,
+        project: mappedProject,
+        metadata: {
+          ...prev.metadata,
+          lastModified: new Date()
+        }
+      };
+
+      dataRef.current = nextData;
+      return nextData;
+    });
+  }, [proposalClientData]);
+
   // Enhanced navigation with validation
   const navigation = useServiceDeskNavigation({
     tabs: TAB_CONFIG,
-    initialTab: 'data',
+    initialTab: readStoredPricingTab(),
     validationStatus,
     data,
     onTabChange: (tabId) => {
+      persistServiceDeskPricingRoute();
+      persistPricingTab(tabId);
       // Additional logic when tab changes
       console.log('Navigated to tab:', tabId);
     },
@@ -324,8 +389,47 @@ export function ServiceDeskPricingSystem({
 
   const nextRecommendation = navigation.navigationCapabilities.recommendations?.[0];
 
+  const displayedValidationStatus = useMemo(() => {
+    return Object.entries(validationStatus).reduce<Record<string, TabValidationStatus>>((acc, [tabId, status]) => {
+      acc[tabId] = revealedValidationTabs.has(tabId)
+        ? status
+        : {
+            ...status,
+            isValid: true,
+            errors: [],
+            warnings: []
+          };
+      return acc;
+    }, {});
+  }, [validationStatus, revealedValidationTabs]);
+
+  const displayedHasErrors = useMemo(
+    () => Object.values(displayedValidationStatus).some(status => status.errors.length > 0),
+    [displayedValidationStatus]
+  );
+
+  const displayedHasWarnings = useMemo(
+    () => Object.values(displayedValidationStatus).some(status => status.warnings.length > 0),
+    [displayedValidationStatus]
+  );
+
+  const revealTabValidation = useCallback((tabId: string) => {
+    setRevealedValidationTabs(prev => {
+      if (prev.has(tabId)) return prev;
+      const next = new Set(prev);
+      next.add(tabId);
+      return next;
+    });
+  }, []);
+
+  const handleNavigateNext = useCallback(() => {
+    persistServiceDeskPricingRoute();
+    revealTabValidation(navigation.navigationState.activeTab);
+    return navigation.navigateNext();
+  }, [navigation, revealTabValidation]);
+
   const MiniResult = useCallback(({ tabId }: { tabId: string }) => {
-    const tabValidation = validationStatus[tabId];
+    const tabValidation = displayedValidationStatus[tabId];
     const completion = tabValidation?.completionPercentage ?? 0;
     return (
       <div className="mb-3 w-full rounded-lg border border-border/60 bg-background/80 backdrop-blur-sm px-3 py-2 flex flex-wrap gap-3 items-center text-xs sm:text-sm">
@@ -349,36 +453,26 @@ export function ServiceDeskPricingSystem({
         </span>
       </div>
     );
-  }, [summary, validationStatus, formatCurrency, formatNumber, data?.budget?.margin?.targetMargin]);
+  }, [summary, displayedValidationStatus, formatCurrency, formatNumber, data?.budget?.margin?.targetMargin]);
 
   // Initialize data manager and load data
   useEffect(() => {
     const initializeData = async () => {
       try {
         beginLoadingOperation();
-        
+
         // Preload critical tabs for better performance
         await preloadCriticalTabs();
-        
+
         // Initialize sync between tabs
         dataManager.initializeSync();
-        
-        // Check if user is first time user (only on client side)
-        if (typeof window !== 'undefined') {
-          const hasSeenTour = localStorage.getItem('service-desk-tour-completed');
-          if (!hasSeenTour) {
-            setIsFirstTimeUser(true);
-            // Show tour launcher after a brief delay
-            setTimeout(() => setShowTourLauncher(true), 2000);
-          }
-        }
-        
-        // Load existing data if no initial data provided
-        if (!initialData) {
+
+        // Load existing data if not already initialized via proposalClientData
+        if (!initialData && !dataInitializedRef.current) {
           const loadedData = await dataManager.loadData();
           dataRef.current = loadedData;
           setData(loadedData);
-          
+
           // Validate all tabs
           const validations: Record<string, TabValidationStatus> = {};
           TAB_CONFIG.forEach(tab => {
@@ -387,12 +481,7 @@ export function ServiceDeskPricingSystem({
           });
           setValidationStatus(validations);
         }
-        
-        // Show welcome notification for new users
-        if (isFirstTimeUser) {
-          showNotification('info', 'Bem-vindo ao Sistema de Precificação Service Desk! Clique no botão "?" para fazer um tour guiado.');
-        }
-        
+
       } catch (error) {
         console.error('Error initializing data:', error);
         showNotification('error', 'Erro ao inicializar o sistema. Tente recarregar a página.');
@@ -422,22 +511,23 @@ export function ServiceDeskPricingSystem({
 
     // Create backup every 10 minutes or when significant changes occur
     const backupInterval = setInterval(createBackup, 10 * 60 * 1000);
-    
+
     return () => clearInterval(backupInterval);
   }, [data, dataManager]);
 
   // Handle data updates from tabs with performance optimizations
   const handleDataUpdate = useCallback(async (tabId: string, tabData: any) => {
     const startTime = Date.now();
-    
+
     try {
+      persistServiceDeskPricingRoute();
       const currentTabData = dataManager.getTabData(dataRef.current, tabId);
       if (areValuesEqual(currentTabData, tabData)) {
         return;
       }
 
       beginLoadingOperation();
-      
+
       // Track data operation start
       analyticsService.trackEvent({
         type: 'SYSTEM_EVENT' as any,
@@ -446,39 +536,39 @@ export function ServiceDeskPricingSystem({
         label: tabId,
         properties: { tabId }
       });
-      
+
       // Update data
       const updatedData = dataManager.updateTabData(dataRef.current, tabId, tabData);
       dataRef.current = updatedData;
       setData(updatedData);
-      
+
       // Invalidate related caches when data changes
       calculationCache.invalidateRelatedCaches(tabId);
-      
+
       // Validate updated data
       const validationStartTime = Date.now();
       const validation = validationEngine.validateTabData(tabId, tabData);
       const validationDuration = Date.now() - validationStartTime;
-      
+
       // Track validation
       analyticsService.trackValidation(
-        tabId, 
-        validation.isValid, 
-        validation.errors.length, 
+        tabId,
+        validation.isValid,
+        validation.errors.length,
         validation.warnings.length
       );
-      
+
       setValidationStatus(prev => ({
         ...prev,
         [tabId]: validation
       }));
-      
+
       // Persist data
       await dataManager.persistData(updatedData);
-      
+
       // Notify parent component
       onDataChange?.(updatedData);
-      
+
       // Track successful data operation
       const totalDuration = Date.now() - startTime;
       analyticsService.trackEvent({
@@ -487,18 +577,18 @@ export function ServiceDeskPricingSystem({
         action: 'data_update_success',
         label: tabId,
         value: totalDuration,
-        properties: { 
-          tabId, 
+        properties: {
+          tabId,
           duration: totalDuration,
           validationDuration,
           hasErrors: validation.errors.length > 0,
           hasWarnings: validation.warnings.length > 0
         }
       });
-      
+
     } catch (error) {
       const duration = Date.now() - startTime;
-      
+
       // Track error
       analyticsService.trackError(error as Error, `data_update_${tabId}`);
       analyticsService.trackEvent({
@@ -507,13 +597,13 @@ export function ServiceDeskPricingSystem({
         action: 'data_update_error',
         label: tabId,
         value: duration,
-        properties: { 
-          tabId, 
+        properties: {
+          tabId,
           duration,
           errorMessage: (error as Error).message
         }
       });
-      
+
       console.error('Error updating data:', error);
     } finally {
       endLoadingOperation();
@@ -523,6 +613,7 @@ export function ServiceDeskPricingSystem({
   // Handle auto-save from tabs with enhanced debouncing
   const handleAutoSave = useCallback(async (tabId: string, tabData: any) => {
     try {
+      persistServiceDeskPricingRoute();
       const currentTabData = dataManager.getTabData(dataRef.current, tabId);
       if (areValuesEqual(currentTabData, tabData)) {
         return;
@@ -532,12 +623,12 @@ export function ServiceDeskPricingSystem({
       const updatedData = dataManager.updateTabData(dataRef.current, tabId, tabData);
       dataRef.current = updatedData;
       setData(updatedData);
-      
+
       // Use batch calculation manager for performance
       batchCalculationManager.addToBatch(tabId, () => {
         // Invalidate related caches
         calculationCache.invalidateRelatedCaches(tabId);
-        
+
         // Validate updated data
         const validation = validationEngine.validateTabData(tabId, tabData);
         setValidationStatus(prev => ({
@@ -545,13 +636,13 @@ export function ServiceDeskPricingSystem({
           [tabId]: validation
         }));
       });
-      
+
       // Schedule auto-save with debouncing
       dataManager.scheduleAutoSave(updatedData);
-      
+
       // Notify parent component
       onDataChange?.(updatedData);
-      
+
     } catch (error) {
       console.error('Error during auto-save:', error);
     }
@@ -561,14 +652,16 @@ export function ServiceDeskPricingSystem({
   const handleTabChange = useCallback(async (newTab: string) => {
     const startTime = Date.now();
     const currentTab = navigation.navigationState.activeTab;
-    
+    persistServiceDeskPricingRoute();
+    persistPricingTab(newTab);
+
     // Track navigation
     analyticsService.trackNavigation(currentTab, newTab);
-    
+
     // Preload next tab for better performance
     await preloadNextTab(newTab);
     navigation.navigateToTab(newTab);
-    
+
     // Track navigation performance
     const duration = Date.now() - startTime;
     analyticsService.trackPerformance('tab_navigation', duration, true);
@@ -592,15 +685,15 @@ export function ServiceDeskPricingSystem({
   }, []);
 
   const handleConfirmTemplateApplication = useCallback(async (
-    application: TemplateApplication, 
+    application: TemplateApplication,
     resolutions: Record<string, ConflictResolution>
   ) => {
     try {
       beginLoadingOperation();
-      
+
       // Apply conflict resolutions
       let updatedData = { ...application.targetData };
-      
+
       application.conflicts.forEach(conflict => {
         const resolution = resolutions[conflict.field];
         if (resolution === ConflictResolution.USE_TEMPLATE) {
@@ -619,18 +712,18 @@ export function ServiceDeskPricingSystem({
       // Update data
       dataRef.current = updatedData;
       setData(updatedData);
-      
+
       // Persist data
       await dataManager.persistData(updatedData);
-      
+
       // Notify parent component
       onDataChange?.(updatedData);
-      
+
       // Close dialogs
       setShowTemplateApplication(false);
       setTemplateApplication(null);
       setSelectedTemplate(null);
-      
+
     } catch (error) {
       console.error('Error applying template:', error);
     } finally {
@@ -674,21 +767,21 @@ export function ServiceDeskPricingSystem({
 
   // Notification management
   const showNotification = useCallback((
-    type: 'success' | 'error' | 'warning' | 'info', 
+    type: 'success' | 'error' | 'warning' | 'info',
     message: string,
     duration: number = 5000
   ) => {
     const id = Math.random().toString(36).substr(2, 9);
     const notification = { id, type, message, isVisible: true };
-    
+
     setNotifications(prev => [...prev, notification]);
-    
+
     // Auto-hide notification
     setTimeout(() => {
-      setNotifications(prev => 
+      setNotifications(prev =>
         prev.map(n => n.id === id ? { ...n, isVisible: false } : n)
       );
-      
+
       // Remove from array after animation
       setTimeout(() => {
         setNotifications(prev => prev.filter(n => n.id !== id));
@@ -696,40 +789,114 @@ export function ServiceDeskPricingSystem({
     }, duration);
   }, []);
 
-  const handleDimensionTeamFromData = useCallback(async (projectData: any, dimensionedTeam: any[]) => {
+  const handleDimensionTeamFromData = useCallback(async (projectData: any, dimensionedTeam: any[], generatedSchedules?: any[]) => {
     try {
       beginLoadingOperation();
 
       const currentTeam = dataRef.current.team || [];
-      const preservedMembers = currentTeam.filter((member: any) => !['pos-1', 'pos-2'].includes(member?.jobPositionId));
-      const finalTeam = [...dimensionedTeam, ...preservedMembers];
+      const jobPositions = dataRef.current.jobPositions || [];
+      const normalize = (value?: string) => (value || '')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase();
+      const getMemberCategory = (member: any) => {
+        const position = jobPositions.find((position: any) => position.id === member?.jobPositionId);
+        const level = normalize(position?.level);
+        const text = normalize([
+          position?.name,
+          member?.role,
+          member?.name,
+          member?.notes,
+          member?.jobPositionId
+        ].filter(Boolean).join(' '));
+        const isCoordinator = text.includes('coordenador') || text.includes('gerente') || member?.jobPositionId === 'pos-5';
+        const isLeader = text.includes('lider') || text.includes('supervisor') || member?.jobPositionId === 'pos-4';
+
+        if (level === 'n1' || text.includes(' n1') || member?.jobPositionId === 'pos-1') return 'n1';
+        if (level === 'n2' || text.includes(' n2') || member?.jobPositionId === 'pos-2') return 'n2';
+        if (isCoordinator) return 'coordinator';
+        if (isLeader || level.includes('lider')) return 'leader';
+        if (level.includes('gestao')) return 'coordinator';
+        return 'other';
+      };
+      const getCanonicalPosition = (category: string) => {
+        return jobPositions.find((position: any) => {
+          const level = normalize(position?.level);
+          const text = normalize(`${position?.name || ''} ${position?.id || ''}`);
+          if (category === 'n1') return level === 'n1' || text.includes(' n1') || position?.id === 'pos-1';
+          if (category === 'n2') return level === 'n2' || text.includes(' n2') || position?.id === 'pos-2';
+          if (category === 'leader') return position?.id === 'pos-4' || level.includes('lider') || text.includes('lider') || text.includes('supervisor');
+          if (category === 'coordinator') return position?.id === 'pos-5' || text.includes('coordenador') || text.includes('gerente') || level.includes('gestao');
+          return false;
+        });
+      };
+      const normalizedDimensionedTeam = dimensionedTeam.map((member: any) => {
+        const category = getMemberCategory(member);
+        const canonicalPosition = getCanonicalPosition(category);
+        if (!canonicalPosition || canonicalPosition.id === member.jobPositionId) {
+          return member;
+        }
+        return {
+          ...member,
+          jobPositionId: canonicalPosition.id,
+          role: member.role || canonicalPosition.name,
+          salary: member.salary || canonicalPosition.salary8h
+        };
+      });
+      const replacementCategories = new Set(
+        normalizedDimensionedTeam.map(getMemberCategory).filter((category) => category !== 'other')
+      );
+      const dimJobIds = normalizedDimensionedTeam.map((m: any) => m.jobPositionId);
+      const dedupedPreserved = currentTeam.filter((member: any) => {
+        const category = getMemberCategory(member);
+        return !replacementCategories.has(category) && !dimJobIds.includes(member?.jobPositionId);
+      });
+      const finalTeam = [...normalizedDimensionedTeam, ...dedupedPreserved];
 
       let updatedData = dataManager.updateTabData(dataRef.current, 'data', projectData);
       updatedData = dataManager.updateTabData(updatedData, 'team', finalTeam);
+      if (generatedSchedules?.length) {
+        updatedData = dataManager.updateTabData(updatedData, 'scale', generatedSchedules);
+      }
 
       dataRef.current = updatedData;
       setData(updatedData);
 
       calculationCache.invalidateRelatedCaches('data');
       calculationCache.invalidateRelatedCaches('team');
+      if (generatedSchedules?.length) {
+        calculationCache.invalidateRelatedCaches('scale');
+      }
 
       const dataValidation = validationEngine.validateTabData('data', updatedData.project);
       const teamValidation = validationEngine.validateTabData('team', updatedData.team);
+      const scaleValidation = generatedSchedules?.length
+        ? validationEngine.validateTabData('scale', updatedData.schedules)
+        : validationStatus.scale;
 
       setValidationStatus(prev => ({
         ...prev,
         data: dataValidation,
-        team: teamValidation
+        team: teamValidation,
+        ...(generatedSchedules?.length ? { scale: scaleValidation } : {})
       }));
 
-      await dataManager.persistData(updatedData);
-      onDataChange?.(updatedData);
+      persistPricingTab('team');
+      const navigatedToTeam = await navigation.navigateToTab('team', true);
 
-      await handleTabChange('team');
+      onDataChange?.(updatedData);
+      dataManager.persistData(updatedData).catch((persistError) => {
+        console.error('Error persisting dimensioned Service Desk data:', persistError);
+        showNotification('warning', 'Equipe dimensionada, mas houve falha ao salvar automaticamente.');
+      });
 
       const n1Quantity = finalTeam.find((member: any) => member.jobPositionId === 'pos-1')?.quantity || 0;
       const n2Quantity = finalTeam.find((member: any) => member.jobPositionId === 'pos-2')?.quantity || 0;
-      showNotification('success', `Equipe dimensionada: N1 ${n1Quantity} | N2 ${n2Quantity}.`);
+      const folguistas = projectData?.dimensioning?.suggestedFolguistas || 0;
+      showNotification(
+        navigatedToTeam ? 'success' : 'warning',
+        `Equipe dimensionada: N1 ${n1Quantity} | N2 ${n2Quantity}${folguistas ? ` | Folguistas ${folguistas}` : ''}. ${navigatedToTeam ? 'Abrindo aba Equipe.' : 'Clique na aba Equipe para revisar.'}`
+      );
     } catch (error) {
       console.error('Error applying dimensioning from data tab:', error);
       showNotification('error', 'Não foi possível dimensionar a equipe automaticamente.');
@@ -741,18 +908,21 @@ export function ServiceDeskPricingSystem({
     calculationCache,
     dataManager,
     endLoadingOperation,
-    handleTabChange,
+    navigation,
     onDataChange,
     showNotification,
-    validationEngine
+    validationEngine,
+    validationStatus.scale
   ]);
 
-  const handleSaveToQuotes = useCallback(() => {
+  const handleSaveToQuotes = useCallback(async () => {
     const totalPrice = data?.budget?.totalPrice || 0;
     if (totalPrice <= 0) {
       showNotification('warning', 'Preencha os dados de orçamento antes de salvar em Orçamentos.');
       return;
     }
+    const contractDurationMonths = Math.max(1, Number(data.project?.contractPeriod?.durationMonths || 12));
+    const monthlyPrice = totalPrice / contractDurationMonths;
 
     const mappedClientData = proposalClientData
       ? mapProposalClientDataToLegacyClientData(proposalClientData)
@@ -767,19 +937,33 @@ export function ServiceDeskPricingSystem({
           emailGerente: proposalClientData?.managerEmail || data.project?.client?.email || '',
         };
 
-    createQuoteFromPricingData({
+    const quote = createQuoteFromPricingData({
       name: `Service Desk - ${mappedClientData.nomeProjeto}`,
       clientName: mappedClientData.razaoSocial,
       totalPrice,
       module: 'Service Desk',
       technicalSpecs: {
         projectId: data.project?.id,
-        totalCosts: data.budget?.totalCosts || 0,
-        totalPrice,
-        margin: data.budget?.margin,
+        monthlyPrice,
+        contractDurationMonths,
+        totalSalePrice: totalPrice,
+        saleIncludesMarginAndTaxes: true,
       },
       clientData: mappedClientData,
     });
+
+    try {
+      const pdfIntegration = new ServiceDeskPDFIntegration();
+      const result = await pdfIntegration.generateEnhancedProposal(
+        data,
+        data.finalAnalysis,
+        { templateType: 'executive', includeExecutiveSummary: true, includeKPIs: true, includeRecommendations: true, includeBenchmarks: true }
+      );
+      const base64Data = await blobToBase64(result.blob);
+      storePDF(quote.id, base64Data);
+    } catch (error) {
+      console.error('Erro ao gerar PDF da proposta:', error);
+    }
 
     showNotification('success', 'Orçamento de Service Desk salvo com sucesso.');
     if (onNavigateToQuotes) {
@@ -787,51 +971,118 @@ export function ServiceDeskPricingSystem({
     }
   }, [data, proposalClientData, createQuoteFromPricingData, showNotification, onNavigateToQuotes]);
 
-  // Tour management
-  const handleStartTour = useCallback((tourId: string) => {
-    setActiveTour(tourId);
-    setShowTourLauncher(false);
-    analyticsService.trackEvent({
-      type: 'USER_ACTION' as any,
-      category: 'TOUR' as any,
-      action: 'tour_started',
-      label: tourId
-    });
-  }, [analyticsService]);
-
-  const handleCloseTour = useCallback(() => {
-    setActiveTour(null);
-  }, []);
-
-  const handleTourComplete = useCallback((tourId: string) => {
-    setActiveTour(null);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('service-desk-tour-completed', 'true');
+  const handleGenerateProposalPDF = useCallback(async () => {
+    const totalPrice = data?.budget?.totalPrice || 0;
+    if (totalPrice <= 0) {
+      showNotification('warning', 'Preencha os dados de orçamento antes de gerar a proposta.');
+      return;
     }
-    setIsFirstTimeUser(false);
-    showNotification('success', 'Tour concluído! Agora você está pronto para usar o sistema.');
-    
-    analyticsService.trackEvent({
-      type: 'USER_ACTION' as any,
-      category: 'TOUR' as any,
-      action: 'tour_completed',
-      label: tourId
-    });
-  }, [analyticsService, showNotification]);
 
-  const handleTourSkip = useCallback((tourId: string) => {
-    setActiveTour(null);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('service-desk-tour-skipped', 'true');
+    try {
+      showNotification('info', 'Gerando PDF da proposta...');
+
+      // 1. Prepare client data
+      const mappedClientData = proposalClientData
+        ? mapProposalClientDataToLegacyClientData(proposalClientData)
+        : {
+            razaoSocial: data.project?.client?.name || 'Cliente não informado',
+            nomeContato: data.project?.client?.contactPerson || data.project?.client?.name || 'Contato não informado',
+            telefoneCliente: data.project?.client?.phone || '',
+            emailCliente: data.project?.client?.email || '',
+            nomeProjeto: data.project?.name || 'Projeto Service Desk',
+            nomeGerente: proposalClientData?.managerName || data.project?.client?.contactPerson || '',
+            telefoneGerente: proposalClientData?.managerPhone || data.project?.client?.phone || '',
+            emailGerente: proposalClientData?.managerEmail || data.project?.client?.email || '',
+          };
+
+      // 2. Generate PDF
+      const pdfIntegration = new ServiceDeskPDFIntegration();
+      const result = await pdfIntegration.generateEnhancedProposal(
+        data,
+        data.finalAnalysis,
+        { templateType: 'executive', includeExecutiveSummary: true, includeKPIs: true, includeRecommendations: true, includeBenchmarks: true }
+      );
+
+      const proposalId = `sd-${Date.now()}`;
+      const base64Data = await blobToBase64(result.blob);
+      storePDF(proposalId, base64Data);
+      const contractDurationMonths = Math.max(1, Number(data.project?.contractPeriod?.durationMonths || 12));
+      const monthlyPrice = totalPrice / contractDurationMonths;
+
+      // 3. Save to orçamentos (quotes) system with full data
+      const quote = createQuoteFromPricingData({
+        name: `Service Desk - ${mappedClientData.nomeProjeto}`,
+        clientName: mappedClientData.razaoSocial,
+        totalPrice,
+        module: 'Service Desk',
+        technicalSpecs: {
+          projectId: data.project?.id,
+          monthlyPrice,
+          contractDurationMonths,
+          totalSalePrice: totalPrice,
+          saleIncludesMarginAndTaxes: true,
+        },
+        clientData: mappedClientData,
+      });
+      storePDF(quote.id, base64Data);
+
+      // 4. Save rich proposal record for the proposals list
+      const totalSetupCost = (data.budget?.setupCost || 0) + (data.budget?.infrastructureCost || 0);
+
+      const proposalRecord = {
+        id: quote.id,
+        clientData: {
+          companyName: mappedClientData.razaoSocial,
+          contactName: mappedClientData.nomeContato,
+          email: mappedClientData.emailCliente,
+          phone: mappedClientData.telefoneCliente,
+          projectName: mappedClientData.nomeProjeto,
+          managerName: mappedClientData.nomeGerente,
+          managerEmail: mappedClientData.emailGerente,
+          managerPhone: mappedClientData.telefoneGerente,
+          employeeCount: data.project?.generalInfo?.userQuantity || 0,
+          businessHours: { start: '08:00', end: '18:00', timezone: 'America/Sao_Paulo' },
+          criticalSystems: []
+        },
+        serviceItems: data.serviceItems || [],
+        totals: {
+          totalUsers: data.project?.generalInfo?.userQuantity || 0,
+          totalSetupCost,
+          monthlyCost: totalPrice,
+          annualCost: totalPrice * 12,
+          totalIncludedHours: data.budget?.includedHours || 0,
+          estimatedAdditionalHours: data.budget?.estimatedAdditionalHours || 0,
+          additionalHoursCost: data.budget?.additionalHoursCost || 0
+        },
+        contractType: 'Anual',
+        serviceLevel: 'Personalizado',
+        slaConfiguration: data.slaConfiguration || [],
+        status: 'Rascunho',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        validUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+        version: 1,
+        serviceDeskData: data,
+        executiveDashboard: data.finalAnalysis
+      };
+
+      const savedProposals = JSON.parse(localStorage.getItem('serviceDeskProposals') || '[]');
+      savedProposals.push(proposalRecord);
+      localStorage.setItem('serviceDeskProposals', JSON.stringify(savedProposals));
+
+      // 5. Open PDF in new tab
+      window.open(result.url, '_blank');
+
+      showNotification('success', 'Proposta gerada e salva com sucesso!');
+
+      if (onNavigateToProposals) {
+        onNavigateToProposals();
+      }
+    } catch (error) {
+      console.error('Erro ao gerar PDF da proposta:', error);
+      showNotification('error', 'Erro ao gerar PDF da proposta. Tente novamente.');
     }
-    
-    analyticsService.trackEvent({
-      type: 'USER_ACTION' as any,
-      category: 'TOUR' as any,
-      action: 'tour_skipped',
-      label: tourId
-    });
-  }, [analyticsService]);
+  }, [data, proposalClientData, createQuoteFromPricingData, showNotification, onNavigateToProposals]);
 
   // Contextual help management
   const handleToggleContextualHelp = useCallback(() => {
@@ -876,15 +1127,6 @@ export function ServiceDeskPricingSystem({
     );
   }, [navigation, data.project?.name]);
 
-  // Don't render on server to avoid localStorage errors
-  if (!isMounted) {
-    return (
-      <div className="service-desk-theme w-full max-w-7xl mx-auto p-6 flex items-center justify-center min-h-screen rounded-2xl">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
-  }
-
   return (
     <div className="service-desk-theme w-full max-w-7xl mx-auto p-6 space-y-6 rounded-2xl">
       {/* Comando rápido e visão geral */}
@@ -897,15 +1139,15 @@ export function ServiceDeskPricingSystem({
               {integrationMode === 'integrated' && (
                 <Badge variant="secondary" className="pill-soft">Integrado com PDF</Badge>
               )}
-              {navigation.navigationCapabilities.hasErrors && (
+              {displayedHasErrors && (
                 <Badge variant="destructive" className="pill-soft-danger">Correções pendentes</Badge>
               )}
-              {navigation.navigationCapabilities.hasWarnings && !navigation.navigationCapabilities.hasErrors && (
+              {displayedHasWarnings && !displayedHasErrors && (
                 <Badge variant="secondary" className="pill-soft-warning">Há avisos</Badge>
               )}
             </div>
             <div className="space-y-1">
-              <h2 className="text-2xl font-semibold">Fluxo guiado de precificação</h2>
+              <h2 className="text-2xl font-semibold">Fluxo de precificação</h2>
               <p className="text-sm text-muted-foreground max-w-2xl">
                 Revise os dados essenciais, navegue por abas em ordem lógica e acompanhe KPIs-chave em tempo real.
                 Inspirado em experiências de pricing do Freshservice, ServiceNow e SolarWinds Service Desk.
@@ -934,7 +1176,10 @@ export function ServiceDeskPricingSystem({
                 ← Voltar
               </Button>
             )}
-            <Button variant="default" size="sm" onClick={handleSaveToQuotes} className="shadow-lg shadow-primary/25">
+            <Button variant="default" size="sm" onClick={handleGenerateProposalPDF} className="shadow-lg shadow-primary/25">
+              <FileText className="h-4 w-4 mr-1" /> Gerar Proposta PDF
+            </Button>
+            <Button variant="secondary" size="sm" onClick={handleSaveToQuotes} className="shadow-lg shadow-primary/25">
               <Save className="h-4 w-4 mr-1" /> Salvar em Orçamentos
             </Button>
             <Button variant="secondary" size="sm" onClick={() => setShowExportInterface(true)}>
@@ -956,9 +1201,6 @@ export function ServiceDeskPricingSystem({
               activeTab={navigation.navigationState.activeTab}
               onOpenHelp={handleToggleIntegratedHelp}
             />
-            <Button variant="ghost" size="sm" onClick={() => setShowTourLauncher(true)}>
-              ?
-            </Button>
           </div>
         </div>
 
@@ -1018,7 +1260,7 @@ export function ServiceDeskPricingSystem({
         <div className="lg:col-span-2">
           <ProgressIndicator
             tabs={TAB_CONFIG}
-            validationStatus={validationStatus}
+            validationStatus={displayedValidationStatus}
             activeTab={navigation.navigationState.activeTab}
             showDetails={true}
             showMilestones={true}
@@ -1036,10 +1278,10 @@ export function ServiceDeskPricingSystem({
             currentTabLabel={TAB_CONFIG.find(t => t.id === navigation.navigationState.activeTab)?.label || 'Desconhecido'}
             totalTabs={TAB_CONFIG.length}
             currentTabIndex={TAB_CONFIG.findIndex(t => t.id === navigation.navigationState.activeTab)}
-            validationStatus={validationStatus}
+            validationStatus={displayedValidationStatus}
             canNavigateNext={navigation.navigationCapabilities.canGoNext}
             canNavigatePrevious={navigation.navigationCapabilities.canGoPrevious}
-            onNavigateNext={navigation.navigateNext}
+            onNavigateNext={handleNavigateNext}
             onNavigatePrevious={navigation.navigatePrevious}
             onNavigateToFirstError={navigation.navigateToFirstError}
             onNavigateToFirstIncomplete={navigation.navigateToFirstIncomplete}
@@ -1057,7 +1299,7 @@ export function ServiceDeskPricingSystem({
                 <span>Sistema de Precificação Service Desk</span>
               </div>
               {/* Breadcrumbs */}
-              <Breadcrumbs 
+              <Breadcrumbs
                 items={breadcrumbItems}
                 showIcons={true}
                 className="text-sm"
@@ -1066,14 +1308,13 @@ export function ServiceDeskPricingSystem({
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
-          {/* Enhanced Tab Navigation with animations */}
-          <TabTransition tabId={navigation.navigationState.activeTab}>
+          {/* Enhanced Tab Navigation */}
             <TabNavigation
               tabs={TAB_CONFIG}
               activeTab={navigation.navigationState.activeTab}
-              validationStatus={validationStatus}
+              validationStatus={displayedValidationStatus}
               onTabChange={handleTabChange}
-              onNavigateNext={navigation.navigateNext}
+              onNavigateNext={handleNavigateNext}
               onNavigatePrevious={navigation.navigatePrevious}
               onNavigateToFirstError={navigation.navigateToFirstError}
               onNavigateToFirstIncomplete={navigation.navigateToFirstIncomplete}
@@ -1082,10 +1323,9 @@ export function ServiceDeskPricingSystem({
               showQuickActions={true}
               showTabPreview={true}
             />
-          </TabTransition>
 
           {/* Show validation alerts */}
-          {navigation.navigationCapabilities.hasErrors && (
+          {displayedHasErrors && (
             <Alert variant="destructive" className="mb-4">
               <AlertDescription className="flex items-center justify-between">
                 <span>
@@ -1101,7 +1341,7 @@ export function ServiceDeskPricingSystem({
             </Alert>
           )}
 
-          {navigation.navigationCapabilities.hasWarnings && !navigation.navigationCapabilities.hasErrors && (
+          {displayedHasWarnings && !displayedHasErrors && (
             <Alert className="mb-4">
               <AlertDescription>
                 Existem avisos em algumas abas. Verifique os indicadores para mais detalhes.
@@ -1122,14 +1362,14 @@ export function ServiceDeskPricingSystem({
             {TAB_CONFIG.map((tab) => {
               const TabComponent = tab.component;
               const tabData = dataManager.getTabData(data, tab.id);
-              
+
               // Prepare additional props for specific tabs
               const additionalProps: any = {};
 
               if (tab.id === 'data') {
                 additionalProps.onDimensionTeam = handleDimensionTeamFromData;
               }
-              
+
               if (tab.id === 'team') {
                 // Pass full data to team tab for dimensioning
                 additionalProps.fullData = data;
@@ -1138,7 +1378,7 @@ export function ServiceDeskPricingSystem({
                   handleDataUpdate('scale', schedules);
                 };
               }
-              
+
               if (tab.id === 'scale') {
                 // Pass team members to scale tab - convert new format to expected format
                 additionalProps.teamMembers = data.team?.flatMap(member => {
@@ -1154,7 +1394,7 @@ export function ServiceDeskPricingSystem({
                   return entries;
                 }) || [];
               }
-              
+
               if (tab.id === 'result') {
                 // Pass full data to result tab for calculations and export
                 additionalProps.fullData = data;
@@ -1168,34 +1408,44 @@ export function ServiceDeskPricingSystem({
                 additionalProps.projectData = data.project || {};
               }
 
+              if (tab.id === 'other-costs') {
+                additionalProps.contractPeriodMonths = data.project?.contractPeriod?.durationMonths || 12;
+              }
+
               if (tab.id === 'forecast') {
                 additionalProps.fullData = data;
               }
-              
+
+              if (tab.id === 'final-analysis') {
+                // FinalAnalysisTabModule needs full ServiceDeskData for dashboard generation
+                additionalProps.fullData = data;
+              }
+
+              if (tab.id === 'reports') {
+                // ReportsTabModule expects full ServiceDeskData
+                additionalProps.data = data;
+              }
+
               return (
                 <TabsContent key={tab.id} value={tab.id} className="mt-6" data-tour={`${tab.id}-tab`}>
                   <MiniResult tabId={tab.id} />
-                  <AnimatedCard className="w-full">
-                    <Suspense 
-                      fallback={
-                        <div className="flex items-center justify-center p-8">
-                          <Loader2 className="h-8 w-8 animate-spin" />
-                          <span className="ml-2">Carregando módulo...</span>
-                        </div>
-                      }
-                    >
-                      <TabTransition tabId={tab.id}>
-                        <TabComponent
-                          data={tabData}
-                          onUpdate={(tabData: any) => handleDataUpdate(tab.id, tabData)}
-                          onAutoSave={(tabData: any) => handleAutoSave(tab.id, tabData)}
-                          validation={validationStatus[tab.id] || { isValid: true, errors: [], warnings: [], completionPercentage: 100, tabId: tab.id }}
-                          isLoading={isLoading}
-                          {...additionalProps}
-                        />
-                      </TabTransition>
-                    </Suspense>
-                  </AnimatedCard>
+                  <Suspense
+                    fallback={
+                      <div className="flex items-center justify-center p-8">
+                        <Loader2 className="h-8 w-8 animate-spin" />
+                        <span className="ml-2">Carregando módulo...</span>
+                      </div>
+                    }
+                  >
+                    <TabComponent
+                      data={tabData}
+                      onUpdate={(tabData: any) => handleDataUpdate(tab.id, tabData)}
+                      onAutoSave={(tabData: any) => handleAutoSave(tab.id, tabData)}
+                      validation={displayedValidationStatus[tab.id] || { isValid: true, errors: [], warnings: [], completionPercentage: 100, tabId: tab.id }}
+                      isLoading={isLoading}
+                      {...additionalProps}
+                    />
+                  </Suspense>
                 </TabsContent>
               );
             })}
@@ -1281,7 +1531,7 @@ export function ServiceDeskPricingSystem({
                 "O sistema salva automaticamente suas alterações"
               ]}
             />
-            
+
             <QuickHelpCard
               title="Validação de Dados"
               description="O sistema valida seus dados em tempo real e oferece sugestões de correção."
@@ -1291,13 +1541,13 @@ export function ServiceDeskPricingSystem({
                 "Sugestões aparecem em azul para otimizar seus dados"
               ]}
             />
-            
+
             <QuickHelpCard
               title="Atalhos de Teclado"
               description="Use atalhos para navegar mais rapidamente pelo sistema."
               tips={[
                 "Ctrl + → : Próxima aba",
-                "Ctrl + ← : Aba anterior", 
+                "Ctrl + ← : Aba anterior",
                 "Ctrl + S : Salvar dados",
                 "Ctrl + E : Abrir exportação"
               ]}
@@ -1305,72 +1555,6 @@ export function ServiceDeskPricingSystem({
           </div>
         }
       />
-
-      {/* Tour Launcher Dialog */}
-      {showTourLauncher && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[80vh] overflow-y-auto">
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-semibold text-blue-700">Tours Guiados</h2>
-                <Button variant="ghost" onClick={() => setShowTourLauncher(false)}>
-                  <X size={20} />
-                </Button>
-              </div>
-              
-              <TourLauncher 
-                onStartTour={handleStartTour}
-                className="mb-4"
-              />
-              
-              {isFirstTimeUser && (
-                <div className="bg-blue-50 border border-blue-200 rounded-md p-4 mt-4">
-                  <p className="text-sm text-blue-800">
-                    <strong>Primeira vez aqui?</strong> Recomendamos começar com o Tour Básico para conhecer as principais funcionalidades.
-                  </p>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Guided Tours */}
-      {activeTour === 'basic' && (
-        <GuidedTour
-          config={{
-            ...basicServiceDeskTour,
-            onComplete: () => handleTourComplete('basic'),
-            onSkip: () => handleTourSkip('basic')
-          }}
-          isActive={true}
-          onClose={handleCloseTour}
-        />
-      )}
-      
-      {activeTour === 'advanced' && (
-        <GuidedTour
-          config={{
-            ...advancedFeaturesTour,
-            onComplete: () => handleTourComplete('advanced'),
-            onSkip: () => handleTourSkip('advanced')
-          }}
-          isActive={true}
-          onClose={handleCloseTour}
-        />
-      )}
-      
-      {activeTour === 'tips' && (
-        <GuidedTour
-          config={{
-            ...quickTipsTour,
-            onComplete: () => handleTourComplete('tips'),
-            onSkip: () => handleTourSkip('tips')
-          }}
-          isActive={true}
-          onClose={handleCloseTour}
-        />
-      )}
 
       {/* Documentation System */}
       <DocumentationSystem
@@ -1416,7 +1600,7 @@ export function ServiceDeskPricingSystem({
               <div className="flex items-center justify-between">
                 <span className="text-sm">{notification.message}</span>
                 <button
-                  onClick={() => setNotifications(prev => 
+                  onClick={() => setNotifications(prev =>
                     prev.map(n => n.id === notification.id ? { ...n, isVisible: false } : n)
                   )}
                   className="ml-2 text-white hover:text-gray-200"

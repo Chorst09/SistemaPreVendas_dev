@@ -4,178 +4,199 @@
 
 @layer base {
   :root {
-    /* Core Brand Colors - Baseado na imagem fornecida */
-    --primary-50: 220 25% 95%;
-    --primary-100: 220 25% 90%;
-    --primary-200: 220 25% 80%;
-    --primary-300: 220 25% 70%;
-    --primary-400: 220 25% 60%;
-    --primary-500: 220 25% 50%;
-    --primary-600: 220 30% 40%;
-    --primary-700: 220 35% 30%;
-    --primary-800: 220 40% 20%;
-    --primary-900: 220 45% 15%;
+    /* Core Brand Colors - Design System Moderno */
+    --primary-50: 210 40% 96%;
+    --primary-100: 210 40% 90%;
+    --primary-200: 210 40% 80%;
+    --primary-300: 210 40% 70%;
+    --primary-400: 210 40% 60%;
+    --primary-500: 210 100% 45%;
+    --primary-600: 210 100% 38%;
+    --primary-700: 210 100% 30%;
+    --primary-800: 210 100% 22%;
+    --primary-900: 210 100% 15%;
     
-    /* Accent Colors */
-    --accent-cyan: 195 100% 50%;     /* #00D4FF - Azul ciano dos gráficos */
-    --accent-orange: 20 100% 60%;    /* #FF6B35 - Laranja dos botões */
-    --accent-yellow: 45 100% 60%;    /* #FFB800 - Amarelo dos destaques */
-    --accent-green: 150 80% 45%;     /* #00B366 - Verde para status positivo */
-    --accent-purple: 270 70% 60%;    /* #8B5CF6 - Roxo para elementos especiais */
+    /* Accent Colors - Paleta Vibrante e Acessível */
+    --accent-cyan: 186 100% 42%;
+    --accent-orange: 24 100% 58%;
+    --accent-yellow: 45 100% 55%;
+    --accent-green: 152 68% 38%;
+    --accent-purple: 262 83% 58%;
     
-    /* Sistema de cores baseado no design moderno */
-    --background: 220 45% 15%;       /* Fundo principal escuro */
-    --foreground: 220 15% 95%;       /* Texto principal claro */
-    --card: 220 40% 18%;             /* Cards com tom ligeiramente mais claro */
-    --card-foreground: 220 15% 95%;  /* Texto dos cards */
-    --popover: 220 40% 18%;
-    --popover-foreground: 220 15% 95%;
-    --primary: 195 100% 50%;         /* Azul ciano como primária */
-    --primary-foreground: 220 45% 15%; /* Texto sobre primária */
-    --secondary: 220 35% 25%;        /* Cinza azulado para secundário */
-    --secondary-foreground: 220 15% 95%;
-    --muted: 220 35% 22%;            /* Elementos menos importantes */
-    --muted-foreground: 220 15% 70%; /* Texto muted */
-    --accent: 20 100% 60%;           /* Laranja para acentos */
-    --accent-foreground: 220 15% 95%;
-    --destructive: 0 84% 60%;        /* Vermelho para erros */
-    --destructive-foreground: 220 15% 95%;
-    --border: 220 35% 25%;           /* Bordas sutis */
-    --input: 220 35% 22%;            /* Inputs com fundo escuro */
-    --ring: 195 100% 50%;            /* Focus ring ciano */
+    /* Light Theme - Fundo Claro com Contraste Adequado */
+    --background: 0 0% 98%;
+    --foreground: 222 47% 11%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+    --primary: 210 100% 45%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 220 14% 96%;
+    --secondary-foreground: 222 47% 11%;
+    --muted: 220 14% 96%;
+    --muted-foreground: 215 16% 47%;
+    --accent: 24 100% 58%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 210 100% 45%;
     
-    /* Sidebar Variables - Dark by default */
-    --sidebar-background: 220 45% 15%;
-    --sidebar-foreground: 220 15% 95%;
-    --sidebar-primary: 195 100% 50%;
-    --sidebar-primary-foreground: 220 45% 15%;
-    --sidebar-accent: 220 35% 25%;
-    --sidebar-accent-foreground: 220 15% 95%;
-    --sidebar-border: 220 35% 25%;
-    --sidebar-ring: 195 100% 50%;
+    /* Sidebar Variables - Tema Claro */
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 222 47% 11%;
+    --sidebar-primary: 210 100% 45%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 220 14% 96%;
+    --sidebar-accent-foreground: 222 47% 11%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 210 100% 45%;
     
-    /* Chart Colors - Paleta moderna para gráficos baseada no design */
-    --chart-1: 195 100% 50%;         /* Ciano principal - #00D4FF - Para dados primários */
-    --chart-2: 20 100% 60%;          /* Laranja - #FF6B35 - Para dados secundários/ações */
-    --chart-3: 150 80% 45%;          /* Verde/Teal - #00B366 - Para dados positivos/lucro */
-    --chart-4: 45 100% 60%;          /* Amarelo - #FFB800 - Para avisos/dados neutros */
-    --chart-5: 270 70% 60%;          /* Roxo - #8B5CF6 - Para dados especiais */
-    --chart-6: 340 75% 55%;          /* Rosa - #E91E63 - Para dados críticos */
-    --chart-7: 220 35% 30%;          /* Azul escuro - para contraste/dados de fundo */
-    --chart-8: 195 80% 35%;          /* Ciano escuro - variação para dados relacionados */
+    /* Chart Colors - Paleta Vibrante para Gráficos */
+    --chart-1: 210 100% 45%;
+    --chart-2: 24 100% 58%;
+    --chart-3: 152 68% 38%;
+    --chart-4: 45 100% 55%;
+    --chart-5: 262 83% 58%;
+    --chart-6: 350 80% 55%;
+    --chart-7: 220 15% 55%;
+    --chart-8: 186 100% 42%;
     
     /* Chart Colors específicas para tipos de dados */
-    --chart-revenue: 195 100% 50%;   /* Receita - Ciano */
-    --chart-cost: 20 100% 60%;       /* Custos - Laranja */
-    --chart-profit: 150 80% 45%;     /* Lucro - Verde */
-    --chart-tax: 0 84% 60%;          /* Impostos - Vermelho (destructive) */
-    --chart-commission: 45 100% 60%; /* Comissões - Amarelo */
-    --chart-growth: 150 80% 45%;     /* Crescimento - Verde */
-    --chart-decline: 0 84% 60%;      /* Declínio - Vermelho */
-    --chart-neutral: 220 35% 50%;    /* Neutro - Cinza azulado */
+    --chart-revenue: 152 68% 38%;
+    --chart-cost: 0 84% 60%;
+    --chart-profit: 210 100% 45%;
+    --chart-tax: 350 80% 55%;
+    --chart-commission: 45 100% 55%;
+    --chart-growth: 152 68% 38%;
+    --chart-decline: 0 84% 60%;
+    --chart-neutral: 220 15% 55%;
     
-    --radius: 0.5rem;
+    --radius: 0.625rem;
+    
+    /* Spacing System - 4px base */
+    --space-1: 0.25rem;
+    --space-2: 0.5rem;
+    --space-3: 0.75rem;
+    --space-4: 1rem;
+    --space-5: 1.25rem;
+    --space-6: 1.5rem;
+    --space-8: 2rem;
+    --space-10: 2.5rem;
+    --space-12: 3rem;
+    
+    /* Shadow System */
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
   }
 
   .dark {
-    /* Modo escuro já é o padrão baseado na imagem */
-    --background: 220 45% 15%;
-    --foreground: 220 15% 95%;
-    --card: 220 40% 18%;
-    --card-foreground: 220 15% 95%;
-    --popover: 220 40% 18%;
-    --popover-foreground: 220 15% 95%;
-    --primary: 195 100% 50%;
-    --primary-foreground: 220 45% 15%;
-    --secondary: 220 35% 25%;
-    --secondary-foreground: 220 15% 95%;
-    --muted: 220 35% 22%;
-    --muted-foreground: 220 15% 70%;
-    --accent: 20 100% 60%;
-    --accent-foreground: 220 15% 95%;
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 220 15% 95%;
-    --border: 220 35% 25%;
-    --input: 220 35% 22%;
-    --ring: 195 100% 50%;
-    --sidebar-background: 220 45% 15%;
-    --sidebar-foreground: 220 15% 95%;
-    --sidebar-primary: 195 100% 50%;
-    --sidebar-primary-foreground: 220 45% 15%;
-    --sidebar-accent: 220 35% 25%;
-    --sidebar-accent-foreground: 220 15% 95%;
-    --sidebar-border: 220 35% 25%;
-    --sidebar-ring: 195 100% 50%;
-    --chart-1: 195 100% 50%;
-    --chart-2: 20 100% 60%;
-    --chart-3: 150 80% 45%;
-    --chart-4: 45 100% 60%;
-    --chart-5: 270 70% 60%;
-    --chart-6: 340 75% 55%;
-    --chart-7: 220 35% 30%;
-    --chart-8: 195 80% 35%;
+    /* Dark Theme - Contraste Acessível WCAG AA */
+    --background: 222 47% 8%;
+    --foreground: 210 40% 96%;
+    --card: 222 47% 11%;
+    --card-foreground: 210 40% 96%;
+    --popover: 222 47% 11%;
+    --popover-foreground: 210 40% 96%;
+    --primary: 186 100% 42%;
+    --primary-foreground: 222 47% 8%;
+    --secondary: 217 33% 17%;
+    --secondary-foreground: 210 40% 96%;
+    --muted: 217 33% 14%;
+    --muted-foreground: 215 20% 65%;
+    --accent: 24 100% 58%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 217 33% 17%;
+    --input: 217 33% 14%;
+    --ring: 186 100% 42%;
     
-    /* Chart Colors específicas para tipos de dados */
-    --chart-revenue: 195 100% 50%;
-    --chart-cost: 20 100% 60%;
-    --chart-profit: 150 80% 45%;
-    --chart-tax: 0 84% 60%;
-    --chart-commission: 45 100% 60%;
-    --chart-growth: 150 80% 45%;
-    --chart-decline: 0 84% 60%;
-    --chart-neutral: 220 35% 50%;
+    /* Sidebar Variables - Dark Theme */
+    --sidebar-background: 222 47% 6%;
+    --sidebar-foreground: 210 40% 96%;
+    --sidebar-primary: 186 100% 42%;
+    --sidebar-primary-foreground: 222 47% 8%;
+    --sidebar-accent: 217 33% 14%;
+    --sidebar-accent-foreground: 210 40% 96%;
+    --sidebar-border: 217 33% 17%;
+    --sidebar-ring: 186 100% 42%;
+    
+    /* Chart Colors - Dark Theme */
+    --chart-1: 186 100% 42%;
+    --chart-2: 24 100% 58%;
+    --chart-3: 152 68% 42%;
+    --chart-4: 45 100% 55%;
+    --chart-5: 262 83% 62%;
+    --chart-6: 350 80% 58%;
+    --chart-7: 220 15% 55%;
+    --chart-8: 186 80% 38%;
+    
+    /* Chart Colors específicas para tipos de dados - Dark */
+    --chart-revenue: 152 68% 42%;
+    --chart-cost: 0 72% 51%;
+    --chart-profit: 186 100% 42%;
+    --chart-tax: 350 80% 58%;
+    --chart-commission: 45 100% 55%;
+    --chart-growth: 152 68% 42%;
+    --chart-decline: 0 72% 51%;
+    --chart-neutral: 220 15% 55%;
   }
   
-  /* Modo claro alternativo */
+  /* Modo claro alternativo - Mesmas variáveis do :root */
   .light {
-    --background: 220 25% 98%;
-    --foreground: 220 45% 15%;
-    --card: 220 25% 95%;
-    --card-foreground: 220 45% 15%;
-    --popover: 220 25% 95%;
-    --popover-foreground: 220 45% 15%;
-    --primary: 195 100% 45%;
-    --primary-foreground: 220 25% 98%;
-    --secondary: 220 25% 90%;
-    --secondary-foreground: 220 45% 15%;
-    --muted: 220 25% 92%;
-    --muted-foreground: 220 25% 40%;
-    --accent: 20 100% 55%;
-    --accent-foreground: 220 25% 98%;
-    --destructive: 0 84% 55%;
-    --destructive-foreground: 220 25% 98%;
-    --border: 220 25% 85%;
-    --input: 220 25% 95%;
-    --ring: 195 100% 45%;
+    --background: 0 0% 98%;
+    --foreground: 222 47% 11%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+    --primary: 210 100% 45%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 220 14% 96%;
+    --secondary-foreground: 222 47% 11%;
+    --muted: 220 14% 96%;
+    --muted-foreground: 215 16% 47%;
+    --accent: 24 100% 58%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 210 100% 45%;
     
-    /* Sidebar Variables - Light theme */
-    --sidebar-background: 220 25% 95%;
-    --sidebar-foreground: 220 45% 15%;
-    --sidebar-primary: 195 100% 45%;
-    --sidebar-primary-foreground: 220 25% 98%;
-    --sidebar-accent: 220 25% 90%;
-    --sidebar-accent-foreground: 220 45% 15%;
-    --sidebar-border: 220 25% 85%;
-    --sidebar-ring: 195 100% 45%;
+    /* Sidebar Variables - Light Theme */
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 222 47% 11%;
+    --sidebar-primary: 210 100% 45%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 220 14% 96%;
+    --sidebar-accent-foreground: 222 47% 11%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 210 100% 45%;
     
-    --chart-1: 195 100% 45%;
-    --chart-2: 20 100% 55%;
-    --chart-3: 150 80% 40%;
+    --chart-1: 210 100% 45%;
+    --chart-2: 24 100% 58%;
+    --chart-3: 152 68% 38%;
     --chart-4: 45 100% 55%;
-    --chart-5: 270 70% 55%;
-    --chart-6: 340 75% 50%;
-    --chart-7: 220 35% 25%;
-    --chart-8: 195 80% 30%;
+    --chart-5: 262 83% 58%;
+    --chart-6: 350 80% 55%;
+    --chart-7: 220 15% 55%;
+    --chart-8: 186 100% 42%;
     
-    /* Chart Colors específicas para tipos de dados - modo claro */
-    --chart-revenue: 195 100% 45%;
-    --chart-cost: 20 100% 55%;
-    --chart-profit: 150 80% 40%;
-    --chart-tax: 0 84% 55%;
+    /* Chart Colors específicas para tipos de dados - Light */
+    --chart-revenue: 152 68% 38%;
+    --chart-cost: 0 84% 60%;
+    --chart-profit: 210 100% 45%;
+    --chart-tax: 350 80% 55%;
     --chart-commission: 45 100% 55%;
-    --chart-growth: 150 80% 40%;
-    --chart-decline: 0 84% 55%;
-    --chart-neutral: 220 35% 45%;
+    --chart-growth: 152 68% 38%;
+    --chart-decline: 0 84% 60%;
+    --chart-neutral: 220 15% 55%;
   }
 
   /* Modo de alto contraste - WCAG AAA compliance */
@@ -749,6 +770,271 @@
     background-color: hsl(var(--primary) / 0.12) !important;
   }
 
+  .service-desk-theme .bg-white,
+  .service-desk-theme .bg-gray-50,
+  .service-desk-theme .bg-slate-50,
+  .service-desk-theme .bg-zinc-50 {
+    background-color: hsl(var(--card) / 0.94) !important;
+    color: hsl(var(--card-foreground)) !important;
+  }
+
+  .service-desk-theme .bg-gray-100,
+  .service-desk-theme .bg-slate-100,
+  .service-desk-theme .bg-zinc-100,
+  .service-desk-theme .bg-blue-50,
+  .service-desk-theme .bg-cyan-50,
+  .service-desk-theme .bg-green-50,
+  .service-desk-theme .bg-emerald-50,
+  .service-desk-theme .bg-yellow-50,
+  .service-desk-theme .bg-amber-50,
+  .service-desk-theme .bg-orange-50,
+  .service-desk-theme .bg-red-50,
+  .service-desk-theme .bg-rose-50,
+  .service-desk-theme .bg-purple-50,
+  .service-desk-theme .bg-violet-50,
+  .service-desk-theme .bg-blue-100,
+  .service-desk-theme .bg-cyan-100,
+  .service-desk-theme .bg-green-100,
+  .service-desk-theme .bg-emerald-100,
+  .service-desk-theme .bg-yellow-100,
+  .service-desk-theme .bg-amber-100,
+  .service-desk-theme .bg-orange-100,
+  .service-desk-theme .bg-red-100,
+  .service-desk-theme .bg-rose-100,
+  .service-desk-theme .bg-purple-100,
+  .service-desk-theme .bg-violet-100 {
+    background-color: hsl(var(--muted) / 0.78) !important;
+    color: hsl(var(--foreground)) !important;
+  }
+
+  .service-desk-theme .text-gray-400,
+  .service-desk-theme .text-gray-500,
+  .service-desk-theme .text-gray-600,
+  .service-desk-theme .text-slate-400,
+  .service-desk-theme .text-slate-500,
+  .service-desk-theme .text-slate-600,
+  .service-desk-theme .text-zinc-400,
+  .service-desk-theme .text-zinc-500,
+  .service-desk-theme .text-zinc-600 {
+    color: hsl(var(--muted-foreground)) !important;
+  }
+
+  .service-desk-theme .text-gray-700,
+  .service-desk-theme .text-gray-800,
+  .service-desk-theme .text-gray-900,
+  .service-desk-theme .text-slate-700,
+  .service-desk-theme .text-slate-800,
+  .service-desk-theme .text-slate-900,
+  .service-desk-theme .text-zinc-700,
+  .service-desk-theme .text-zinc-800,
+  .service-desk-theme .text-zinc-900,
+  .service-desk-theme .text-black {
+    color: hsl(var(--foreground)) !important;
+  }
+
+  .service-desk-theme .text-blue-500,
+  .service-desk-theme .text-blue-600,
+  .service-desk-theme .text-blue-700,
+  .service-desk-theme .text-blue-800,
+  .service-desk-theme .text-blue-900,
+  .service-desk-theme .text-cyan-500,
+  .service-desk-theme .text-cyan-600,
+  .service-desk-theme .text-cyan-700,
+  .service-desk-theme .text-cyan-800,
+  .service-desk-theme .text-cyan-900 {
+    color: hsl(198 92% 38%) !important;
+  }
+
+  .service-desk-theme .text-green-500,
+  .service-desk-theme .text-green-600,
+  .service-desk-theme .text-green-700,
+  .service-desk-theme .text-green-800,
+  .service-desk-theme .text-green-900,
+  .service-desk-theme .text-emerald-500,
+  .service-desk-theme .text-emerald-600,
+  .service-desk-theme .text-emerald-700,
+  .service-desk-theme .text-emerald-800,
+  .service-desk-theme .text-emerald-900 {
+    color: hsl(151 76% 31%) !important;
+  }
+
+  .service-desk-theme .text-yellow-500,
+  .service-desk-theme .text-yellow-600,
+  .service-desk-theme .text-yellow-700,
+  .service-desk-theme .text-yellow-800,
+  .service-desk-theme .text-yellow-900,
+  .service-desk-theme .text-amber-500,
+  .service-desk-theme .text-amber-600,
+  .service-desk-theme .text-amber-700,
+  .service-desk-theme .text-amber-800,
+  .service-desk-theme .text-amber-900,
+  .service-desk-theme .text-orange-500,
+  .service-desk-theme .text-orange-600,
+  .service-desk-theme .text-orange-700,
+  .service-desk-theme .text-orange-800,
+  .service-desk-theme .text-orange-900 {
+    color: hsl(30 92% 37%) !important;
+  }
+
+  .service-desk-theme .text-red-500,
+  .service-desk-theme .text-red-600,
+  .service-desk-theme .text-red-700,
+  .service-desk-theme .text-red-800,
+  .service-desk-theme .text-red-900,
+  .service-desk-theme .text-rose-500,
+  .service-desk-theme .text-rose-600,
+  .service-desk-theme .text-rose-700,
+  .service-desk-theme .text-rose-800,
+  .service-desk-theme .text-rose-900 {
+    color: hsl(356 75% 47%) !important;
+  }
+
+  .service-desk-theme .text-purple-500,
+  .service-desk-theme .text-purple-600,
+  .service-desk-theme .text-purple-700,
+  .service-desk-theme .text-purple-800,
+  .service-desk-theme .text-purple-900,
+  .service-desk-theme .text-violet-500,
+  .service-desk-theme .text-violet-600,
+  .service-desk-theme .text-violet-700,
+  .service-desk-theme .text-violet-800,
+  .service-desk-theme .text-violet-900 {
+    color: hsl(262 72% 52%) !important;
+  }
+
+  .dark .service-desk-theme .bg-white,
+  .dark .service-desk-theme .bg-gray-50,
+  .dark .service-desk-theme .bg-gray-100,
+  .dark .service-desk-theme .bg-slate-50,
+  .dark .service-desk-theme .bg-slate-100,
+  .dark .service-desk-theme .bg-zinc-50,
+  .dark .service-desk-theme .bg-zinc-100 {
+    background-color: hsl(var(--card) / 0.86) !important;
+    color: hsl(var(--card-foreground)) !important;
+  }
+
+  .dark .service-desk-theme .bg-blue-50,
+  .dark .service-desk-theme .bg-blue-100,
+  .dark .service-desk-theme .bg-cyan-50,
+  .dark .service-desk-theme .bg-cyan-100,
+  .dark .service-desk-theme .bg-green-50,
+  .dark .service-desk-theme .bg-green-100,
+  .dark .service-desk-theme .bg-emerald-50,
+  .dark .service-desk-theme .bg-emerald-100,
+  .dark .service-desk-theme .bg-yellow-50,
+  .dark .service-desk-theme .bg-yellow-100,
+  .dark .service-desk-theme .bg-amber-50,
+  .dark .service-desk-theme .bg-amber-100,
+  .dark .service-desk-theme .bg-orange-50,
+  .dark .service-desk-theme .bg-orange-100,
+  .dark .service-desk-theme .bg-red-50,
+  .dark .service-desk-theme .bg-red-100,
+  .dark .service-desk-theme .bg-rose-50,
+  .dark .service-desk-theme .bg-rose-100,
+  .dark .service-desk-theme .bg-purple-50,
+  .dark .service-desk-theme .bg-purple-100,
+  .dark .service-desk-theme .bg-violet-50,
+  .dark .service-desk-theme .bg-violet-100 {
+    background-color: hsl(var(--muted) / 0.42) !important;
+    color: hsl(var(--foreground)) !important;
+  }
+
+  .dark .service-desk-theme .text-blue-500,
+  .dark .service-desk-theme .text-blue-600,
+  .dark .service-desk-theme .text-blue-700,
+  .dark .service-desk-theme .text-blue-800,
+  .dark .service-desk-theme .text-blue-900,
+  .dark .service-desk-theme .text-cyan-500,
+  .dark .service-desk-theme .text-cyan-600,
+  .dark .service-desk-theme .text-cyan-700,
+  .dark .service-desk-theme .text-cyan-800,
+  .dark .service-desk-theme .text-cyan-900 {
+    color: hsl(198 100% 76%) !important;
+  }
+
+  .dark .service-desk-theme .text-green-500,
+  .dark .service-desk-theme .text-green-600,
+  .dark .service-desk-theme .text-green-700,
+  .dark .service-desk-theme .text-green-800,
+  .dark .service-desk-theme .text-green-900,
+  .dark .service-desk-theme .text-emerald-500,
+  .dark .service-desk-theme .text-emerald-600,
+  .dark .service-desk-theme .text-emerald-700,
+  .dark .service-desk-theme .text-emerald-800,
+  .dark .service-desk-theme .text-emerald-900 {
+    color: hsl(151 78% 70%) !important;
+  }
+
+  .dark .service-desk-theme .text-yellow-500,
+  .dark .service-desk-theme .text-yellow-600,
+  .dark .service-desk-theme .text-yellow-700,
+  .dark .service-desk-theme .text-yellow-800,
+  .dark .service-desk-theme .text-yellow-900,
+  .dark .service-desk-theme .text-amber-500,
+  .dark .service-desk-theme .text-amber-600,
+  .dark .service-desk-theme .text-amber-700,
+  .dark .service-desk-theme .text-amber-800,
+  .dark .service-desk-theme .text-amber-900,
+  .dark .service-desk-theme .text-orange-500,
+  .dark .service-desk-theme .text-orange-600,
+  .dark .service-desk-theme .text-orange-700,
+  .dark .service-desk-theme .text-orange-800,
+  .dark .service-desk-theme .text-orange-900 {
+    color: hsl(36 100% 72%) !important;
+  }
+
+  .dark .service-desk-theme .text-red-500,
+  .dark .service-desk-theme .text-red-600,
+  .dark .service-desk-theme .text-red-700,
+  .dark .service-desk-theme .text-red-800,
+  .dark .service-desk-theme .text-red-900,
+  .dark .service-desk-theme .text-rose-500,
+  .dark .service-desk-theme .text-rose-600,
+  .dark .service-desk-theme .text-rose-700,
+  .dark .service-desk-theme .text-rose-800,
+  .dark .service-desk-theme .text-rose-900 {
+    color: hsl(356 100% 76%) !important;
+  }
+
+  .dark .service-desk-theme .text-purple-500,
+  .dark .service-desk-theme .text-purple-600,
+  .dark .service-desk-theme .text-purple-700,
+  .dark .service-desk-theme .text-purple-800,
+  .dark .service-desk-theme .text-purple-900,
+  .dark .service-desk-theme .text-violet-500,
+  .dark .service-desk-theme .text-violet-600,
+  .dark .service-desk-theme .text-violet-700,
+  .dark .service-desk-theme .text-violet-800,
+  .dark .service-desk-theme .text-violet-900 {
+    color: hsl(262 100% 82%) !important;
+  }
+
+  .service-desk-theme .border-gray-200,
+  .service-desk-theme .border-gray-300,
+  .service-desk-theme .border-slate-200,
+  .service-desk-theme .border-slate-300,
+  .service-desk-theme .border-blue-200,
+  .service-desk-theme .border-green-200,
+  .service-desk-theme .border-yellow-200,
+  .service-desk-theme .border-amber-200,
+  .service-desk-theme .border-orange-200,
+  .service-desk-theme .border-red-200,
+  .service-desk-theme .border-purple-200 {
+    border-color: hsl(var(--border) / 0.78) !important;
+  }
+
+  .service-desk-theme .hover\:bg-gray-50:hover,
+  .service-desk-theme .hover\:bg-gray-100:hover,
+  .service-desk-theme .hover\:bg-slate-50:hover,
+  .service-desk-theme .hover\:bg-slate-100:hover,
+  .service-desk-theme .hover\:bg-blue-50:hover,
+  .service-desk-theme .hover\:bg-green-50:hover,
+  .service-desk-theme .hover\:bg-orange-50:hover,
+  .service-desk-theme .hover\:bg-purple-50:hover {
+    background-color: hsl(var(--muted)) !important;
+    color: hsl(var(--foreground)) !important;
+  }
+
   /* High contrast mode specific styles */
   .high-contrast .glass-effect {
     background: hsl(var(--card));
@@ -1149,4 +1435,318 @@
 
 .noc-theme .text-secondary-foreground {
   color: rgb(215 233 255) !important;
+}
+
+
+/* ============================================================
+   MODERNIZAÇÃO UI/UX — Sidebar, Layout, Nav, Scrollbar
+   ============================================================ */
+
+/* Custom scrollbar — sidebar e conteúdo */
+.sidebar-scroll::-webkit-scrollbar {
+  width: 4px;
+}
+.sidebar-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.sidebar-scroll::-webkit-scrollbar-thumb {
+  background: hsl(var(--border));
+  border-radius: 99px;
+}
+.sidebar-scroll::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--primary) / 0.5);
+}
+
+.content-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+.content-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.content-scroll::-webkit-scrollbar-thumb {
+  background: hsl(var(--border));
+  border-radius: 99px;
+}
+.content-scroll::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--primary) / 0.4);
+}
+
+/* Sidebar moderna */
+.sidebar-modern {
+  background: hsl(var(--sidebar-background));
+  border-right: 1px solid hsl(var(--sidebar-border));
+}
+
+.dark .sidebar-modern {
+  background: hsl(222 47% 6%);
+  border-right: 1px solid hsl(217 33% 14%);
+}
+
+/* Sidebar brand header */
+.sidebar-brand-modern {
+  background: linear-gradient(135deg,
+    hsl(var(--primary) / 0.08) 0%,
+    hsl(var(--background)) 100%);
+  border-bottom: 1px solid hsl(var(--border) / 0.6);
+}
+
+.dark .sidebar-brand-modern {
+  background: linear-gradient(135deg,
+    hsl(var(--primary) / 0.12) 0%,
+    hsl(222 47% 6%) 100%);
+}
+
+/* Category label na sidebar */
+.sidebar-category-label {
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: hsl(var(--muted-foreground) / 0.6);
+  padding: 0.5rem 0.75rem 0.25rem;
+  margin-top: 0.5rem;
+}
+
+/* Nav item base */
+.nav-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  gap: 0.625rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.5rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: hsl(var(--sidebar-foreground) / 0.7);
+  cursor: pointer;
+  transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid transparent;
+  background: transparent;
+  text-align: left;
+  user-select: none;
+}
+
+.nav-item:hover {
+  color: hsl(var(--sidebar-foreground));
+  background: hsl(var(--sidebar-accent) / 0.7);
+  border-color: hsl(var(--border) / 0.4);
+}
+
+.nav-item.active {
+  color: hsl(var(--primary));
+  background: hsl(var(--primary) / 0.1);
+  border-color: hsl(var(--primary) / 0.25);
+  font-weight: 600;
+}
+
+.dark .nav-item.active {
+  color: hsl(var(--primary));
+  background: hsl(var(--primary) / 0.15);
+  border-color: hsl(var(--primary) / 0.3);
+}
+
+/* Pill indicator no item ativo */
+.nav-item.active::before {
+  content: "";
+  position: absolute;
+  left: -1px;
+  top: 20%;
+  height: 60%;
+  width: 3px;
+  border-radius: 0 4px 4px 0;
+  background: hsl(var(--primary));
+}
+
+/* Subitem */
+.nav-subitem {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  gap: 0.5rem;
+  padding: 0.375rem 0.625rem;
+  border-radius: 0.375rem;
+  font-size: 0.78rem;
+  font-weight: 400;
+  color: hsl(var(--sidebar-foreground) / 0.6);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  background: transparent;
+  text-align: left;
+  user-select: none;
+}
+
+.nav-subitem:hover {
+  color: hsl(var(--sidebar-foreground) / 0.9);
+  background: hsl(var(--sidebar-accent) / 0.5);
+}
+
+.nav-subitem.active {
+  color: hsl(var(--primary));
+  background: hsl(var(--primary) / 0.08);
+  font-weight: 600;
+}
+
+.dark .nav-subitem.active {
+  color: hsl(var(--primary));
+  background: hsl(var(--primary) / 0.12);
+}
+
+/* Ícone colorido por categoria */
+.nav-icon-gestao   { color: hsl(210 100% 55%); }
+.nav-icon-comercial { color: hsl(24 100% 60%); }
+.nav-icon-financeiro { color: hsl(152 68% 42%); }
+.nav-icon-b2g      { color: hsl(262 83% 65%); }
+.nav-icon-tecnico  { color: hsl(186 100% 45%); }
+.nav-icon-sistema  { color: hsl(215 16% 55%); }
+
+/* Animação de entrada de conteúdo */
+@keyframes content-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.content-animate {
+  animation: content-fade-in 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Header modernizado */
+.header-modern {
+  background: hsl(var(--background) / 0.92);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid hsl(var(--border) / 0.5);
+}
+
+/* User avatar gradient */
+.user-avatar {
+  background: linear-gradient(135deg, hsl(var(--primary) / 0.2), hsl(var(--primary) / 0.05));
+  border: 1px solid hsl(var(--primary) / 0.2);
+}
+
+/* Tooltip para sidebar colapsada */
+.nav-tooltip {
+  position: absolute;
+  left: calc(100% + 8px);
+  top: 50%;
+  transform: translateY(-50%);
+  background: hsl(var(--popover));
+  color: hsl(var(--popover-foreground));
+  border: 1px solid hsl(var(--border));
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  white-space: nowrap;
+  pointer-events: none;
+  box-shadow: 0 4px 12px rgb(0 0 0 / 0.12);
+  z-index: 50;
+}
+
+/* Gradiente no topo da sidebar (separador visual) */
+.sidebar-top-fade {
+  background: linear-gradient(to bottom,
+    hsl(var(--background)) 0%,
+    transparent 100%);
+  pointer-events: none;
+}
+
+/* Contador/badge para itens de nav */
+.nav-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  border-radius: 99px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  background: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+  margin-left: auto;
+}
+
+/* Main content area */
+.main-content-area {
+  flex: 1;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: hsl(var(--background));
+  overflow: hidden;
+}
+
+/* Content padding wrapper */
+.content-wrapper {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .content-wrapper {
+    padding: 2rem;
+  }
+}
+
+/* Sidebar footer */
+.sidebar-footer-modern {
+  padding: 0.75rem;
+  border-top: 1px solid hsl(var(--border) / 0.5);
+  background: hsl(var(--background) / 0.6);
+}
+
+/* Collapsible grupo linha */
+.nav-group-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0.4rem 0.75rem;
+  border-radius: 0.5rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  background: transparent;
+  color: hsl(var(--sidebar-foreground) / 0.75);
+  border: none;
+  user-select: none;
+}
+
+.nav-group-trigger:hover {
+  color: hsl(var(--sidebar-foreground));
+  background: hsl(var(--sidebar-accent) / 0.5);
+}
+
+.nav-group-trigger.has-active {
+  color: hsl(var(--primary));
+}
+
+/* Subitem container com linha vertical */
+.nav-subitems-container {
+  position: relative;
+  margin-left: 1.25rem;
+  padding-left: 0.75rem;
+  margin-top: 0.125rem;
+  margin-bottom: 0.25rem;
+}
+
+.nav-subitems-container::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: hsl(var(--border) / 0.7);
+  border-radius: 1px;
 }

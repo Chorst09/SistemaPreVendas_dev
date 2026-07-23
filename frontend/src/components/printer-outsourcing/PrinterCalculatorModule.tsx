@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Printer, ArrowLeft, Plus, Trash2, Calculator, Save, Search } from "lucide-react"
+import { Printer, ArrowLeft, Plus, Trash2, Calculator, Save, Search, Info } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -13,7 +13,7 @@ import { useProposalEditing } from "@/hooks/use-proposal-editing"
 import { ProposalClientForm, type ClientData } from "@/components/calculators/ProposalClientForm"
 import type { ProposalClientData } from "@/components/shared/ProposalClientDataForm"
 import { mapProposalClientDataToLegacyClientData } from "@/components/shared/proposalClientDataMapper"
-import { Printer as PrinterType } from "./types"
+import { Printer as PrinterType, Suprimento } from "./types"
 import { ManualCalculationModal } from "./ManualCalculationModal"
 import SimplePDFGenerator from "@/components/pdf-generation/simple/SimplePDFGenerator"
 import ProposalConfirmation from "@/components/pdf-generation/viewers/ProposalConfirmation"
@@ -22,6 +22,8 @@ import {
   createProposalData
 } from "@/lib/pdf/utils/data-mappers"
 import { ProposalData, ClientData as PDFClientData } from "@/lib/pdf/types/index"
+import { useConfigurationStore } from "@/lib/stores/configuration-store"
+import { blobToBase64, storePDF } from "@/lib/services/pdf-storage-service"
 
 interface PrinterItem {
     id: string
@@ -44,12 +46,17 @@ interface PrinterCalculatorModuleProps {
     onNavigateToProposals?: () => void
     printers: PrinterType[]
     suprimentos: any[]
+    onUpdatePrinters?: (printers: PrinterType[]) => void
+    onUpdateSuprimentos?: (suprimentos: Suprimento[]) => void
     editingProposalId?: string | null // For editing existing proposals
     onFinishEditing?: () => void // Callback when editing is finished
     proposalClientData?: ProposalClientData | null
 }
 
-export function PrinterCalculatorModule({ onBack, onNavigateToProposals, printers: availablePrinters, suprimentos: availableSuprimentos, editingProposalId, onFinishEditing, proposalClientData }: PrinterCalculatorModuleProps) {
+export function PrinterCalculatorModule({ onBack, onNavigateToProposals, printers: availablePrinters, suprimentos: availableSuprimentos, onUpdatePrinters, onUpdateSuprimentos, editingProposalId, onFinishEditing, proposalClientData }: PrinterCalculatorModuleProps) {
+    const { outsourcingConfig, taxRegimes } = useConfigurationStore()
+    const regimeAtivo = taxRegimes.find(r => r.active)
+    
     const [printers, setPrinters] = useState<PrinterItem[]>([])
     const [showClientForm, setShowClientForm] = useState(false)
     const [showQuoteView, setShowQuoteView] = useState(false)
@@ -88,6 +95,31 @@ export function PrinterCalculatorModule({ onBack, onNavigateToProposals, printer
     const [prazoImpressora, setPrazoImpressora] = useState(36)
     const [tipoModoCalculo, setTipoModoCalculo] = useState<"manual" | "catalogo">("manual")
     const [showManualCalculationModal, setShowManualCalculationModal] = useState(false)
+    const [showCatalogRegistration, setShowCatalogRegistration] = useState(false)
+    const [catalogPrinterDraft, setCatalogPrinterDraft] = useState<Partial<PrinterType>>({
+        marca: "",
+        modelo: "",
+        tipo: "Laser P&B",
+        velocidadePPM: 0,
+        custoAquisicao: 0,
+        custoMensalLocacao: 0,
+        vidaUtilPaginas: 100000,
+        consumoEnergia: 15,
+        custoManutencaoMensal: 50,
+        ativo: true
+    })
+    const [catalogSupplyDraft, setCatalogSupplyDraft] = useState<Partial<Suprimento>>({
+        tipo: "Toner P&B",
+        descricao: "",
+        rendimentoPaginas: 0,
+        custoUnitario: 0,
+        estoqueMinimo: 1,
+        estoqueAtual: 0,
+        fornecedor: "",
+        codigoOriginal: "",
+        compativel: false
+    })
+    const [catalogSuppliesDraft, setCatalogSuppliesDraft] = useState<Suprimento[]>([])
     
     // Effect to load proposal data when editing
     useEffect(() => {
@@ -129,8 +161,8 @@ export function PrinterCalculatorModule({ onBack, onNavigateToProposals, printer
         }
     }, [isEditing, editingPrinterItems])
 
-    // Custos base por tipo de impressão (baseado no site de referência)
-    const custosBase = {
+    // Custos base por tipo de impressão (das configurações centralizadas)
+    const custosBase = outsourcingConfig.custosBase || {
         "Preto e Branco": 0.08,
         "Colorida": 0.35,
         "A3 Preto e Branco": 0.12,
@@ -164,25 +196,177 @@ export function PrinterCalculatorModule({ onBack, onNavigateToProposals, printer
         setNovoPrazo(36)
     }
 
-    const handleManualCalculationSave = (dados: any) => {
+    const calcularPrecificacaoCatalogo = (custoAquisicao: number, supplies: Suprimento[], tipo: string) => {
+        const taxaFinanceira = (outsourcingConfig.taxaFinanceiraMensal || 0) / 100
+        const margemRate = (outsourcingConfig.margemPadrao || 0) / 100
+        const comissaoRate = (outsourcingConfig.comissaoVenda || 0) / 100
+        const operacionalRate = (outsourcingConfig.custosOperacionais || 0) / 100
+        const impostoRate = regimeAtivo
+            ? (regimeAtivo.type === 'iva'
+                ? regimeAtivo.ivaTotal
+                : regimeAtivo.type === 'simples'
+                    ? regimeAtivo.anexoI
+                    : (regimeAtivo.icms || 0) + (regimeAtivo.pis || 0) + (regimeAtivo.cofins || 0) + 1.2) / 100
+            : 0
+        const divisor = 1 - margemRate - comissaoRate - operacionalRate - impostoRate
+        const mensalizar = (prazo: number) => {
+            if (custoAquisicao <= 0 || prazo <= 0) return 0
+            const pmt = taxaFinanceira > 0
+                ? (custoAquisicao * taxaFinanceira) / (1 - Math.pow(1 + taxaFinanceira, -prazo))
+                : custoAquisicao / prazo
+            return divisor > 0 ? pmt / divisor : pmt
+        }
+        const custoSupMono = supplies
+            .filter(s => ['Toner P&B', 'Toner Preto', 'Fotoconductor', 'Kit Manutenção'].includes(s.tipo))
+            .reduce((total, s) => total + (s.rendimentoPaginas > 0 ? s.custoUnitario / s.rendimentoPaginas : 0), 0)
+        const custoSupColorAdicional = supplies
+            .filter(s => ['Toner Ciano', 'Toner Magenta', 'Toner Amarelo'].includes(s.tipo))
+            .reduce((total, s) => total + (s.rendimentoPaginas > 0 ? s.custoUnitario / s.rendimentoPaginas : 0), 0)
+        const custoPaginaMono = custoSupMono
+        const custoPaginaColor = tipo.includes('Colorida') ? custoSupMono + custoSupColorAdicional : 0
+        const periodosLocacao = [12, 24, 36, 48, 60].reduce((acc, prazo) => {
+            const valorMensal = mensalizar(prazo)
+            acc[prazo] = {
+                valorMensal,
+                valorTotal: valorMensal * prazo,
+                paybackMeses: valorMensal > 0 ? custoAquisicao / valorMensal : 0,
+                roi: custoAquisicao > 0 ? ((valorMensal * prazo - custoAquisicao) / custoAquisicao) * 100 : 0
+            }
+            return acc
+        }, {} as NonNullable<PrinterType['precificacao']>['periodosLocacao'])
+
+        return {
+            custoBase: custoAquisicao,
+            margemDesejada: outsourcingConfig.margemPadrao || 0,
+            regimeTributario: regimeAtivo?.name || outsourcingConfig.taxRegimeId || 'Não configurado',
+            regimeTributarioId: regimeAtivo?.id || outsourcingConfig.taxRegimeId || null,
+            icmsCompra: 0,
+            icmsVenda: regimeAtivo?.type === 'presumido' || regimeAtivo?.type === 'real' ? regimeAtivo.icms || 0 : 0,
+            ipiCompra: 0,
+            pisCofinsSaida: regimeAtivo?.type === 'presumido' || regimeAtivo?.type === 'real' ? (regimeAtivo.pis || 0) + (regimeAtivo.cofins || 0) : 0,
+            comissaoVenda: outsourcingConfig.comissaoVenda || 0,
+            custosOperacionais: outsourcingConfig.custosOperacionais || 0,
+            precoVendaSugerido: divisor > 0 ? custoAquisicao / divisor : custoAquisicao,
+            custoPaginaMono,
+            custoPaginaColor,
+            periodosLocacao,
+            calculadoEm: new Date().toISOString()
+        }
+    }
+
+    const adicionarSuprimentoCatalogo = () => {
+        if (!catalogSupplyDraft.descricao || !catalogSupplyDraft.rendimentoPaginas || !catalogSupplyDraft.custoUnitario) {
+            alert('Preencha descrição, rendimento e custo do suprimento.')
+            return
+        }
+
+        const supply: Suprimento = {
+            id: `draft-${Date.now()}`,
+            printerId: '',
+            tipo: catalogSupplyDraft.tipo || 'Toner P&B',
+            descricao: catalogSupplyDraft.descricao,
+            rendimentoPaginas: Number(catalogSupplyDraft.rendimentoPaginas || 0),
+            custoUnitario: Number(catalogSupplyDraft.custoUnitario || 0),
+            estoqueMinimo: Number(catalogSupplyDraft.estoqueMinimo || 1),
+            estoqueAtual: Number(catalogSupplyDraft.estoqueAtual || 0),
+            fornecedor: catalogSupplyDraft.fornecedor || '',
+            codigoOriginal: catalogSupplyDraft.codigoOriginal || '',
+            compativel: catalogSupplyDraft.compativel ?? false
+        }
+
+        setCatalogSuppliesDraft([...catalogSuppliesDraft, supply])
+        setCatalogSupplyDraft({
+            tipo: 'Toner P&B',
+            descricao: '',
+            rendimentoPaginas: 0,
+            custoUnitario: 0,
+            estoqueMinimo: 1,
+            estoqueAtual: 0,
+            fornecedor: '',
+            codigoOriginal: '',
+            compativel: false
+        })
+    }
+
+    const salvarImpressoraCatalogo = () => {
+        if (!catalogPrinterDraft.marca || !catalogPrinterDraft.modelo || !catalogPrinterDraft.custoAquisicao) {
+            alert('Preencha marca, modelo e valor de custo da impressora.')
+            return
+        }
+        if (catalogSuppliesDraft.length === 0) {
+            alert('Adicione pelo menos um suprimento para esta impressora.')
+            return
+        }
+
+        const printerId = `printer-${Date.now()}`
+        const tipo = catalogPrinterDraft.tipo || 'Laser P&B'
+        const precificacao = calcularPrecificacaoCatalogo(Number(catalogPrinterDraft.custoAquisicao || 0), catalogSuppliesDraft, tipo)
+        const newPrinter: PrinterType = {
+            id: printerId,
+            modelo: catalogPrinterDraft.modelo,
+            marca: catalogPrinterDraft.marca,
+            tipo,
+            velocidadePPM: Number(catalogPrinterDraft.velocidadePPM || 0),
+            custoAquisicao: Number(catalogPrinterDraft.custoAquisicao || 0),
+            custoMensalLocacao: Number(catalogPrinterDraft.custoMensalLocacao || precificacao.periodosLocacao[36]?.valorMensal || 0),
+            vidaUtilPaginas: Number(catalogPrinterDraft.vidaUtilPaginas || 100000),
+            consumoEnergia: Number(catalogPrinterDraft.consumoEnergia || 15),
+            custoManutencaoMensal: Number(catalogPrinterDraft.custoManutencaoMensal || 50),
+            ativo: true,
+            precificacao
+        }
+        const newSupplies = catalogSuppliesDraft.map((s, index) => ({
+            ...s,
+            id: `supply-${Date.now()}-${index}`,
+            printerId
+        }))
+
+        onUpdatePrinters?.([...availablePrinters, newPrinter])
+        onUpdateSuprimentos?.([...(availableSuprimentos as Suprimento[]), ...newSupplies])
+        setImpressoraSelecionada(printerId)
+        setShowCatalogRegistration(false)
+        setCatalogSuppliesDraft([])
+        setCatalogPrinterDraft({
+            marca: '',
+            modelo: '',
+            tipo: 'Laser P&B',
+            velocidadePPM: 0,
+            custoAquisicao: 0,
+            custoMensalLocacao: 0,
+            vidaUtilPaginas: 100000,
+            consumoEnergia: 15,
+            custoManutencaoMensal: 50,
+            ativo: true
+        })
+    }
+
+    const handleManualCalculationSave = (dados: any, options?: { salvarEmOrcamentos?: boolean }) => {
         const modalidadeLocacao = dados.modalidadeLocacao as 'franquia' | 'por-pagina'
         const volumeMensal = Number(dados.volumeMensal || 0)
         const custoPorPagina = Number(dados.calculo.total || 0)
         const valorLocacaoImpressora = Number(dados.valorLocacaoImpressora || 0)
         const valorFranquia = Number(dados.valorFranquia || 0)
+        const franquiaMensal = Number(dados.franquiaMensal || 0)
+        const valorPaginaExcedenteMono = Number(dados.valorPaginaExcedenteMono || dados.calculo?.valorPaginaExcedenteMono || dados.calculo?.detalhes?.suprimentosMono || 0)
+        const valorPaginaExcedenteColor = Number(dados.valorPaginaExcedenteColor || dados.calculo?.valorPaginaExcedenteColor || dados.calculo?.detalhes?.suprimentosColor || 0)
         const prazoContrato = Number(dados.prazoContrato || 0)
+        const impressoras = Array.isArray(dados.impressoras) ? dados.impressoras : [dados.impressora].filter(Boolean)
+        const totalEquipamentos = impressoras.reduce((total: number, printer: any) => total + Number(printer.quantidade || 1), 0)
+        const hasColorida = impressoras.some((printer: any) => printer.tipo === 'Laser Colorida')
 
-        const custoMensalCalculado = modalidadeLocacao === 'por-pagina'
-            ? valorLocacaoImpressora + (volumeMensal * custoPorPagina)
-            : valorFranquia
+        const custoMensalCalculado = Number(dados.calculo?.custoMensal || 0) || (
+            modalidadeLocacao === 'por-pagina'
+                ? valorLocacaoImpressora + (volumeMensal * custoPorPagina)
+                : valorFranquia
+        )
 
         const custoTotalContratoCalculado = custoMensalCalculado * prazoContrato
 
         const novoItem: PrinterItem = {
             id: Date.now().toString(),
-            modelo: dados.impressora.modelo,
-            marca: dados.impressora.marca,
-            tipo: dados.impressora.tipo,
+            modelo: totalEquipamentos > 1 ? `${totalEquipamentos} impressoras` : dados.impressora.modelo,
+            marca: totalEquipamentos > 1 ? 'Frota' : dados.impressora.marca,
+            tipo: hasColorida ? 'Laser Colorida' : (dados.impressora.tipo || 'Laser P&B'),
             volumeMensal,
             custoPorPagina,
             custoMensal: custoMensalCalculado,
@@ -191,8 +375,11 @@ export function PrinterCalculatorModule({ onBack, onNavigateToProposals, printer
             isFromCatalog: false,
             // Armazenar dados detalhados para referência
             detalhesCalculo: {
+                impressoras,
                 suprimentos: dados.suprimentos,
-                custoAquisicao: dados.impressora.custoAquisicao,
+                infraestrutura: dados.infraestrutura || [],
+                totalEquipamentos,
+                custoAquisicao: impressoras.reduce((total: number, printer: any) => total + (Number(printer.custoAquisicao || 0) * Number(printer.quantidade || 1)), 0),
                 vidaUtil: dados.impressora.vidaUtil,
                 detalhamento: dados.calculo.detalhes,
                 custoPorPaginaMono: dados.custoPorPaginaMono,
@@ -200,12 +387,29 @@ export function PrinterCalculatorModule({ onBack, onNavigateToProposals, printer
                 isColorida: dados.isColorida,
                 modalidadeLocacao,
                 valorLocacaoImpressora,
-                valorFranquia
+                valorLocacaoBaseImpressoras: dados.valorLocacaoBaseImpressoras,
+                franquiaMensal,
+                valorFranquia,
+                valorPaginaExcedenteMono,
+                valorPaginaExcedenteColor,
+                infraestruturaModo: dados.infraestruturaModo,
+                infraestruturaRateadaNaLocacao: dados.infraestruturaRateadaNaLocacao,
+                infraestruturaMensalSeparada: dados.infraestruturaMensalSeparada,
+                // Dados do regime tributário
+                regimeTributarioId: dados.regimeTributarioId,
+                regimeTributarioNome: dados.regimeTributarioNome,
+                regimeTributarioAliquota: dados.regimeTributarioAliquota,
+                comissaoVenda: dados.comissaoVenda,
+                custosOperacionais: dados.custosOperacionais,
+                margemPadrao: dados.margemPadrao
             }
         }
 
         setPrinters([...printers, novoItem])
         setShowManualCalculationModal(false)
+        if (options?.salvarEmOrcamentos) {
+            setShowClientForm(true)
+        }
     }
 
     const adicionarImpressoraCatalogo = () => {
@@ -396,7 +600,10 @@ export function PrinterCalculatorModule({ onBack, onNavigateToProposals, printer
                     brand: p.marca || 'N/A',
                     type: p.tipo,
                     monthlyVolume: p.volumeMensal,
-                    monthlyCost: p.custoMensal
+                    monthlyCost: p.custoMensal,
+                    pageCost: p.custoPorPagina,
+                    contractMonths: p.prazoContrato,
+                    details: p.detalhesCalculo
                 }))
             }
             
@@ -453,17 +660,31 @@ export function PrinterCalculatorModule({ onBack, onNavigateToProposals, printer
                         prazoContrato: item.prazoContrato,
                         isFromCatalog: item.isFromCatalog,
                         printerId: item.printerId,
-                        valorMensalLocacao: item.valorMensalLocacao
+                        valorMensalLocacao: item.valorMensalLocacao,
+                        regimeTributario: regimeAtivo?.name || null,
+                        regimeTributarioId: regimeAtivo?.id || null,
+                        modalidadeLocacao: item.detalhesCalculo?.modalidadeLocacao || null,
+                        franquiaMensal: item.detalhesCalculo?.franquiaMensal || null,
+                        valorFranquia: item.detalhesCalculo?.valorFranquia || null,
+                        valorPaginaExcedenteMono: item.detalhesCalculo?.valorPaginaExcedenteMono || null,
+                        valorPaginaExcedenteColor: item.detalhesCalculo?.valorPaginaExcedenteColor || null
                     }
                 })),
                 totalValue: totais.custoAnual,
                 specifications: {
+                    equipments: printers,
                     volumeTotalMensal: totais.volumeTotal,
                     custoMensalTotal: totais.custoMensal,
                     custoAnualTotal: totais.custoAnual,
+                    monthlyPrice: totais.custoMensal,
+                    contractDurationMonths: printers.length > 0
+                        ? Math.max(...printers.map(p => Number(p.prazoContrato || 0)))
+                        : 12,
                     quantidadeItens: printers.length,
                     itensFromCatalog: printers.filter(p => p.isFromCatalog).length,
                     itensManual: printers.filter(p => !p.isFromCatalog).length,
+                    regimeTributario: regimeAtivo?.name || outsourcingConfig.taxRegimeId || 'Não configurado',
+                    regimeTributarioId: regimeAtivo?.id || outsourcingConfig.taxRegimeId || null,
                     // Add PDF reference for better integration
                     pdfGenerated: true,
                     pdfGeneratedAt: new Date().toISOString()
@@ -487,6 +708,11 @@ export function PrinterCalculatorModule({ onBack, onNavigateToProposals, printer
                     emailGerente: clientData.emailGerente
                 }
             })
+
+            if (createdQuote?.id) {
+                const pdfBase64 = await blobToBase64(blob)
+                storePDF(createdQuote.id, pdfBase64)
+            }
 
             // Log successful integration
             console.log('PDF proposal integrated with quote system:', {
@@ -627,12 +853,14 @@ export function PrinterCalculatorModule({ onBack, onNavigateToProposals, printer
                                 transition: 'all 0.2s ease'
                             }}
                             onMouseOver={(e) => {
-                                e.target.style.backgroundColor = '#e55a2b'
-                                e.target.style.transform = 'translateY(-2px)'
+                                const el = e.currentTarget as HTMLElement
+                                el.style.backgroundColor = '#e55a2b'
+                                el.style.transform = 'translateY(-2px)'
                             }}
                             onMouseOut={(e) => {
-                                e.target.style.backgroundColor = '#ff6b35'
-                                e.target.style.transform = 'translateY(0)'
+                                const el = e.currentTarget as HTMLElement
+                                el.style.backgroundColor = '#ff6b35'
+                                el.style.transform = 'translateY(0)'
                             }}
                         >
                             📄 SALVAR EM ORÇAMENTOS
@@ -659,11 +887,19 @@ export function PrinterCalculatorModule({ onBack, onNavigateToProposals, printer
                         <ArrowLeft className="h-4 w-4 mr-2" />
                         {isEditing ? 'Cancelar Edição' : 'Voltar'}
                     </Button>
-                    {isEditing && (
-                        <div className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
-                            Modo de Edição
-                        </div>
-                    )}
+                    <div className="flex items-center gap-3">
+                        {printers.length > 0 && (
+                            <Button onClick={handleSaveProposal} className="bg-orange-600 hover:bg-orange-700 text-white">
+                                <Save className="h-4 w-4 mr-2" />
+                                {isEditing ? 'Atualizar Proposta' : 'Salvar em Orçamentos'}
+                            </Button>
+                        )}
+                        {isEditing && (
+                            <div className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
+                                Modo de Edição
+                            </div>
+                        )}
+                    </div>
                 </div>
 
                 <Card className="bg-gradient-to-r from-[hsl(var(--accent-cyan))] to-[hsl(var(--primary-800))] border-[hsl(var(--accent-cyan)/0.5)] mb-6 card-modern">
@@ -677,9 +913,17 @@ export function PrinterCalculatorModule({ onBack, onNavigateToProposals, printer
                         <p className="text-white/90 text-lg mb-4">
                             {isEditing ? 'Modificando proposta existente' : 'Sistema de Cálculo de Impressão'}
                         </p>
-                        <Badge className="bg-[hsl(var(--primary-700))] hover:bg-[hsl(var(--primary-600))] text-white border-white/20">
-                            Volume Total: {totais.volumeTotal.toLocaleString()} páginas/mês
-                        </Badge>
+                        <div className="flex flex-wrap justify-center gap-2">
+                            <Badge className="bg-[hsl(var(--primary-700))] hover:bg-[hsl(var(--primary-600))] text-white border-white/20">
+                                Volume Total: {totais.volumeTotal.toLocaleString()} páginas/mês
+                            </Badge>
+                            {regimeAtivo && (
+                                <Badge variant="secondary" className="bg-green-700/50 text-green-100 border-green-500/40">
+                                    <Info className="h-3 w-3 mr-1" />
+                                    Regime: {regimeAtivo.name}
+                                </Badge>
+                            )}
+                        </div>
                     </CardContent>
                 </Card>
             </div>
@@ -716,6 +960,23 @@ export function PrinterCalculatorModule({ onBack, onNavigateToProposals, printer
                             </div>
                         </div>
 
+                        {/* Informação sobre volume variável */}
+                        <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                            <div className="flex items-start gap-2">
+                                <Info className="h-4 w-4 text-blue-500 mt-0.5 shrink-0" />
+                                <div>
+                                    <p className="text-sm text-blue-800 font-medium">Volume Variável Mês a Mês</p>
+                                    <p className="text-xs text-blue-600 mt-1">
+                                        O volume informado é uma estimativa mensal. Na modalidade <strong>Por Página</strong>, 
+                                        o custo varia conforme o uso real (páginas * custo por página + locação fixa). 
+                                        Na modalidade <strong>Franquia</strong>, o valor é fixo independente do volume. 
+                                        O custo por página considera o regime tributário configurado em 
+                                        <strong> Configurações → Outsourcing</strong>.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
                         {tipoModoCalculo === "catalogo" ? (
                             /* Formulário para impressora do catálogo */
                             <div className="space-y-4">
@@ -723,9 +984,177 @@ export function PrinterCalculatorModule({ onBack, onNavigateToProposals, printer
                                     <div className="p-4 bg-yellow-100 border border-yellow-300 rounded-lg">
                                         <p className="text-yellow-800 text-sm">
                                             <strong>Atenção:</strong> Não há impressoras com precificação disponíveis. 
-                                            Cadastre e precifique uma impressora primeiro na seção "Gestão de Impressoras".
+                                            Cadastre uma nova impressora abaixo ou precifique uma impressora na seção "Gestão de Impressoras".
                                         </p>
                                     </div>
+                                )}
+                                <div className="flex justify-end">
+                                    <Button type="button" variant="outline" onClick={() => setShowCatalogRegistration(!showCatalogRegistration)}>
+                                        <Plus className="h-4 w-4 mr-2" />
+                                        {showCatalogRegistration ? 'Fechar Cadastro' : 'Cadastrar Nova Impressora'}
+                                    </Button>
+                                </div>
+
+                                {showCatalogRegistration && (
+                                    <Card className="border-blue-500/40 bg-slate-900/60">
+                                        <CardHeader>
+                                            <CardTitle className="text-sm text-blue-100">Nova Impressora do Catálogo</CardTitle>
+                                        </CardHeader>
+                                        <CardContent className="space-y-4">
+                                            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                                                <div>
+                                                    <Label>Marca *</Label>
+                                                    <Input
+                                                        value={catalogPrinterDraft.marca || ''}
+                                                        onChange={(e) => setCatalogPrinterDraft({ ...catalogPrinterDraft, marca: e.target.value })}
+                                                        placeholder="Ex: HP"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <Label>Modelo *</Label>
+                                                    <Input
+                                                        value={catalogPrinterDraft.modelo || ''}
+                                                        onChange={(e) => setCatalogPrinterDraft({ ...catalogPrinterDraft, modelo: e.target.value })}
+                                                        placeholder="Ex: LaserJet M404dn"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <Label>Tipo</Label>
+                                                    <Select value={catalogPrinterDraft.tipo} onValueChange={(value: any) => setCatalogPrinterDraft({ ...catalogPrinterDraft, tipo: value })}>
+                                                        <SelectTrigger><SelectValue /></SelectTrigger>
+                                                        <SelectContent>
+                                                            <SelectItem value="Laser P&B">Laser P&B</SelectItem>
+                                                            <SelectItem value="Laser Colorida">Laser Colorida</SelectItem>
+                                                            <SelectItem value="Jato de Tinta">Jato de Tinta</SelectItem>
+                                                            <SelectItem value="Multifuncional P&B">Multifuncional P&B</SelectItem>
+                                                            <SelectItem value="Multifuncional Colorida">Multifuncional Colorida</SelectItem>
+                                                        </SelectContent>
+                                                    </Select>
+                                                </div>
+                                                <div>
+                                                    <Label>Valor de custo (R$) *</Label>
+                                                    <Input
+                                                        type="number"
+                                                        step="0.01"
+                                                        value={catalogPrinterDraft.custoAquisicao || ''}
+                                                        onChange={(e) => setCatalogPrinterDraft({ ...catalogPrinterDraft, custoAquisicao: Number(e.target.value) })}
+                                                        placeholder="Ex: 3400.00"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <Label>Velocidade (PPM)</Label>
+                                                    <Input
+                                                        type="number"
+                                                        value={catalogPrinterDraft.velocidadePPM || ''}
+                                                        onChange={(e) => setCatalogPrinterDraft({ ...catalogPrinterDraft, velocidadePPM: Number(e.target.value) })}
+                                                        placeholder="Ex: 38"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <Label>Vida útil (páginas)</Label>
+                                                    <Input
+                                                        type="number"
+                                                        value={catalogPrinterDraft.vidaUtilPaginas || ''}
+                                                        onChange={(e) => setCatalogPrinterDraft({ ...catalogPrinterDraft, vidaUtilPaginas: Number(e.target.value) })}
+                                                        placeholder="Ex: 100000"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <Label>Energia (kWh/mês)</Label>
+                                                    <Input
+                                                        type="number"
+                                                        step="0.01"
+                                                        value={catalogPrinterDraft.consumoEnergia || ''}
+                                                        onChange={(e) => setCatalogPrinterDraft({ ...catalogPrinterDraft, consumoEnergia: Number(e.target.value) })}
+                                                        placeholder="Ex: 15"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <Label>Manutenção (R$/mês)</Label>
+                                                    <Input
+                                                        type="number"
+                                                        step="0.01"
+                                                        value={catalogPrinterDraft.custoManutencaoMensal || ''}
+                                                        onChange={(e) => setCatalogPrinterDraft({ ...catalogPrinterDraft, custoManutencaoMensal: Number(e.target.value) })}
+                                                        placeholder="Ex: 50"
+                                                    />
+                                                </div>
+                                            </div>
+
+                                            <div className="rounded-lg border border-slate-700 bg-slate-950/40 p-4 space-y-3">
+                                                <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
+                                                    <div>
+                                                        <Label>Tipo Suprimento</Label>
+                                                        <Select value={catalogSupplyDraft.tipo} onValueChange={(value: any) => setCatalogSupplyDraft({ ...catalogSupplyDraft, tipo: value })}>
+                                                            <SelectTrigger><SelectValue /></SelectTrigger>
+                                                            <SelectContent>
+                                                                <SelectItem value="Toner P&B">Toner P&B</SelectItem>
+                                                                <SelectItem value="Toner Preto">Toner Preto</SelectItem>
+                                                                <SelectItem value="Toner Ciano">Toner Ciano</SelectItem>
+                                                                <SelectItem value="Toner Magenta">Toner Magenta</SelectItem>
+                                                                <SelectItem value="Toner Amarelo">Toner Amarelo</SelectItem>
+                                                                <SelectItem value="Fotoconductor">Fotoconductor</SelectItem>
+                                                                <SelectItem value="Kit Manutenção">Kit Manutenção</SelectItem>
+                                                            </SelectContent>
+                                                        </Select>
+                                                    </div>
+                                                    <div>
+                                                        <Label>Descrição *</Label>
+                                                        <Input
+                                                            value={catalogSupplyDraft.descricao || ''}
+                                                            onChange={(e) => setCatalogSupplyDraft({ ...catalogSupplyDraft, descricao: e.target.value })}
+                                                            placeholder="Ex: Toner CF258X"
+                                                        />
+                                                    </div>
+                                                    <div>
+                                                        <Label>Rendimento *</Label>
+                                                        <Input
+                                                            type="number"
+                                                            value={catalogSupplyDraft.rendimentoPaginas || ''}
+                                                            onChange={(e) => setCatalogSupplyDraft({ ...catalogSupplyDraft, rendimentoPaginas: Number(e.target.value) })}
+                                                            placeholder="Páginas"
+                                                        />
+                                                    </div>
+                                                    <div>
+                                                        <Label>Custo unitário *</Label>
+                                                        <Input
+                                                            type="number"
+                                                            step="0.01"
+                                                            value={catalogSupplyDraft.custoUnitario || ''}
+                                                            onChange={(e) => setCatalogSupplyDraft({ ...catalogSupplyDraft, custoUnitario: Number(e.target.value) })}
+                                                            placeholder="R$"
+                                                        />
+                                                    </div>
+                                                    <div className="flex items-end">
+                                                        <Button type="button" onClick={adicionarSuprimentoCatalogo} className="w-full">
+                                                            <Plus className="h-4 w-4 mr-2" />
+                                                            Suprimento
+                                                        </Button>
+                                                    </div>
+                                                </div>
+
+                                                {catalogSuppliesDraft.length > 0 && (
+                                                    <div className="space-y-2">
+                                                        {catalogSuppliesDraft.map((supply) => (
+                                                            <div key={supply.id} className="flex items-center justify-between rounded border border-slate-700 bg-slate-900/60 p-2 text-sm">
+                                                                <span>{supply.tipo} - {supply.descricao} | {supply.rendimentoPaginas.toLocaleString()} páginas | R$ {supply.custoUnitario.toFixed(2)}</span>
+                                                                <Button type="button" variant="ghost" size="sm" onClick={() => setCatalogSuppliesDraft(catalogSuppliesDraft.filter(s => s.id !== supply.id))}>
+                                                                    <Trash2 className="h-4 w-4" />
+                                                                </Button>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            <div className="flex justify-end">
+                                                <Button type="button" onClick={salvarImpressoraCatalogo} className="bg-green-600 hover:bg-green-700">
+                                                    <Save className="h-4 w-4 mr-2" />
+                                                    Salvar no Catálogo
+                                                </Button>
+                                            </div>
+                                        </CardContent>
+                                    </Card>
                                 )}
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
@@ -926,15 +1355,17 @@ export function PrinterCalculatorModule({ onBack, onNavigateToProposals, printer
                                                             <p className="text-xs text-gray-500">{item.marca} {item.modelo}</p>
                                                         )}
                                                     </div>
-                                                    <div>
-                                                        <Label className="text-xs">Volume Mensal</Label>
-                                                        <Input
-                                                            type="number"
-                                                            value={item.volumeMensal}
-                                                            onChange={(e) => atualizarItem(item.id, 'volumeMensal', Number(e.target.value))}
-                                                            className="h-8"
-                                                        />
-                                                    </div>
+                                                    {item.detalhesCalculo?.modalidadeLocacao !== 'por-pagina' && (
+                                                        <div>
+                                                            <Label className="text-xs">Volume Mensal</Label>
+                                                            <Input
+                                                                type="number"
+                                                                value={item.volumeMensal}
+                                                                onChange={(e) => atualizarItem(item.id, 'volumeMensal', Number(e.target.value))}
+                                                                className="h-8"
+                                                            />
+                                                        </div>
+                                                    )}
                                                     <div>
                                                         <Label className="text-xs">Prazo (meses)</Label>
                                                         <Input
@@ -986,15 +1417,17 @@ export function PrinterCalculatorModule({ onBack, onNavigateToProposals, printer
                                                         <p className="text-xs text-gray-500">{item.marca} {item.modelo}</p>
                                                     )}
                                                 </div>
-                                                <div>
-                                                    <Label className="text-xs">Volume Mensal</Label>
-                                                    <Input
-                                                        type="number"
-                                                        value={item.volumeMensal}
-                                                        onChange={(e) => atualizarItem(item.id, 'volumeMensal', Number(e.target.value))}
-                                                        className="h-8"
-                                                    />
-                                                </div>
+                                                {item.detalhesCalculo?.modalidadeLocacao !== 'por-pagina' && (
+                                                    <div>
+                                                        <Label className="text-xs">Volume Mensal</Label>
+                                                        <Input
+                                                            type="number"
+                                                            value={item.volumeMensal}
+                                                            onChange={(e) => atualizarItem(item.id, 'volumeMensal', Number(e.target.value))}
+                                                            className="h-8"
+                                                        />
+                                                    </div>
+                                                )}
                                                 <div>
                                                     <Label className="text-xs">Prazo (meses)</Label>
                                                     {item.isFromCatalog ? (

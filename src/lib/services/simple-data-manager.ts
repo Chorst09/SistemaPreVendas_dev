@@ -1,4 +1,5 @@
 import { ServiceDeskData, ProjectStatus, ServiceType, TaxRegime, CoverageType } from '@/lib/types/service-desk-pricing';
+import { createId } from '@/lib/utils/id';
 
 /**
  * Simplified data manager that works only with localStorage
@@ -13,7 +14,7 @@ export class SimpleDataManager {
    */
   static createEmptyData(): ServiceDeskData {
     const now = new Date();
-    const projectId = crypto.randomUUID();
+    const projectId = createId();
     
     return {
       project: {
@@ -62,6 +63,7 @@ export class SimpleDataManager {
           occupancyRate: 80,
           n1Distribution: 80,
           n1Capacity: 100,
+          n1Capacity6h: 75,
           n2Capacity: 75,
           n1SixHourShift: false,
           coverageType: CoverageType.BUSINESS_HOURS,
@@ -115,7 +117,7 @@ export class SimpleDataManager {
         monthlyBreakdown: []
       },
       forecast: {
-        id: crypto.randomUUID(),
+        id: createId(),
         projectId: projectId,
         scenarios: [],
         assumptions: {

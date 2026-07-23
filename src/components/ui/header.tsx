@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { LogOut, Search, User, Menu, Settings, Bell, ChevronDown } from 'lucide-react';
+import { LogOut, Search, User, Settings, Bell, ChevronRight, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ChorstLogo } from '@/components/ui/chorst-logo';
@@ -16,124 +16,125 @@ interface HeaderProps {
     onLogout?: () => void;
 }
 
-export function Header({ currentTitle, currentSubtitle, logoSrc, currentUser, onNavigateSettings, onLogout }: HeaderProps) {
-    return (
-        <header className="sticky top-0 z-40 w-full border-b border-border/60 bg-background/95 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60">
-            {/* Main Header Bar */}
-            <div className="flex h-16 items-center justify-between px-4 md:px-6">
-                {/* Left - Logo & Title */}
-                <div className="flex items-center gap-3">
-                    <div className="flex-shrink-0">
-                        <ChorstLogo size="md" logoSrc={logoSrc || undefined} />
-                    </div>
-                    
-                    <div className="hidden md:block h-8 w-px bg-border/60" />
-                    
-                    <div className="hidden md:flex flex-col min-w-0">
-                        <h1 className="text-lg font-bold text-foreground truncate">
-                            Sistema Pré-Venda TI
-                        </h1>
-                        <p className="text-xs text-muted-foreground truncate">
-                            {currentSubtitle || 'Gestão Completa de Precificações e Propostas'}
-                        </p>
-                    </div>
-                </div>
+export function Header({
+    currentTitle,
+    currentSubtitle,
+    logoSrc,
+    currentUser,
+    onNavigateSettings,
+    onLogout,
+}: HeaderProps) {
+    const roleLabel =
+        currentUser?.role === 'admin' ? 'Administrador' :
+        currentUser?.role === 'manager' ? 'Gerente' : 'Usuário';
 
-                {/* Center - Search (Desktop) */}
-                <div className="hidden lg:flex items-center flex-1 max-w-md mx-8">
+    const initials = (currentUser?.name ?? 'U')
+        .split(' ')
+        .slice(0, 2)
+        .map((n) => n[0])
+        .join('')
+        .toUpperCase();
+
+    return (
+        <header className="header-modern sticky top-0 z-40 w-full">
+            <div className="flex h-14 items-center gap-3 px-4 md:px-5">
+
+                {/* ── Breadcrumb ─────────────────────────────────────── */}
+                <nav className="flex min-w-0 flex-1 items-center gap-1.5 text-sm">
+                    <span className="hidden shrink-0 text-xs font-semibold text-muted-foreground/60 sm:block">
+                        Sistema Pré-Venda TI
+                    </span>
+                    {currentSubtitle && (
+                        <>
+                            <ChevronRight className="hidden h-3.5 w-3.5 shrink-0 text-muted-foreground/40 sm:block" />
+                            <span className="hidden shrink-0 text-xs text-muted-foreground/60 sm:block">
+                                {currentTitle}
+                            </span>
+                            <ChevronRight className="h-3.5 w-3.5 shrink-0 text-muted-foreground/40" />
+                            <span className="truncate font-semibold text-foreground">
+                                {currentSubtitle}
+                            </span>
+                        </>
+                    )}
+                    {!currentSubtitle && (
+                        <>
+                            <ChevronRight className="h-3.5 w-3.5 shrink-0 text-muted-foreground/40" />
+                            <span className="truncate font-semibold text-foreground">
+                                {currentTitle}
+                            </span>
+                        </>
+                    )}
+                </nav>
+
+                {/* ── Search ─────────────────────────────────────────── */}
+                <div className="hidden lg:flex items-center w-56 xl:w-72">
                     <div className="relative w-full">
-                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                        <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground/50" />
                         <Input
                             type="search"
-                            placeholder="Buscar módulos, funcionalidades..."
-                            className="pl-10 h-10 bg-muted/50 border-transparent focus:bg-background focus:border-primary/50"
+                            placeholder="Buscar módulos..."
+                            className="h-8 w-full rounded-lg border-border/50 bg-muted/40 pl-8 text-xs placeholder:text-muted-foreground/50 focus:bg-background focus:border-primary/40 focus:ring-0"
                         />
                     </div>
                 </div>
 
-                {/* Right - Actions */}
-                <div className="flex items-center gap-2">
-                    {/* Notifications */}
+                {/* ── Actions ────────────────────────────────────────── */}
+                <div className="flex shrink-0 items-center gap-1">
+
+                    {/* Status online */}
+                    <div className="hidden items-center gap-1.5 rounded-full border border-emerald-500/20 bg-emerald-500/8 px-2.5 py-1 sm:flex">
+                        <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500" />
+                        <span className="text-[11px] font-medium text-emerald-600 dark:text-emerald-400">Online</span>
+                    </div>
+
+                    {/* Notificações */}
                     <Button
                         variant="ghost"
                         size="icon"
-                        className="relative h-10 w-10 text-muted-foreground hover:text-foreground"
+                        className="relative h-8 w-8 text-muted-foreground hover:text-foreground"
+                        title="Notificações"
                     >
-                        <Bell className="h-5 w-5" />
-                        <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-accent animate-pulse" />
+                        <Bell className="h-4 w-4" />
+                        <span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-accent" />
                     </Button>
 
                     {/* Settings */}
                     <Button
                         variant="ghost"
                         size="icon"
-                        className="h-10 w-10 text-muted-foreground hover:text-foreground"
+                        className="h-8 w-8 text-muted-foreground hover:text-foreground"
                         onClick={onNavigateSettings}
                         title="Configurações"
                     >
-                        <Settings className="h-5 w-5" />
+                        <Settings className="h-4 w-4" />
                     </Button>
 
-                    {/* Separator */}
-                    <div className="hidden md:block h-8 w-px bg-border/60 mx-1" />
+                    {/* Divider */}
+                    <div className="mx-1 hidden h-6 w-px bg-border/50 md:block" />
 
-                    {/* User Menu */}
-                    <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-muted/50 cursor-pointer transition-colors">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary">
-                            <User className="h-4 w-4" />
+                    {/* User chip */}
+                    <div className="hidden items-center gap-2 rounded-lg px-2 py-1.5 transition-colors hover:bg-muted/60 md:flex cursor-default">
+                        <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/15 text-[11px] font-bold text-primary ring-1 ring-primary/20">
+                            {initials}
                         </div>
-                        <div className="flex flex-col min-w-0">
-                            <span className="text-sm font-semibold text-foreground truncate max-w-[120px]">
-                                {currentUser?.name || 'Usuário'}
+                        <div className="flex flex-col leading-none">
+                            <span className="max-w-[110px] truncate text-[12px] font-semibold text-foreground">
+                                {currentUser?.name ?? 'Usuário'}
                             </span>
-                            <span className="text-xs text-muted-foreground">
-                                {currentUser?.role === 'admin' ? 'Administrador' : 'Usuário'}
-                            </span>
+                            <span className="text-[10px] text-muted-foreground">{roleLabel}</span>
                         </div>
-                        <ChevronDown className="h-4 w-4 text-muted-foreground" />
                     </div>
 
                     {/* Logout */}
                     <Button
                         variant="ghost"
                         size="icon"
-                        className="h-10 w-10 text-muted-foreground hover:text-destructive"
+                        className="h-8 w-8 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
                         onClick={onLogout}
-                        title="Sair"
+                        title="Sair do sistema"
                     >
-                        <LogOut className="h-5 w-5" />
+                        <LogOut className="h-4 w-4" />
                     </Button>
-
-                    {/* Mobile Menu */}
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        className="md:hidden h-10 w-10 text-muted-foreground"
-                    >
-                        <Menu className="h-5 w-5" />
-                    </Button>
-                </div>
-            </div>
-
-            {/* Sub Header - Breadcrumb/Current Page */}
-            <div className="border-t border-border/40 bg-muted/30 px-4 md:px-6 py-3">
-                <div className="flex items-center justify-between">
-                    <div>
-                        <h2 className="text-base font-semibold text-foreground capitalize">
-                            {currentTitle}
-                        </h2>
-                        {currentSubtitle && (
-                            <p className="text-xs text-muted-foreground mt-0.5">
-                                {currentSubtitle}
-                            </p>
-                        )}
-                    </div>
-
-                    {/* Status Indicator */}
-                    <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-accent-green/10 border border-accent-green/20">
-                        <div className="h-2 w-2 rounded-full bg-accent-green animate-pulse" />
-                        <span className="text-xs font-medium text-accent-green">Online</span>
-                    </div>
                 </div>
             </div>
         </header>

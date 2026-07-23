@@ -17,6 +17,7 @@ import {
 } from '@/lib/types/service-desk-templates';
 import { ServiceDeskData, TaxRegime, ServiceType } from '@/lib/types/service-desk-pricing';
 import { ServiceDeskDataManager } from './service-desk-data-manager';
+import { createId } from '@/lib/utils/id';
 
 export class ServiceDeskTemplateService {
   private static readonly STORAGE_KEY = 'service-desk-templates';
@@ -660,26 +661,14 @@ export class ServiceDeskTemplateService {
       } else {
         // Apply team roles
         targetData.team = teamTemplate.roles.map((roleTemplate: any) => ({
-          id: crypto.randomUUID(),
-          name: '',
-          role: roleTemplate.role,
-          salary: roleTemplate.baseSalaryRange.average,
-          benefits: teamTemplate.defaultBenefits || {
-            healthInsurance: 200,
-            mealVoucher: 500,
-            transportVoucher: 300,
-            lifeInsurance: 50,
-            vacation: 0,
-            thirteenthSalary: 0,
-            fgts: 0,
-            inss: 0,
-            otherBenefits: []
-          },
-          workload: roleTemplate.workloadPercentage,
+          id: createId(),
+          jobPositionId: '',
+          name: roleTemplate.role,
+          quantity: 1,
+          workingHours: 8,
+          isActive: true,
           startDate: new Date(),
-          costPerHour: 0,
-          skills: roleTemplate.requiredSkills,
-          certifications: []
+          notes: roleTemplate.description
         }));
       }
     }
@@ -700,7 +689,7 @@ export class ServiceDeskTemplateService {
   private applyCostsTemplate(costsTemplate: any, targetData: ServiceDeskData, application: TemplateApplication): void {
     if (costsTemplate.commonCosts && costsTemplate.commonCosts.length > 0) {
       const newCosts = costsTemplate.commonCosts.map((costTemplate: any) => ({
-        id: crypto.randomUUID(),
+        id: createId(),
         name: costTemplate.name,
         category: costTemplate.category,
         value: costTemplate.estimatedValue,
@@ -734,7 +723,7 @@ export class ServiceDeskTemplateService {
     const now = new Date();
     
     const template: ServiceDeskTemplate = {
-      id: crypto.randomUUID(),
+      id: createId(),
       name: templateInfo.name,
       description: templateInfo.description,
       category: templateInfo.category,
@@ -816,23 +805,26 @@ export class ServiceDeskTemplateService {
         defaultContractDuration: data.project.contractPeriod.durationMonths
       },
       teamTemplate: {
-        roles: data.team.map(member => ({
-          role: member.role,
-          description: `Template role: ${member.role}`,
-          baseSalaryRange: {
-            min: member.salary * 0.8,
-            max: member.salary * 1.2,
-            average: member.salary,
-            currency: data.project.currency,
-            region: data.taxes.region || 'Brasil',
-            lastUpdated: new Date()
-          },
-          requiredSkills: member.skills,
-          workloadPercentage: member.workload,
-          isEssential: true,
-          scalingFactor: 1.0
-        })),
-        defaultBenefits: data.team[0]?.benefits
+        roles: data.team.map(member => {
+          const m = member as any;
+          return {
+            role: m.role || member.name || '',
+            description: `Template role: ${m.role || member.name || ''}`,
+            baseSalaryRange: {
+              min: (m.salary || 0) * 0.8,
+              max: (m.salary || 0) * 1.2,
+              average: m.salary || 0,
+              currency: data.project.currency,
+              region: data.taxes.region || 'Brasil',
+              lastUpdated: new Date()
+            },
+            requiredSkills: m.skills || [],
+            workloadPercentage: m.workload || 100,
+            isEssential: true,
+            scalingFactor: 1.0
+          };
+        }),
+        defaultBenefits: (data.team[0] as any)?.benefits
       },
       taxTemplate: {
         region: data.taxes.region || 'Brasil',

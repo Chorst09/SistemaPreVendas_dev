@@ -126,7 +126,7 @@ export function useServiceDeskNavigation({
 
   // Navigate to tab with validation
   const navigateToTab = useCallback(async (toTab: string, force = false) => {
-    if (navigationState.isTransitioning) return false;
+    if (navigationState.isTransitioning && !force) return false;
     
     const fromTab = navigationState.activeTab;
     if (fromTab === toTab) return true;

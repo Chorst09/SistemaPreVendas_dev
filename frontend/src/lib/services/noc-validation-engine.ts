@@ -19,6 +19,8 @@ export class NOCValidationEngine {
         return this.validateMonitoring(tabData);
       case 'sla':
         return this.validateSLA(tabData);
+      case 'security':
+        return this.validateSecurity(tabData);
       case 'team':
         return this.validateTeam(tabData);
       case 'costs':
@@ -221,6 +223,58 @@ export class NOCValidationEngine {
     return {
       isValid: errors.length === 0,
       isComplete: errors.length === 0,
+      errors,
+      warnings,
+      suggestions
+    };
+  }
+
+  private validateSecurity(data: any): NOCTabValidationStatus {
+    const errors: string[] = [];
+    const warnings: string[] = [];
+    const suggestions: string[] = [];
+
+    const socEnabled = Boolean(data?.soc?.enabled);
+    const siemEnabled = Boolean(data?.siem?.enabled);
+    const services = data?.enabledServices || [];
+
+    if (!services.includes('noc') && !socEnabled && !siemEnabled) {
+      warnings.push('Selecione pelo menos NOC, SOC ou SIEM para compor a proposta');
+    }
+
+    if (socEnabled) {
+      const assets = (data.soc.endpoints || 0) + (data.soc.servers || 0) + (data.soc.networkDevices || 0) + (data.soc.cloudWorkloads || 0) + (data.soc.identities || 0);
+      if (assets <= 0) {
+        errors.push('SOC habilitado exige ao menos um ativo monitorado');
+      }
+      if ((data.soc.pricePerAsset || 0) <= 0) {
+        errors.push('Preço SOC por ativo deve ser maior que zero');
+      }
+      if ((data.soc.minimumMonthly || 0) <= 0) {
+        warnings.push('Piso mensal SOC não informado');
+      }
+      suggestions.push('SOC costuma ser precificado por endpoint/ativo com piso mensal e adicionais de MDR, resposta a incidente e hunting');
+    }
+
+    if (siemEnabled) {
+      if ((data.siem.ingestionGBPerDay || 0) <= 0) {
+        errors.push('SIEM habilitado exige volume de ingestão em GB/dia');
+      }
+      if ((data.siem.pricePerGBIngested || 0) <= 0) {
+        errors.push('Preço por GB ingerido deve ser maior que zero');
+      }
+      if ((data.siem.retentionHotDays || 0) < 30) {
+        warnings.push('Retenção quente menor que 30 dias pode limitar investigação de incidentes');
+      }
+      if ((data.siem.logSources || 0) < 3) {
+        warnings.push('Poucas fontes de log reduzem a efetividade do SIEM');
+      }
+      suggestions.push('SIEM geralmente combina base mensal, ingestão em GB/dia, retenção e custo de regras/correlação');
+    }
+
+    return {
+      isValid: errors.length === 0,
+      isComplete: errors.length === 0 && (services.includes('noc') || socEnabled || siemEnabled),
       errors,
       warnings,
       suggestions

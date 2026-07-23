@@ -19,6 +19,7 @@ import { InvestmentSection } from '@/components/propostas/InvestmentSection';
 import { DifferentialsSection } from '@/components/propostas/DifferentialsSection';
 import { NextStepsSection } from '@/components/propostas/NextStepsSection';
 import { PreviewSection } from '@/components/propostas/PreviewSection';
+import { AuthGate } from '@/components/auth/AuthGate';
 
 export default function EditProposalPage() {
   const router = useRouter();
@@ -73,11 +74,16 @@ export default function EditProposalPage() {
   };
 
   if (!proposal) {
-    return <div className="container mx-auto py-8">Carregando...</div>;
+    return (
+      <AuthGate>
+        <div className="container mx-auto py-8">Carregando...</div>
+      </AuthGate>
+    );
   }
 
   return (
-    <div className="container mx-auto py-8 px-4 max-w-7xl">
+    <AuthGate>
+      <div className="container mx-auto py-8 px-4 max-w-7xl">
       {/* Header */}
       <div className="flex flex-col gap-4 mb-8">
         <div className="flex justify-between items-center">
@@ -181,6 +187,7 @@ export default function EditProposalPage() {
           {isSaving ? 'Salvando...' : 'Salvar Proposta'}
         </Button>
       </div>
-    </div>
+      </div>
+    </AuthGate>
   );
 }

@@ -24,8 +24,12 @@ const MONITORING_TOOLS: { value: MonitoringTool; label: string; type: 'open-sour
   { value: 'datadog', label: 'Datadog', type: 'saas' },
   { value: 'new-relic', label: 'New Relic', type: 'saas' },
   { value: 'dynatrace', label: 'Dynatrace', type: 'saas' },
+  { value: 'sentinel', label: 'Microsoft Sentinel', type: 'saas' },
   { value: 'splunk', label: 'Splunk', type: 'saas' },
   { value: 'elastic', label: 'Elastic Stack', type: 'saas' },
+  { value: 'qradar', label: 'IBM QRadar', type: 'commercial' },
+  { value: 'crowdstrike', label: 'CrowdStrike Falcon', type: 'saas' },
+  { value: 'defender', label: 'Microsoft Defender', type: 'saas' },
   { value: 'custom', label: 'Customizado', type: 'commercial' }
 ];
 

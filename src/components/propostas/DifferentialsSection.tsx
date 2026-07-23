@@ -6,6 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Plus, Trash2, X } from 'lucide-react';
+import { createId } from '@/lib/utils/id';
 
 interface DifferentialsSectionProps {
   proposal: CommercialProposal;
@@ -41,7 +42,7 @@ export function DifferentialsSection({ proposal, onUpdate }: DifferentialsSectio
 
   const addSocialProof = () => {
     const newProof: SocialProofItem = {
-      id: crypto.randomUUID(),
+      id: createId(),
       type: 'testimonial',
       description: '',
       company: '',

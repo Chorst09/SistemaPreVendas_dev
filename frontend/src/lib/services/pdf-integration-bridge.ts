@@ -8,6 +8,7 @@ import {
   ServiceDeskData, 
   ExecutiveDashboard,
   TeamMember,
+  TeamMemberNew,
   WorkSchedule,
   ConsolidatedBudget,
   ProfitabilityAnalysis,
@@ -15,7 +16,8 @@ import {
   KPI,
   Recommendation,
   MarketBenchmark,
-  ApprovalStatus
+  ApprovalStatus,
+  CostCategory
 } from '@/lib/types/service-desk-pricing';
 
 import { 
@@ -93,6 +95,15 @@ export class PDFIntegrationBridge {
     this.defaultConfig = this.getDefaultTemplateConfig();
   }
 
+  private getTeamMemberQuantity(member: any): number {
+    const quantity = Number(member?.quantity ?? 1);
+    return Number.isFinite(quantity) ? Math.max(0, quantity) : 0;
+  }
+
+  private getTotalTeamQuantity(team: any[] = []): number {
+    return team.reduce((sum, member) => sum + this.getTeamMemberQuantity(member), 0);
+  }
+
   /**
    * Main method to generate enhanced PDF from Service Desk data
    */
@@ -131,7 +142,8 @@ export class PDFIntegrationBridge {
 
       // Generate standard PDF
       this.pdfGenerator.setCompanyInfo(companyInfo);
-      return await this.pdfGenerator.generatePDF(proposalData, clientData);
+      const result = await this.pdfGenerator.generatePDF(proposalData, clientData);
+      return { ...result, size: result.blob.size, generatedAt: new Date() };
 
     } catch (error) {
       console.error('Error generating enhanced PDF:', error);
@@ -223,26 +235,29 @@ export class PDFIntegrationBridge {
   /**
    * Maps team members to equipment items for PDF compatibility
    */
-  private mapTeamMembersToEquipments(teamMembers: TeamMember[]): EquipmentItem[] {
-    return teamMembers.map((member, index) => ({
-      id: member.id || `member-${index}`,
-      model: member.role,
-      brand: 'Recurso Humano',
-      type: 'Profissional',
-      monthlyVolume: member.workload * 4.33, // Convert weekly hours to monthly
-      monthlyCost: this.calculateMemberMonthlyCost(member),
-      specifications: {
-        name: member.name,
-        skills: member.skills,
-        certifications: member.certifications,
-        startDate: member.startDate,
-        endDate: member.endDate,
-        costPerHour: member.costPerHour,
-        benefits: member.benefits
-      },
-      createdAt: new Date(),
-      updatedAt: new Date()
-    }));
+  private mapTeamMembersToEquipments(teamMembers: TeamMember[] | TeamMemberNew[]): EquipmentItem[] {
+    return teamMembers.map((member, index) => {
+      const m = member as any;
+      return {
+        id: member.id || `member-${index}`,
+        model: m.role || m.name || '',
+        brand: 'Recurso Humano',
+        type: 'Profissional',
+        monthlyVolume: (m.workload || 160) * 4.33,
+        monthlyCost: this.calculateMemberMonthlyCost(member),
+        specifications: {
+          name: m.name || '',
+          skills: m.skills || [],
+          certifications: m.certifications || [],
+          startDate: m.startDate,
+          endDate: m.endDate,
+          costPerHour: m.costPerHour,
+          benefits: m.benefits
+        },
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+    });
   }
 
   /**
@@ -294,7 +309,7 @@ export class PDFIntegrationBridge {
         managerName: clientData.managerName,
         managerEmail: clientData.managerEmail,
         managerPhone: clientData.managerPhone,
-        employeeCount: enhancedData.serviceDeskData.team.length,
+        employeeCount: this.getTotalTeamQuantity(enhancedData.serviceDeskData.team),
         businessHours: {
           start: '08:00',
           end: '18:00',
@@ -305,11 +320,11 @@ export class PDFIntegrationBridge {
       serviceLevel: this.determineServiceLevel(enhancedData.serviceDeskData),
       serviceItems: this.createServiceItems(enhancedData.serviceDeskData),
       totals: {
-        totalUsers: enhancedData.serviceDeskData.team.length,
+        totalUsers: this.getTotalTeamQuantity(enhancedData.serviceDeskData.team),
         totalSetupCost: enhancedData.financialBreakdown.otherCosts.total,
         monthlyCost: enhancedData.totalMonthly,
         annualCost: enhancedData.totalAnnual,
-        totalIncludedHours: enhancedData.serviceDeskData.team.length * 160,
+        totalIncludedHours: this.getTotalTeamQuantity(enhancedData.serviceDeskData.team) * 160,
         estimatedAdditionalHours: 0,
         additionalHoursCost: 0
       },
@@ -365,30 +380,34 @@ export class PDFIntegrationBridge {
     };
 
     this.pdfGenerator.setCompanyInfo(companyInfo);
-    return await this.pdfGenerator.generatePDF(enhancedProposal, clientData);
+    const result = await this.pdfGenerator.generatePDF(enhancedProposal, clientData);
+    return { ...result, size: result.blob.size, generatedAt: new Date() };
   }
 
   // Helper methods for data creation
   private createTeamCompositionSection(serviceDeskData: ServiceDeskData): TeamCompositionSection {
     const team = serviceDeskData.team;
     
-    // Group by role
     const roleGroups = team.reduce((groups, member) => {
-      const role = member.role;
+      const m = member as any;
+      const role = m.role || m.name || 'Unknown';
       if (!groups[role]) {
         groups[role] = [];
       }
       groups[role].push(member);
       return groups;
-    }, {} as Record<string, TeamMember[]>);
+    }, {} as Record<string, TeamMemberNew[]>);
 
     const roles = Object.entries(roleGroups).map(([role, members]) => {
-      const avgSalary = members.reduce((sum, member) => sum + member.salary, 0) / members.length;
-      const totalCost = members.reduce((sum, member) => sum + this.calculateMemberMonthlyCost(member), 0);
+      const count = members.reduce((sum, member) => sum + this.getTeamMemberQuantity(member), 0);
+      const totalCost = members.reduce((sum, member) => sum + (this.calculateMemberMonthlyCost(member) * this.getTeamMemberQuantity(member)), 0);
+      const avgSalary = count > 0
+        ? members.reduce((sum, member) => sum + (((member as any).salary || 0) * this.getTeamMemberQuantity(member)), 0) / count
+        : 0;
       
       return {
         role,
-        count: members.length,
+        count,
         avgSalary,
         totalCost
       };
@@ -396,11 +415,13 @@ export class PDFIntegrationBridge {
 
     const totalMonthlyCost = serviceDeskData.budget.teamCosts.total;
     const totalAnnualCost = totalMonthlyCost * 12;
-    const totalHours = team.reduce((sum, member) => sum + member.workload, 0) * 4.33;
+    const totalHours = team.reduce((sum, member) => {
+      return sum + ((Number((member as any).workload) || 0) * this.getTeamMemberQuantity(member));
+    }, 0) * 4.33;
     const costPerHour = totalHours > 0 ? totalMonthlyCost / totalHours : 0;
 
     return {
-      totalMembers: team.length,
+      totalMembers: this.getTotalTeamQuantity(team),
       roles,
       totalMonthlyCost,
       totalAnnualCost,
@@ -462,14 +483,14 @@ export class PDFIntegrationBridge {
       otherCosts: {
         infrastructure: budget.infrastructureCosts,
         licenses: serviceDeskData.otherCosts
-          .filter(cost => cost.category === 'LICENSES')
-          .reduce((sum, cost) => sum + cost.value, 0),
+          .filter(cost => cost.category === CostCategory.LICENSES)
+          .reduce<number>((sum, cost) => sum + cost.value, 0),
         training: serviceDeskData.otherCosts
-          .filter(cost => cost.category === 'TRAINING')
-          .reduce((sum, cost) => sum + cost.value, 0),
+          .filter(cost => cost.category === CostCategory.TRAINING)
+          .reduce<number>((sum, cost) => sum + cost.value, 0),
         other: serviceDeskData.otherCosts
-          .filter(cost => !['LICENSES', 'TRAINING', 'INFRASTRUCTURE'].includes(cost.category))
-          .reduce((sum, cost) => sum + cost.value, 0),
+          .filter(cost => ![CostCategory.LICENSES, CostCategory.TRAINING, CostCategory.INFRASTRUCTURE].includes(cost.category))
+          .reduce<number>((sum, cost) => sum + cost.value, 0),
         total: budget.otherCosts
       },
       taxes: {
@@ -502,7 +523,7 @@ export class PDFIntegrationBridge {
     let riskScore = 0;
 
     // Analyze team size risk
-    if (serviceDeskData.team.length < 3) {
+    if (this.getTotalTeamQuantity(serviceDeskData.team) < 3) {
       riskFactors.push({
         factor: 'Equipe muito pequena para cobertura adequada',
         impact: 'high' as const,
@@ -621,10 +642,13 @@ export class PDFIntegrationBridge {
   }
 
   // Utility methods
-  private calculateMemberMonthlyCost(member: TeamMember): number {
-    const benefitsTotal = Object.values(member.benefits)
-      .reduce((sum, value) => sum + (typeof value === 'number' ? value : 0), 0);
-    return member.salary + benefitsTotal;
+  private calculateMemberMonthlyCost(member: TeamMember | TeamMemberNew): number {
+    const m = member as any;
+    const benefits = m.benefits;
+    const benefitsTotal = benefits
+      ? Object.values(benefits).reduce((sum: number, value: any) => sum + (typeof value === 'number' ? value : 0), 0)
+      : 0;
+    return (m.salary || 0) + benefitsTotal;
   }
 
   private calculateShiftMonthlyHours(shift: any): number {
@@ -639,7 +663,7 @@ export class PDFIntegrationBridge {
     return endHour > startHour ? endHour - startHour : (24 - startHour) + endHour;
   }
 
-  private calculateShiftMonthlyCost(shift: any, schedule: WorkSchedule): number {
+  private calculateShiftMonthlyCost(shift: any, schedule: any): number {
     const monthlyHours = this.calculateShiftMonthlyHours(shift);
     const baseCostPerHour = 50; // Default cost per hour
     const multiplier = shift.isSpecialShift ? shift.multiplier : 1;
@@ -656,15 +680,17 @@ export class PDFIntegrationBridge {
   }
 
   private createServiceItems(serviceDeskData: ServiceDeskData): any[] {
+    const totalTeamQuantity = this.getTotalTeamQuantity(serviceDeskData.team);
+
     return [{
       serviceName: 'Service Desk Completo',
       serviceLevel: this.determineServiceLevel(serviceDeskData),
-      userCount: serviceDeskData.team.length,
-      costPerUser: serviceDeskData.team.length > 0 
-        ? serviceDeskData.budget.totalPrice / serviceDeskData.team.length 
+      userCount: totalTeamQuantity,
+      costPerUser: totalTeamQuantity > 0
+        ? serviceDeskData.budget.totalPrice / totalTeamQuantity
         : 0,
       includedHours: 160,
-      monthlyTickets: serviceDeskData.team.length * 50,
+      monthlyTickets: totalTeamQuantity * 50,
       monthlyCost: serviceDeskData.budget.totalPrice / serviceDeskData.project.contractPeriod.durationMonths
     }];
   }
@@ -780,11 +806,14 @@ export class PDFIntegrationBridge {
   }
 
   // Analysis summary creators for detailed PDF
-  private createTeamAnalysisSummary(team: TeamMember[]): any {
+  private createTeamAnalysisSummary(team: TeamMember[] | TeamMemberNew[]): any {
+    const totalTeamQuantity = this.getTotalTeamQuantity(team);
+    const totalSalary = team.reduce((sum, member) => sum + (((member as any).salary || 0) * this.getTeamMemberQuantity(member)), 0);
+
     return {
-      totalMembers: team.length,
-      averageSalary: team.reduce((sum, member) => sum + member.salary, 0) / team.length,
-      totalMonthlyCost: team.reduce((sum, member) => sum + this.calculateMemberMonthlyCost(member), 0),
+      totalMembers: totalTeamQuantity,
+      averageSalary: totalTeamQuantity > 0 ? totalSalary / totalTeamQuantity : 0,
+      totalMonthlyCost: team.reduce((sum, member) => sum + (this.calculateMemberMonthlyCost(member) * this.getTeamMemberQuantity(member)), 0),
       skillsDistribution: this.analyzeSkillsDistribution(team)
     };
   }
@@ -821,10 +850,10 @@ export class PDFIntegrationBridge {
   }
 
   // Helper analysis methods
-  private analyzeSkillsDistribution(team: TeamMember[]): Record<string, number> {
+  private analyzeSkillsDistribution(team: TeamMember[] | TeamMemberNew[]): Record<string, number> {
     const skillCounts: Record<string, number> = {};
     team.forEach(member => {
-      member.skills.forEach(skill => {
+      ((member as any).skills || []).forEach((skill: string) => {
         skillCounts[skill] = (skillCounts[skill] || 0) + 1;
       });
     });

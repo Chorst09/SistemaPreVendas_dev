@@ -15,7 +15,8 @@ import {
 } from 'lucide-react';
 import { TeamMember } from '@/lib/types/service-desk-pricing';
 import { useServiceDeskMemoryOptimization } from '@/hooks/use-memory-optimization';
-import { usePaginatedVirtualScrolling } from '@/hooks/use-virtual-scrolling';
+import { useVirtualScrolling as usePaginatedVirtualScrolling } from '@/hooks/use-virtual-scrolling';
+import { calculateMemberCostPerHour } from '@/lib/utils/labor-costs';
 
 interface MemoryOptimizedTeamListProps {
   team: TeamMember[];
@@ -74,7 +75,7 @@ export function MemoryOptimizedTeamList({
 
   // Memoized team member cost calculation
   const calculateMemberCost = useCallback((member: TeamMember): number => {
-    const cacheKey = `member-cost-${member.id}-${member.salary}-${member.workload}`;
+    const cacheKey = `member-cost-${member.id}-${member.salary}-${member.workload}-${JSON.stringify(member.benefits)}`;
     
     // Check cache first
     const cached = getCachedCalculation(cacheKey);
@@ -82,18 +83,7 @@ export function MemoryOptimizedTeamList({
       return cached;
     }
 
-    // Calculate cost
-    const monthlyHours = member.workload * 4.33;
-    const benefitsTotal = Object.values(member.benefits).reduce((sum, benefit) => {
-      if (typeof benefit === 'number') return sum + benefit;
-      if (Array.isArray(benefit)) {
-        return sum + benefit.reduce((benefitSum, b) => benefitSum + (b.value || 0), 0);
-      }
-      return sum;
-    }, 0);
-    
-    const totalMonthlyCost = member.salary + benefitsTotal;
-    const costPerHour = monthlyHours > 0 ? totalMonthlyCost / monthlyHours : 0;
+    const costPerHour = calculateMemberCostPerHour(member);
     
     // Cache the result
     cacheCalculation(cacheKey, costPerHour);
@@ -118,7 +108,7 @@ export function MemoryOptimizedTeamList({
                 <User className="h-4 w-4 text-gray-500" />
                 <h4 className="font-medium text-gray-900">{member.name}</h4>
                 <Badge variant="secondary" className="text-xs">
-                  {member.role}
+                  {member.role ?? 'N/A'}
                 </Badge>
               </div>
               
@@ -129,13 +119,13 @@ export function MemoryOptimizedTeamList({
                     {new Intl.NumberFormat('pt-BR', {
                       style: 'currency',
                       currency: 'BRL'
-                    }).format(member.salary)}
+                    }).format(member.salary ?? 0)}
                   </span>
                 </div>
                 
                 <div className="flex items-center gap-1">
                   <Clock className="h-3 w-3" />
-                  <span>{member.workload}h/semana</span>
+                  <span>{(member.workload ?? 0)}h/semana</span>
                 </div>
                 
                 <div className="col-span-2">
@@ -339,12 +329,13 @@ export function TeamMemberSummary({
     if (cached) return cached;
 
     const totalMembers = team.length;
-    const totalSalary = team.reduce((sum, member) => sum + member.salary, 0);
+    const totalSalary = team.reduce<number>((sum, member) => sum + (member.salary ?? 0), 0);
     const avgSalary = totalMembers > 0 ? totalSalary / totalMembers : 0;
-    const totalWorkload = team.reduce((sum, member) => sum + member.workload, 0);
+    const totalWorkload = team.reduce<number>((sum, member) => sum + (member.workload ?? 0), 0);
     
     const roleDistribution = team.reduce((acc, member) => {
-      acc[member.role] = (acc[member.role] || 0) + 1;
+      const role = member.role ?? 'Unknown';
+      acc[role] = (acc[role] || 0) + 1;
       return acc;
     }, {} as Record<string, number>);
 

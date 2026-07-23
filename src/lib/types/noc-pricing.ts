@@ -1,7 +1,9 @@
 /**
- * NOC (Network Operations Center) Pricing System Types
- * Sistema de precificação para Centro de Operações de Rede
+ * NOC/SOC/SIEM Pricing System Types
+ * Sistema de precificação para operações de rede, segurança e SIEM
  */
+
+export type NOCServiceScope = 'noc' | 'soc' | 'siem';
 
 // Tipos de monitoramento
 export type MonitoringType = 
@@ -40,7 +42,19 @@ export type MonitoringTool =
   | 'grafana'
   | 'splunk'
   | 'elastic'
+  | 'sentinel'
+  | 'qradar'
+  | 'crowdstrike'
+  | 'defender'
   | 'solarwinds'
+  | 'custom';
+
+export type SIEMPlatform =
+  | 'sentinel'
+  | 'splunk'
+  | 'elastic'
+  | 'qradar'
+  | 'google-secops'
   | 'custom';
 
 // SLA (Service Level Agreement)
@@ -75,6 +89,48 @@ export interface MonitoringConfig {
   aiEnabled: boolean; // IA para predição de falhas
   reportingEnabled: boolean;
   customReports: number;
+}
+
+export interface NOCSecurityServices {
+  enabledServices: NOCServiceScope[];
+  soc: {
+    enabled: boolean;
+    endpoints: number;
+    servers: number;
+    networkDevices: number;
+    cloudWorkloads: number;
+    identities: number;
+    users: number;
+    mdrEnabled: boolean;
+    threatHuntingHours: number;
+    incidentResponseHours: number;
+    vulnerabilityTriage: boolean;
+    complianceReports: number;
+    pricePerAsset: number;
+    minimumMonthly: number;
+    analystHourRate: number;
+  };
+  siem: {
+    enabled: boolean;
+    platform: SIEMPlatform;
+    ingestionGBPerDay: number;
+    includedGBPerDay: number;
+    retentionHotDays: number;
+    retentionArchiveMonths: number;
+    logSources: number;
+    correlationRules: number;
+    customParsers: number;
+    dataLakeEnabled: boolean;
+    pricePerGBIngested: number;
+    baseMonthly: number;
+    storagePerGBMonth: number;
+    ruleMonthlyCost: number;
+    parserMonthlyCost: number;
+  };
+  setup: {
+    onboardingFee: number;
+    amortizationMonths: number;
+  };
 }
 
 // Equipe NOC
@@ -163,6 +219,7 @@ export interface NOCPricingData {
   // Configuração
   monitoring: MonitoringConfig;
   sla: NOCSLAConfig;
+  security: NOCSecurityServices;
   
   // Equipe
   team: NOCTeamMember[];
@@ -197,12 +254,17 @@ export interface NOCCalculations {
   monthlyOperationalCost: number;
   monthlyInfrastructureCost: number;
   monthlyLicenseCost: number;
+  monthlySOCCost: number;
+  monthlySIEMCost: number;
+  monthlySecurityCost: number;
   monthlyTotalCost: number;
   
   // Custos por dispositivo
   costPerDevice: number;
   costPerMetric: number;
   costPerAlert: number;
+  costPerSecurityAsset: number;
+  costPerGBIngested: number;
   
   // Custos anuais
   annualTotalCost: number;
@@ -220,6 +282,9 @@ export interface NOCCalculations {
   
   // Comparação de mercado
   marketAverage: number;
+  marketSOCMonthly: number;
+  marketSIEMMonthly: number;
+  marketSuggestedMonthly: number;
   competitiveness: 'low' | 'competitive' | 'high';
 }
 

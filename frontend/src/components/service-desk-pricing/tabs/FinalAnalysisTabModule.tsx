@@ -102,6 +102,30 @@ const RECOMMENDATION_ICONS = {
   scope_change: Briefcase
 };
 
+const getTeamMemberQuantity = (member: any): number => {
+  const quantity = Number(member?.quantity ?? 1);
+  return Number.isFinite(quantity) ? Math.max(0, quantity) : 0;
+};
+
+const getTotalTeamQuantity = (team: any[] = []): number => {
+  return team.reduce((sum, member) => sum + getTeamMemberQuantity(member), 0);
+};
+
+const createEmptyDashboardValue = (): ExecutiveDashboard => ({
+  kpis: [],
+  summary: {
+    projectValue: 0,
+    expectedProfit: 0,
+    riskLevel: 'medium',
+    recommendedAction: 'review',
+    keyHighlights: [],
+    concerns: []
+  },
+  recommendations: [],
+  benchmarks: [],
+  approvals: []
+});
+
 export function FinalAnalysisTabModule({
   data,
   onUpdate,
@@ -111,7 +135,7 @@ export function FinalAnalysisTabModule({
   fullData
 }: FinalAnalysisTabModuleProps) {
   const [activeTab, setActiveTab] = useState('dashboard');
-  const [dashboard, setDashboard] = useState<ExecutiveDashboard>(data || createEmptyDashboard());
+  const [dashboard, setDashboard] = useState<ExecutiveDashboard>(data || createEmptyDashboardValue());
   const [isGeneratingReport, setIsGeneratingReport] = useState(false);
   const [showApprovalDialog, setShowApprovalDialog] = useState(false);
   const [selectedApproval, setSelectedApproval] = useState<ApprovalStatus | null>(null);
@@ -150,20 +174,7 @@ export function FinalAnalysisTabModule({
     }
   }, [dashboard, data, onAutoSave, areEqual]);
 
-  const createEmptyDashboard = useCallback((): ExecutiveDashboard => ({
-    kpis: [],
-    summary: {
-      projectValue: 0,
-      expectedProfit: 0,
-      riskLevel: 'medium',
-      recommendedAction: 'review',
-      keyHighlights: [],
-      concerns: []
-    },
-    recommendations: [],
-    benchmarks: [],
-    approvals: []
-  }), []);
+  const createEmptyDashboard = useCallback(createEmptyDashboardValue, []);
 
   const generateDashboardData = useCallback(() => {
     if (!fullData) return;
@@ -203,6 +214,7 @@ export function FinalAnalysisTabModule({
 
   const generateKPIs = useCallback((projectData: ServiceDeskData): KPI[] => {
     const kpis: KPI[] = [];
+    const totalTeamQuantity = getTotalTeamQuantity(projectData.team);
 
     // Revenue KPI
     kpis.push({
@@ -269,10 +281,10 @@ export function FinalAnalysisTabModule({
     // Team Size KPI
     kpis.push({
       name: 'Tamanho da Equipe',
-      value: projectData.team.length,
+      value: totalTeamQuantity,
       unit: 'pessoas',
-      target: Math.max(5, projectData.team.length),
-      status: projectData.team.length >= 3 ? 'good' : projectData.team.length >= 1 ? 'warning' : 'critical',
+      target: Math.max(5, totalTeamQuantity),
+      status: totalTeamQuantity >= 3 ? 'good' : totalTeamQuantity >= 1 ? 'warning' : 'critical',
       trend: 'stable',
       description: 'Número de profissionais na equipe'
     });
@@ -305,10 +317,11 @@ export function FinalAnalysisTabModule({
 
   const calculateRiskScore = useCallback((projectData: ServiceDeskData): number => {
     let riskScore = 0;
+    const totalTeamQuantity = getTotalTeamQuantity(projectData.team);
 
     // Team size risk
-    if (projectData.team.length < 3) riskScore += 2;
-    else if (projectData.team.length < 5) riskScore += 1;
+    if (totalTeamQuantity < 3) riskScore += 2;
+    else if (totalTeamQuantity < 5) riskScore += 1;
 
     // Margin risk
     const profit = projectData.budget.totalPrice - projectData.budget.totalCosts;
@@ -335,6 +348,7 @@ export function FinalAnalysisTabModule({
     const profit = projectData.budget.totalPrice - projectData.budget.totalCosts;
     const profitMargin = projectData.budget.totalPrice > 0 ? (profit / projectData.budget.totalPrice) * 100 : 0;
     const riskScore = calculateRiskScore(projectData);
+    const totalTeamQuantity = getTotalTeamQuantity(projectData.team);
 
     const keyHighlights: string[] = [];
     const concerns: string[] = [];
@@ -349,7 +363,7 @@ export function FinalAnalysisTabModule({
     });
 
     // Additional analysis
-    if (projectData.team.length >= 5) {
+    if (totalTeamQuantity >= 5) {
       keyHighlights.push('Equipe bem dimensionada para o projeto');
     }
 
@@ -361,7 +375,7 @@ export function FinalAnalysisTabModule({
       concerns.push('Margem de lucro muito baixa - revisar custos ou preços');
     }
 
-    if (projectData.team.length === 0) {
+    if (totalTeamQuantity === 0) {
       concerns.push('Equipe não definida - impacto direto nos custos');
     }
 
@@ -399,6 +413,7 @@ export function FinalAnalysisTabModule({
     const recommendations: Recommendation[] = [];
     const profit = projectData.budget.totalPrice - projectData.budget.totalCosts;
     const profitMargin = projectData.budget.totalPrice > 0 ? (profit / projectData.budget.totalPrice) * 100 : 0;
+    const totalTeamQuantity = getTotalTeamQuantity(projectData.team);
 
     // Cost optimization recommendations
     if (profitMargin < 15) {
@@ -448,7 +463,7 @@ export function FinalAnalysisTabModule({
     }
 
     // Risk mitigation recommendations
-    if (projectData.team.length < 3) {
+    if (totalTeamQuantity < 3) {
       recommendations.push({
         type: 'risk_mitigation',
         title: 'Ampliar Equipe',
@@ -495,6 +510,7 @@ export function FinalAnalysisTabModule({
     const benchmarks: MarketBenchmark[] = [];
     const profit = projectData.budget.totalPrice - projectData.budget.totalCosts;
     const profitMargin = projectData.budget.totalPrice > 0 ? (profit / projectData.budget.totalPrice) * 100 : 0;
+    const totalTeamQuantity = getTotalTeamQuantity(projectData.team);
 
     // Profit margin benchmark
     benchmarks.push({
@@ -507,8 +523,11 @@ export function FinalAnalysisTabModule({
     });
 
     // Team cost per hour benchmark
-    const avgHourlyCost = projectData.team.length > 0 
-      ? projectData.budget.teamCosts.total / (projectData.team.reduce((sum, member) => sum + member.workload, 0) * 4.33)
+    const totalMonthlyHours = projectData.team.reduce((sum, member) => {
+      return sum + ((Number(member.workload) || 0) * getTeamMemberQuantity(member));
+    }, 0) * 4.33;
+    const avgHourlyCost = totalTeamQuantity > 0 && totalMonthlyHours > 0
+      ? projectData.budget.teamCosts.total / totalMonthlyHours
       : 0;
     
     benchmarks.push({
@@ -534,7 +553,7 @@ export function FinalAnalysisTabModule({
 
     // Team size benchmark
     const teamSizePerContract = projectData.budget.totalPrice > 0 
-      ? projectData.team.length / (projectData.budget.totalPrice / 100000) // Team per 100k revenue
+      ? totalTeamQuantity / (projectData.budget.totalPrice / 100000) // Team per 100k revenue
       : 0;
     
     benchmarks.push({
