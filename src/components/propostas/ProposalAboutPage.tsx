@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { ArrowRight, ArrowLeft } from 'lucide-react';
 import Image from 'next/image';
 import { ProposalHeader, ProposalFooter } from './ProposalHeaderFooter';
+import { useProposalImages } from '@/hooks/use-proposal-images';
 
 interface ProposalAboutPageProps {
   onContinue: () => void;
@@ -12,6 +13,8 @@ interface ProposalAboutPageProps {
 }
 
 export function ProposalAboutPage({ onContinue, onBack }: ProposalAboutPageProps) {
+  const { images } = useProposalImages();
+  const teamPhotoSrc = images.teamPhoto || 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=800&h=600&fit=crop';
   return (
     <div className="min-h-screen bg-[#0a1628] flex items-center justify-center p-6">
       <div className="max-w-4xl w-full">
@@ -101,8 +104,8 @@ export function ProposalAboutPage({ onContinue, onBack }: ProposalAboutPageProps
                 {/* Imagem da equipe */}
                 <div className="relative w-full h-64 rounded-xl overflow-hidden border-4 border-slate-700/50">
                   <Image
-                    src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=800&h=600&fit=crop"
-                    alt="Equipe Double TI + Telecom"
+                    src={teamPhotoSrc}
+                    alt="Equipe"
                     fill
                     className="object-cover object-center"
                     unoptimized

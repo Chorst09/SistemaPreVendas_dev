@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ArrowRight, Check, Upload, X } from 'lucide-react';
 import Image from 'next/image';
+import { useProposalImages } from '@/hooks/use-proposal-images';
 
 interface ProposalCoverPageProps {
   clientName?: string;
@@ -62,6 +63,11 @@ export function ProposalCoverPage({
   const [selectedServices, setSelectedServices] = useState<string[]>(initialServices);
   const [datacenterImage, setDatacenterImage] = useState<string | undefined>(initialDatacenterImage);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  // Usar imagem de capa persistida se não houver override local
+  const { images: proposalImages } = useProposalImages();
+
+  // Imagem efetiva: prioridade → upload local → imagem persistida → serviço selecionado
+  const effectiveImage = datacenterImage || proposalImages.coverBackground || undefined;
 
   const handleServiceToggle = (service: string) => {
     setSelectedServices(prev => {
@@ -70,8 +76,8 @@ export function ProposalCoverPage({
         ? prev.filter(s => s !== service)
         : [...prev, service];
       
-      // Se estiver adicionando um serviço e não houver imagem, definir automaticamente
-      if (!isRemoving && !datacenterImage && SERVICE_IMAGES[service]) {
+      // Se estiver adicionando um serviço e não houver imagem local nem persistida, definir automaticamente
+      if (!isRemoving && !datacenterImage && !proposalImages.coverBackground && SERVICE_IMAGES[service]) {
         setDatacenterImage(SERVICE_IMAGES[service]);
       }
       
@@ -249,10 +255,10 @@ export function ProposalCoverPage({
                   
                   {/* Quadro principal com borda branca */}
                   <div className="relative w-full h-full border-4 border-white/80 rounded-lg overflow-hidden shadow-2xl bg-[#1a2942]">
-                    {datacenterImage ? (
+                    {effectiveImage ? (
                       <div className="relative w-full h-full">
                         <Image
-                          src={datacenterImage}
+                          src={effectiveImage}
                           alt="Serviço"
                           fill
                           className="object-cover"
@@ -343,7 +349,7 @@ export function ProposalCoverPage({
                           <Upload className="h-4 w-4 mr-2" />
                           {datacenterImage ? 'Trocar Imagem' : 'Upload Imagem'}
                         </Button>
-                        {datacenterImage && (
+                        {(datacenterImage || proposalImages.coverBackground) && (
                           <Button
                             type="button"
                             variant="destructive"
@@ -354,10 +360,10 @@ export function ProposalCoverPage({
                           </Button>
                         )}
                       </div>
-                      {datacenterImage && (
+                      {effectiveImage && (
                         <div className="relative w-full h-32 rounded-lg overflow-hidden border border-slate-600">
                           <Image
-                            src={datacenterImage}
+                            src={effectiveImage}
                             alt="Preview"
                             fill
                             className="object-cover"

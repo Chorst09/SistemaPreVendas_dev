@@ -16,7 +16,8 @@ import {
   Download,
   Eye,
   Search,
-  ArrowLeft
+  ArrowLeft,
+  Image,
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -27,6 +28,7 @@ import { ProposalAboutPage } from '@/components/propostas/ProposalAboutPage';
 import { ProposalClientsPage } from '@/components/propostas/ProposalClientsPage';
 import { ProposalContentPage } from '@/components/propostas/ProposalContentPage';
 import { TemplateSelector } from '@/components/propostas/TemplateSelector';
+import { ProposalImageManager } from '@/components/propostas/ProposalImageManager';
 import { AuthGate } from '@/components/auth/AuthGate';
 import type { ProposalTemplateType } from '@/lib/types/commercial-proposal';
 
@@ -45,6 +47,7 @@ export default function PropostasPage() {
   const [selectedNOCId, setSelectedNOCId] = useState<string>('');
   const [showTemplateSelector, setShowTemplateSelector] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState<ProposalTemplateType>('standard');
+  const [showImageManager, setShowImageManager] = useState(false);
 
   useEffect(() => {
     console.log('PropostasPage - useEffect - Carregando propostas...');
@@ -433,6 +436,9 @@ export default function PropostasPage() {
           onClose={() => setShowTemplateSelector(false)}
         />
       )}
+      {showImageManager && (
+        <ProposalImageManager onClose={() => setShowImageManager(false)} />
+      )}
       <div className="container mx-auto py-8 px-4">
       {/* Modal de Seleção de Proposta NOC */}
       {showNOCSelector && (
@@ -528,10 +534,16 @@ export default function PropostasPage() {
               Gerencie suas propostas comerciais e NOC ({proposals.length} total)
             </p>
           </div>
-          <Button onClick={handleCreateNew} size="lg">
-            <Plus className="mr-2 h-5 w-5" />
-            Nova Proposta Comercial
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" onClick={() => setShowImageManager(true)}>
+              <Image className="mr-2 h-4 w-4" />
+              Gerenciar Imagens
+            </Button>
+            <Button onClick={handleCreateNew} size="lg">
+              <Plus className="mr-2 h-5 w-5" />
+              Nova Proposta Comercial
+            </Button>
+          </div>
         </div>
       </div>
 
