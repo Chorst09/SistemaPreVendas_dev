@@ -112,19 +112,12 @@ export function ProjectDetailView({ project, onUpdate, onBack }: ProjectDetailVi
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-gray-950 dark:via-slate-900 dark:to-gray-900 pb-8">
-      <div className="max-w-7xl mx-auto px-6 pt-6 space-y-6">
+    <div className="pb-8 space-y-6">
       {/* Header com Ações */}
       <Card className="border-none shadow-xl bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl">
         <CardHeader className="border-b border-gray-100 dark:border-gray-800">
           <div className="flex items-start justify-between">
             <div className="flex-1">
-              <div className="flex items-center space-x-3 mb-2">
-                <Button variant="ghost" size="sm" onClick={onBack}>
-                  <ArrowLeft className="h-4 w-4 mr-2" />
-                  Voltar
-                </Button>
-              </div>
               <div className="flex items-center space-x-3 mb-2">
                 <CardTitle className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">{project.name}</CardTitle>
                 <Badge variant={getStatusColor(project.status)}>
@@ -1971,8 +1964,6 @@ export function ProjectDetailView({ project, onUpdate, onBack }: ProjectDetailVi
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
-      </div> {/* Fecha max-w-7xl */}
 
       <PhaseManagementModal
         phases={project.timeline.phases}
