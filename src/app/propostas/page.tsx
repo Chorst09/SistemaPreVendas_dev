@@ -26,7 +26,9 @@ import { ProposalCoverPage } from '@/components/propostas/ProposalCoverPage';
 import { ProposalAboutPage } from '@/components/propostas/ProposalAboutPage';
 import { ProposalClientsPage } from '@/components/propostas/ProposalClientsPage';
 import { ProposalContentPage } from '@/components/propostas/ProposalContentPage';
+import { TemplateSelector } from '@/components/propostas/TemplateSelector';
 import { AuthGate } from '@/components/auth/AuthGate';
+import type { ProposalTemplateType } from '@/lib/types/commercial-proposal';
 
 export default function PropostasPage() {
   const router = useRouter();
@@ -41,6 +43,8 @@ export default function PropostasPage() {
   const [filterType, setFilterType] = useState<'ALL' | 'commercial' | 'noc'>('ALL');
   const [showNOCSelector, setShowNOCSelector] = useState(false);
   const [selectedNOCId, setSelectedNOCId] = useState<string>('');
+  const [showTemplateSelector, setShowTemplateSelector] = useState(false);
+  const [selectedTemplate, setSelectedTemplate] = useState<ProposalTemplateType>('standard');
 
   useEffect(() => {
     console.log('PropostasPage - useEffect - Carregando propostas...');
@@ -73,7 +77,13 @@ export default function PropostasPage() {
   };
 
   const handleCreateNew = () => {
-    // Mostrar página de capa primeiro
+    // Mostrar seletor de template primeiro
+    setShowTemplateSelector(true);
+  };
+
+  const handleTemplateSelected = (type: ProposalTemplateType) => {
+    setSelectedTemplate(type);
+    setShowTemplateSelector(false);
     setShowCoverPage(true);
   };
 
@@ -113,6 +123,7 @@ export default function PropostasPage() {
 
   const createCommercialProposal = (nocProposalId?: string, coverData?: { clientName: string; date: string; services: string[] }) => {
     const newProposal = CommercialProposalService.createEmptyProposal();
+    newProposal.templateType = selectedTemplate || 'standard';
     
     // Preencher dados da capa se fornecidos
     if (coverData) {
@@ -285,9 +296,19 @@ export default function PropostasPage() {
       [ProposalStatus.REJECTED]: { variant: 'destructive', label: 'Rejeitada' },
       [ProposalStatus.EXPIRED]: { variant: 'secondary', label: 'Expirada' }
     };
-
     const config = statusMap[status] || { variant: 'outline', label: status };
     return <Badge variant={config.variant}>{config.label}</Badge>;
+  };
+
+  const getTemplateBadge = (proposal: UnifiedProposal) => {
+    const tmpl = proposal.commercialData?.templateType || 'standard';
+    const map: Record<string, { label: string; className: string }> = {
+      standard:   { label: 'Padrão',    className: 'border-slate-400/40 text-slate-400' },
+      commercial: { label: 'Comercial', className: 'border-emerald-400/40 text-emerald-400' },
+      technical:  { label: 'Técnica',   className: 'border-blue-400/40 text-blue-400' },
+    };
+    const cfg = map[tmpl] || map.standard;
+    return <Badge variant="outline" className={`text-xs ${cfg.className}`}>{cfg.label}</Badge>;
   };
 
   const filteredProposals = proposals.filter(proposal => {
@@ -406,6 +427,12 @@ export default function PropostasPage() {
 
   return (
     <AuthGate>
+      {showTemplateSelector && (
+        <TemplateSelector
+          onSelect={handleTemplateSelected}
+          onClose={() => setShowTemplateSelector(false)}
+        />
+      )}
       <div className="container mx-auto py-8 px-4">
       {/* Modal de Seleção de Proposta NOC */}
       {showNOCSelector && (
@@ -625,11 +652,12 @@ export default function PropostasPage() {
             <Card key={proposal.id} className="hover:shadow-lg transition-shadow">
               <CardHeader>
                 <div className="flex justify-between items-start mb-2">
-                  <div className="flex items-center space-x-2">
+                  <div className="flex items-center space-x-2 flex-wrap gap-y-1">
                     <CardTitle className="text-lg">{proposal.title}</CardTitle>
                     <Badge variant={proposal.type === 'noc' ? 'secondary' : 'default'}>
                       {proposal.type === 'noc' ? 'NOC' : 'Comercial'}
                     </Badge>
+                    {proposal.type === 'commercial' && getTemplateBadge(proposal)}
                   </div>
                   {getStatusBadge(proposal.status)}
                 </div>

@@ -2,12 +2,15 @@
  * Tipos para Proposta Comercial
  */
 
+export type ProposalTemplateType = 'standard' | 'commercial' | 'technical'
+
 export interface CommercialProposal {
   id: string;
   title: string;
   proposalNumber: string;
   version: string;
   status: ProposalStatus;
+  templateType: ProposalTemplateType;
   createdAt: Date;
   updatedAt: Date;
   validUntil: Date;

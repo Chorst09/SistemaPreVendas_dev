@@ -20,7 +20,16 @@ export class ProposalPDFGenerator {
   }
 
   generate(proposal: CommercialProposal): Blob {
-    this.addCover(proposal);
+    const templateType = proposal.templateType || 'standard';
+
+    if (templateType === 'commercial') {
+      this.addCoverCommercial(proposal);
+    } else if (templateType === 'technical') {
+      this.addCoverTechnical(proposal);
+    } else {
+      this.addCover(proposal);
+    }
+
     this.addNewPage();
     this.addExecutiveSummary(proposal);
     this.addChallenge(proposal);
@@ -32,6 +41,117 @@ export class ProposalPDFGenerator {
     this.addNextSteps(proposal);
 
     return this.doc.output('blob');
+  }
+
+  private addCoverCommercial(proposal: CommercialProposal) {
+    // Cabeçalho verde - Proposta Comercial
+    this.doc.setFillColor(5, 150, 105); // emerald-600
+    this.doc.rect(0, 0, this.pageWidth, 80, 'F');
+
+    this.doc.setTextColor(255, 255, 255);
+    this.doc.setFontSize(10);
+    this.doc.setFont('helvetica', 'normal');
+    this.doc.text('PROPOSTA COMERCIAL', this.pageWidth / 2, 30, { align: 'center' });
+
+    this.doc.setFontSize(22);
+    this.doc.setFont('helvetica', 'bold');
+    const title = proposal.cover.proposalTitle || proposal.title;
+    const titleLines = this.doc.splitTextToSize(title, this.pageWidth - 40);
+    this.doc.text(titleLines, this.pageWidth / 2, 45, { align: 'center' });
+
+    this.doc.setFontSize(11);
+    this.doc.setFont('helvetica', 'normal');
+    this.doc.text(`Proposta de valor para ${proposal.cover.clientName || 'o cliente'}`, this.pageWidth / 2, 68, { align: 'center' });
+
+    // Dados abaixo do cabeçalho
+    this.doc.setTextColor(31, 41, 55);
+    this.currentY = 100;
+    this.doc.setFontSize(12);
+
+    [
+      [`Para: ${proposal.cover.clientName}`, `A/C: ${proposal.cover.clientContact}`],
+      [`De: ${proposal.cover.ourCompany}`, `Contato: ${proposal.cover.ourContact}`],
+      [`Data: ${new Date(proposal.cover.proposalDate).toLocaleDateString('pt-BR')}`, `Validade: ${proposal.cover.validityDays} dias`],
+    ].forEach(([left, right]) => {
+      this.doc.text(left || '', this.margin, this.currentY);
+      if (right) this.doc.text(right, this.pageWidth / 2, this.currentY);
+      this.currentY += 10;
+    });
+
+    // Linha divisória
+    this.currentY += 5;
+    this.doc.setDrawColor(5, 150, 105);
+    this.doc.setLineWidth(0.5);
+    this.doc.line(this.margin, this.currentY, this.pageWidth - this.margin, this.currentY);
+    this.currentY += 10;
+
+    this.doc.setFontSize(10);
+    this.doc.setTextColor(107, 114, 128);
+    this.doc.text(`Proposta Nº ${proposal.proposalNumber} · Versão ${proposal.version}`, this.margin, this.currentY);
+  }
+
+  private addCoverTechnical(proposal: CommercialProposal) {
+    // Cabeçalho azul - Proposta Técnica
+    this.doc.setFillColor(29, 78, 216); // blue-700
+    this.doc.rect(0, 0, this.pageWidth, 80, 'F');
+
+    // Grade sutil
+    this.doc.setDrawColor(255, 255, 255);
+    this.doc.setLineWidth(0.1);
+    for (let x = 0; x < this.pageWidth; x += 16) {
+      this.doc.line(x, 0, x, 80);
+    }
+
+    this.doc.setTextColor(255, 255, 255);
+    this.doc.setFontSize(10);
+    this.doc.setFont('helvetica', 'normal');
+    this.doc.text('PROPOSTA TÉCNICA', this.pageWidth / 2, 25, { align: 'center' });
+
+    this.doc.setFontSize(20);
+    this.doc.setFont('helvetica', 'bold');
+    const title = proposal.cover.proposalTitle || proposal.title;
+    const titleLines = this.doc.splitTextToSize(title, this.pageWidth - 40);
+    this.doc.text(titleLines, this.pageWidth / 2, 42, { align: 'center' });
+
+    this.doc.setFontSize(10);
+    this.doc.setFont('helvetica', 'normal');
+    this.doc.text(`Especificação técnica elaborada para ${proposal.cover.clientName || 'o cliente'}`, this.pageWidth / 2, 65, { align: 'center' });
+
+    // Tabela de metadados
+    this.doc.setTextColor(31, 41, 55);
+    this.currentY = 95;
+    this.doc.setFontSize(10);
+
+    const meta = [
+      ['Cliente:', proposal.cover.clientName, 'Ref. Técnica:', proposal.cover.clientContact],
+      ['Fornecedor:', proposal.cover.ourCompany, 'Consultor:', proposal.cover.ourContact],
+      ['Emissão:', new Date(proposal.cover.proposalDate).toLocaleDateString('pt-BR'), 'Validade:', `${proposal.cover.validityDays} dias`],
+      ['Nº Proposta:', proposal.proposalNumber, 'Versão:', proposal.version],
+    ];
+
+    this.doc.setFillColor(239, 246, 255); // blue-50
+    this.doc.rect(this.margin, this.currentY - 5, this.pageWidth - this.margin * 2, meta.length * 10 + 5, 'F');
+    this.doc.setDrawColor(147, 197, 253); // blue-300
+    this.doc.setLineWidth(0.3);
+    this.doc.rect(this.margin, this.currentY - 5, this.pageWidth - this.margin * 2, meta.length * 10 + 5, 'S');
+
+    meta.forEach(([l1, v1, l2, v2]) => {
+      this.doc.setFont('helvetica', 'bold');
+      this.doc.setTextColor(29, 78, 216);
+      this.doc.text(l1, this.margin + 3, this.currentY);
+      this.doc.setFont('helvetica', 'normal');
+      this.doc.setTextColor(31, 41, 55);
+      this.doc.text(v1 || '', this.margin + 30, this.currentY);
+      if (l2) {
+        this.doc.setFont('helvetica', 'bold');
+        this.doc.setTextColor(29, 78, 216);
+        this.doc.text(l2, this.pageWidth / 2, this.currentY);
+        this.doc.setFont('helvetica', 'normal');
+        this.doc.setTextColor(31, 41, 55);
+        this.doc.text(v2 || '', this.pageWidth / 2 + 28, this.currentY);
+      }
+      this.currentY += 10;
+    });
   }
 
   private addCover(proposal: CommercialProposal) {

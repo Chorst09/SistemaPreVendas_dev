@@ -24,6 +24,7 @@ export class CommercialProposalService {
       proposalNumber: this.generateProposalNumber(),
       version: '1.0',
       status: ProposalStatus.DRAFT,
+      templateType: 'standard',
       createdAt: now,
       updatedAt: now,
       validUntil,

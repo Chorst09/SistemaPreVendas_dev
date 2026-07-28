@@ -1,14 +1,36 @@
 import { CommercialProposal } from '@/lib/types/commercial-proposal';
+import { ProposalCommercialTemplate } from './ProposalCommercialTemplate';
+import { ProposalTechnicalTemplate } from './ProposalTechnicalTemplate';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Download, Printer } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Download, Printer, FileText, TrendingUp, Wrench } from 'lucide-react';
 
 interface PreviewSectionProps {
   proposal: CommercialProposal;
   onUpdate?: (updates: Partial<CommercialProposal>) => void;
 }
 
+const TEMPLATE_INFO = {
+  standard:   { label: 'Padrão',    icon: FileText,  color: 'border-slate-400/30 text-slate-400' },
+  commercial: { label: 'Comercial', icon: TrendingUp, color: 'border-emerald-400/30 text-emerald-400' },
+  technical:  { label: 'Técnica',   icon: Wrench,    color: 'border-blue-400/30 text-blue-400' },
+};
+
 export function PreviewSection({ proposal }: PreviewSectionProps) {
+  const templateType = proposal.templateType || 'standard';
+
+  // Template Comercial
+  if (templateType === 'commercial') {
+    return <ProposalCommercialTemplate proposal={proposal} />;
+  }
+
+  // Template Técnico
+  if (templateType === 'technical') {
+    return <ProposalTechnicalTemplate proposal={proposal} />;
+  }
+
+  // ── Template Padrão (original) ────────────────────────────────────────────
   const handlePrint = () => {
     window.print();
   };
