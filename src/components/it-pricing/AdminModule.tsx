@@ -10,6 +10,7 @@ import {
 } from "lucide-react"
 import { ConfigurationModule } from "./ConfigurationModule"
 import { ProposalsManagement } from "./ProposalsManagement"
+import { FinancialModule } from "./FinancialModule"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -777,10 +778,11 @@ export function AdminModule({ onBack }: AdminModuleProps) {
 
       <div className="px-6 pb-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-7 mb-6">
+          <TabsList className="grid w-full grid-cols-8 mb-6">
             <TabsTrigger value="visao-geral"   className="flex items-center gap-1.5 text-xs"><Eye className="h-3.5 w-3.5" />Visão Geral</TabsTrigger>
             <TabsTrigger value="propostas"     className="flex items-center gap-1.5 text-xs"><FileText className="h-3.5 w-3.5" />Propostas</TabsTrigger>
             <TabsTrigger value="produtos"      className="flex items-center gap-1.5 text-xs"><Package className="h-3.5 w-3.5" />Produtos</TabsTrigger>
+            <TabsTrigger value="financeiro"    className="flex items-center gap-1.5 text-xs"><DollarSign className="h-3.5 w-3.5" />Financeiro</TabsTrigger>
             <TabsTrigger value="analytics"     className="flex items-center gap-1.5 text-xs"><BarChart3 className="h-3.5 w-3.5" />Analytics</TabsTrigger>
             <TabsTrigger value="relatorios"    className="flex items-center gap-1.5 text-xs"><TrendingUp className="h-3.5 w-3.5" />Relatórios</TabsTrigger>
             <TabsTrigger value="clientes"      className="flex items-center gap-1.5 text-xs"><Users className="h-3.5 w-3.5" />Clientes</TabsTrigger>
@@ -873,6 +875,11 @@ export function AdminModule({ onBack }: AdminModuleProps) {
           {/* ── Produtos ── */}
           <TabsContent value="produtos" className="space-y-6">
             <ProductsTab />
+          </TabsContent>
+
+          {/* ── Financeiro ── */}
+          <TabsContent value="financeiro" className="space-y-6">
+            <FinancialModule />
           </TabsContent>
 
           {/* ── Analytics ── */}
