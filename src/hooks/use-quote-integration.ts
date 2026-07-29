@@ -12,6 +12,7 @@ export interface PricingProposal {
   date: string;
   totalPrice: number;
   module: 'VM' | 'PABX/SIP' | 'Fiber Link' | 'Radio Internet' | 'Service Desk' | 'Printer Outsourcing' | 'IT Sales/Rental/Services' | 'NOC';
+  modality?: string;
   clientData?: {
     razaoSocial: string;
     nomeContato: string;
@@ -22,7 +23,7 @@ export interface PricingProposal {
     telefoneGerente: string;
     emailGerente: string;
   };
-  technicalSpecs?: any; // Especificações técnicas específicas de cada módulo
+  technicalSpecs?: any;
 }
 
 export function useQuoteIntegration() {
@@ -49,12 +50,22 @@ export function useQuoteIntegration() {
       monthlyPrice: technicalSpecs?.monthlyPrice,
       contractDurationMonths: technicalSpecs?.contractDurationMonths,
       date: proposal.date,
-      distributorId: 1, // Distribuidor padrão - pode ser configurado
-      quotationFile: '', // Será preenchido quando o arquivo for gerado
+      distributorId: 1,
+      quotationFile: '',
       pricingFile: `${proposal.module.toLowerCase().replace(/[^a-z0-9]/g, '-')}-${proposal.id}.json`,
       module: proposal.module,
+      modality: proposal.modality,
       technicalSpecs: proposal.technicalSpecs,
-      clientData: proposal.clientData
+      clientData: proposal.clientData,
+      // Montar quotedProducts a partir dos itens do technicalSpecs
+      quotedProducts: Array.isArray(proposal.technicalSpecs?.items)
+        ? proposal.technicalSpecs.items.map((item: any) => ({
+            id: item.id,
+            description: item.description,
+            quantity: item.quantity,
+            unitCost: item.unitPrice,
+          }))
+        : [],
     };
 
     return quote;

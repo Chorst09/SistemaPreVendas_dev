@@ -953,7 +953,11 @@ export default function App() { // Ou Home
     useEffect(() => {
         setActiveTabRestored(true);
     }, []);
-    const [editingProposalId, setEditingProposalId] = useState<string | null>(null); // Estado para edição de propostas
+    const [editingProposalId, setEditingProposalId] = useState<string | null>(null);
+    // Estado para edição de orçamentos IT Sales/Rental/Services na calculadora
+    const [itQuoteToEdit, setItQuoteToEdit] = useState<{
+        id: string; dominantModule: string; items: any[]
+    } | null>(null);
     // Você pode remover ou adaptar estes estados se os componentes de view gerenciarem seus próprios dados carregados do Firestore
     const [partners, setPartners] = useState<Partner[]>(initialPartners); // Exemplo: Manter se necessário para dados locais/testes
     const [quotes, setQuotes] = useState<Quote[]>(initialQuotes);
@@ -1217,7 +1221,10 @@ export default function App() { // Ou Home
                     setTrainings(prevTrainings => prevTrainings.filter(t => t.id !== id));
                 }}
             />;
-            case 'quotes': return <QuotesView partners={partners} />;
+            case 'quotes': return <QuotesView partners={partners} onEditITQuote={(data) => {
+                setItQuoteToEdit(data);
+                setActiveTab('calculator-ti-vls');
+            }} />;
             case 'proposals': return <ProposalsView proposals={proposals} partners={partners} onSave={(proposal) => setProposals(prev => [...prev.filter(p => p.id !== proposal.id), proposal])} onDelete={(id) => setProposals(prev => prev.filter(p => p.id !== id))} />;
             case 'generated-proposals': return (
                 <div className="p-6">
@@ -1238,7 +1245,10 @@ export default function App() { // Ou Home
                     </div>
                 </div>
             );
-            case 'calculator-ti-vls': return <ITPricingModule onNavigateToProposals={() => setActiveTab('quotes')} />;
+            case 'calculator-ti-vls': return <ITPricingModule
+                onNavigateToProposals={() => setActiveTab('quotes')}
+                quoteToEdit={itQuoteToEdit}
+            />;
             case 'calculator-noc': return <NOCModuleWrapper onNavigateToQuotes={() => setActiveTab('quotes')} />;
             case 'calculator-servicedesk-advanced': return <ServiceDeskModuleWrapper onNavigateToQuotes={() => setActiveTab('quotes')} onNavigateToProposals={() => setActiveTab('quotes')} />;
             case 'calculator-printer': return <PrinterModuleWrapper onNavigateToQuotes={() => setActiveTab('quotes')} />;

@@ -15,9 +15,14 @@ import { hasPDF, getPDF, removePDF } from '@/lib/services/pdf-storage-service';
 
 interface QuotesViewProps {
   partners: Partner[];
+  onEditITQuote?: (quoteData: {
+    id: string
+    dominantModule: string
+    items: any[]
+  }) => void
 }
 
-const QuotesView: React.FC<QuotesViewProps> = ({ partners }) => {
+const QuotesView: React.FC<QuotesViewProps> = ({ partners, onEditITQuote }) => {
   const { quotes, addQuote, updateQuote, deleteQuote } = useQuotes();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingQuote, setEditingQuote] = useState<Quote | null>(null);
@@ -584,10 +589,27 @@ const QuotesView: React.FC<QuotesViewProps> = ({ partners }) => {
                                                     <Printer className="h-4 w-4 mr-1" />
                                                     Imprimir PDF
                                                 </Button>
-                                                <Button variant="outline" size="sm" onClick={() => handleOpenModal(quote)} title="Editar">
-                                                    <Edit className="h-4 w-4 mr-1" />
-                                                    Editar
-                                                </Button>
+                                                {quote.module === 'IT Sales/Rental/Services' && onEditITQuote ? (
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        title="Editar na Calculadora"
+                                                        onClick={() => {
+                                                            const specs = (quote as any).technicalSpecs || {}
+                                                            const items = Array.isArray(specs.items) ? specs.items : []
+                                                            const dominantModule = specs.dominantModule || 'sales'
+                                                            onEditITQuote({ id: quote.id, dominantModule, items })
+                                                        }}
+                                                    >
+                                                        <Edit className="h-4 w-4 mr-1" />
+                                                        Editar na Calculadora
+                                                    </Button>
+                                                ) : (
+                                                    <Button variant="outline" size="sm" onClick={() => handleOpenModal(quote)} title="Editar">
+                                                        <Edit className="h-4 w-4 mr-1" />
+                                                        Editar
+                                                    </Button>
+                                                )}
                                                 <Button variant="outline" size="sm" onClick={() => handleDeleteQuote(quote.id)} title="Excluir">
                                                     <Trash2 className="h-4 w-4 mr-1 text-destructive" />
                                                     Excluir

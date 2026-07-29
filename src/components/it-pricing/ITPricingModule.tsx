@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { ShoppingCart, Calendar, Wrench, BarChart3, Users, Settings, Zap, Shield, TrendingUp, FileText } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -14,18 +14,46 @@ import { AdminModule } from "./AdminModule"
 import { ProposalCreation } from "./ProposalCreation"
 import { ProposalsManagement } from "./ProposalsManagement"
 import { useProposalStore } from "@/lib/stores/proposal-store"
+import { useITBudgetStore } from "@/lib/stores/it-budget-store"
 import type { ProposalClientData } from "@/components/shared/ProposalClientDataForm"
 
 type ModuleType = "home" | "sales" | "rental" | "services" | "admin" | "proposal" | "proposals"
 
 interface ITPricingModuleProps {
     onNavigateToProposals?: () => void
+    quoteToEdit?: {
+      id: string
+      dominantModule: string
+      items: Array<{ id: string; description: string; quantity: number; unitPrice: number; totalPrice: number; module: string }>
+    } | null
 }
 
-export function ITPricingModule({ onNavigateToProposals }: ITPricingModuleProps = {}) {
-    const [currentModule, setCurrentModule] = useState<ModuleType>("home")
+export function ITPricingModule({ onNavigateToProposals, quoteToEdit }: ITPricingModuleProps = {}) {
+    const [currentModule, setCurrentModule] = useState<ModuleType>(() => {
+        // Se veio com quoteToEdit, abrir direto no módulo correto
+        if (quoteToEdit?.dominantModule === 'rental') return 'rental'
+        if (quoteToEdit?.dominantModule === 'services') return 'services'
+        if (quoteToEdit?.dominantModule === 'sales') return 'sales'
+        return 'home'
+    })
     const [useProposalDataForCalculator, setUseProposalDataForCalculator] = useState(false)
     const currentProposal = useProposalStore((state) => state.currentProposal)
+    const { addItems, clear } = useITBudgetStore()
+
+    // Ao montar com quoteToEdit, carrega os itens no store para edição
+    useEffect(() => {
+        if (quoteToEdit?.items?.length) {
+            clear()
+            addItems(quoteToEdit.items.map(item => ({
+                module: (item.module as 'sales' | 'rental' | 'services') || 'sales',
+                description: item.description,
+                quantity: item.quantity,
+                unitPrice: item.unitPrice,
+                totalPrice: item.totalPrice,
+            })))
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])
 
     const proposalClientData = useMemo<ProposalClientData | null>(() => {
         if (!useProposalDataForCalculator || !currentProposal) {

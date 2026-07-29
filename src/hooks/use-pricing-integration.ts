@@ -14,6 +14,7 @@ export function usePricingIntegration() {
       clientName: string;
       totalPrice: number;
       module: PricingProposal['module'];
+      modality?: string;
       technicalSpecs?: any;
       clientData?: PricingProposal['clientData'];
     }
@@ -25,6 +26,7 @@ export function usePricingIntegration() {
       date: new Date().toISOString(),
       totalPrice: proposalData.totalPrice,
       module: proposalData.module,
+      modality: proposalData.modality,
       clientData: proposalData.clientData,
       technicalSpecs: proposalData.technicalSpecs
     };

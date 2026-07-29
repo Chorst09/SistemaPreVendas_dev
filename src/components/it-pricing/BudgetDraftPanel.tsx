@@ -34,6 +34,28 @@ export function BudgetDraftPanel({ proposalClientData, onNavigateToProposals }: 
   const handleGenerateQuote = async (clientData: ClientData) => {
     if (items.length === 0) return
 
+    // Determinar a modalidade predominante dos itens
+    const moduleCounts = items.reduce((acc, item) => {
+      acc[item.module] = (acc[item.module] || 0) + 1
+      return acc
+    }, {} as Record<string, number>)
+
+    const dominantModule = Object.entries(moduleCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || "sales"
+
+    const modalityLabel = dominantModule === "sales"
+      ? "Venda"
+      : dominantModule === "rental"
+      ? "Locação"
+      : "Serviços"
+
+    // Montar lista de produtos orçados para exibição na tabela
+    const quotedProducts = items.map(item => ({
+      id: item.id,
+      description: item.description,
+      quantity: item.quantity,
+      unitCost: item.unitPrice,
+    }))
+
     await createQuoteFromPricingData({
       name: `Orçamento TI - ${clientData.nomeProjeto}`,
       clientName: clientData.razaoSocial,
@@ -42,7 +64,11 @@ export function BudgetDraftPanel({ proposalClientData, onNavigateToProposals }: 
       technicalSpecs: {
         items,
         totalValue,
+        dominantModule,
+        monthlyPrice: dominantModule === "rental" ? totalValue / 12 : undefined,
+        contractDurationMonths: dominantModule === "rental" ? 12 : undefined,
       },
+      modality: modalityLabel,
       clientData: {
         razaoSocial: clientData.razaoSocial,
         nomeContato: clientData.nomeContato,
