@@ -13,7 +13,6 @@ import {
   ArrowUpRight, ArrowDownRight, Minus, Calendar, Search,
   ChevronDown, ChevronRight, Building,
 } from "lucide-react"
-import { useProposalStore } from "@/lib/stores/proposal-store"
 import { useConfigurationStore } from "@/lib/stores/configuration-store"
 import { useQuotes } from "@/contexts/QuoteContext"
 import type { ProposalData } from "@/lib/types/proposals"
@@ -735,6 +734,201 @@ function ApprovedQuotesTab({ quotes }: { quotes: Quote[] }) {
     </div>
   )
 }
+// ─── Aba DRE por Orçamento ───────────────────────────────────────────────────
+
+function DREByQuoteTab({ quotes }: { quotes: Quote[] }) {
+  const { costsExpenses, laborCosts, getActiveTaxRegime } = useConfigurationStore()
+  const regime = getActiveTaxRegime()
+  const [search, setSearch] = useState("")
+  const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [modFilter, setModFilter] = useState("all")
+
+  const approved = useMemo(() => quotes.filter(q => q.status === "Aprovado"), [quotes])
+
+  const filtered = useMemo(() => approved.filter(q => {
+    const s = search.toLowerCase()
+    const ms = (q.client || "").toLowerCase().includes(s) || (q.projectName || "").toLowerCase().includes(s) || (q.accountManager || "").toLowerCase().includes(s)
+    const mm = modFilter === "all" ||
+      q.modality === (modFilter === "sales" ? "Venda" : modFilter === "rental" ? "Locação" : "Serviços") ||
+      q.module === modFilter
+    return ms && mm
+  }), [approved, search, modFilter])
+
+  const selected = selectedId ? filtered.find(q => q.id === selectedId) : null
+
+  const calcDRE = (q: Quote) => {
+    const rec = q.total || 0
+    const isSvc = q.modality === "Serviços" || q.module === "services"
+    const isRnt = q.modality === "Locação"  || q.module === "rental"
+    const com   = isSvc ? (costsExpenses?.comissaoServico || 0) : isRnt ? (costsExpenses?.comissaoLocacao || 0) : (costsExpenses?.comissaoVenda || 0)
+    let dp = 0
+    if (regime?.type === "presumido" || regime?.type === "real") dp = (regime.pis + regime.cofins + (isSvc ? regime.iss : 0)) / 100
+    else if (regime?.type === "simples") dp = (isSvc ? regime.anexoIII : regime.anexoI) / 100
+    else if (regime?.type === "iva") dp = regime.ivaTotal / 100
+    const ded = rec * dp; const rl = rec - ded
+    const cmv = rec * (com / 100) + (isSvc ? (laborCosts?.custoHora || 0) * 160 : 0)
+    const lb  = rl - cmv; const mb = rec > 0 ? (lb / rec) * 100 : 0
+    const dop = rec * (((costsExpenses?.despesasAdmin || 0) + (costsExpenses?.outrasDespesas || 0) + (costsExpenses?.custoFinanceiroMensal || 0)) / 100)
+    const ebt = lb - dop; const me = rec > 0 ? (ebt / rec) * 100 : 0
+    let ir = 0
+    if (regime && ebt > 0) {
+      if (regime.type === "presumido") ir = rec * (regime.basePresuncaoServico / 100) * ((regime.irpj + regime.csll) / 100)
+      else if (regime.type === "real") ir = ebt * ((regime.irpj + regime.csll) / 100)
+    }
+    const ll = ebt - ir; const ml = rec > 0 ? (ll / rec) * 100 : 0
+    return { rec, ded, rl, cmv, lb, mb, dop, ebt, me, ir, ll, ml }
+  }
+
+  const sd = selected ? calcDRE(selected) : null
+
+  const mlColor = (v: number) => v >= 10 ? "text-emerald-400" : v >= 0 ? "text-amber-400" : "text-red-400"
+  const modColor = (q: Quote) => {
+    const m = q.modality || q.module
+    if (m === "Venda" || m === "sales") return "border-teal-400/30 text-teal-400"
+    if (m === "Locação" || m === "rental") return "border-purple-400/30 text-purple-400"
+    if (m === "Serviços" || m === "services") return "border-orange-400/30 text-orange-400"
+    return "border-cyan-400/30 text-cyan-400"
+  }
+  const modLabel = (q: Quote) => q.modality || (q.module === "sales" ? "Venda" : q.module === "rental" ? "Locação" : q.module === "services" ? "Serviços" : q.module || "—")
+
+  return (
+    <div className="space-y-4">
+      {approved.length === 0 && (
+        <div className="flex items-start gap-3 rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 text-sm text-amber-300">
+          <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" />
+          <div>
+            <p className="font-semibold">Nenhum orçamento aprovado</p>
+            <p className="text-xs text-amber-400/80 mt-0.5">Acesse <strong>Comercial → Orçamentos</strong>, clique no status e mude para <strong>Aprovado</strong>.</p>
+          </div>
+        </div>
+      )}
+      <div className="flex flex-wrap gap-2">
+        <div className="relative flex-1 min-w-[200px]">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input placeholder="Buscar cliente ou projeto..." value={search} onChange={e => { setSearch(e.target.value); setSelectedId(null) }} className="pl-9 h-9" />
+        </div>
+        <Select value={modFilter} onValueChange={v => { setModFilter(v); setSelectedId(null) }}>
+          <SelectTrigger className="w-36 h-9"><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todos</SelectItem>
+            <SelectItem value="sales">Venda</SelectItem>
+            <SelectItem value="rental">Locação</SelectItem>
+            <SelectItem value="services">Serviços</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="grid gap-3 lg:grid-cols-[340px_1fr]">
+        {/* Lista */}
+        <div className="space-y-1.5 max-h-[600px] overflow-y-auto pr-1">
+          {filtered.length === 0
+            ? <p className="text-center text-sm text-muted-foreground py-8">Nenhum orçamento encontrado.</p>
+            : filtered.map(q => {
+                const d = calcDRE(q); const isSel = selectedId === q.id
+                return (
+                  <button key={q.id} onClick={() => setSelectedId(isSel ? null : q.id)}
+                    className={`w-full text-left rounded-xl border p-3 transition-all ${isSel ? "border-primary/60 bg-primary/5 ring-1 ring-primary/30" : "border-border bg-card hover:border-primary/30 hover:bg-muted/20"}`}>
+                    <div className="flex items-start justify-between gap-2 mb-1.5">
+                      <div className="min-w-0">
+                        <p className="text-sm font-bold text-foreground truncate">{q.client || "—"}</p>
+                        <p className="text-xs text-muted-foreground truncate">{q.projectName || "—"}</p>
+                      </div>
+                      <div className="text-right shrink-0">
+                        <p className="text-sm font-bold text-foreground font-mono">{fmtR(q.total || 0)}</p>
+                        <p className={`text-xs font-semibold ${mlColor(d.ml)}`}>{d.ml.toFixed(1)}% líq.</p>
+                      </div>
+                    </div>
+                    <div className="flex flex-wrap gap-1">
+                      <span className={`text-[10px] rounded-full border px-1.5 py-0.5 ${modColor(q)}`}>{modLabel(q)}</span>
+                      <span className="text-[10px] text-muted-foreground">{new Date(q.date).toLocaleDateString("pt-BR")}</span>
+                    </div>
+                  </button>
+                )
+              })
+          }
+        </div>
+
+        {/* DRE */}
+        {selected && sd ? (
+          <div className="space-y-3">
+            <div className="rounded-xl border border-border bg-muted/20 px-4 py-3 flex items-start justify-between gap-3">
+              <div>
+                <div className="flex items-center gap-2 mb-0.5">
+                  <Building className="h-4 w-4 text-muted-foreground" />
+                  <p className="font-bold text-foreground">{selected.client}</p>
+                  <span className={`text-[10px] rounded-full border px-1.5 py-0.5 ${modColor(selected)}`}>{modLabel(selected)}</span>
+                </div>
+                <p className="text-xs text-muted-foreground">{selected.projectName} · {new Date(selected.date).toLocaleDateString("pt-BR")}</p>
+              </div>
+              <Button size="sm" variant="outline" onClick={() => {
+                const d = sd; const r = d.rec || 1
+                const rows = [["Receita",fmtR(d.rec),"100%"],["(-) Deduções",`(${fmtR(d.ded)})`,`${((d.ded/r)*100).toFixed(1)}%`],["= Rec. Líquida",fmtR(d.rl),`${((d.rl/r)*100).toFixed(1)}%`],["(-) CMV",`(${fmtR(d.cmv)})`,`${((d.cmv/r)*100).toFixed(1)}%`],["= Lucro Bruto",fmtR(d.lb),`${d.mb.toFixed(1)}%`],["(-) Desp.Op.",`(${fmtR(d.dop)})`,`${((d.dop/r)*100).toFixed(1)}%`],["= EBITDA",fmtR(d.ebt),`${d.me.toFixed(1)}%`],["(-) IR+CSLL",`(${fmtR(d.ir)})`,`${((d.ir/r)*100).toFixed(1)}%`],["= Lucro Líq.",fmtR(d.ll),`${d.ml.toFixed(1)}%`]]
+                const csv = [["Descrição","Valor","AV%"],...rows].map(r=>r.map(v=>`"${v}"`).join(",")).join("\n")
+                const a = Object.assign(document.createElement("a"),{href:URL.createObjectURL(new Blob([csv],{type:"text/csv"})),download:`dre-${selected.id}.csv`})
+                a.click()
+              }}><Download className="mr-1.5 h-3.5 w-3.5" />CSV</Button>
+            </div>
+            {/* KPIs */}
+            <div className="grid grid-cols-4 gap-2">
+              {[{l:"Receita",v:fmtR(sd.rec),c:"text-cyan-400"},{l:"Margem Bruta",v:fmtPct(sd.mb),c:sd.mb>=30?"text-emerald-400":"text-amber-400"},{l:"EBITDA",v:fmtPct(sd.me),c:sd.me>=20?"text-emerald-400":"text-amber-400"},{l:"Lucro Líquido",v:fmtPct(sd.ml),c:mlColor(sd.ml)}].map(k=>(
+                <div key={k.l} className="rounded-xl border border-border bg-card p-3 text-center">
+                  <p className={`text-lg font-bold ${k.c}`}>{k.v}</p>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">{k.l}</p>
+                </div>
+              ))}
+            </div>
+            {/* Cascata */}
+            <Card><CardHeader className="pb-2"><CardTitle className="text-sm">Cascata</CardTitle></CardHeader>
+              <CardContent>
+                {[{l:"Receita Bruta",v:sd.rec,t:"pos"},{l:"(-) Deduções",v:-sd.ded,t:"neg"},{l:"(-) CMV",v:-sd.cmv,t:"neg"},{l:"(-) Desp.Op.",v:-sd.dop,t:"neg"},{l:"(-) IR+CSLL",v:-sd.ir,t:"neg"},{l:"= Lucro Líquido",v:sd.ll,t:sd.ll>=0?"rpos":"rneg"}].map((step,i)=>{
+                  const max=Math.max(sd.rec,1); const bc=step.t==="pos"?"bg-cyan-500":step.t==="neg"?"bg-red-500/60":step.t==="rpos"?"bg-emerald-500":"bg-red-600"; const vc=step.t==="pos"?"text-cyan-400":step.t==="neg"?"text-red-400":step.t==="rpos"?"text-emerald-400":"text-red-400"
+                  return <div key={i} className="flex items-center gap-3 mb-2">
+                    <span className="w-28 text-xs text-muted-foreground shrink-0">{step.l}</span>
+                    <div className="flex-1 h-5 bg-muted/30 rounded-full overflow-hidden"><div className={`h-full ${bc} rounded-full`} style={{width:`${(Math.abs(step.v)/max)*100}%`}} /></div>
+                    <span className={`w-28 text-right text-xs font-bold font-mono shrink-0 ${vc}`}>{step.v<0?`(${fmtR(Math.abs(step.v))})`:fmtR(step.v)}</span>
+                  </div>
+                })}
+              </CardContent>
+            </Card>
+            {/* Tabela DRE */}
+            <Card><CardHeader className="pb-1"><CardTitle className="text-sm flex items-center gap-2"><FileText className="h-4 w-4 text-cyan-400" />DRE — {selected.projectName || selected.client}</CardTitle></CardHeader>
+              <CardContent className="p-0"><table className="w-full">
+                <thead><tr className="border-b border-border bg-muted/30">
+                  <th className="py-2 pl-3 text-left text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Descrição</th>
+                  <th className="py-2 pr-4 text-right text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Valor</th>
+                  <th className="py-2 pr-3 text-right text-[11px] font-semibold uppercase tracking-wide text-muted-foreground w-14">AV%</th>
+                </tr></thead>
+                <tbody>{(()=>{
+                  const d=sd; const r=d.rec||1; const p=(v:number)=>`${Math.abs((v/r)*100).toFixed(1)}%`
+                  const rows:[string,number,string,boolean,string?][]=[
+                    ["RECEITA BRUTA",d.rec,"100%",true,"blue"],["(-) DEDUÇÕES",-d.ded,p(d.ded),true],["= RECEITA LÍQUIDA",d.rl,p(d.rl),true,"blue"],["(-) CMV/COMISSÃO",-d.cmv,p(d.cmv),true],
+                    ["= LUCRO BRUTO",d.lb,p(d.lb),true,d.lb>=0?"green":"red"],["(-) DESPESAS OP.",-d.dop,p(d.dop),true],["= EBITDA",d.ebt,p(d.ebt),true,d.ebt>=0?"green":"red"],["(-) IR+CSLL",-d.ir,p(d.ir),true],["= LUCRO LÍQUIDO",d.ll,p(d.ll),true,d.ll>=0?"green":"red"]
+                  ]
+                  return rows.map(([label,value,av,bold,hl],i)=>{
+                    const hlc=hl==="green"?"bg-emerald-500/5 border-l-2 border-emerald-500":hl==="red"?"bg-red-500/5 border-l-2 border-red-500":hl==="blue"?"bg-blue-500/5 border-l-2 border-blue-500":""
+                    const vc=value<0?"text-red-400":value>0?"text-foreground":"text-muted-foreground"
+                    return <tr key={i} className={`hover:bg-muted/20 ${hlc}`}>
+                      <td className={`py-2 pl-3 text-sm ${bold?"font-bold text-foreground":"text-muted-foreground"}`}>{label}</td>
+                      <td className={`py-2 pr-4 text-right text-sm font-mono ${bold?"font-bold "+vc:vc}`}>{value!==0?(value<0?`(${fmtR(Math.abs(value))})`:fmtR(value)):"—"}</td>
+                      <td className="py-2 pr-3 text-right text-xs text-muted-foreground font-mono">{value!==0?av:""}</td>
+                    </tr>
+                  })
+                })()}</tbody>
+              </table></CardContent>
+            </Card>
+          </div>
+        ) : (
+          <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-muted/10 py-16 text-center">
+            <BarChart3 className="h-10 w-10 text-muted-foreground/30 mb-3" />
+            <p className="font-medium text-muted-foreground">Selecione um orçamento</p>
+            <p className="text-xs text-muted-foreground/60 mt-1">Clique em qualquer item da lista</p>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
 // ─── Waterfall Geral ──────────────────────────────────────────────────────────
 
 function WaterfallChart({ dre }: { dre: ReturnType<typeof useDREFromQuotes> }) {
