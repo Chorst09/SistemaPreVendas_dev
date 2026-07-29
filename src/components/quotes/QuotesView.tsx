@@ -1,13 +1,14 @@
 "use client";
 
 import React, { useState } from 'react';
-import { Edit, Trash2, PlusCircle, FileDown, User, Eye, Printer, FileText, X, Headset, Package, Monitor } from 'lucide-react';
+import { Edit, Trash2, PlusCircle, FileDown, User, Eye, Printer, FileText, X, Headset, Package, Monitor, CheckCircle } from 'lucide-react';
 import type { Quote, Partner } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import QuoteForm from './QuoteForm';
 import { Input } from '@/components/ui/input';
 import { useQuotes } from '@/contexts/QuoteContext';
@@ -555,7 +556,39 @@ const QuotesView: React.FC<QuotesViewProps> = ({ partners, onEditITQuote }) => {
                                                 Global: {formatCurrency(quote.total)} em {resolveContractMonths(quote)} meses
                                             </div>
                                         </TableCell>
-                                        <TableCell>{getStatusBadge(quote.status)}</TableCell>
+                                        <TableCell>
+                                            <Select
+                                                value={quote.status}
+                                                onValueChange={(val) => updateQuote(quote.id, { status: val as Quote['status'] })}
+                                            >
+                                                <SelectTrigger className={`h-8 w-36 text-xs font-semibold border-0 focus:ring-1 ${
+                                                    quote.status === 'Aprovado'  ? 'bg-green-500/15 text-green-400 ring-green-500/30' :
+                                                    quote.status === 'Pendente'  ? 'bg-yellow-500/15 text-yellow-400 ring-yellow-500/30' :
+                                                    quote.status === 'Enviado'   ? 'bg-blue-500/15 text-blue-400 ring-blue-500/30' :
+                                                    quote.status === 'Rejeitado' ? 'bg-red-500/15 text-red-400 ring-red-500/30' :
+                                                    'bg-muted/30 text-muted-foreground'
+                                                }`}>
+                                                    <SelectValue />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="Pendente">
+                                                        <span className="flex items-center gap-1.5 text-yellow-400">⏳ Pendente</span>
+                                                    </SelectItem>
+                                                    <SelectItem value="Enviado">
+                                                        <span className="flex items-center gap-1.5 text-blue-400">📤 Enviado</span>
+                                                    </SelectItem>
+                                                    <SelectItem value="Aprovado">
+                                                        <span className="flex items-center gap-1.5 text-green-400">✓ Aprovado</span>
+                                                    </SelectItem>
+                                                    <SelectItem value="Rejeitado">
+                                                        <span className="flex items-center gap-1.5 text-red-400">✕ Rejeitado</span>
+                                                    </SelectItem>
+                                                    <SelectItem value="Aguardando Distribuidor">
+                                                        <span className="flex items-center gap-1.5 text-purple-400">🔄 Aguard. Distribuidor</span>
+                                                    </SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        </TableCell>
                                         <TableCell className="text-center">
                                             <div className="flex justify-center items-center gap-2">
                                                 {quote.quotationFile && (
