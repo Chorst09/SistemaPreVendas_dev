@@ -4,12 +4,14 @@ import { useMemo, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
   TrendingUp, TrendingDown, DollarSign, BarChart3, FileText,
   Download, Printer, AlertTriangle, CheckCircle, Info,
-  ArrowUpRight, ArrowDownRight, Minus, Calendar,
+  ArrowUpRight, ArrowDownRight, Minus, Calendar, Search,
+  ChevronDown, ChevronRight, Building,
 } from "lucide-react"
 import { useProposalStore } from "@/lib/stores/proposal-store"
 import { useConfigurationStore } from "@/lib/stores/configuration-store"
@@ -647,11 +649,16 @@ function CashFlowTab({ monthly }: { monthly: MonthData[] }) {
 
 function ApprovedProposalsTab({ proposals }: { proposals: ProposalData[] }) {
   const [search, setSearch] = useState("")
+  const [moduleFilter, setModuleFilter] = useState("all")
+  const [statusFilter, setStatusFilter] = useState("all")
   const approved = proposals.filter(p => p.status === "completed" || p.status === "active")
 
   const filtered = approved.filter(p => {
     const s = search.toLowerCase()
-    return p.clientName.toLowerCase().includes(s) || p.clientCompany.toLowerCase().includes(s) || p.projectName.toLowerCase().includes(s)
+    const matchSearch = p.clientName.toLowerCase().includes(s) || p.clientCompany.toLowerCase().includes(s) || p.projectName.toLowerCase().includes(s)
+    const matchMod = moduleFilter === "all" || p.budgets.some(b => b.module === moduleFilter)
+    const matchStatus = statusFilter === "all" || p.status === statusFilter
+    return matchSearch && matchMod && matchStatus
   })
 
   const totalApproved = approved.reduce((s, p) => s + p.budgets.reduce((b, bg) => b + bg.totalValue, 0), 0)
@@ -684,13 +691,32 @@ function ApprovedProposalsTab({ proposals }: { proposals: ProposalData[] }) {
         </CardContent></Card>
       </div>
 
-      <div className="relative">
-        <input
-          className="w-full h-9 pl-9 pr-3 text-sm rounded-lg border border-border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
-          placeholder="Buscar por cliente, empresa ou projeto..."
-          value={search} onChange={e => setSearch(e.target.value)}
-        />
-        <svg className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+      <div className="flex flex-wrap gap-2">
+        <div className="relative flex-1 min-w-[200px]">
+          <input
+            className="w-full h-9 pl-9 pr-3 text-sm rounded-lg border border-border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+            placeholder="Buscar por cliente, empresa ou projeto..."
+            value={search} onChange={e => setSearch(e.target.value)}
+          />
+          <svg className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+        </div>
+        <Select value={moduleFilter} onValueChange={setModuleFilter}>
+          <SelectTrigger className="w-36 h-9"><SelectValue placeholder="Módulo" /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todos os módulos</SelectItem>
+            <SelectItem value="sales">Vendas</SelectItem>
+            <SelectItem value="rental">Locação</SelectItem>
+            <SelectItem value="services">Serviços</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select value={statusFilter} onValueChange={setStatusFilter}>
+          <SelectTrigger className="w-32 h-9"><SelectValue placeholder="Status" /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todos</SelectItem>
+            <SelectItem value="active">Ativas</SelectItem>
+            <SelectItem value="completed">Concluídas</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       {filtered.length === 0 ? (
@@ -745,13 +771,378 @@ function ApprovedProposalsTab({ proposals }: { proposals: ProposalData[] }) {
   )
 }
 
+// ─── Engine DRE por proposta individual ───────────────────────────────────────
+
+function calcProposalDRE(p: ProposalData, costsExpenses: any, laborCosts: any, regime: any) {
+  const receita = p.budgets.reduce((s, b) => s + b.totalValue, 0)
+  const recVendas = p.budgets.filter(b => b.module === "sales").reduce((s, b) => s + b.totalValue, 0)
+  const recLocacao = p.budgets.filter(b => b.module === "rental").reduce((s, b) => s + b.totalValue, 0)
+  const recServicos = p.budgets.filter(b => b.module === "services").reduce((s, b) => s + b.totalValue, 0)
+
+  let dedPct = 0
+  if (regime?.type === "presumido" || regime?.type === "real")
+    dedPct = (regime.pis + regime.cofins + (recServicos > 0 ? regime.iss : 0)) / 100
+  else if (regime?.type === "simples")
+    dedPct = (recServicos > 0 ? regime.anexoIII : regime.anexoI) / 100
+  else if (regime?.type === "iva") dedPct = regime.ivaTotal / 100
+
+  const deducoes = receita * dedPct
+  const recLiq = receita - deducoes
+
+  const cmvV = recVendas * ((costsExpenses?.comissaoVenda || 0) / 100)
+  const cmvL = recLocacao * ((costsExpenses?.comissaoLocacao || 0) / 100)
+  const cmvS = recServicos * ((costsExpenses?.comissaoServico || 0) / 100)
+  const maoObra = recServicos > 0 ? (laborCosts?.custoHora || 0) * 160 : 0
+  const cmv = cmvV + cmvL + cmvS + maoObra
+  const lucroBruto = recLiq - cmv
+  const margBruta = receita > 0 ? (lucroBruto / receita) * 100 : 0
+
+  const despOp = receita * (((costsExpenses?.despesasAdmin || 0) + (costsExpenses?.outrasDespesas || 0) + (costsExpenses?.custoFinanceiroMensal || 0)) / 100)
+  const ebitda = lucroBruto - despOp
+  const margEbitda = receita > 0 ? (ebitda / receita) * 100 : 0
+
+  let ircsll = 0
+  if (regime && ebitda > 0) {
+    if (regime.type === "presumido") ircsll = receita * (regime.basePresuncaoServico / 100) * ((regime.irpj + regime.csll) / 100)
+    else if (regime.type === "real") ircsll = ebitda * ((regime.irpj + regime.csll) / 100)
+  }
+
+  const lucroLiq = ebitda - ircsll
+  const margLiq = receita > 0 ? (lucroLiq / receita) * 100 : 0
+  const cargaTrib = receita > 0 ? ((deducoes + ircsll) / receita) * 100 : 0
+
+  return { receita, recVendas, recLocacao, recServicos, deducoes, recLiq, cmv, cmvV, cmvL, cmvS, maoObra, lucroBruto, despOp, ebitda, ircsll, lucroLiq, margBruta, margEbitda, margLiq, cargaTrib }
+}
+
+// ─── Aba DRE por Orçamento ─────────────────────────────────────────────────────
+
+function DREByProposalTab({ proposals }: { proposals: ProposalData[] }) {
+  const { costsExpenses, laborCosts, getActiveTaxRegime } = useConfigurationStore()
+  const regime = getActiveTaxRegime()
+  const [search, setSearch] = useState("")
+  const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [moduleFilter, setModuleFilter] = useState("all")
+
+  const approved = proposals.filter(p => p.status === "completed" || p.status === "active")
+
+  const filtered = useMemo(() => approved.filter(p => {
+    const s = search.toLowerCase()
+    const matchSearch = p.clientName.toLowerCase().includes(s) || p.clientCompany.toLowerCase().includes(s) || p.projectName.toLowerCase().includes(s)
+    const matchMod = moduleFilter === "all" || p.budgets.some(b => b.module === moduleFilter)
+    return matchSearch && matchMod
+  }), [approved, search, moduleFilter])
+
+  const selectedProposal = selectedId ? filtered.find(p => p.id === selectedId) : null
+  const selectedDRE = selectedProposal ? calcProposalDRE(selectedProposal, costsExpenses, laborCosts, regime) : null
+
+  const exportCSV = () => {
+    if (!selectedProposal || !selectedDRE) return
+    const d = selectedDRE
+    const rows = [
+      ["Receita Bruta", fmtR(d.receita), "100%"],
+      ["  Vendas", fmtR(d.recVendas), `${d.receita > 0 ? ((d.recVendas/d.receita)*100).toFixed(1) : 0}%`],
+      ["  Locação", fmtR(d.recLocacao), `${d.receita > 0 ? ((d.recLocacao/d.receita)*100).toFixed(1) : 0}%`],
+      ["  Serviços", fmtR(d.recServicos), `${d.receita > 0 ? ((d.recServicos/d.receita)*100).toFixed(1) : 0}%`],
+      ["(-) Deduções", `(${fmtR(d.deducoes)})`, `${d.receita > 0 ? ((d.deducoes/d.receita)*100).toFixed(1) : 0}%`],
+      ["= Receita Líquida", fmtR(d.recLiq), `${d.receita > 0 ? ((d.recLiq/d.receita)*100).toFixed(1) : 0}%`],
+      ["(-) CMV/CSP", `(${fmtR(d.cmv)})`, `${d.receita > 0 ? ((d.cmv/d.receita)*100).toFixed(1) : 0}%`],
+      ["= Lucro Bruto", fmtR(d.lucroBruto), `${d.margBruta.toFixed(1)}%`],
+      ["(-) Despesas Op.", `(${fmtR(d.despOp)})`, `${d.receita > 0 ? ((d.despOp/d.receita)*100).toFixed(1) : 0}%`],
+      ["= EBITDA", fmtR(d.ebitda), `${d.margEbitda.toFixed(1)}%`],
+      ["(-) IR+CSLL", `(${fmtR(d.ircsll)})`, `${d.receita > 0 ? ((d.ircsll/d.receita)*100).toFixed(1) : 0}%`],
+      ["= Lucro Líquido", fmtR(d.lucroLiq), `${d.margLiq.toFixed(1)}%`],
+    ]
+    const csv = [["Descrição","Valor","AV%"], ...rows].map(r => r.map(v => `"${v}"`).join(",")).join("\n")
+    const a = Object.assign(document.createElement("a"), {
+      href: URL.createObjectURL(new Blob([csv], { type: "text/csv" })),
+      download: `dre-${selectedProposal.id}.csv`,
+    })
+    a.click()
+  }
+
+  return (
+    <div className="space-y-4">
+      {/* Filtros */}
+      <div className="flex flex-wrap gap-2">
+        <div className="relative flex-1 min-w-[200px]">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input placeholder="Buscar cliente, empresa ou projeto..." value={search}
+            onChange={e => { setSearch(e.target.value); setSelectedId(null) }} className="pl-9 h-9" />
+        </div>
+        <Select value={moduleFilter} onValueChange={v => { setModuleFilter(v); setSelectedId(null) }}>
+          <SelectTrigger className="w-36 h-9"><SelectValue placeholder="Módulo" /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todos os módulos</SelectItem>
+            <SelectItem value="sales">Vendas</SelectItem>
+            <SelectItem value="rental">Locação</SelectItem>
+            <SelectItem value="services">Serviços</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      {filtered.length === 0 && (
+        <div className="py-12 text-center text-muted-foreground text-sm">
+          {approved.length === 0 ? "Nenhuma proposta aprovada. Altere o status para Ativa ou Concluída." : "Nenhuma proposta encontrada."}
+        </div>
+      )}
+
+      <div className="grid gap-3 lg:grid-cols-[360px_1fr]">
+        {/* Lista lateral */}
+        <div className="space-y-1.5 max-h-[600px] overflow-y-auto pr-1">
+          {filtered.map(p => {
+            const d = calcProposalDRE(p, costsExpenses, laborCosts, regime)
+            const isSelected = selectedId === p.id
+            const modules = [...new Set(p.budgets.map(b => b.module))]
+            return (
+              <button key={p.id} onClick={() => setSelectedId(isSelected ? null : p.id)}
+                className={`w-full text-left rounded-xl border p-3 transition-all ${isSelected ? "border-primary/60 bg-primary/5 ring-1 ring-primary/30" : "border-border bg-card hover:border-primary/30 hover:bg-muted/20"}`}>
+                <div className="flex items-start justify-between gap-2 mb-1">
+                  <div className="min-w-0">
+                    <p className="text-sm font-bold text-foreground truncate">{p.clientName}</p>
+                    <p className="text-xs text-muted-foreground truncate">{p.projectName}</p>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <p className="text-sm font-bold text-foreground font-mono">{fmtR(d.receita)}</p>
+                    <p className={`text-xs font-semibold ${d.margLiq >= 10 ? "text-emerald-400" : d.margLiq >= 0 ? "text-amber-400" : "text-red-400"}`}>
+                      {d.margLiq.toFixed(1)}% líq.
+                    </p>
+                  </div>
+                </div>
+                <div className="flex flex-wrap gap-1 mt-1">
+                  {modules.map(m => (
+                    <span key={m} className={`text-[10px] rounded-full border px-1.5 py-0.5 ${m === "sales" ? "border-teal-400/30 text-teal-400" : m === "rental" ? "border-purple-400/30 text-purple-400" : "border-orange-400/30 text-orange-400"}`}>
+                      {m === "sales" ? "Vendas" : m === "rental" ? "Locação" : "Serviços"}
+                    </span>
+                  ))}
+                  <span className={`text-[10px] rounded-full border px-1.5 py-0.5 ${p.status === "active" ? "border-emerald-400/30 text-emerald-400" : "border-blue-400/30 text-blue-400"}`}>
+                    {p.status === "active" ? "Ativa" : "Concluída"}
+                  </span>
+                </div>
+              </button>
+            )
+          })}
+        </div>
+
+        {/* DRE Individual */}
+        {selectedProposal && selectedDRE ? (
+          <div className="space-y-3">
+            {/* Header da proposta */}
+            <div className="rounded-xl border border-border bg-muted/20 px-4 py-3 flex items-start justify-between gap-3">
+              <div>
+                <div className="flex items-center gap-2 mb-0.5">
+                  <Building className="h-4 w-4 text-muted-foreground" />
+                  <p className="font-bold text-foreground">{selectedProposal.clientName}</p>
+                  <Badge variant="outline" className="text-[10px]">{selectedProposal.clientCompany}</Badge>
+                </div>
+                <p className="text-xs text-muted-foreground">{selectedProposal.projectName} · {new Date(selectedProposal.createdAt).toLocaleDateString("pt-BR")}</p>
+              </div>
+              <Button size="sm" variant="outline" onClick={exportCSV}>
+                <Download className="mr-1.5 h-3.5 w-3.5" /> CSV
+              </Button>
+            </div>
+
+            {/* KPIs rápidos */}
+            <div className="grid grid-cols-4 gap-2">
+              {[
+                { label: "Receita", value: fmtR(selectedDRE.receita), color: "text-cyan-400" },
+                { label: "Margem Bruta", value: fmtPct(selectedDRE.margBruta), color: selectedDRE.margBruta >= 30 ? "text-emerald-400" : "text-amber-400" },
+                { label: "EBITDA", value: fmtPct(selectedDRE.margEbitda), color: selectedDRE.margEbitda >= 20 ? "text-emerald-400" : "text-amber-400" },
+                { label: "Lucro Líquido", value: fmtPct(selectedDRE.margLiq), color: selectedDRE.margLiq >= 10 ? "text-emerald-400" : selectedDRE.margLiq >= 0 ? "text-amber-400" : "text-red-400" },
+              ].map(k => (
+                <div key={k.label} className="rounded-xl border border-border bg-card p-3 text-center">
+                  <p className={`text-lg font-bold ${k.color}`}>{k.value}</p>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">{k.label}</p>
+                </div>
+              ))}
+            </div>
+
+            {/* Waterfall visual */}
+            <Card>
+              <CardHeader className="pb-2"><CardTitle className="text-sm">Cascata do Resultado</CardTitle></CardHeader>
+              <CardContent>
+                {(() => {
+                  const d = selectedDRE
+                  const steps = [
+                    { label: "Receita Bruta", value: d.receita, type: "positive" },
+                    { label: "(-) Deduções", value: -d.deducoes, type: "negative" },
+                    { label: "(-) CMV/CSP", value: -d.cmv, type: "negative" },
+                    { label: "(-) Despesas Op.", value: -d.despOp, type: "negative" },
+                    { label: "(-) IR + CSLL", value: -d.ircsll, type: "negative" },
+                    { label: "= Lucro Líquido", value: d.lucroLiq, type: d.lucroLiq >= 0 ? "result-pos" : "result-neg" },
+                  ]
+                  const maxAbs = Math.max(...steps.map(s => Math.abs(s.value)), 1)
+                  return (
+                    <div className="space-y-2">
+                      {steps.map((step, i) => {
+                        const pct = (Math.abs(step.value) / maxAbs) * 100
+                        const barColor = step.type === "positive" ? "bg-cyan-500"
+                          : step.type === "negative" ? "bg-red-500/60"
+                          : step.type === "result-pos" ? "bg-emerald-500"
+                          : "bg-red-500"
+                        const valColor = step.type === "positive" ? "text-cyan-400"
+                          : step.type === "negative" ? "text-red-400"
+                          : step.type === "result-pos" ? "text-emerald-400"
+                          : "text-red-400"
+                        return (
+                          <div key={i} className="flex items-center gap-3">
+                            <span className="w-32 text-xs text-muted-foreground shrink-0">{step.label}</span>
+                            <div className="flex-1 h-5 bg-muted/30 rounded-full overflow-hidden">
+                              <div className={`h-full ${barColor} rounded-full transition-all`} style={{ width: `${pct}%` }} />
+                            </div>
+                            <span className={`w-28 text-right text-xs font-bold font-mono shrink-0 ${valColor}`}>
+                              {step.value < 0 ? `(${fmtR(Math.abs(step.value))})` : fmtR(step.value)}
+                            </span>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  )
+                })()}
+              </CardContent>
+            </Card>
+
+            {/* DRE detalhado */}
+            <Card>
+              <CardHeader className="pb-1">
+                <CardTitle className="text-sm flex items-center gap-2">
+                  <FileText className="h-4 w-4 text-cyan-400" />
+                  DRE Individual — {selectedProposal.projectName}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-0">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b border-border bg-muted/30">
+                      <th className="py-2 pl-3 text-left text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Descrição</th>
+                      <th className="py-2 pr-4 text-right text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Valor (R$)</th>
+                      <th className="py-2 pr-3 text-right text-[11px] font-semibold uppercase tracking-wide text-muted-foreground w-14">AV%</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(() => {
+                      const d = selectedDRE
+                      const r = d.receita || 1
+                      const pct = (v: number) => `${((v / r) * 100).toFixed(1)}%`
+                      const rows: [string, number, string, boolean, string?][] = [
+                        ["RECEITA BRUTA", d.receita, "100%", true, "blue"],
+                        ["  Vendas", d.recVendas, pct(d.recVendas), false],
+                        ["  Locação", d.recLocacao, pct(d.recLocacao), false],
+                        ["  Serviços", d.recServicos, pct(d.recServicos), false],
+                        ["(-) DEDUÇÕES", -d.deducoes, pct(d.deducoes), true],
+                        ["= RECEITA LÍQUIDA", d.recLiq, pct(d.recLiq), true, "blue"],
+                        ["(-) CMV/CSP", -d.cmv, pct(d.cmv), true],
+                        ["  Comissão Vendas", -d.cmvV, pct(d.cmvV), false],
+                        ["  Comissão Locação", -d.cmvL, pct(d.cmvL), false],
+                        ["  Comissão Serviços", -d.cmvS, pct(d.cmvS), false],
+                        ["  Mão de Obra", -d.maoObra, pct(d.maoObra), false],
+                        ["= LUCRO BRUTO", d.lucroBruto, `${d.margBruta.toFixed(1)}%`, true, d.lucroBruto >= 0 ? "green" : "red"],
+                        ["(-) DESPESAS OPERACIONAIS", -d.despOp, pct(d.despOp), true],
+                        ["= EBITDA", d.ebitda, `${d.margEbitda.toFixed(1)}%`, true, d.ebitda >= 0 ? "green" : "red"],
+                        ["(-) IR + CSLL", -d.ircsll, pct(d.ircsll), true],
+                        ["= LUCRO LÍQUIDO", d.lucroLiq, `${d.margLiq.toFixed(1)}%`, true, d.lucroLiq >= 0 ? "green" : "red"],
+                      ]
+                      return rows.map(([label, value, avpct, bold, hl], i) => {
+                        const hlClass = hl === "green" ? "bg-emerald-500/5 border-l-2 border-emerald-500"
+                          : hl === "red" ? "bg-red-500/5 border-l-2 border-red-500"
+                          : hl === "blue" ? "bg-blue-500/5 border-l-2 border-blue-500" : ""
+                        const valColor = value < 0 ? "text-red-400" : value > 0 ? "text-foreground" : "text-muted-foreground"
+                        return (
+                          <tr key={i} className={`hover:bg-muted/20 ${hlClass}`}>
+                            <td className={`py-1.5 pl-3 text-sm ${bold ? "font-bold text-foreground" : "text-muted-foreground"}`}>{label}</td>
+                            <td className={`py-1.5 pr-4 text-right text-sm font-mono ${bold ? "font-bold " + valColor : valColor}`}>
+                              {value !== 0 ? (value < 0 ? `(${fmtR(Math.abs(value))})` : fmtR(value)) : "—"}
+                            </td>
+                            <td className="py-1.5 pr-3 text-right text-xs text-muted-foreground font-mono">{value !== 0 ? avpct : ""}</td>
+                          </tr>
+                        )
+                      })
+                    })()}
+                  </tbody>
+                </table>
+              </CardContent>
+            </Card>
+          </div>
+        ) : (
+          <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-muted/10 py-16 text-center">
+            <BarChart3 className="h-10 w-10 text-muted-foreground/30 mb-3" />
+            <p className="font-medium text-muted-foreground">Selecione uma proposta</p>
+            <p className="text-xs text-muted-foreground/60 mt-1">Clique em qualquer item da lista para ver o DRE individual</p>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+// ─── Waterfall Geral ──────────────────────────────────────────────────────────
+
+function WaterfallChart({ dre }: { dre: ReturnType<typeof useDRE> }) {
+  const d = dre
+  const steps = [
+    { label: "Receita Bruta",   value: d.receitaBruta,   type: "positive" as const },
+    { label: "(-) Deduções",    value: -d.totalDedRec,   type: "negative" as const },
+    { label: "(-) CMV/CSP",     value: -d.totalCMV,      type: "negative" as const },
+    { label: "= Lucro Bruto",   value: d.lucroBruto,     type: d.lucroBruto >= 0 ? "neutral" as const : "result-neg" as const },
+    { label: "(-) Desp. Op.",   value: -d.totalDespOp,   type: "negative" as const },
+    { label: "= EBITDA",        value: d.ebitda,          type: d.ebitda >= 0 ? "neutral" as const : "result-neg" as const },
+    { label: "(-) IR+CSLL",     value: -d.totalIR,       type: "negative" as const },
+    { label: "= Lucro Líquido", value: d.lucroLiquido,    type: d.lucroLiquido >= 0 ? "result-pos" as const : "result-neg" as const },
+  ]
+  const maxAbs = Math.max(...steps.map(s => Math.abs(s.value)), 1)
+
+  const barColor = (type: string) =>
+    type === "positive" ? "bg-cyan-500" :
+    type === "negative" ? "bg-red-500/60" :
+    type === "result-pos" ? "bg-emerald-500" :
+    type === "result-neg" ? "bg-red-600" : "bg-blue-400"
+
+  const valColor = (type: string) =>
+    type === "positive" ? "text-cyan-400" :
+    type === "negative" ? "text-red-400" :
+    type === "result-pos" ? "text-emerald-400" :
+    type === "result-neg" ? "text-red-400" : "text-blue-400"
+
+  if (d.receitaBruta === 0) return null
+
+  return (
+    <Card>
+      <CardHeader className="pb-2">
+        <CardTitle className="text-sm flex items-center gap-2">
+          <BarChart3 className="h-4 w-4 text-cyan-400" /> Cascata do Resultado Geral
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-2.5">
+        {steps.map((step, i) => {
+          const pct = (Math.abs(step.value) / maxAbs) * 100
+          const avPct = d.receitaBruta > 0 ? `${Math.abs((step.value / d.receitaBruta) * 100).toFixed(1)}%` : ""
+          return (
+            <div key={i} className="flex items-center gap-3">
+              <span className="w-32 text-xs text-muted-foreground shrink-0 text-right">{step.label}</span>
+              <div className="flex-1 h-6 bg-muted/30 rounded-full overflow-hidden">
+                <div className={`h-full ${barColor(step.type)} rounded-full transition-all duration-500`}
+                  style={{ width: `${pct}%` }} />
+              </div>
+              <span className={`w-32 text-right text-xs font-bold font-mono shrink-0 ${valColor(step.type)}`}>
+                {step.value < 0 ? `(${fmtR(Math.abs(step.value))})` : fmtR(step.value)}
+              </span>
+              <span className="w-10 text-right text-[10px] text-muted-foreground shrink-0">{avPct}</span>
+            </div>
+          )
+        })}
+        {/* Legenda */}
+        <div className="flex flex-wrap gap-4 pt-2 border-t border-border/40 text-[10px] text-muted-foreground">
+          {[["bg-cyan-500","Receita"],["bg-red-500/60","Deduções / Custos"],["bg-emerald-500","Resultado Positivo"],["bg-red-600","Resultado Negativo"]].map(([c,l]) => (
+            <span key={l} className="flex items-center gap-1"><span className={`w-2.5 h-2.5 rounded-sm inline-block ${c}`}/>{l}</span>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
+
 // ─── Componente Principal ─────────────────────────────────────────────────────
 
 export function FinancialModule() {
-  const { proposals } = useProposalStore()
-  const { companyData } = useConfigurationStore()
-  const [period, setPeriod] = useState("year")
-  const [activeTab, setActiveTab] = useState("dre")
 
   const dre     = useDRE(proposals, period)
   const monthly = useMonthlyData(proposals)
@@ -799,17 +1190,22 @@ export function FinancialModule() {
 
       {/* Abas */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="dre"        className="text-xs gap-1.5"><FileText  className="h-3.5 w-3.5" />DRE</TabsTrigger>
-          <TabsTrigger value="indicators" className="text-xs gap-1.5"><BarChart3 className="h-3.5 w-3.5" />Indicadores</TabsTrigger>
-          <TabsTrigger value="cashflow"   className="text-xs gap-1.5"><TrendingUp className="h-3.5 w-3.5" />Fluxo Mensal</TabsTrigger>
-          <TabsTrigger value="proposals"  className="text-xs gap-1.5"><CheckCircle className="h-3.5 w-3.5" />Aprovadas</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-5">
+          <TabsTrigger value="dre"         className="text-xs gap-1"><FileText   className="h-3.5 w-3.5" />DRE Geral</TabsTrigger>
+          <TabsTrigger value="por-orcamento" className="text-xs gap-1"><Building className="h-3.5 w-3.5" />Por Orçamento</TabsTrigger>
+          <TabsTrigger value="indicators"  className="text-xs gap-1"><BarChart3  className="h-3.5 w-3.5" />Indicadores</TabsTrigger>
+          <TabsTrigger value="cashflow"    className="text-xs gap-1"><TrendingUp className="h-3.5 w-3.5" />Fluxo Mensal</TabsTrigger>
+          <TabsTrigger value="proposals"   className="text-xs gap-1"><CheckCircle className="h-3.5 w-3.5" />Aprovadas</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="dre"        className="mt-4"><DRETab dre={dre} /></TabsContent>
-        <TabsContent value="indicators" className="mt-4"><IndicatorsTab dre={dre} /></TabsContent>
-        <TabsContent value="cashflow"   className="mt-4"><CashFlowTab monthly={monthly} /></TabsContent>
-        <TabsContent value="proposals"  className="mt-4"><ApprovedProposalsTab proposals={proposals} /></TabsContent>
+        <TabsContent value="dre" className="mt-4 space-y-4">
+          <WaterfallChart dre={dre} />
+          <DRETab dre={dre} />
+        </TabsContent>
+        <TabsContent value="por-orcamento" className="mt-4"><DREByProposalTab proposals={proposals} /></TabsContent>
+        <TabsContent value="indicators"    className="mt-4"><IndicatorsTab dre={dre} /></TabsContent>
+        <TabsContent value="cashflow"      className="mt-4"><CashFlowTab monthly={monthly} /></TabsContent>
+        <TabsContent value="proposals"     className="mt-4"><ApprovedProposalsTab proposals={proposals} /></TabsContent>
       </Tabs>
     </div>
   )
