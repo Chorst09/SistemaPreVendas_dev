@@ -1153,6 +1153,10 @@ function WaterfallChart({ dre }: { dre: ReturnType<typeof useDRE> }) {
 // ─── Componente Principal ─────────────────────────────────────────────────────
 
 export function FinancialModule() {
+  const { proposals } = useProposalStore()
+  const { companyData } = useConfigurationStore()
+  const [period, setPeriod] = useState("year")
+  const [activeTab, setActiveTab] = useState("dre")
 
   const dre     = useDRE(proposals, period)
   const monthly = useMonthlyData(proposals)
