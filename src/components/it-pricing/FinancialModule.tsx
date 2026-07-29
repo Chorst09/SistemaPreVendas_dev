@@ -15,7 +15,6 @@ import {
 } from "lucide-react"
 import { useConfigurationStore } from "@/lib/stores/configuration-store"
 import { useQuotes } from "@/contexts/QuoteContext"
-import type { ProposalData } from "@/lib/types/proposals"
 import type { Quote } from "@/lib/types/base"
 
 // ─── Formatadores ─────────────────────────────────────────────────────────────
@@ -998,7 +997,6 @@ function WaterfallChart({ dre }: { dre: ReturnType<typeof useDREFromQuotes> }) {
 // ─── Componente Principal ─────────────────────────────────────────────────────
 
 export function FinancialModule() {
-  const { proposals } = useProposalStore()
   const { companyData } = useConfigurationStore()
   const { quotes } = useQuotes()
   const [period, setPeriod] = useState("year")
