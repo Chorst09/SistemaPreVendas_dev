@@ -651,17 +651,22 @@ function ApprovedProposalsTab({ proposals }: { proposals: ProposalData[] }) {
   const [search, setSearch] = useState("")
   const [moduleFilter, setModuleFilter] = useState("all")
   const [statusFilter, setStatusFilter] = useState("all")
-  const approved = proposals.filter(p => p.status === "completed" || p.status === "active")
 
-  const filtered = approved.filter(p => {
+  const approved = useMemo(() =>
+    proposals.filter(p => p.status === "completed" || p.status === "active"),
+  [proposals])
+
+  const filtered = useMemo(() => approved.filter(p => {
     const s = search.toLowerCase()
     const matchSearch = p.clientName.toLowerCase().includes(s) || p.clientCompany.toLowerCase().includes(s) || p.projectName.toLowerCase().includes(s)
     const matchMod = moduleFilter === "all" || p.budgets.some(b => b.module === moduleFilter)
     const matchStatus = statusFilter === "all" || p.status === statusFilter
     return matchSearch && matchMod && matchStatus
-  })
+  }), [approved, search, moduleFilter, statusFilter])
 
-  const totalApproved = approved.reduce((s, p) => s + p.budgets.reduce((b, bg) => b + bg.totalValue, 0), 0)
+  const totalApproved = useMemo(() =>
+    approved.reduce((s, p) => s + p.budgets.reduce((b, bg) => b + bg.totalValue, 0), 0),
+  [approved])
 
   const STATUS_COLORS: Record<string, string> = {
     active:    "border-emerald-400/30 bg-emerald-400/10 text-emerald-400",
@@ -823,14 +828,19 @@ function DREByProposalTab({ proposals }: { proposals: ProposalData[] }) {
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [moduleFilter, setModuleFilter] = useState("all")
 
-  const approved = proposals.filter(p => p.status === "completed" || p.status === "active")
+  const filtered = useMemo(() => {
+    const approved = proposals.filter(p => p.status === "completed" || p.status === "active")
+    return approved.filter(p => {
+      const s = search.toLowerCase()
+      const matchSearch = p.clientName.toLowerCase().includes(s) || p.clientCompany.toLowerCase().includes(s) || p.projectName.toLowerCase().includes(s)
+      const matchMod = moduleFilter === "all" || p.budgets.some(b => b.module === moduleFilter)
+      return matchSearch && matchMod
+    })
+  }, [proposals, search, moduleFilter])
 
-  const filtered = useMemo(() => approved.filter(p => {
-    const s = search.toLowerCase()
-    const matchSearch = p.clientName.toLowerCase().includes(s) || p.clientCompany.toLowerCase().includes(s) || p.projectName.toLowerCase().includes(s)
-    const matchMod = moduleFilter === "all" || p.budgets.some(b => b.module === moduleFilter)
-    return matchSearch && matchMod
-  }), [approved, search, moduleFilter])
+  const approved = useMemo(() =>
+    proposals.filter(p => p.status === "completed" || p.status === "active"),
+  [proposals])
 
   const selectedProposal = selectedId ? filtered.find(p => p.id === selectedId) : null
   const selectedDRE = selectedProposal ? calcProposalDRE(selectedProposal, costsExpenses, laborCosts, regime) : null
