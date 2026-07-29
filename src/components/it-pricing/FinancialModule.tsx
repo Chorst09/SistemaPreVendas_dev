@@ -15,7 +15,9 @@ import {
 } from "lucide-react"
 import { useProposalStore } from "@/lib/stores/proposal-store"
 import { useConfigurationStore } from "@/lib/stores/configuration-store"
+import { useQuotes } from "@/contexts/QuoteContext"
 import type { ProposalData } from "@/lib/types/proposals"
+import type { Quote } from "@/lib/types/base"
 
 // ─── Formatadores ─────────────────────────────────────────────────────────────
 
@@ -52,58 +54,51 @@ interface MonthData {
   lucroLiq: number
 }
 
-// ─── Engine de cálculo do DRE ─────────────────────────────────────────────────
+// ─── Engine DRE a partir de Quotes (Orçamentos) ──────────────────────────────
 
-function useDRE(proposals: ProposalData[], period: string) {
+function useDREFromQuotes(quotes: Quote[], period: string) {
   const { costsExpenses, laborCosts, getActiveTaxRegime } = useConfigurationStore()
   const regime = getActiveTaxRegime()
 
   return useMemo(() => {
-    // Filtrar por período e status aprovados (completed + active)
-    const approved = proposals.filter(p => {
-      if (p.status !== "completed" && p.status !== "active") return false
+    // Filtrar orçamentos aprovados pelo período
+    const approved = quotes.filter(q => {
+      if (q.status !== "Aprovado") return false
       if (period === "all") return true
-      const created = new Date(p.createdAt)
-      const year  = created.getFullYear()
-      const month = created.getMonth() + 1
-      if (period === "year") return year === new Date().getFullYear()
+      const d = new Date(q.date)
+      const year = d.getFullYear()
+      const month = d.getMonth() + 1
+      const now = new Date()
+      if (period === "year") return year === now.getFullYear()
       if (period === "quarter") {
-        const now = new Date()
-        const q = Math.floor((now.getMonth()) / 3)
+        const q4 = Math.floor(now.getMonth() / 3)
         const pq = Math.floor((month - 1) / 3)
-        return year === now.getFullYear() && pq === q
+        return year === now.getFullYear() && pq === q4
       }
-      if (period === "month") {
-        const now = new Date()
-        return year === now.getFullYear() && month === now.getMonth() + 1
-      }
+      if (period === "month") return year === now.getFullYear() && month === now.getMonth() + 1
       return true
     })
 
-    // ── Receita Bruta ──────────────────────────────────────────────────────
-    const receitaVendas    = approved.filter(p => p.budgets.some(b => b.module === "sales"))
-      .reduce((s, p) => s + p.budgets.filter(b => b.module === "sales").reduce((x, b) => x + b.totalValue, 0), 0)
-    const receitaLocacao   = approved.filter(p => p.budgets.some(b => b.module === "rental"))
-      .reduce((s, p) => s + p.budgets.filter(b => b.module === "rental").reduce((x, b) => x + b.totalValue, 0), 0)
-    const receitaServicos  = approved.filter(p => p.budgets.some(b => b.module === "services"))
-      .reduce((s, p) => s + p.budgets.filter(b => b.module === "services").reduce((x, b) => x + b.totalValue, 0), 0)
-    const receitaBruta     = receitaVendas + receitaLocacao + receitaServicos
+    // Receita por módulo/modalidade
+    const receitaVendas   = approved.filter(q => q.modality === "Venda"    || q.module === "sales")   .reduce((s, q) => s + (q.total || 0), 0)
+    const receitaLocacao  = approved.filter(q => q.modality === "Locação"  || q.module === "rental")  .reduce((s, q) => s + (q.total || 0), 0)
+    const receitaServicos = approved.filter(q => q.modality === "Serviços" || q.module === "services").reduce((s, q) => s + (q.total || 0), 0)
+    // Outros módulos (NOC, Service Desk, etc)
+    const receitaOutros   = approved
+      .filter(q => !["Venda","Locação","Serviços"].includes(q.modality || "") && !["sales","rental","services"].includes(q.module || ""))
+      .reduce((s, q) => s + (q.total || 0), 0)
+    const receitaBruta    = receitaVendas + receitaLocacao + receitaServicos + receitaOutros
 
-    // ── Deduções da Receita ────────────────────────────────────────────────
+    // Deduções
     let pisPct = 0, cofinsPct = 0, issPct = 0, simplesAnexoPct = 0, ivaPct = 0
-
     if (regime) {
       if (regime.type === "presumido" || regime.type === "real") {
-        pisPct    = regime.pis
-        cofinsPct = regime.cofins
-        issPct    = receitaServicos > 0 ? regime.iss : 0
+        pisPct = regime.pis; cofinsPct = regime.cofins
+        issPct = receitaServicos > 0 ? regime.iss : 0
       } else if (regime.type === "simples") {
         simplesAnexoPct = receitaServicos > 0 ? regime.anexoIII : regime.anexoI
-      } else if (regime.type === "iva") {
-        ivaPct = regime.ivaTotal
-      }
+      } else if (regime.type === "iva") { ivaPct = regime.ivaTotal }
     }
-
     const dedPis      = receitaBruta * (pisPct / 100)
     const dedCofins   = receitaBruta * (cofinsPct / 100)
     const dedIss      = receitaServicos * (issPct / 100)
@@ -112,152 +107,117 @@ function useDRE(proposals: ProposalData[], period: string) {
     const totalDedRec = dedPis + dedCofins + dedIss + dedSimples + dedIva
     const receitaLiq  = receitaBruta - totalDedRec
 
-    // ── CMV / Custo dos Serviços Prestados ────────────────────────────────
-    const cmvComissaoVenda    = receitaVendas   * ((costsExpenses?.comissaoVenda    || 0) / 100)
-    const cmvComissaoLocacao  = receitaLocacao  * ((costsExpenses?.comissaoLocacao  || 0) / 100)
-    const cmvComissaoServico  = receitaServicos * ((costsExpenses?.comissaoServico  || 0) / 100)
-    // Custo hora × horas estimadas: aprox 160h/mês × nº propostas de serviço
-    const servicePropCount    = approved.filter(p => p.budgets.some(b => b.module === "services")).length
-    const cmvMaoDeObra        = servicePropCount * (laborCosts?.custoHora || 0) * 160
-    const totalCMV            = cmvComissaoVenda + cmvComissaoLocacao + cmvComissaoServico + cmvMaoDeObra
-    const lucroBruto          = receitaLiq - totalCMV
-    const margemBruta         = receitaBruta > 0 ? (lucroBruto / receitaBruta) * 100 : 0
+    // CMV / CSP
+    const cmvV       = receitaVendas   * ((costsExpenses?.comissaoVenda    || 0) / 100)
+    const cmvL       = receitaLocacao  * ((costsExpenses?.comissaoLocacao  || 0) / 100)
+    const cmvS       = receitaServicos * ((costsExpenses?.comissaoServico  || 0) / 100)
+    const qtdService = approved.filter(q => q.modality === "Serviços" || q.module === "services").length
+    const cmvMO      = qtdService * (laborCosts?.custoHora || 0) * 160
+    const totalCMV   = cmvV + cmvL + cmvS + cmvMO
+    const lucroBruto = receitaLiq - totalCMV
+    const margemBruta = receitaBruta > 0 ? (lucroBruto / receitaBruta) * 100 : 0
 
-    // ── Despesas Operacionais ─────────────────────────────────────────────
-    const despAdmin   = receitaBruta * ((costsExpenses?.despesasAdmin   || 0) / 100)
-    const despOutras  = receitaBruta * ((costsExpenses?.outrasDespesas  || 0) / 100)
-    const despFinanc  = receitaBruta * ((costsExpenses?.custoFinanceiroMensal || 0) / 100)
-    const despDeprec  = receitaBruta * ((costsExpenses?.depreciacao    || 0) / 100)
+    // Despesas Operacionais
+    const despAdmin   = receitaBruta * ((costsExpenses?.despesasAdmin            || 0) / 100)
+    const despOutras  = receitaBruta * ((costsExpenses?.outrasDespesas           || 0) / 100)
+    const despFinanc  = receitaBruta * ((costsExpenses?.custoFinanceiroMensal    || 0) / 100)
+    const despDeprec  = receitaBruta * ((costsExpenses?.depreciacao              || 0) / 100)
     const totalDespOp = despAdmin + despOutras + despFinanc + despDeprec
     const ebitda      = lucroBruto - totalDespOp
-    const margemEbitda = receitaBruta > 0 ? (ebitda / receitaBruta) * 100 : 0
+    const ebitdaAjustado = ebitda + despDeprec
+    const margemEbitda   = receitaBruta > 0 ? (ebitda / receitaBruta) * 100 : 0
 
-    // ── Resultado Financeiro ──────────────────────────────────────────────
-    // Já incluso em despFinanc acima; aqui saldo líquido
-    const resultFinanc  = -despFinanc
-    const ebit          = ebitda
-    const resultAntesIR = ebit + resultFinanc
-
-    // ── IR + CSLL ─────────────────────────────────────────────────────────
+    // IR + CSLL
+    const resultAntesIR = ebitda - despFinanc
     let irpj = 0, csll = 0
     if (regime && resultAntesIR > 0) {
       if (regime.type === "presumido") {
-        const baseIR  = receitaBruta * (regime.basePresuncaoServico / 100)
-        irpj = baseIR * (regime.irpj / 100)
-        csll = baseIR * (regime.csll / 100)
+        const base = receitaBruta * (regime.basePresuncaoServico / 100)
+        irpj = base * (regime.irpj / 100); csll = base * (regime.csll / 100)
       } else if (regime.type === "real") {
-        irpj = Math.max(0, resultAntesIR) * (regime.irpj / 100)
-        csll = Math.max(0, resultAntesIR) * (regime.csll / 100)
+        irpj = resultAntesIR * (regime.irpj / 100); csll = resultAntesIR * (regime.csll / 100)
       }
     }
     const totalIR      = irpj + csll
     const lucroLiquido = resultAntesIR - totalIR
     const margemLiq    = receitaBruta > 0 ? (lucroLiquido / receitaBruta) * 100 : 0
+    const cargaTributaria = receitaBruta > 0 ? ((totalDedRec + totalIR) / receitaBruta) * 100 : 0
+    const ticketMedio     = approved.length > 0 ? receitaBruta / approved.length : 0
+    const pontoEquilibrio = receitaBruta > 0 && lucroBruto > 0
+      ? (totalDespOp / (lucroBruto / receitaBruta)) : 0
 
-    // ── EBITDA ajustado ───────────────────────────────────────────────────
-    const ebitdaAjustado = ebitda + despDeprec
-
-    // ── Indicadores ───────────────────────────────────────────────────────
-    const ticketMedio      = approved.length > 0 ? receitaBruta / approved.length : 0
-    const cargaTributaria  = receitaBruta > 0 ? ((totalDedRec + totalIR) / receitaBruta) * 100 : 0
-    const pontoEquilibrio  = receitaBruta > 0 && lucroBruto > 0
-      ? (totalDespOp / (lucroBruto / receitaBruta))
-      : 0
-
-    // ── Linhas do DRE ────────────────────────────────────────────────────
     const pct = (v: number) => receitaBruta > 0 ? (v / receitaBruta) * 100 : 0
 
     const lines: DRELine[] = [
-      // RECEITA BRUTA
-      { label: "RECEITA OPERACIONAL BRUTA",           value: receitaBruta,    bold: true,  highlight: "blue",  indent: 0 },
-      { label: "Vendas de Produtos (Hardware/Software)", value: receitaVendas,  pct: pct(receitaVendas),  indent: 1 },
-      { label: "Receita de Locação",                  value: receitaLocacao,  pct: pct(receitaLocacao), indent: 1 },
-      { label: "Receita de Serviços e Projetos",      value: receitaServicos, pct: pct(receitaServicos),indent: 1 },
+      { label: "RECEITA OPERACIONAL BRUTA",             value: receitaBruta,    bold: true, highlight: "blue", indent: 0 },
+      { label: "Vendas de Produtos (Hardware/Software)", value: receitaVendas,   pct: pct(receitaVendas),   indent: 1 },
+      { label: "Receita de Locação",                    value: receitaLocacao,  pct: pct(receitaLocacao),  indent: 1 },
+      { label: "Receita de Serviços e Projetos",        value: receitaServicos, pct: pct(receitaServicos), indent: 1 },
+      ...(receitaOutros > 0 ? [{ label: "Outros (NOC, Service Desk, etc.)", value: receitaOutros, pct: pct(receitaOutros), indent: 1 } as DRELine] : []),
       { label: "", value: 0, separator: true },
-
-      // DEDUÇÕES
-      { label: "(-) DEDUÇÕES DA RECEITA BRUTA",       value: -totalDedRec,   bold: true,  indent: 0, pct: pct(totalDedRec) },
-      ...(pisPct    > 0 ? [{ label: `PIS (${fmtPct(pisPct)})`,          value: -dedPis,    pct: pct(dedPis),    indent: 1 } as DRELine] : []),
-      ...(cofinsPct > 0 ? [{ label: `COFINS (${fmtPct(cofinsPct)})`,    value: -dedCofins, pct: pct(dedCofins), indent: 1 } as DRELine] : []),
-      ...(issPct    > 0 ? [{ label: `ISS (${fmtPct(issPct)})`,          value: -dedIss,    pct: pct(dedIss),    indent: 1 } as DRELine] : []),
+      { label: "(-) DEDUÇÕES DA RECEITA BRUTA",         value: -totalDedRec,   bold: true, indent: 0, pct: pct(totalDedRec) },
+      ...(pisPct    > 0 ? [{ label: `PIS (${fmtPct(pisPct)})`,             value: -dedPis,    pct: pct(dedPis),    indent: 1 } as DRELine] : []),
+      ...(cofinsPct > 0 ? [{ label: `COFINS (${fmtPct(cofinsPct)})`,       value: -dedCofins, pct: pct(dedCofins), indent: 1 } as DRELine] : []),
+      ...(issPct    > 0 ? [{ label: `ISS (${fmtPct(issPct)})`,             value: -dedIss,    pct: pct(dedIss),    indent: 1 } as DRELine] : []),
       ...(simplesAnexoPct > 0 ? [{ label: `Simples Nacional (${fmtPct(simplesAnexoPct)})`, value: -dedSimples, pct: pct(dedSimples), indent: 1 } as DRELine] : []),
-      ...(ivaPct    > 0 ? [{ label: `IVA/CBS/IBS (${fmtPct(ivaPct)})`,  value: -dedIva,    pct: pct(dedIva),    indent: 1 } as DRELine] : []),
+      ...(ivaPct    > 0 ? [{ label: `IVA/CBS/IBS (${fmtPct(ivaPct)})`,     value: -dedIva,    pct: pct(dedIva),    indent: 1 } as DRELine] : []),
       { label: "", value: 0, separator: true },
-
-      // RECEITA LÍQUIDA
-      { label: "= RECEITA OPERACIONAL LÍQUIDA",       value: receitaLiq,     bold: true,  indent: 0, pct: pct(receitaLiq), highlight: "blue" },
+      { label: "= RECEITA OPERACIONAL LÍQUIDA",         value: receitaLiq,     bold: true, indent: 0, pct: pct(receitaLiq), highlight: "blue" },
       { label: "", value: 0, separator: true },
-
-      // CMV / CSP
-      { label: "(-) CUSTO DOS PRODUTOS/SERVIÇOS (CPV/CSP)", value: -totalCMV, bold: true, indent: 0, pct: pct(totalCMV) },
-      { label: `Comissão de Vendas (${fmtPct(costsExpenses?.comissaoVenda || 0)})`, value: -cmvComissaoVenda, pct: pct(cmvComissaoVenda), indent: 1 },
-      { label: `Comissão de Locação (${fmtPct(costsExpenses?.comissaoLocacao || 0)})`, value: -cmvComissaoLocacao, pct: pct(cmvComissaoLocacao), indent: 1 },
-      { label: `Comissão de Serviços (${fmtPct(costsExpenses?.comissaoServico || 0)})`, value: -cmvComissaoServico, pct: pct(cmvComissaoServico), indent: 1 },
-      { label: `Mão de Obra (${servicePropCount} proj × 160h × ${fmtR(laborCosts?.custoHora || 0)}/h)`, value: -cmvMaoDeObra, pct: pct(cmvMaoDeObra), indent: 1 },
+      { label: "(-) CUSTO DOS PRODUTOS/SERVIÇOS (CPV/CSP)", value: -totalCMV,  bold: true, indent: 0, pct: pct(totalCMV) },
+      { label: `Comissão de Vendas (${fmtPct(costsExpenses?.comissaoVenda || 0)})`,   value: -cmvV,  pct: pct(cmvV),  indent: 1 },
+      { label: `Comissão de Locação (${fmtPct(costsExpenses?.comissaoLocacao || 0)})`, value: -cmvL,  pct: pct(cmvL),  indent: 1 },
+      { label: `Comissão de Serviços (${fmtPct(costsExpenses?.comissaoServico || 0)})`,value: -cmvS,  pct: pct(cmvS),  indent: 1 },
+      { label: `Mão de Obra (${qtdService} proj × 160h × ${fmtR(laborCosts?.custoHora || 0)}/h)`, value: -cmvMO, pct: pct(cmvMO), indent: 1 },
       { label: "", value: 0, separator: true },
-
-      // LUCRO BRUTO
-      { label: "= LUCRO BRUTO",                      value: lucroBruto,     bold: true,  indent: 0, pct: margemBruta, highlight: lucroBruto >= 0 ? "green" : "red" },
+      { label: "= LUCRO BRUTO",                         value: lucroBruto,     bold: true, indent: 0, pct: margemBruta, highlight: lucroBruto >= 0 ? "green" : "red" },
       { label: "", value: 0, separator: true },
-
-      // DESPESAS OPERACIONAIS
-      { label: "(-) DESPESAS OPERACIONAIS",           value: -totalDespOp,   bold: true,  indent: 0, pct: pct(totalDespOp) },
-      { label: `Despesas Administrativas (${fmtPct(costsExpenses?.despesasAdmin || 0)})`,     value: -despAdmin,  pct: pct(despAdmin),  indent: 1 },
-      { label: `Outras Despesas (${fmtPct(costsExpenses?.outrasDespesas || 0)})`,            value: -despOutras, pct: pct(despOutras), indent: 1 },
-      { label: `Custo Financeiro/Mês (${fmtPct(costsExpenses?.custoFinanceiroMensal || 0)})`,value: -despFinanc, pct: pct(despFinanc), indent: 1 },
-      ...(despDeprec > 0 ? [{ label: `Depreciação (${fmtPct(costsExpenses?.depreciacao || 0)})`, value: -despDeprec, pct: pct(despDeprec), indent: 1 } as DRELine] : []),
+      { label: "(-) DESPESAS OPERACIONAIS",             value: -totalDespOp,   bold: true, indent: 0, pct: pct(totalDespOp) },
+      { label: `Despesas Administrativas (${fmtPct(costsExpenses?.despesasAdmin || 0)})`,          value: -despAdmin,  pct: pct(despAdmin),  indent: 1 },
+      { label: `Outras Despesas (${fmtPct(costsExpenses?.outrasDespesas || 0)})`,                  value: -despOutras, pct: pct(despOutras), indent: 1 },
+      { label: `Custo Financeiro (${fmtPct(costsExpenses?.custoFinanceiroMensal || 0)})`,          value: -despFinanc, pct: pct(despFinanc), indent: 1 },
+      ...(despDeprec > 0 ? [{ label: `Depreciação (${fmtPct(costsExpenses?.depreciacao || 0)})`,  value: -despDeprec, pct: pct(despDeprec), indent: 1 } as DRELine] : []),
       { label: "", value: 0, separator: true },
-
-      // EBITDA
-      { label: "= EBITDA",                            value: ebitda,         bold: true,  indent: 0, pct: margemEbitda, highlight: ebitda >= 0 ? "green" : "red" },
-      { label: `EBITDA Ajustado (+deprec.)`,          value: ebitdaAjustado, pct: receitaBruta > 0 ? (ebitdaAjustado/receitaBruta)*100 : 0, indent: 1 },
+      { label: "= EBITDA",                              value: ebitda,         bold: true, indent: 0, pct: margemEbitda, highlight: ebitda >= 0 ? "green" : "red" },
+      { label: "EBITDA Ajustado (+deprec.)",            value: ebitdaAjustado, pct: receitaBruta > 0 ? (ebitdaAjustado/receitaBruta)*100 : 0, indent: 1 },
       { label: "", value: 0, separator: true },
-
-      // IR + CSLL
-      { label: "(-) IMPOSTO DE RENDA E CSLL",         value: -totalIR,       bold: true,  indent: 0, pct: pct(totalIR) },
+      { label: "(-) IMPOSTO DE RENDA E CSLL",           value: -totalIR,       bold: true, indent: 0, pct: pct(totalIR) },
       ...(irpj > 0 ? [{ label: `IRPJ (${regime?.irpj}% s/ base)`, value: -irpj, pct: pct(irpj), indent: 1 } as DRELine] : []),
       ...(csll > 0 ? [{ label: `CSLL (${regime?.csll}% s/ base)`, value: -csll, pct: pct(csll), indent: 1 } as DRELine] : []),
       { label: "", value: 0, separator: true },
-
-      // LUCRO LÍQUIDO
-      { label: "= LUCRO LÍQUIDO DO EXERCÍCIO",        value: lucroLiquido,   bold: true,  indent: 0, pct: margemLiq, highlight: lucroLiquido >= 0 ? "green" : "red" },
+      { label: "= LUCRO LÍQUIDO DO EXERCÍCIO",          value: lucroLiquido,   bold: true, indent: 0, pct: margemLiq, highlight: lucroLiquido >= 0 ? "green" : "red" },
     ]
 
     return {
-      lines, approved,
-      receitaBruta, receitaLiq, lucroBruto, ebitda, ebitdaAjustado,
+      lines, approved, receitaBruta, receitaLiq, lucroBruto, ebitda, ebitdaAjustado,
       lucroLiquido, totalDedRec, totalCMV, totalDespOp, totalIR,
       margemBruta, margemEbitda, margemLiq, cargaTributaria,
       ticketMedio, pontoEquilibrio,
-      receitaVendas, receitaLocacao, receitaServicos,
-      regime,
+      receitaVendas, receitaLocacao, receitaServicos, receitaOutros, regime,
     }
-  }, [proposals, period, costsExpenses, laborCosts, regime])
+  }, [quotes, period, costsExpenses, laborCosts, regime])
 }
+// ─── Fluxo mensal a partir de Quotes ─────────────────────────────────────────
 
-// ─── Cálculo mensal para fluxo de caixa ───────────────────────────────────────
-
-function useMonthlyData(proposals: ProposalData[]) {
+function useMonthlyFromQuotes(quotes: Quote[]) {
   const { costsExpenses, laborCosts, getActiveTaxRegime } = useConfigurationStore()
   const regime = getActiveTaxRegime()
 
   return useMemo((): MonthData[] => {
-    const approved = proposals.filter(p => p.status === "completed" || p.status === "active")
-    const byMonth: Record<string, ProposalData[]> = {}
-
-    approved.forEach(p => {
-      const d = new Date(p.createdAt)
+    const approved = quotes.filter(q => q.status === "Aprovado")
+    const byMonth: Record<string, Quote[]> = {}
+    approved.forEach(q => {
+      const d = new Date(q.date)
       const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`
       if (!byMonth[key]) byMonth[key] = []
-      byMonth[key].push(p)
+      byMonth[key].push(q)
     })
-
-    return Object.entries(byMonth).sort(([a], [b]) => a.localeCompare(b)).slice(-12).map(([key, props]) => {
-      const receita  = props.reduce((s, p) => s + p.budgets.reduce((b, bg) => b + bg.totalValue, 0), 0)
-      let deducPct   = 0
+    return Object.entries(byMonth).sort(([a], [b]) => a.localeCompare(b)).slice(-12).map(([key, qs]) => {
+      const receita = qs.reduce((s, q) => s + (q.total || 0), 0)
+      let deducPct  = 0
       if (regime?.type === "presumido" || regime?.type === "real") deducPct = (regime.pis + regime.cofins) / 100
       else if (regime?.type === "simples") deducPct = (regime.anexoIII || regime.anexoI) / 100
-      else if (regime?.type === "iva")     deducPct = regime.ivaTotal / 100
+      else if (regime?.type === "iva") deducPct = regime.ivaTotal / 100
       const deducoes = receita * deducPct
       const recLiq   = receita - deducoes
       const cmvPct   = ((costsExpenses?.comissaoVenda || 0) + (costsExpenses?.comissaoServico || 0)) / 100
@@ -274,9 +234,8 @@ function useMonthlyData(proposals: ProposalData[]) {
       const monthLabel = new Date(Number(yr), Number(mo) - 1, 1).toLocaleDateString("pt-BR", { month: "short", year: "2-digit" })
       return { month: monthLabel, receita, deducoes, cmv, despOp, ebitda: ebt, ircsll, lucroLiq: ebt - ircsll }
     })
-  }, [proposals, costsExpenses, laborCosts, regime])
+  }, [quotes, costsExpenses, laborCosts, regime])
 }
-
 // ─── Linha do DRE ─────────────────────────────────────────────────────────────
 
 function DRERow({ line }: { line: DRELine }) {
@@ -336,7 +295,7 @@ function KPICard({ label, value, sub, trend, color = "text-foreground", icon: Ic
 
 // ─── Aba DRE ──────────────────────────────────────────────────────────────────
 
-function DRETab({ dre }: { dre: ReturnType<typeof useDRE> }) {
+function DRETab({ dre }: { dre: ReturnType<typeof useDREFromQuotes> }) {
   const exportCSV = () => {
     const rows = dre.lines
       .filter(l => !l.separator && l.label)
@@ -356,8 +315,8 @@ function DRETab({ dre }: { dre: ReturnType<typeof useDRE> }) {
         <div className="flex items-start gap-3 rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 text-sm text-amber-300">
           <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" />
           <div>
-            <p className="font-semibold">Nenhuma receita no período selecionado</p>
-            <p className="text-xs text-amber-400/80 mt-0.5">O DRE exibe apenas propostas com status <strong>Ativa</strong> ou <strong>Concluída</strong>. Verifique os filtros de período ou aprove propostas.</p>
+            <p className="font-semibold">Nenhum orçamento aprovado no período</p>
+            <p className="text-xs text-amber-400/80 mt-0.5">O DRE exibe dados de orçamentos de <strong>Comercial → Orçamentos</strong> com status <strong>Aprovado</strong>. Aprove orçamentos na aba Comercial para ver o DRE.</p>
           </div>
         </div>
       )}
@@ -418,7 +377,7 @@ function DRETab({ dre }: { dre: ReturnType<typeof useDRE> }) {
 
 // ─── Aba Indicadores ──────────────────────────────────────────────────────────
 
-function IndicatorsTab({ dre }: { dre: ReturnType<typeof useDRE> }) {
+function IndicatorsTab({ dre }: { dre: ReturnType<typeof useDREFromQuotes> }) {
   const indicators = [
     {
       group: "Rentabilidade",
@@ -645,129 +604,130 @@ function CashFlowTab({ monthly }: { monthly: MonthData[] }) {
   )
 }
 
-// ─── Aba Propostas Aprovadas ───────────────────────────────────────────────────
+// ─── Aba Orçamentos Aprovados ──────────────────────────────────────────────────
 
-function ApprovedProposalsTab({ proposals }: { proposals: ProposalData[] }) {
+function ApprovedQuotesTab({ quotes }: { quotes: Quote[] }) {
   const [search, setSearch] = useState("")
   const [moduleFilter, setModuleFilter] = useState("all")
   const [statusFilter, setStatusFilter] = useState("all")
 
-  const approved = useMemo(() =>
-    proposals.filter(p => p.status === "completed" || p.status === "active"),
-  [proposals])
+  const allApproved = useMemo(() =>
+    quotes.filter(q => q.status === "Aprovado"),
+  [quotes])
 
-  const filtered = useMemo(() => approved.filter(p => {
-    const s = search.toLowerCase()
-    const matchSearch = p.clientName.toLowerCase().includes(s) || p.clientCompany.toLowerCase().includes(s) || p.projectName.toLowerCase().includes(s)
-    const matchMod = moduleFilter === "all" || p.budgets.some(b => b.module === moduleFilter)
-    const matchStatus = statusFilter === "all" || p.status === statusFilter
-    return matchSearch && matchMod && matchStatus
-  }), [approved, search, moduleFilter, statusFilter])
+  const filtered = useMemo(() => {
+    const src = statusFilter === "all" ? quotes : quotes.filter(q => q.status === statusFilter)
+    return src.filter(q => {
+      const s = search.toLowerCase()
+      const matchSearch = (q.client || "").toLowerCase().includes(s) || (q.projectName || "").toLowerCase().includes(s)
+      const matchMod = moduleFilter === "all" ||
+        q.modality === (moduleFilter === "sales" ? "Venda" : moduleFilter === "rental" ? "Locação" : "Serviços") ||
+        q.module === moduleFilter
+      return matchSearch && matchMod
+    })
+  }, [quotes, search, moduleFilter, statusFilter])
 
   const totalApproved = useMemo(() =>
-    approved.reduce((s, p) => s + p.budgets.reduce((b, bg) => b + bg.totalValue, 0), 0),
-  [approved])
+    allApproved.reduce((s, q) => s + (q.total || 0), 0),
+  [allApproved])
 
   const STATUS_COLORS: Record<string, string> = {
-    active:    "border-emerald-400/30 bg-emerald-400/10 text-emerald-400",
-    completed: "border-blue-400/30 bg-blue-400/10 text-blue-400",
+    "Aprovado":               "border-emerald-400/30 bg-emerald-400/10 text-emerald-400",
+    "Pendente":               "border-amber-400/30 bg-amber-400/10 text-amber-400",
+    "Enviado":                "border-blue-400/30 bg-blue-400/10 text-blue-400",
+    "Rejeitado":              "border-red-400/30 bg-red-400/10 text-red-400",
+    "Aguardando Distribuidor":"border-purple-400/30 bg-purple-400/10 text-purple-400",
   }
 
-  const MODULE_COLORS: Record<string, string> = {
-    sales:    "border-teal-400/30 bg-teal-400/10 text-teal-400",
-    rental:   "border-purple-400/30 bg-purple-400/10 text-purple-400",
-    services: "border-orange-400/30 bg-orange-400/10 text-orange-400",
+  const exportCSV = () => {
+    const headers = ["Cliente","Projeto","Gerente","Módulo","Modalidade","Status","Valor Total","Data"]
+    const rows = filtered.map(q => [q.client, q.projectName, q.accountManager, q.module, q.modality, q.status, fmtR(q.total || 0), new Date(q.date).toLocaleDateString("pt-BR")])
+    const csv = [headers, ...rows].map(r => r.map(v => `"${v || ""}"`).join(",")).join("\n")
+    const a = Object.assign(document.createElement("a"), {
+      href: URL.createObjectURL(new Blob([csv], { type: "text/csv" })),
+      download: `orcamentos-${new Date().toISOString().split("T")[0]}.csv`,
+    })
+    a.click()
   }
 
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-3 gap-3">
         <Card><CardContent className="p-4 text-center">
-          <p className="text-2xl font-bold text-emerald-400">{approved.length}</p>
-          <p className="text-xs text-muted-foreground mt-0.5">Propostas Aprovadas</p>
+          <p className="text-2xl font-bold text-emerald-400">{allApproved.length}</p>
+          <p className="text-xs text-muted-foreground mt-0.5">Orçamentos Aprovados</p>
         </CardContent></Card>
         <Card><CardContent className="p-4 text-center">
           <p className="text-xl font-bold text-cyan-400">{fmtR(totalApproved)}</p>
-          <p className="text-xs text-muted-foreground mt-0.5">Receita Total</p>
+          <p className="text-xs text-muted-foreground mt-0.5">Receita Total (Aprovados)</p>
         </CardContent></Card>
         <Card><CardContent className="p-4 text-center">
-          <p className="text-xl font-bold text-foreground">{approved.length > 0 ? fmtR(totalApproved / approved.length) : "R$ 0"}</p>
+          <p className="text-xl font-bold text-foreground">{allApproved.length > 0 ? fmtR(totalApproved / allApproved.length) : "R$ 0"}</p>
           <p className="text-xs text-muted-foreground mt-0.5">Ticket Médio</p>
         </CardContent></Card>
       </div>
 
       <div className="flex flex-wrap gap-2">
         <div className="relative flex-1 min-w-[200px]">
-          <input
-            className="w-full h-9 pl-9 pr-3 text-sm rounded-lg border border-border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
-            placeholder="Buscar por cliente, empresa ou projeto..."
-            value={search} onChange={e => setSearch(e.target.value)}
-          />
-          <svg className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input placeholder="Buscar cliente ou projeto..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9 h-9" />
         </div>
         <Select value={moduleFilter} onValueChange={setModuleFilter}>
           <SelectTrigger className="w-36 h-9"><SelectValue placeholder="Módulo" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Todos os módulos</SelectItem>
-            <SelectItem value="sales">Vendas</SelectItem>
+            <SelectItem value="sales">Venda</SelectItem>
             <SelectItem value="rental">Locação</SelectItem>
             <SelectItem value="services">Serviços</SelectItem>
           </SelectContent>
         </Select>
         <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-32 h-9"><SelectValue placeholder="Status" /></SelectTrigger>
+          <SelectTrigger className="w-40 h-9"><SelectValue placeholder="Status" /></SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Todos</SelectItem>
-            <SelectItem value="active">Ativas</SelectItem>
-            <SelectItem value="completed">Concluídas</SelectItem>
+            <SelectItem value="all">Todos os status</SelectItem>
+            <SelectItem value="Aprovado">Aprovado</SelectItem>
+            <SelectItem value="Pendente">Pendente</SelectItem>
+            <SelectItem value="Enviado">Enviado</SelectItem>
+            <SelectItem value="Rejeitado">Rejeitado</SelectItem>
           </SelectContent>
         </Select>
+        <Button size="sm" variant="outline" onClick={exportCSV}><Download className="mr-1.5 h-3.5 w-3.5" />CSV</Button>
       </div>
 
       {filtered.length === 0 ? (
         <div className="py-12 text-center text-muted-foreground text-sm">
-          {approved.length === 0 ? "Nenhuma proposta aprovada. Altere o status de propostas para 'Ativa' ou 'Concluída'." : "Nenhuma proposta encontrada para a busca."}
+          {quotes.length === 0
+            ? "Nenhum orçamento cadastrado. Acesse Comercial → Orçamentos para criar."
+            : "Nenhum orçamento encontrado para os filtros."}
         </div>
       ) : (
         <div className="overflow-hidden rounded-xl border border-border">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border bg-muted/30">
-                {["Cliente / Empresa","Projeto","Status","Módulos","Valor Total","Data"].map(h => (
+                {["Cliente / Projeto","Gerente","Módulo","Status","Valor Total","Data"].map(h => (
                   <th key={h} className="px-4 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
-              {filtered.map((p, i) => {
-                const total = p.budgets.reduce((s, b) => s + b.totalValue, 0)
-                const modules = [...new Set(p.budgets.map(b => b.module))]
-                return (
-                  <tr key={p.id} className={`border-t border-border/50 hover:bg-muted/20 ${i % 2 === 1 ? "bg-muted/10" : ""}`}>
-                    <td className="px-4 py-3">
-                      <p className="font-semibold text-foreground">{p.clientName}</p>
-                      <p className="text-xs text-muted-foreground">{p.clientCompany}</p>
-                    </td>
-                    <td className="px-4 py-3 text-muted-foreground text-xs max-w-[140px] truncate">{p.projectName}</td>
-                    <td className="px-4 py-3">
-                      <Badge variant="outline" className={`text-[10px] ${STATUS_COLORS[p.status] || ""}`}>
-                        {p.status === "active" ? "Ativa" : "Concluída"}
-                      </Badge>
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex flex-wrap gap-1">
-                        {modules.map(m => (
-                          <Badge key={m} variant="outline" className={`text-[10px] ${MODULE_COLORS[m] || ""}`}>
-                            {m === "sales" ? "Vendas" : m === "rental" ? "Locação" : "Serviços"}
-                          </Badge>
-                        ))}
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 text-right font-bold text-emerald-400 font-mono">{fmtR(total)}</td>
-                    <td className="px-4 py-3 text-xs text-muted-foreground">{new Date(p.createdAt).toLocaleDateString("pt-BR")}</td>
-                  </tr>
-                )
-              })}
+              {filtered.map((q, i) => (
+                <tr key={q.id} className={`border-t border-border/50 hover:bg-muted/20 ${i % 2 === 1 ? "bg-muted/10" : ""}`}>
+                  <td className="px-4 py-3">
+                    <p className="font-semibold text-foreground">{q.client || "—"}</p>
+                    <p className="text-xs text-muted-foreground">{q.projectName || "—"}</p>
+                  </td>
+                  <td className="px-4 py-3 text-xs text-muted-foreground">{q.accountManager || "—"}</td>
+                  <td className="px-4 py-3">
+                    <Badge variant="outline" className="text-[10px]">{q.modality || q.module || "—"}</Badge>
+                  </td>
+                  <td className="px-4 py-3">
+                    <Badge variant="outline" className={`text-[10px] ${STATUS_COLORS[q.status] || ""}`}>{q.status}</Badge>
+                  </td>
+                  <td className="px-4 py-3 text-right font-bold font-mono text-foreground">{fmtR(q.total || 0)}</td>
+                  <td className="px-4 py-3 text-xs text-muted-foreground">{new Date(q.date).toLocaleDateString("pt-BR")}</td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>
@@ -775,318 +735,9 @@ function ApprovedProposalsTab({ proposals }: { proposals: ProposalData[] }) {
     </div>
   )
 }
-
-// ─── Engine DRE por proposta individual ───────────────────────────────────────
-
-function calcProposalDRE(p: ProposalData, costsExpenses: any, laborCosts: any, regime: any) {
-  const receita = p.budgets.reduce((s, b) => s + b.totalValue, 0)
-  const recVendas = p.budgets.filter(b => b.module === "sales").reduce((s, b) => s + b.totalValue, 0)
-  const recLocacao = p.budgets.filter(b => b.module === "rental").reduce((s, b) => s + b.totalValue, 0)
-  const recServicos = p.budgets.filter(b => b.module === "services").reduce((s, b) => s + b.totalValue, 0)
-
-  let dedPct = 0
-  if (regime?.type === "presumido" || regime?.type === "real")
-    dedPct = (regime.pis + regime.cofins + (recServicos > 0 ? regime.iss : 0)) / 100
-  else if (regime?.type === "simples")
-    dedPct = (recServicos > 0 ? regime.anexoIII : regime.anexoI) / 100
-  else if (regime?.type === "iva") dedPct = regime.ivaTotal / 100
-
-  const deducoes = receita * dedPct
-  const recLiq = receita - deducoes
-
-  const cmvV = recVendas * ((costsExpenses?.comissaoVenda || 0) / 100)
-  const cmvL = recLocacao * ((costsExpenses?.comissaoLocacao || 0) / 100)
-  const cmvS = recServicos * ((costsExpenses?.comissaoServico || 0) / 100)
-  const maoObra = recServicos > 0 ? (laborCosts?.custoHora || 0) * 160 : 0
-  const cmv = cmvV + cmvL + cmvS + maoObra
-  const lucroBruto = recLiq - cmv
-  const margBruta = receita > 0 ? (lucroBruto / receita) * 100 : 0
-
-  const despOp = receita * (((costsExpenses?.despesasAdmin || 0) + (costsExpenses?.outrasDespesas || 0) + (costsExpenses?.custoFinanceiroMensal || 0)) / 100)
-  const ebitda = lucroBruto - despOp
-  const margEbitda = receita > 0 ? (ebitda / receita) * 100 : 0
-
-  let ircsll = 0
-  if (regime && ebitda > 0) {
-    if (regime.type === "presumido") ircsll = receita * (regime.basePresuncaoServico / 100) * ((regime.irpj + regime.csll) / 100)
-    else if (regime.type === "real") ircsll = ebitda * ((regime.irpj + regime.csll) / 100)
-  }
-
-  const lucroLiq = ebitda - ircsll
-  const margLiq = receita > 0 ? (lucroLiq / receita) * 100 : 0
-  const cargaTrib = receita > 0 ? ((deducoes + ircsll) / receita) * 100 : 0
-
-  return { receita, recVendas, recLocacao, recServicos, deducoes, recLiq, cmv, cmvV, cmvL, cmvS, maoObra, lucroBruto, despOp, ebitda, ircsll, lucroLiq, margBruta, margEbitda, margLiq, cargaTrib }
-}
-
-// ─── Aba DRE por Orçamento ─────────────────────────────────────────────────────
-
-function DREByProposalTab({ proposals }: { proposals: ProposalData[] }) {
-  const { costsExpenses, laborCosts, getActiveTaxRegime } = useConfigurationStore()
-  const regime = getActiveTaxRegime()
-  const [search, setSearch] = useState("")
-  const [selectedId, setSelectedId] = useState<string | null>(null)
-  const [moduleFilter, setModuleFilter] = useState("all")
-
-  const filtered = useMemo(() => {
-    const approved = proposals.filter(p => p.status === "completed" || p.status === "active")
-    return approved.filter(p => {
-      const s = search.toLowerCase()
-      const matchSearch = p.clientName.toLowerCase().includes(s) || p.clientCompany.toLowerCase().includes(s) || p.projectName.toLowerCase().includes(s)
-      const matchMod = moduleFilter === "all" || p.budgets.some(b => b.module === moduleFilter)
-      return matchSearch && matchMod
-    })
-  }, [proposals, search, moduleFilter])
-
-  const approved = useMemo(() =>
-    proposals.filter(p => p.status === "completed" || p.status === "active"),
-  [proposals])
-
-  const selectedProposal = selectedId ? filtered.find(p => p.id === selectedId) : null
-  const selectedDRE = selectedProposal ? calcProposalDRE(selectedProposal, costsExpenses, laborCosts, regime) : null
-
-  const exportCSV = () => {
-    if (!selectedProposal || !selectedDRE) return
-    const d = selectedDRE
-    const rows = [
-      ["Receita Bruta", fmtR(d.receita), "100%"],
-      ["  Vendas", fmtR(d.recVendas), `${d.receita > 0 ? ((d.recVendas/d.receita)*100).toFixed(1) : 0}%`],
-      ["  Locação", fmtR(d.recLocacao), `${d.receita > 0 ? ((d.recLocacao/d.receita)*100).toFixed(1) : 0}%`],
-      ["  Serviços", fmtR(d.recServicos), `${d.receita > 0 ? ((d.recServicos/d.receita)*100).toFixed(1) : 0}%`],
-      ["(-) Deduções", `(${fmtR(d.deducoes)})`, `${d.receita > 0 ? ((d.deducoes/d.receita)*100).toFixed(1) : 0}%`],
-      ["= Receita Líquida", fmtR(d.recLiq), `${d.receita > 0 ? ((d.recLiq/d.receita)*100).toFixed(1) : 0}%`],
-      ["(-) CMV/CSP", `(${fmtR(d.cmv)})`, `${d.receita > 0 ? ((d.cmv/d.receita)*100).toFixed(1) : 0}%`],
-      ["= Lucro Bruto", fmtR(d.lucroBruto), `${d.margBruta.toFixed(1)}%`],
-      ["(-) Despesas Op.", `(${fmtR(d.despOp)})`, `${d.receita > 0 ? ((d.despOp/d.receita)*100).toFixed(1) : 0}%`],
-      ["= EBITDA", fmtR(d.ebitda), `${d.margEbitda.toFixed(1)}%`],
-      ["(-) IR+CSLL", `(${fmtR(d.ircsll)})`, `${d.receita > 0 ? ((d.ircsll/d.receita)*100).toFixed(1) : 0}%`],
-      ["= Lucro Líquido", fmtR(d.lucroLiq), `${d.margLiq.toFixed(1)}%`],
-    ]
-    const csv = [["Descrição","Valor","AV%"], ...rows].map(r => r.map(v => `"${v}"`).join(",")).join("\n")
-    const a = Object.assign(document.createElement("a"), {
-      href: URL.createObjectURL(new Blob([csv], { type: "text/csv" })),
-      download: `dre-${selectedProposal.id}.csv`,
-    })
-    a.click()
-  }
-
-  return (
-    <div className="space-y-4">
-      {/* Filtros */}
-      <div className="flex flex-wrap gap-2">
-        <div className="relative flex-1 min-w-[200px]">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input placeholder="Buscar cliente, empresa ou projeto..." value={search}
-            onChange={e => { setSearch(e.target.value); setSelectedId(null) }} className="pl-9 h-9" />
-        </div>
-        <Select value={moduleFilter} onValueChange={v => { setModuleFilter(v); setSelectedId(null) }}>
-          <SelectTrigger className="w-36 h-9"><SelectValue placeholder="Módulo" /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Todos os módulos</SelectItem>
-            <SelectItem value="sales">Vendas</SelectItem>
-            <SelectItem value="rental">Locação</SelectItem>
-            <SelectItem value="services">Serviços</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      {filtered.length === 0 && (
-        <div className="py-12 text-center text-muted-foreground text-sm">
-          {approved.length === 0 ? "Nenhuma proposta aprovada. Altere o status para Ativa ou Concluída." : "Nenhuma proposta encontrada."}
-        </div>
-      )}
-
-      <div className="grid gap-3 lg:grid-cols-[360px_1fr]">
-        {/* Lista lateral */}
-        <div className="space-y-1.5 max-h-[600px] overflow-y-auto pr-1">
-          {filtered.map(p => {
-            const d = calcProposalDRE(p, costsExpenses, laborCosts, regime)
-            const isSelected = selectedId === p.id
-            const modules = [...new Set(p.budgets.map(b => b.module))]
-            return (
-              <button key={p.id} onClick={() => setSelectedId(isSelected ? null : p.id)}
-                className={`w-full text-left rounded-xl border p-3 transition-all ${isSelected ? "border-primary/60 bg-primary/5 ring-1 ring-primary/30" : "border-border bg-card hover:border-primary/30 hover:bg-muted/20"}`}>
-                <div className="flex items-start justify-between gap-2 mb-1">
-                  <div className="min-w-0">
-                    <p className="text-sm font-bold text-foreground truncate">{p.clientName}</p>
-                    <p className="text-xs text-muted-foreground truncate">{p.projectName}</p>
-                  </div>
-                  <div className="text-right shrink-0">
-                    <p className="text-sm font-bold text-foreground font-mono">{fmtR(d.receita)}</p>
-                    <p className={`text-xs font-semibold ${d.margLiq >= 10 ? "text-emerald-400" : d.margLiq >= 0 ? "text-amber-400" : "text-red-400"}`}>
-                      {d.margLiq.toFixed(1)}% líq.
-                    </p>
-                  </div>
-                </div>
-                <div className="flex flex-wrap gap-1 mt-1">
-                  {modules.map(m => (
-                    <span key={m} className={`text-[10px] rounded-full border px-1.5 py-0.5 ${m === "sales" ? "border-teal-400/30 text-teal-400" : m === "rental" ? "border-purple-400/30 text-purple-400" : "border-orange-400/30 text-orange-400"}`}>
-                      {m === "sales" ? "Vendas" : m === "rental" ? "Locação" : "Serviços"}
-                    </span>
-                  ))}
-                  <span className={`text-[10px] rounded-full border px-1.5 py-0.5 ${p.status === "active" ? "border-emerald-400/30 text-emerald-400" : "border-blue-400/30 text-blue-400"}`}>
-                    {p.status === "active" ? "Ativa" : "Concluída"}
-                  </span>
-                </div>
-              </button>
-            )
-          })}
-        </div>
-
-        {/* DRE Individual */}
-        {selectedProposal && selectedDRE ? (
-          <div className="space-y-3">
-            {/* Header da proposta */}
-            <div className="rounded-xl border border-border bg-muted/20 px-4 py-3 flex items-start justify-between gap-3">
-              <div>
-                <div className="flex items-center gap-2 mb-0.5">
-                  <Building className="h-4 w-4 text-muted-foreground" />
-                  <p className="font-bold text-foreground">{selectedProposal.clientName}</p>
-                  <Badge variant="outline" className="text-[10px]">{selectedProposal.clientCompany}</Badge>
-                </div>
-                <p className="text-xs text-muted-foreground">{selectedProposal.projectName} · {new Date(selectedProposal.createdAt).toLocaleDateString("pt-BR")}</p>
-              </div>
-              <Button size="sm" variant="outline" onClick={exportCSV}>
-                <Download className="mr-1.5 h-3.5 w-3.5" /> CSV
-              </Button>
-            </div>
-
-            {/* KPIs rápidos */}
-            <div className="grid grid-cols-4 gap-2">
-              {[
-                { label: "Receita", value: fmtR(selectedDRE.receita), color: "text-cyan-400" },
-                { label: "Margem Bruta", value: fmtPct(selectedDRE.margBruta), color: selectedDRE.margBruta >= 30 ? "text-emerald-400" : "text-amber-400" },
-                { label: "EBITDA", value: fmtPct(selectedDRE.margEbitda), color: selectedDRE.margEbitda >= 20 ? "text-emerald-400" : "text-amber-400" },
-                { label: "Lucro Líquido", value: fmtPct(selectedDRE.margLiq), color: selectedDRE.margLiq >= 10 ? "text-emerald-400" : selectedDRE.margLiq >= 0 ? "text-amber-400" : "text-red-400" },
-              ].map(k => (
-                <div key={k.label} className="rounded-xl border border-border bg-card p-3 text-center">
-                  <p className={`text-lg font-bold ${k.color}`}>{k.value}</p>
-                  <p className="text-[10px] text-muted-foreground mt-0.5">{k.label}</p>
-                </div>
-              ))}
-            </div>
-
-            {/* Waterfall visual */}
-            <Card>
-              <CardHeader className="pb-2"><CardTitle className="text-sm">Cascata do Resultado</CardTitle></CardHeader>
-              <CardContent>
-                {(() => {
-                  const d = selectedDRE
-                  const steps = [
-                    { label: "Receita Bruta", value: d.receita, type: "positive" },
-                    { label: "(-) Deduções", value: -d.deducoes, type: "negative" },
-                    { label: "(-) CMV/CSP", value: -d.cmv, type: "negative" },
-                    { label: "(-) Despesas Op.", value: -d.despOp, type: "negative" },
-                    { label: "(-) IR + CSLL", value: -d.ircsll, type: "negative" },
-                    { label: "= Lucro Líquido", value: d.lucroLiq, type: d.lucroLiq >= 0 ? "result-pos" : "result-neg" },
-                  ]
-                  const maxAbs = Math.max(...steps.map(s => Math.abs(s.value)), 1)
-                  return (
-                    <div className="space-y-2">
-                      {steps.map((step, i) => {
-                        const pct = (Math.abs(step.value) / maxAbs) * 100
-                        const barColor = step.type === "positive" ? "bg-cyan-500"
-                          : step.type === "negative" ? "bg-red-500/60"
-                          : step.type === "result-pos" ? "bg-emerald-500"
-                          : "bg-red-500"
-                        const valColor = step.type === "positive" ? "text-cyan-400"
-                          : step.type === "negative" ? "text-red-400"
-                          : step.type === "result-pos" ? "text-emerald-400"
-                          : "text-red-400"
-                        return (
-                          <div key={i} className="flex items-center gap-3">
-                            <span className="w-32 text-xs text-muted-foreground shrink-0">{step.label}</span>
-                            <div className="flex-1 h-5 bg-muted/30 rounded-full overflow-hidden">
-                              <div className={`h-full ${barColor} rounded-full transition-all`} style={{ width: `${pct}%` }} />
-                            </div>
-                            <span className={`w-28 text-right text-xs font-bold font-mono shrink-0 ${valColor}`}>
-                              {step.value < 0 ? `(${fmtR(Math.abs(step.value))})` : fmtR(step.value)}
-                            </span>
-                          </div>
-                        )
-                      })}
-                    </div>
-                  )
-                })()}
-              </CardContent>
-            </Card>
-
-            {/* DRE detalhado */}
-            <Card>
-              <CardHeader className="pb-1">
-                <CardTitle className="text-sm flex items-center gap-2">
-                  <FileText className="h-4 w-4 text-cyan-400" />
-                  DRE Individual — {selectedProposal.projectName}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-0">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b border-border bg-muted/30">
-                      <th className="py-2 pl-3 text-left text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Descrição</th>
-                      <th className="py-2 pr-4 text-right text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Valor (R$)</th>
-                      <th className="py-2 pr-3 text-right text-[11px] font-semibold uppercase tracking-wide text-muted-foreground w-14">AV%</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {(() => {
-                      const d = selectedDRE
-                      const r = d.receita || 1
-                      const pct = (v: number) => `${((v / r) * 100).toFixed(1)}%`
-                      const rows: [string, number, string, boolean, string?][] = [
-                        ["RECEITA BRUTA", d.receita, "100%", true, "blue"],
-                        ["  Vendas", d.recVendas, pct(d.recVendas), false],
-                        ["  Locação", d.recLocacao, pct(d.recLocacao), false],
-                        ["  Serviços", d.recServicos, pct(d.recServicos), false],
-                        ["(-) DEDUÇÕES", -d.deducoes, pct(d.deducoes), true],
-                        ["= RECEITA LÍQUIDA", d.recLiq, pct(d.recLiq), true, "blue"],
-                        ["(-) CMV/CSP", -d.cmv, pct(d.cmv), true],
-                        ["  Comissão Vendas", -d.cmvV, pct(d.cmvV), false],
-                        ["  Comissão Locação", -d.cmvL, pct(d.cmvL), false],
-                        ["  Comissão Serviços", -d.cmvS, pct(d.cmvS), false],
-                        ["  Mão de Obra", -d.maoObra, pct(d.maoObra), false],
-                        ["= LUCRO BRUTO", d.lucroBruto, `${d.margBruta.toFixed(1)}%`, true, d.lucroBruto >= 0 ? "green" : "red"],
-                        ["(-) DESPESAS OPERACIONAIS", -d.despOp, pct(d.despOp), true],
-                        ["= EBITDA", d.ebitda, `${d.margEbitda.toFixed(1)}%`, true, d.ebitda >= 0 ? "green" : "red"],
-                        ["(-) IR + CSLL", -d.ircsll, pct(d.ircsll), true],
-                        ["= LUCRO LÍQUIDO", d.lucroLiq, `${d.margLiq.toFixed(1)}%`, true, d.lucroLiq >= 0 ? "green" : "red"],
-                      ]
-                      return rows.map(([label, value, avpct, bold, hl], i) => {
-                        const hlClass = hl === "green" ? "bg-emerald-500/5 border-l-2 border-emerald-500"
-                          : hl === "red" ? "bg-red-500/5 border-l-2 border-red-500"
-                          : hl === "blue" ? "bg-blue-500/5 border-l-2 border-blue-500" : ""
-                        const valColor = value < 0 ? "text-red-400" : value > 0 ? "text-foreground" : "text-muted-foreground"
-                        return (
-                          <tr key={i} className={`hover:bg-muted/20 ${hlClass}`}>
-                            <td className={`py-1.5 pl-3 text-sm ${bold ? "font-bold text-foreground" : "text-muted-foreground"}`}>{label}</td>
-                            <td className={`py-1.5 pr-4 text-right text-sm font-mono ${bold ? "font-bold " + valColor : valColor}`}>
-                              {value !== 0 ? (value < 0 ? `(${fmtR(Math.abs(value))})` : fmtR(value)) : "—"}
-                            </td>
-                            <td className="py-1.5 pr-3 text-right text-xs text-muted-foreground font-mono">{value !== 0 ? avpct : ""}</td>
-                          </tr>
-                        )
-                      })
-                    })()}
-                  </tbody>
-                </table>
-              </CardContent>
-            </Card>
-          </div>
-        ) : (
-          <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-muted/10 py-16 text-center">
-            <BarChart3 className="h-10 w-10 text-muted-foreground/30 mb-3" />
-            <p className="font-medium text-muted-foreground">Selecione uma proposta</p>
-            <p className="text-xs text-muted-foreground/60 mt-1">Clique em qualquer item da lista para ver o DRE individual</p>
-          </div>
-        )}
-      </div>
-    </div>
-  )
-}
-
 // ─── Waterfall Geral ──────────────────────────────────────────────────────────
 
-function WaterfallChart({ dre }: { dre: ReturnType<typeof useDRE> }) {
+function WaterfallChart({ dre }: { dre: ReturnType<typeof useDREFromQuotes> }) {
   const d = dre
   const steps = [
     { label: "Receita Bruta",   value: d.receitaBruta,   type: "positive" as const },
@@ -1155,11 +806,14 @@ function WaterfallChart({ dre }: { dre: ReturnType<typeof useDRE> }) {
 export function FinancialModule() {
   const { proposals } = useProposalStore()
   const { companyData } = useConfigurationStore()
+  const { quotes } = useQuotes()
   const [period, setPeriod] = useState("year")
   const [activeTab, setActiveTab] = useState("dre")
 
-  const dre     = useDRE(proposals, period)
-  const monthly = useMonthlyData(proposals)
+  // DRE baseado nos orçamentos de Comercial → Orçamentos (QuoteContext)
+  const dre     = useDREFromQuotes(quotes, period)
+  // Fluxo mensal também dos orçamentos
+  const monthly = useMonthlyFromQuotes(quotes)
 
   const kpiColor = (v: number, okThreshold: number, warnThreshold: number) =>
     v >= okThreshold ? "text-emerald-400" : v >= warnThreshold ? "text-amber-400" : "text-red-400"
@@ -1216,10 +870,10 @@ export function FinancialModule() {
           <WaterfallChart dre={dre} />
           <DRETab dre={dre} />
         </TabsContent>
-        <TabsContent value="por-orcamento" className="mt-4"><DREByProposalTab proposals={proposals} /></TabsContent>
+        <TabsContent value="por-orcamento" className="mt-4"><DREByQuoteTab quotes={quotes} /></TabsContent>
         <TabsContent value="indicators"    className="mt-4"><IndicatorsTab dre={dre} /></TabsContent>
         <TabsContent value="cashflow"      className="mt-4"><CashFlowTab monthly={monthly} /></TabsContent>
-        <TabsContent value="proposals"     className="mt-4"><ApprovedProposalsTab proposals={proposals} /></TabsContent>
+        <TabsContent value="proposals"     className="mt-4"><ApprovedQuotesTab quotes={quotes} /></TabsContent>
       </Tabs>
     </div>
   )
