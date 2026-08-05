@@ -89,13 +89,16 @@ export function RentalModule({ onBack, onModuleChange, onNavigateToProposals, pr
 
   const handleAddToBudget = () => {
     const items = rentalItems.map((item) => {
-      const unitPrice = rentalCalc.itemCalculations[item.id]?.rbUnitario || 0
+      // rbUnitario = valor de venda mensal por unidade
+      const monthlyUnitPrice = rentalCalc.itemCalculations[item.id]?.rbUnitario || 0
       return {
         module: "rental" as const,
         description: item.description,
         quantity: item.quantity,
-        unitPrice,
-        totalPrice: unitPrice * (item.quantity || 0) * contractPeriod,
+        unitPrice: monthlyUnitPrice,                          // valor de venda mensal unitário
+        totalPrice: monthlyUnitPrice * (item.quantity || 0) * contractPeriod, // total do contrato
+        contractDurationMonths: contractPeriod,               // prazo real selecionado
+        monthlyUnitPrice,                                     // alias explícito
       }
     })
 

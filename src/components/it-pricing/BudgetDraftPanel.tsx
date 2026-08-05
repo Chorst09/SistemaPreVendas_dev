@@ -48,25 +48,41 @@ export function BudgetDraftPanel({ proposalClientData, onNavigateToProposals }: 
       ? "Locação"
       : "Serviços"
 
-    // Montar lista de produtos orçados para exibição na tabela
+    // Para locação: pegar prazo real dos itens (todos devem ter o mesmo prazo)
+    const rentalItems = items.filter(i => i.module === "rental")
+    const contractDurationMonths = rentalItems.length > 0
+      ? (rentalItems[0].contractDurationMonths || 12)
+      : 12
+
+    // Valor mensal real de locação = soma dos (unitPrice × qty) de todos os itens de locação
+    const monthlyRentalValue = rentalItems.reduce((s, i) => s + (i.unitPrice || 0) * (i.quantity || 0), 0)
+
+    // Total do contrato: para locação = mensal × prazo; para outros = totalValue
+    const totalForQuote = dominantModule === "rental"
+      ? monthlyRentalValue * contractDurationMonths
+      : totalValue
+
+    // Montar lista de produtos orçados com valor de venda (não custo)
     const quotedProducts = items.map(item => ({
       id: item.id,
       description: item.description,
       quantity: item.quantity,
-      unitCost: item.unitPrice,
+      unitCost: item.module === "rental"
+        ? item.unitPrice   // valor de venda mensal unitário
+        : item.unitPrice,  // valor de venda unitário
     }))
 
     await createQuoteFromPricingData({
       name: `Orçamento TI - ${clientData.nomeProjeto}`,
       clientName: clientData.razaoSocial,
-      totalPrice: totalValue,
+      totalPrice: totalForQuote,
       module: "IT Sales/Rental/Services",
       technicalSpecs: {
         items,
-        totalValue,
+        totalValue: totalForQuote,
         dominantModule,
-        monthlyPrice: dominantModule === "rental" ? totalValue / 12 : undefined,
-        contractDurationMonths: dominantModule === "rental" ? 12 : undefined,
+        monthlyPrice: dominantModule === "rental" ? monthlyRentalValue : undefined,
+        contractDurationMonths: dominantModule === "rental" ? contractDurationMonths : undefined,
       },
       modality: modalityLabel,
       clientData: {

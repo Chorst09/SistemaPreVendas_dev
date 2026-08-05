@@ -330,7 +330,7 @@ const QuotesView: React.FC<QuotesViewProps> = ({ partners, onEditITQuote }) => {
                 <hr />
                 <h2>Produtos Orçados</h2>
                 <table>
-                  <thead><tr><th>#</th><th>Descrição</th><th>Qtd</th><th>Custo Unitário</th><th>Subtotal</th></tr></thead>
+                  <thead><tr><th>#</th><th>Descrição</th><th>Qtd</th><th>Valor Unitário</th><th>Subtotal</th></tr></thead>
                   <tbody>${buildQuotedProductsRows(quote)}</tbody>
                 </table>
                 <div class="row"><span class="label">Valor Mensal</span><span>${escapeHtml(formatCurrency(resolveMonthlyPrice(quote)))}</span></div>
