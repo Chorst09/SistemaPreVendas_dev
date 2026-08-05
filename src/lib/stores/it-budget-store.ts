@@ -10,10 +10,13 @@ export interface ITBudgetDraftItem {
   module: ITBudgetModule
   description: string
   quantity: number
-  unitPrice: number       // valor de venda unitário mensal
-  totalPrice: number      // valor de venda total (unitPrice × qty × período)
-  contractDurationMonths?: number  // prazo do contrato em meses (para locação)
-  monthlyUnitPrice?: number        // preço mensal unitário (= unitPrice para locação)
+  unitPrice: number
+  totalPrice: number
+  contractDurationMonths?: number
+  monthlyUnitPrice?: number
+  originalItem?: Record<string, any>   // campos originais para restaurar na calculadora
+  originalContractPeriod?: number
+  originalMargin?: number
 }
 
 type ITBudgetDraftItemInput = Omit<ITBudgetDraftItem, "id">

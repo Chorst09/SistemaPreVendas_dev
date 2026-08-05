@@ -631,7 +631,22 @@ const QuotesView: React.FC<QuotesViewProps> = ({ partners, onEditITQuote }) => {
                                                             const specs = (quote as any).technicalSpecs || {}
                                                             const items = Array.isArray(specs.items) ? specs.items : []
                                                             const dominantModule = specs.dominantModule || 'sales'
-                                                            onEditITQuote({ id: quote.id, dominantModule, items })
+                                                            // Passar todos os campos incluindo originalItem para restaurar na calculadora
+                                                            onEditITQuote({
+                                                                id: quote.id,
+                                                                dominantModule,
+                                                                items: items.map((item: any) => ({
+                                                                    id: item.id,
+                                                                    description: item.description,
+                                                                    quantity: item.quantity,
+                                                                    unitPrice: item.unitPrice,
+                                                                    totalPrice: item.totalPrice,
+                                                                    module: item.module,
+                                                                    originalItem: item.originalItem,
+                                                                    originalContractPeriod: item.originalContractPeriod ?? item.contractDurationMonths,
+                                                                    originalMargin: item.originalMargin,
+                                                                }))
+                                                            })
                                                         }}
                                                     >
                                                         <Edit className="h-4 w-4 mr-1" />

@@ -19,23 +19,29 @@ interface SalesModuleProps {
   onModuleChange?: (module: "sales" | "rental" | "services") => void
   onNavigateToProposals?: () => void
   proposalClientData?: ProposalClientData | null
+  initialItems?: ProductItem[]
+  initialMargin?: number
 }
 
-export function SalesModule({ onBack, onModuleChange, onNavigateToProposals, proposalClientData }: SalesModuleProps) {
+export function SalesModule({ onBack, onModuleChange, onNavigateToProposals, proposalClientData, initialItems, initialMargin }: SalesModuleProps) {
   const { getActiveTaxRegime, costsExpenses, icmsRates } = useConfigurationStore()
-  const [products, setProducts] = useState<ProductItem[]>([
-    {
-      id: "1",
-      description: "Servidor Dell",
-      quantity: 1,
-      unitCost: 8500,
-      creditoIcmsCompra: 1020,
-      icmsDestLocal: 18,
-      icmsST: false,
-    },
-  ])
+  const [products, setProducts] = useState<ProductItem[]>(
+    initialItems && initialItems.length > 0
+      ? initialItems
+      : [
+          {
+            id: "1",
+            description: "Servidor Dell",
+            quantity: 1,
+            unitCost: 8500,
+            creditoIcmsCompra: 1020,
+            icmsDestLocal: 18,
+            icmsST: false,
+          },
+        ]
+  )
 
-  const [desiredMargin, setDesiredMargin] = useState(20)
+  const [desiredMargin, setDesiredMargin] = useState(initialMargin ?? 20)
   const [isFinalConsumer, setIsFinalConsumer] = useState(false)
   const [destinationUF, setDestinationUF] = useState<string>("SP")
   const [analysisTab, setAnalysisTab] = useState<"resumo" | "analise">("resumo")
@@ -97,6 +103,17 @@ export function SalesModule({ onBack, onModuleChange, onNavigateToProposals, pro
         quantity: product.quantity,
         unitPrice,
         totalPrice: unitPrice * (product.quantity || 0),
+        // Campos originais para edição posterior
+        originalItem: {
+          id: product.id,
+          description: product.description,
+          quantity: product.quantity,
+          unitCost: product.unitCost,
+          creditoIcmsCompra: product.creditoIcmsCompra,
+          icmsDestLocal: product.icmsDestLocal,
+          icmsST: product.icmsST,
+        },
+        originalMargin: desiredMargin,
       }
     })
 

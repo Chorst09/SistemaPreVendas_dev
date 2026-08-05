@@ -17,12 +17,15 @@ interface RentalModuleProps {
   onModuleChange?: (module: "sales" | "rental" | "services") => void
   onNavigateToProposals?: () => void
   proposalClientData?: ProposalClientData | null
+  initialItems?: RentalItem[]
+  initialContractPeriod?: number
+  initialMargin?: number
 }
 
-export function RentalModule({ onBack, onModuleChange, onNavigateToProposals, proposalClientData }: RentalModuleProps) {
+export function RentalModule({ onBack, onModuleChange, onNavigateToProposals, proposalClientData, initialItems, initialContractPeriod, initialMargin }: RentalModuleProps) {
   const { getActiveTaxRegime, costsExpenses, laborCosts } = useConfigurationStore()
-  const [contractPeriod, setContractPeriod] = useState(12)
-  const [desiredMargin, setDesiredMargin] = useState(20)
+  const [contractPeriod, setContractPeriod] = useState(initialContractPeriod ?? 12)
+  const [desiredMargin, setDesiredMargin] = useState(initialMargin ?? 20)
   const [analysisTab, setAnalysisTab] = useState<"resumo" | "analise">("resumo")
   const { addItems } = useITBudgetStore()
 
@@ -48,17 +51,21 @@ export function RentalModule({ onBack, onModuleChange, onNavigateToProposals, pr
     )
   }
 
-  const [rentalItems, setRentalItems] = useState<RentalItem[]>([
-    {
-      id: "1",
-      description: "Servidor Dell",
-      quantity: 1,
-      assetValueBRL: 5000,
-      icmsCompra: 0,
-      icmsPr: 12,
-      frete: 0,
-    },
-  ])
+  const [rentalItems, setRentalItems] = useState<RentalItem[]>(
+    initialItems && initialItems.length > 0
+      ? initialItems
+      : [
+          {
+            id: "1",
+            description: "Servidor Dell",
+            quantity: 1,
+            assetValueBRL: 5000,
+            icmsCompra: 0,
+            icmsPr: 12,
+            frete: 0,
+          },
+        ]
+  )
 
   const rentalCalc = useMemo(() => {
     return configuredPricingEngine.calculateRental({
@@ -89,16 +96,27 @@ export function RentalModule({ onBack, onModuleChange, onNavigateToProposals, pr
 
   const handleAddToBudget = () => {
     const items = rentalItems.map((item) => {
-      // rbUnitario = valor de venda mensal por unidade
       const monthlyUnitPrice = rentalCalc.itemCalculations[item.id]?.rbUnitario || 0
       return {
         module: "rental" as const,
         description: item.description,
         quantity: item.quantity,
-        unitPrice: monthlyUnitPrice,                          // valor de venda mensal unitário
-        totalPrice: monthlyUnitPrice * (item.quantity || 0) * contractPeriod, // total do contrato
-        contractDurationMonths: contractPeriod,               // prazo real selecionado
-        monthlyUnitPrice,                                     // alias explícito
+        unitPrice: monthlyUnitPrice,
+        totalPrice: monthlyUnitPrice * (item.quantity || 0) * contractPeriod,
+        contractDurationMonths: contractPeriod,
+        monthlyUnitPrice,
+        // Campos originais da calculadora — necessários para edição posterior
+        originalItem: {
+          id: item.id,
+          description: item.description,
+          quantity: item.quantity,
+          assetValueBRL: item.assetValueBRL,
+          icmsCompra: item.icmsCompra,
+          icmsPr: item.icmsPr,
+          frete: item.frete,
+        },
+        originalContractPeriod: contractPeriod,
+        originalMargin: desiredMargin,
       }
     })
 

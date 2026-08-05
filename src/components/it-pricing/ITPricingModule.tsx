@@ -24,7 +24,7 @@ interface ITPricingModuleProps {
     quoteToEdit?: {
       id: string
       dominantModule: string
-      items: Array<{ id: string; description: string; quantity: number; unitPrice: number; totalPrice: number; module: string }>
+      items: Array<{ id: string; description: string; quantity: number; unitPrice: number; totalPrice: number; module: string; originalItem?: Record<string, any>; originalContractPeriod?: number; originalMargin?: number }>
     } | null
 }
 
@@ -50,10 +50,49 @@ export function ITPricingModule({ onNavigateToProposals, quoteToEdit }: ITPricin
                 quantity: item.quantity,
                 unitPrice: item.unitPrice,
                 totalPrice: item.totalPrice,
+                contractDurationMonths: item.originalContractPeriod,
+                originalItem: item.originalItem,
+                originalContractPeriod: item.originalContractPeriod,
+                originalMargin: item.originalMargin,
             })))
         }
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
+
+    // Extrair itens originais para passar aos módulos de calculadora
+    const editRentalItems = useMemo(() => {
+        if (!quoteToEdit?.items?.length) return undefined
+        const items = quoteToEdit.items
+            .filter(i => i.module === 'rental' && i.originalItem)
+            .map(i => i.originalItem as import('@/lib/types/pricing').RentalItem)
+        return items.length > 0 ? items : undefined
+    }, [quoteToEdit])
+
+    const editRentalContractPeriod = useMemo(() => {
+        if (!quoteToEdit?.items?.length) return undefined
+        const item = quoteToEdit.items.find(i => i.module === 'rental' && i.originalContractPeriod)
+        return item?.originalContractPeriod
+    }, [quoteToEdit])
+
+    const editRentalMargin = useMemo(() => {
+        if (!quoteToEdit?.items?.length) return undefined
+        const item = quoteToEdit.items.find(i => i.module === 'rental' && i.originalMargin)
+        return item?.originalMargin
+    }, [quoteToEdit])
+
+    const editSalesItems = useMemo(() => {
+        if (!quoteToEdit?.items?.length) return undefined
+        const items = quoteToEdit.items
+            .filter(i => i.module === 'sales' && i.originalItem)
+            .map(i => i.originalItem as import('@/lib/types/pricing').ProductItem)
+        return items.length > 0 ? items : undefined
+    }, [quoteToEdit])
+
+    const editSalesMargin = useMemo(() => {
+        if (!quoteToEdit?.items?.length) return undefined
+        const item = quoteToEdit.items.find(i => i.module === 'sales' && i.originalMargin)
+        return item?.originalMargin
+    }, [quoteToEdit])
 
     const proposalClientData = useMemo<ProposalClientData | null>(() => {
         if (!useProposalDataForCalculator || !currentProposal) {
@@ -93,11 +132,11 @@ export function ITPricingModule({ onNavigateToProposals, quoteToEdit }: ITPricin
     }
 
     if (currentModule === "sales") {
-        return <SalesModule onBack={handleBack} onModuleChange={handleModuleChange} onNavigateToProposals={onNavigateToProposals} proposalClientData={proposalClientData} />
+        return <SalesModule onBack={handleBack} onModuleChange={handleModuleChange} onNavigateToProposals={onNavigateToProposals} proposalClientData={proposalClientData} initialItems={editSalesItems} initialMargin={editSalesMargin} />
     }
 
     if (currentModule === "rental") {
-        return <RentalModule onBack={handleBack} onModuleChange={handleModuleChange} onNavigateToProposals={onNavigateToProposals} proposalClientData={proposalClientData} />
+        return <RentalModule onBack={handleBack} onModuleChange={handleModuleChange} onNavigateToProposals={onNavigateToProposals} proposalClientData={proposalClientData} initialItems={editRentalItems} initialContractPeriod={editRentalContractPeriod} initialMargin={editRentalMargin} />
     }
 
     if (currentModule === "services") {
