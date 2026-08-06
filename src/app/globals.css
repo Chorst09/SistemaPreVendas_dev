@@ -367,7 +367,7 @@
   .glass-card {
     border-width: 1px;
     border-color: hsl(var(--border) / 0.5);
-    background-color: hsl(var(--card) / 0.8);
+    background-color: hsl(var(--card));
     box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
     backdrop-filter: blur(4px);
   }
@@ -381,11 +381,11 @@
   }
 
   .btn-3d {
-    background: #1c6880;
-    border: 2px solid #1c6880;
-    box-shadow: 0 8px 16px rgba(37, 99, 235, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    background: hsl(var(--primary));
+    border: 2px solid hsl(var(--primary));
+    box-shadow: 0 8px 16px hsl(var(--primary) / 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2),
       inset 0 -1px 0 rgba(0, 0, 0, 0.1);
-    color: white;
+    color: hsl(var(--primary-foreground));
     font-weight: 600;
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
     transition: all 0.3s ease;
@@ -394,34 +394,33 @@
   }
 
   .btn-3d:hover {
-    background: #3b82f6;
-    box-shadow: 0 12px 24px rgba(37, 99, 235, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.3),
+    background: hsl(var(--primary) / 0.9);
+    box-shadow: 0 12px 24px hsl(var(--primary) / 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.3),
       inset 0 -1px 0 rgba(0, 0, 0, 0.1);
     transform: translateY(-3px);
   }
 
   .btn-3d:active {
-    background: #1d4ed8;
-    box-shadow: 0 4px 8px rgba(37, 99, 235, 0.3), inset 0 2px 4px rgba(0, 0, 0, 0.2);
+    background: hsl(var(--primary) / 0.8);
+    box-shadow: 0 4px 8px hsl(var(--primary) / 0.3), inset 0 2px 4px rgba(0, 0, 0, 0.2);
     transform: translateY(1px);
   }
 
   .btn-3d.active {
-    background: #1e40af;
-    box-shadow: 0 4px 8px rgba(37, 99, 235, 0.4), inset 0 2px 6px rgba(0, 0, 0, 0.3),
+    background: hsl(var(--primary) / 0.85);
+    box-shadow: 0 4px 8px hsl(var(--primary) / 0.4), inset 0 2px 6px rgba(0, 0, 0, 0.3),
       inset 0 1px 0 rgba(255, 255, 255, 0.1);
     transform: translateY(1px);
-    border-color: #1e40af;
+    border-color: hsl(var(--primary) / 0.85);
   }
 
   .btn-3d-secondary {
-    background: linear-gradient(135deg, #1c6880, #1c6880 50%, #1c6880);
-    border: 2px solid #1c6880;
-    box-shadow: 0 8px 20px rgba(37, 99, 235, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.3),
-      inset 0 -1px 0 rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(59, 130, 246, 0.2);
-    color: white;
+    background: hsl(var(--primary));
+    border: 2px solid hsl(var(--primary));
+    box-shadow: 0 8px 20px hsl(var(--primary) / 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.3),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.1), 0 0 0 1px hsl(var(--primary) / 0.2);
+    color: hsl(var(--primary-foreground));
     font-weight: 600;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
     overflow: hidden;
@@ -439,9 +438,9 @@
   }
 
   .btn-3d-secondary:hover {
-    background: linear-gradient(135deg, #60a5fa, #3b82f6 50%, #2563eb);
-    box-shadow: 0 12px 28px rgba(37, 99, 235, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.4),
-      inset 0 -1px 0 rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(59, 130, 246, 0.3);
+    background: hsl(var(--primary) / 0.85);
+    box-shadow: 0 12px 28px hsl(var(--primary) / 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.4),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.1);
     transform: translateY(-4px) scale(1.02);
   }
 
@@ -450,21 +449,37 @@
   }
 
   .btn-3d-secondary:active {
-    background: linear-gradient(135deg, #2563eb, #1d4ed8 50%, #1e40af);
+    background: hsl(var(--primary) / 0.75);
     transform: translateY(-1px) scale(1.01);
   }
 
   .btn-3d-success {
-    background: linear-gradient(135deg, #34d399, #10b981 50%, #047857);
-    border: 2px solid #047857;
-    box-shadow: 0 8px 20px rgba(16, 185, 129, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.3),
-      inset 0 -1px 0 rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(52, 211, 153, 0.2);
+    background: hsl(142 76% 36%);
+    border: 2px solid hsl(142 72% 29%);
+    box-shadow: 0 8px 20px hsl(142 76% 36% / 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.3),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.1);
     color: white;
     font-weight: 600;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
     overflow: hidden;
+  }
+
+  .btn-3d-success:hover {
+    background: hsl(142 76% 42%);
+    box-shadow: 0 12px 28px hsl(142 76% 36% / 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+    transform: translateY(-3px) scale(1.02);
+  }
+
+  .btn-3d-success:active {
+    background: hsl(142 72% 29%);
+    transform: translateY(-1px) scale(1.01);
+  }
+
+  .btn-3d-success:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
   }
 
   .btn-3d-success::before {

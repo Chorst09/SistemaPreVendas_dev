@@ -144,7 +144,7 @@ export function ServiceModule({ onBack, onModuleChange, onNavigateToProposals, p
           </div>
 
           <div className="glass-card tech-glow h-full flex flex-col floating-animation">
-            <div className="text-white rounded-t-lg px-6 py-4" style={{ background: "#1C6880" }}>
+            <div className="bg-primary text-primary-foreground rounded-t-lg px-6 py-4">
               <h3 className="font-headline text-xl flex items-center">
                 <BarChart3 className="w-6 h-6 mr-2" />
                 Resultados e Análise
