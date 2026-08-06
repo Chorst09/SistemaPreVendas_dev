@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef, useCallback } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -18,6 +18,72 @@ import type { CompanyData } from "@/lib/types/company-data"
 import type { OutsourcingConfig, ModuleTaxConfig } from "@/lib/stores/configuration-store"
 import { defaultICMSRates, stateNames, type ICMSInterstateRates } from "@/lib/types/pricing"
 import { useConfigurationStore } from "@/lib/stores/configuration-store"
+
+// ─── Helper: Input numérico que aceita vírgula e ponto ───────────────────────
+
+interface NumericInputProps {
+  value: number
+  onChange: (val: number) => void
+  className?: string
+  step?: string
+  min?: string
+  max?: string
+  disabled?: boolean
+}
+
+function NumericInput({ value, onChange, className, step, min, max, disabled }: NumericInputProps) {
+  const [raw, setRaw] = useState(String(value ?? ""))
+  const prevValue = useRef(value)
+
+  // Sincronizar quando o valor externo muda (ex: reset)
+  useEffect(() => {
+    if (prevValue.current !== value) {
+      prevValue.current = value
+      setRaw(String(value ?? ""))
+    }
+  }, [value])
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const txt = e.target.value
+    setRaw(txt)
+    // Converter para número — aceita vírgula ou ponto
+    const normalized = txt.replace(",", ".")
+    if (txt === "" || txt === "-") {
+      onChange(0)
+      return
+    }
+    const num = parseFloat(normalized)
+    if (!isNaN(num)) {
+      prevValue.current = num
+      onChange(num)
+    }
+  }
+
+  const handleBlur = () => {
+    // Ao sair do campo, normalizar a exibição
+    const normalized = raw.replace(",", ".")
+    const num = parseFloat(normalized)
+    const final = isNaN(num) ? 0 : num
+    prevValue.current = final
+    setRaw(String(final))
+    onChange(final)
+  }
+
+  return (
+    <Input
+      type="text"
+      inputMode="decimal"
+      value={raw}
+      onChange={handleChange}
+      onBlur={handleBlur}
+      className={className}
+      step={step}
+      min={min}
+      max={max}
+      disabled={disabled}
+    />
+  )
+}
 
 export function ConfigurationModule() {
   const { 
@@ -258,7 +324,7 @@ export function ConfigurationModule() {
                       <div className="flex items-center gap-1">
                         <Input 
                           value={regime.pis} 
-                          onChange={(e) => handleUpdateRegime('pis', e.target.value === '' ? 0 : (parseFloat(e.target.value.replace(',', '.')) || 0), regime.id)}
+                          onChange={(e) => handleUpdateRegime('pis', e.target.value === '' ? 0 : (() => { const n = parseFloat(e.target.value.replace(',','.')); return isNaN(n) ? undefined : n; })(), regime.id)}
                           className="text-center" 
                         />
                         <span className="text-sm text-muted-foreground">%</span>
@@ -269,7 +335,7 @@ export function ConfigurationModule() {
                       <div className="flex items-center gap-1">
                         <Input 
                           value={regime.cofins} 
-                          onChange={(e) => handleUpdateRegime('cofins', e.target.value === '' ? 0 : (parseFloat(e.target.value.replace(',', '.')) || 0), regime.id)}
+                          onChange={(e) => handleUpdateRegime('cofins', e.target.value === '' ? 0 : (() => { const n = parseFloat(e.target.value.replace(',','.')); return isNaN(n) ? undefined : n; })(), regime.id)}
                           className="text-center" 
                         />
                         <span className="text-sm text-muted-foreground">%</span>
@@ -280,7 +346,7 @@ export function ConfigurationModule() {
                       <div className="flex items-center gap-1">
                         <Input 
                           value={regime.csll} 
-                          onChange={(e) => handleUpdateRegime('csll', e.target.value === '' ? 0 : (parseFloat(e.target.value.replace(',', '.')) || 0), regime.id)}
+                          onChange={(e) => handleUpdateRegime('csll', e.target.value === '' ? 0 : (() => { const n = parseFloat(e.target.value.replace(',','.')); return isNaN(n) ? undefined : n; })(), regime.id)}
                           className="text-center" 
                         />
                         <span className="text-sm text-muted-foreground">%</span>
@@ -291,7 +357,7 @@ export function ConfigurationModule() {
                       <div className="flex items-center gap-1">
                         <Input 
                           value={regime.irpj} 
-                          onChange={(e) => handleUpdateRegime('irpj', e.target.value === '' ? 0 : (parseFloat(e.target.value.replace(',', '.')) || 0), regime.id)}
+                          onChange={(e) => handleUpdateRegime('irpj', e.target.value === '' ? 0 : (() => { const n = parseFloat(e.target.value.replace(',','.')); return isNaN(n) ? undefined : n; })(), regime.id)}
                           className="text-center" 
                         />
                         <span className="text-sm text-muted-foreground">%</span>
@@ -302,7 +368,7 @@ export function ConfigurationModule() {
                       <div className="flex items-center gap-1">
                         <Input 
                           value={regime.icms} 
-                          onChange={(e) => handleUpdateRegime('icms', e.target.value === '' ? 0 : (parseFloat(e.target.value.replace(',', '.')) || 0), regime.id)}
+                          onChange={(e) => handleUpdateRegime('icms', e.target.value === '' ? 0 : (() => { const n = parseFloat(e.target.value.replace(',','.')); return isNaN(n) ? undefined : n; })(), regime.id)}
                           className="text-center" 
                         />
                         <span className="text-sm text-muted-foreground">%</span>
@@ -313,7 +379,7 @@ export function ConfigurationModule() {
                       <div className="flex items-center gap-1">
                         <Input 
                           value={regime.iss} 
-                          onChange={(e) => handleUpdateRegime('iss', e.target.value === '' ? 0 : (parseFloat(e.target.value.replace(',', '.')) || 0), regime.id)}
+                          onChange={(e) => handleUpdateRegime('iss', e.target.value === '' ? 0 : (() => { const n = parseFloat(e.target.value.replace(',','.')); return isNaN(n) ? undefined : n; })(), regime.id)}
                           className="text-center" 
                         />
                         <span className="text-sm text-muted-foreground">%</span>
@@ -324,7 +390,7 @@ export function ConfigurationModule() {
                       <div className="flex items-center gap-1">
                         <Input 
                           value={regime.basePresuncaoVenda} 
-                          onChange={(e) => handleUpdateRegime('basePresuncaoVenda', e.target.value === '' ? 0 : (parseFloat(e.target.value.replace(',', '.')) || 0), regime.id)}
+                          onChange={(e) => handleUpdateRegime('basePresuncaoVenda', e.target.value === '' ? 0 : (() => { const n = parseFloat(e.target.value.replace(',','.')); return isNaN(n) ? undefined : n; })(), regime.id)}
                           className="text-center" 
                         />
                         <span className="text-sm text-muted-foreground">%</span>
@@ -335,7 +401,7 @@ export function ConfigurationModule() {
                       <div className="flex items-center gap-1">
                         <Input 
                           value={regime.basePresuncaoServico} 
-                          onChange={(e) => handleUpdateRegime('basePresuncaoServico', e.target.value === '' ? 0 : (parseFloat(e.target.value.replace(',', '.')) || 0), regime.id)}
+                          onChange={(e) => handleUpdateRegime('basePresuncaoServico', e.target.value === '' ? 0 : (() => { const n = parseFloat(e.target.value.replace(',','.')); return isNaN(n) ? undefined : n; })(), regime.id)}
                           className="text-center" 
                         />
                         <span className="text-sm text-muted-foreground">%</span>
@@ -346,7 +412,7 @@ export function ConfigurationModule() {
                       <div className="flex items-center gap-1">
                         <Input
                           value={regime.anexoI}
-                          onChange={(e) => handleUpdateRegime('anexoI', e.target.value === '' ? 0 : (parseFloat(e.target.value.replace(',', '.')) || 0), regime.id)}
+                          onChange={(e) => handleUpdateRegime('anexoI', e.target.value === '' ? 0 : (() => { const n = parseFloat(e.target.value.replace(',','.')); return isNaN(n) ? undefined : n; })(), regime.id)}
                           className="text-center"
                         />
                         <span className="text-sm text-muted-foreground">%</span>
@@ -357,7 +423,7 @@ export function ConfigurationModule() {
                       <div className="flex items-center gap-1">
                         <Input
                           value={regime.anexoIII}
-                          onChange={(e) => handleUpdateRegime('anexoIII', e.target.value === '' ? 0 : (parseFloat(e.target.value.replace(',', '.')) || 0), regime.id)}
+                          onChange={(e) => handleUpdateRegime('anexoIII', e.target.value === '' ? 0 : (() => { const n = parseFloat(e.target.value.replace(',','.')); return isNaN(n) ? undefined : n; })(), regime.id)}
                           className="text-center"
                         />
                         <span className="text-sm text-muted-foreground">%</span>
@@ -368,7 +434,7 @@ export function ConfigurationModule() {
                       <div className="flex items-center gap-1">
                         <Input
                           value={regime.meiTaxa}
-                          onChange={(e) => handleUpdateRegime('meiTaxa', e.target.value === '' ? 0 : (parseFloat(e.target.value.replace(',', '.')) || 0), regime.id)}
+                          onChange={(e) => handleUpdateRegime('meiTaxa', e.target.value === '' ? 0 : (() => { const n = parseFloat(e.target.value.replace(',','.')); return isNaN(n) ? undefined : n; })(), regime.id)}
                           className="text-center"
                         />
                         <span className="text-sm text-muted-foreground">%</span>
@@ -386,7 +452,7 @@ export function ConfigurationModule() {
                           <div className="flex items-center gap-1">
                             <Input
                               value={regime.ivaCbs}
-                              onChange={(e) => handleUpdateRegime('ivaCbs', e.target.value === '' ? 0 : (parseFloat(e.target.value.replace(',', '.')) || 0), regime.id)}
+                              onChange={(e) => handleUpdateRegime('ivaCbs', e.target.value === '' ? 0 : (() => { const n = parseFloat(e.target.value.replace(',','.')); return isNaN(n) ? undefined : n; })(), regime.id)}
                               className="text-center"
                             />
                             <span className="text-sm text-muted-foreground">%</span>
@@ -397,7 +463,7 @@ export function ConfigurationModule() {
                           <div className="flex items-center gap-1">
                             <Input
                               value={regime.ivaIbs}
-                              onChange={(e) => handleUpdateRegime('ivaIbs', e.target.value === '' ? 0 : (parseFloat(e.target.value.replace(',', '.')) || 0), regime.id)}
+                              onChange={(e) => handleUpdateRegime('ivaIbs', e.target.value === '' ? 0 : (() => { const n = parseFloat(e.target.value.replace(',','.')); return isNaN(n) ? undefined : n; })(), regime.id)}
                               className="text-center"
                             />
                             <span className="text-sm text-muted-foreground">%</span>
@@ -408,7 +474,7 @@ export function ConfigurationModule() {
                           <div className="flex items-center gap-1">
                             <Input
                               value={regime.ivaTotal}
-                              onChange={(e) => handleUpdateRegime('ivaTotal', e.target.value === '' ? 0 : (parseFloat(e.target.value.replace(',', '.')) || 0), regime.id)}
+                              onChange={(e) => handleUpdateRegime('ivaTotal', e.target.value === '' ? 0 : (() => { const n = parseFloat(e.target.value.replace(',','.')); return isNaN(n) ? undefined : n; })(), regime.id)}
                               className="text-center font-bold"
                             />
                             <span className="text-sm text-muted-foreground">%</span>
@@ -440,9 +506,9 @@ export function ConfigurationModule() {
                 <div className="space-y-2">
                   <Label className="text-sm font-medium">Comissão Venda</Label>
                   <div className="flex items-center gap-2">
-                    <Input 
+                    <NumericInput 
                       value={localCostsExpenses.comissaoVenda ?? 0} 
-                      onChange={(e) => setLocalCostsExpenses({...localCostsExpenses, comissaoVenda: e.target.value === '' ? 0 : (parseFloat(e.target.value.replace(',', '.')) || 0)})}
+                      onChange={(val) => setLocalCostsExpenses({...localCostsExpenses, comissaoVenda: val})}
                       readOnly={!isEditingCosts}
                       className="text-center" 
                     />
@@ -452,9 +518,9 @@ export function ConfigurationModule() {
                 <div className="space-y-2">
                   <Label className="text-sm font-medium">Comissão Locação</Label>
                   <div className="flex items-center gap-2">
-                    <Input 
+                    <NumericInput 
                       value={localCostsExpenses.comissaoLocacao ?? 0} 
-                      onChange={(e) => setLocalCostsExpenses({...localCostsExpenses, comissaoLocacao: e.target.value === '' ? 0 : (parseFloat(e.target.value.replace(',', '.')) || 0)})}
+                      onChange={(val) => setLocalCostsExpenses({...localCostsExpenses, comissaoLocacao: val})}
                       readOnly={!isEditingCosts}
                       className="text-center" 
                     />
@@ -464,9 +530,9 @@ export function ConfigurationModule() {
                 <div className="space-y-2">
                   <Label className="text-sm font-medium">Comissão Serviço</Label>
                   <div className="flex items-center gap-2">
-                    <Input 
+                    <NumericInput 
                       value={localCostsExpenses.comissaoServico ?? 0} 
-                      onChange={(e) => setLocalCostsExpenses({...localCostsExpenses, comissaoServico: e.target.value === '' ? 0 : (parseFloat(e.target.value.replace(',', '.')) || 0)})}
+                      onChange={(val) => setLocalCostsExpenses({...localCostsExpenses, comissaoServico: val})}
                       readOnly={!isEditingCosts}
                       className="text-center" 
                     />
@@ -476,9 +542,9 @@ export function ConfigurationModule() {
                 <div className="space-y-2">
                   <Label className="text-sm font-medium">Margem Lucro Serviço</Label>
                   <div className="flex items-center gap-2">
-                    <Input 
+                    <NumericInput 
                       value={localCostsExpenses.margemLucroServico ?? 0} 
-                      onChange={(e) => setLocalCostsExpenses({...localCostsExpenses, margemLucroServico: e.target.value === '' ? 0 : (parseFloat(e.target.value.replace(',', '.')) || 0)})}
+                      onChange={(val) => setLocalCostsExpenses({...localCostsExpenses, margemLucroServico: val})}
                       readOnly={!isEditingCosts}
                       className="text-center" 
                     />
@@ -488,9 +554,9 @@ export function ConfigurationModule() {
                 <div className="space-y-2">
                   <Label className="text-sm font-medium">Despesas Admin.</Label>
                   <div className="flex items-center gap-2">
-                    <Input 
+                    <NumericInput 
                       value={localCostsExpenses.despesasAdmin ?? 0} 
-                      onChange={(e) => setLocalCostsExpenses({...localCostsExpenses, despesasAdmin: e.target.value === '' ? 0 : (parseFloat(e.target.value.replace(',', '.')) || 0)})}
+                      onChange={(val) => setLocalCostsExpenses({...localCostsExpenses, despesasAdmin: val})}
                       readOnly={!isEditingCosts}
                       className="text-center" 
                     />
@@ -500,9 +566,9 @@ export function ConfigurationModule() {
                 <div className="space-y-2">
                   <Label className="text-sm font-medium">Outras Despesas</Label>
                   <div className="flex items-center gap-2">
-                    <Input 
+                    <NumericInput 
                       value={localCostsExpenses.outrasDespesas ?? 0} 
-                      onChange={(e) => setLocalCostsExpenses({...localCostsExpenses, outrasDespesas: e.target.value === '' ? 0 : (parseFloat(e.target.value.replace(',', '.')) || 0)})}
+                      onChange={(val) => setLocalCostsExpenses({...localCostsExpenses, outrasDespesas: val})}
                       readOnly={!isEditingCosts}
                       className="text-center" 
                     />
@@ -512,9 +578,9 @@ export function ConfigurationModule() {
                 <div className="space-y-2">
                   <Label className="text-sm font-medium">Custo Financeiro Mensal</Label>
                   <div className="flex items-center gap-2">
-                    <Input 
+                    <NumericInput 
                       value={localCostsExpenses.custoFinanceiroMensal ?? 0} 
-                      onChange={(e) => setLocalCostsExpenses({...localCostsExpenses, custoFinanceiroMensal: e.target.value === '' ? 0 : (parseFloat(e.target.value.replace(',', '.')) || 0)})}
+                      onChange={(val) => setLocalCostsExpenses({...localCostsExpenses, custoFinanceiroMensal: val})}
                       readOnly={!isEditingCosts}
                       className="text-center" 
                     />
@@ -524,9 +590,9 @@ export function ConfigurationModule() {
                 <div className="space-y-2">
                   <Label className="text-sm font-medium">Taxa Desconto VPL</Label>
                   <div className="flex items-center gap-2">
-                    <Input 
+                    <NumericInput 
                       value={localCostsExpenses.taxaDescontoVPL ?? 0} 
-                      onChange={(e) => setLocalCostsExpenses({...localCostsExpenses, taxaDescontoVPL: e.target.value === '' ? 0 : (parseFloat(e.target.value.replace(',', '.')) || 0)})}
+                      onChange={(val) => setLocalCostsExpenses({...localCostsExpenses, taxaDescontoVPL: val})}
                       readOnly={!isEditingCosts}
                       className="text-center" 
                     />
@@ -536,9 +602,9 @@ export function ConfigurationModule() {
                 <div className="space-y-2">
                   <Label className="text-sm font-medium">Depreciação</Label>
                   <div className="flex items-center gap-2">
-                    <Input 
+                    <NumericInput 
                       value={localCostsExpenses.depreciacao ?? 0} 
-                      onChange={(e) => setLocalCostsExpenses({...localCostsExpenses, depreciacao: e.target.value === '' ? 0 : (parseFloat(e.target.value.replace(',', '.')) || 0)})}
+                      onChange={(val) => setLocalCostsExpenses({...localCostsExpenses, depreciacao: val})}
                       readOnly={!isEditingCosts}
                       className="text-center" 
                     />
@@ -582,9 +648,9 @@ export function ConfigurationModule() {
                       <div className="space-y-2">
                         <Label className="text-sm font-medium">Férias</Label>
                         <div className="flex items-center gap-2">
-                          <Input 
+                          <NumericInput 
                             value={localLaborCosts.ferias ?? 0} 
-                            onChange={(e) => setLocalLaborCosts({...localLaborCosts, ferias: e.target.value === '' ? 0 : (parseFloat(e.target.value.replace(',', '.')) || 0)})}
+                            onChange={(val) => setLocalLaborCosts({...localLaborCosts, ferias: val})}
                             readOnly={!isEditingLabor}
                             className="text-center" 
                           />
@@ -594,9 +660,9 @@ export function ConfigurationModule() {
                       <div className="space-y-2">
                         <Label className="text-sm font-medium">1/3 Férias</Label>
                         <div className="flex items-center gap-2">
-                          <Input 
+                          <NumericInput 
                             value={localLaborCosts.umTercoFerias ?? 0} 
-                            onChange={(e) => setLocalLaborCosts({...localLaborCosts, umTercoFerias: e.target.value === '' ? 0 : (parseFloat(e.target.value.replace(',', '.')) || 0)})}
+                            onChange={(val) => setLocalLaborCosts({...localLaborCosts, umTercoFerias: val})}
                             readOnly={!isEditingLabor}
                             className="text-center" 
                           />
@@ -606,9 +672,9 @@ export function ConfigurationModule() {
                       <div className="space-y-2">
                         <Label className="text-sm font-medium">13º Salário</Label>
                         <div className="flex items-center gap-2">
-                          <Input 
+                          <NumericInput 
                             value={localLaborCosts.decimoTerceiro ?? 0} 
-                            onChange={(e) => setLocalLaborCosts({...localLaborCosts, decimoTerceiro: e.target.value === '' ? 0 : (parseFloat(e.target.value.replace(',', '.')) || 0)})}
+                            onChange={(val) => setLocalLaborCosts({...localLaborCosts, decimoTerceiro: val})}
                             readOnly={!isEditingLabor}
                             className="text-center" 
                           />
@@ -618,9 +684,9 @@ export function ConfigurationModule() {
                       <div className="space-y-2">
                         <Label className="text-sm font-medium">INSS (Base)</Label>
                         <div className="flex items-center gap-2">
-                          <Input 
+                          <NumericInput 
                             value={localLaborCosts.inssBase ?? 0} 
-                            onChange={(e) => setLocalLaborCosts({...localLaborCosts, inssBase: e.target.value === '' ? 0 : (parseFloat(e.target.value.replace(',', '.')) || 0)})}
+                            onChange={(val) => setLocalLaborCosts({...localLaborCosts, inssBase: val})}
                             readOnly={!isEditingLabor}
                             className="text-center" 
                           />
@@ -630,9 +696,9 @@ export function ConfigurationModule() {
                       <div className="space-y-2">
                         <Label className="text-sm font-medium">FGTS</Label>
                         <div className="flex items-center gap-2">
-                          <Input 
+                          <NumericInput 
                             value={localLaborCosts.fgts ?? 0} 
-                            onChange={(e) => setLocalLaborCosts({...localLaborCosts, fgts: e.target.value === '' ? 0 : (parseFloat(e.target.value.replace(',', '.')) || 0)})}
+                            onChange={(val) => setLocalLaborCosts({...localLaborCosts, fgts: val})}
                             readOnly={!isEditingLabor}
                             className="text-center" 
                           />
@@ -642,9 +708,9 @@ export function ConfigurationModule() {
                       <div className="space-y-2">
                         <Label className="text-sm font-medium">Outros</Label>
                         <div className="flex items-center gap-2">
-                          <Input 
+                          <NumericInput 
                             value={localLaborCosts.outros ?? 0} 
-                            onChange={(e) => setLocalLaborCosts({...localLaborCosts, outros: e.target.value === '' ? 0 : (parseFloat(e.target.value.replace(',', '.')) || 0)})}
+                            onChange={(val) => setLocalLaborCosts({...localLaborCosts, outros: val})}
                             readOnly={!isEditingLabor}
                             className="text-center" 
                           />
@@ -671,9 +737,9 @@ export function ConfigurationModule() {
                       <div className="space-y-2">
                         <Label className="text-sm font-medium">Vale Transporte</Label>
                         <div className="flex items-center gap-2">
-                          <Input 
+                          <NumericInput 
                             value={localLaborCosts.valeTransporte ?? 0} 
-                            onChange={(e) => setLocalLaborCosts({...localLaborCosts, valeTransporte: e.target.value === '' ? 0 : (parseFloat(e.target.value.replace(',', '.')) || 0)})}
+                            onChange={(val) => setLocalLaborCosts({...localLaborCosts, valeTransporte: val})}
                             readOnly={!isEditingLabor}
                             className="text-center" 
                           />
@@ -683,9 +749,9 @@ export function ConfigurationModule() {
                       <div className="space-y-2">
                         <Label className="text-sm font-medium">Plano de Saúde</Label>
                         <div className="flex items-center gap-2">
-                          <Input 
+                          <NumericInput 
                             value={localLaborCosts.planoSaude ?? 0} 
-                            onChange={(e) => setLocalLaborCosts({...localLaborCosts, planoSaude: e.target.value === '' ? 0 : (parseFloat(e.target.value.replace(',', '.')) || 0)})}
+                            onChange={(val) => setLocalLaborCosts({...localLaborCosts, planoSaude: val})}
                             readOnly={!isEditingLabor}
                             className="text-center" 
                           />
@@ -695,9 +761,9 @@ export function ConfigurationModule() {
                       <div className="space-y-2">
                         <Label className="text-sm font-medium">Vale Alimentação</Label>
                         <div className="flex items-center gap-2">
-                          <Input 
+                          <NumericInput 
                             value={localLaborCosts.valeAlimentacao ?? 0} 
-                            onChange={(e) => setLocalLaborCosts({...localLaborCosts, valeAlimentacao: e.target.value === '' ? 0 : (parseFloat(e.target.value.replace(',', '.')) || 0)})}
+                            onChange={(val) => setLocalLaborCosts({...localLaborCosts, valeAlimentacao: val})}
                             readOnly={!isEditingLabor}
                             className="text-center" 
                           />
@@ -726,9 +792,9 @@ export function ConfigurationModule() {
                       <div className="space-y-2">
                         <Label className="text-sm font-medium">Salário Base Padrão</Label>
                         <div className="flex items-center gap-2">
-                          <Input 
+                          <NumericInput 
                             value={localLaborCosts.salarioBasePadrao ?? 0} 
-                            onChange={(e) => setLocalLaborCosts({...localLaborCosts, salarioBasePadrao: e.target.value === '' ? 0 : (parseFloat(e.target.value.replace(',', '.')) || 0)})}
+                            onChange={(val) => setLocalLaborCosts({...localLaborCosts, salarioBasePadrao: val})}
                             readOnly={!isEditingLabor}
                             className="text-center" 
                           />
@@ -737,18 +803,18 @@ export function ConfigurationModule() {
                       </div>
                       <div className="space-y-2">
                         <Label className="text-sm font-medium">Dias Úteis no Mês</Label>
-                        <Input 
+                        <NumericInput 
                           value={localLaborCosts.diasUteisNoMes ?? 0} 
-                          onChange={(e) => setLocalLaborCosts({...localLaborCosts, diasUteisNoMes: e.target.value === '' ? 0 : (parseFloat(e.target.value.replace(',', '.')) || 0)})}
+                          onChange={(val) => setLocalLaborCosts({...localLaborCosts, diasUteisNoMes: val})}
                           readOnly={!isEditingLabor}
                           className="text-center" 
                         />
                       </div>
                       <div className="space-y-2">
                         <Label className="text-sm font-medium">Horas/Dia</Label>
-                        <Input 
+                        <NumericInput 
                           value={localLaborCosts.horasPorDia ?? 0} 
-                          onChange={(e) => setLocalLaborCosts({...localLaborCosts, horasPorDia: e.target.value === '' ? 0 : (parseFloat(e.target.value.replace(',', '.')) || 0)})}
+                          onChange={(val) => setLocalLaborCosts({...localLaborCosts, horasPorDia: val})}
                           readOnly={!isEditingLabor}
                           className="text-center" 
                         />
@@ -843,7 +909,7 @@ export function ConfigurationModule() {
                   <Label>Comissão de Venda (%)</Label>
                   <Input
                     value={localOutsourcingConfig.comissaoVenda}
-                    onChange={(e) => setLocalOutsourcingConfig({...localOutsourcingConfig, comissaoVenda: e.target.value === '' ? 0 : (parseFloat(e.target.value.replace(',', '.')) || 0)})}
+                    onChange={(e) => setLocalOutsourcingConfig({...localOutsourcingConfig, comissaoVenda: e.target.value === '' ? 0 : (() => { const n = parseFloat(e.target.value.replace(',','.')); return isNaN(n) ? undefined : n; })()})}
                     readOnly={!isEditingOutsourcing}
                     className="text-center"
                   />
@@ -852,7 +918,7 @@ export function ConfigurationModule() {
                   <Label>Custos Operacionais (%)</Label>
                   <Input
                     value={localOutsourcingConfig.custosOperacionais}
-                    onChange={(e) => setLocalOutsourcingConfig({...localOutsourcingConfig, custosOperacionais: e.target.value === '' ? 0 : (parseFloat(e.target.value.replace(',', '.')) || 0)})}
+                    onChange={(e) => setLocalOutsourcingConfig({...localOutsourcingConfig, custosOperacionais: e.target.value === '' ? 0 : (() => { const n = parseFloat(e.target.value.replace(',','.')); return isNaN(n) ? undefined : n; })()})}
                     readOnly={!isEditingOutsourcing}
                     className="text-center"
                   />
@@ -861,7 +927,7 @@ export function ConfigurationModule() {
                   <Label>Margem Padrão (%)</Label>
                   <Input
                     value={localOutsourcingConfig.margemPadrao}
-                    onChange={(e) => setLocalOutsourcingConfig({...localOutsourcingConfig, margemPadrao: e.target.value === '' ? 0 : (parseFloat(e.target.value.replace(',', '.')) || 0)})}
+                    onChange={(e) => setLocalOutsourcingConfig({...localOutsourcingConfig, margemPadrao: e.target.value === '' ? 0 : (() => { const n = parseFloat(e.target.value.replace(',','.')); return isNaN(n) ? undefined : n; })()})}
                     readOnly={!isEditingOutsourcing}
                     className="text-center"
                   />
@@ -873,7 +939,7 @@ export function ConfigurationModule() {
                 <div className="flex items-center gap-2 max-w-xs">
                   <Input
                     value={localOutsourcingConfig.taxaFinanceiraMensal}
-                    onChange={(e) => setLocalOutsourcingConfig({...localOutsourcingConfig, taxaFinanceiraMensal: e.target.value === '' ? 0 : (parseFloat(e.target.value.replace(',', '.')) || 0)})}
+                    onChange={(e) => setLocalOutsourcingConfig({...localOutsourcingConfig, taxaFinanceiraMensal: e.target.value === '' ? 0 : (() => { const n = parseFloat(e.target.value.replace(',','.')); return isNaN(n) ? undefined : n; })()})}
                     readOnly={!isEditingOutsourcing}
                     className="text-center"
                   />
@@ -896,7 +962,7 @@ export function ConfigurationModule() {
                         step="0.001"
                         onChange={(e) => setLocalOutsourcingConfig({
                           ...localOutsourcingConfig,
-                          custosBase: { ...localOutsourcingConfig.custosBase, [key]: e.target.value === '' ? 0 : (parseFloat(e.target.value.replace(',', '.')) || 0) }
+                          custosBase: { ...localOutsourcingConfig.custosBase, [key]: e.target.value === '' ? 0 : (() => { const n = parseFloat(e.target.value.replace(',','.')); return isNaN(n) ? undefined : n; })() }
                         })}
                         readOnly={!isEditingOutsourcing}
                         className="text-center"
@@ -1033,7 +1099,7 @@ export function ConfigurationModule() {
                     <div className="flex items-center gap-1">
                       <Input
                         value={icmsRates[uf as keyof ICMSInterstateRates]}
-                        onChange={(e) => setIcmsRatesLocal({...icmsRates, [uf]: e.target.value === '' ? 0 : (parseFloat(e.target.value.replace(',', '.')) || 0)})}
+                        onChange={(e) => setIcmsRatesLocal({...icmsRates, [uf]: e.target.value === '' ? 0 : (() => { const n = parseFloat(e.target.value.replace(',','.')); return isNaN(n) ? undefined : n; })()})}
                         readOnly={!isEditingICMS}
                         className="text-center text-sm"
                       />
