@@ -258,7 +258,7 @@ export function ConfigurationModule() {
                       <div className="flex items-center gap-1">
                         <Input 
                           value={regime.pis} 
-                          onChange={(e) => handleUpdateRegime('pis', Number(e.target.value), regime.id)}
+                          onChange={(e) => handleUpdateRegime('pis', e.target.value === '' ? 0 : (parseFloat(e.target.value) || 0), regime.id)}
                           className="text-center" 
                         />
                         <span className="text-sm text-muted-foreground">%</span>
@@ -269,7 +269,7 @@ export function ConfigurationModule() {
                       <div className="flex items-center gap-1">
                         <Input 
                           value={regime.cofins} 
-                          onChange={(e) => handleUpdateRegime('cofins', Number(e.target.value), regime.id)}
+                          onChange={(e) => handleUpdateRegime('cofins', e.target.value === '' ? 0 : (parseFloat(e.target.value) || 0), regime.id)}
                           className="text-center" 
                         />
                         <span className="text-sm text-muted-foreground">%</span>
@@ -280,7 +280,7 @@ export function ConfigurationModule() {
                       <div className="flex items-center gap-1">
                         <Input 
                           value={regime.csll} 
-                          onChange={(e) => handleUpdateRegime('csll', Number(e.target.value), regime.id)}
+                          onChange={(e) => handleUpdateRegime('csll', e.target.value === '' ? 0 : (parseFloat(e.target.value) || 0), regime.id)}
                           className="text-center" 
                         />
                         <span className="text-sm text-muted-foreground">%</span>
@@ -291,7 +291,7 @@ export function ConfigurationModule() {
                       <div className="flex items-center gap-1">
                         <Input 
                           value={regime.irpj} 
-                          onChange={(e) => handleUpdateRegime('irpj', Number(e.target.value), regime.id)}
+                          onChange={(e) => handleUpdateRegime('irpj', e.target.value === '' ? 0 : (parseFloat(e.target.value) || 0), regime.id)}
                           className="text-center" 
                         />
                         <span className="text-sm text-muted-foreground">%</span>
@@ -302,7 +302,7 @@ export function ConfigurationModule() {
                       <div className="flex items-center gap-1">
                         <Input 
                           value={regime.icms} 
-                          onChange={(e) => handleUpdateRegime('icms', Number(e.target.value), regime.id)}
+                          onChange={(e) => handleUpdateRegime('icms', e.target.value === '' ? 0 : (parseFloat(e.target.value) || 0), regime.id)}
                           className="text-center" 
                         />
                         <span className="text-sm text-muted-foreground">%</span>
@@ -313,7 +313,7 @@ export function ConfigurationModule() {
                       <div className="flex items-center gap-1">
                         <Input 
                           value={regime.iss} 
-                          onChange={(e) => handleUpdateRegime('iss', Number(e.target.value), regime.id)}
+                          onChange={(e) => handleUpdateRegime('iss', e.target.value === '' ? 0 : (parseFloat(e.target.value) || 0), regime.id)}
                           className="text-center" 
                         />
                         <span className="text-sm text-muted-foreground">%</span>
@@ -324,7 +324,7 @@ export function ConfigurationModule() {
                       <div className="flex items-center gap-1">
                         <Input 
                           value={regime.basePresuncaoVenda} 
-                          onChange={(e) => handleUpdateRegime('basePresuncaoVenda', Number(e.target.value), regime.id)}
+                          onChange={(e) => handleUpdateRegime('basePresuncaoVenda', e.target.value === '' ? 0 : (parseFloat(e.target.value) || 0), regime.id)}
                           className="text-center" 
                         />
                         <span className="text-sm text-muted-foreground">%</span>
@@ -335,7 +335,7 @@ export function ConfigurationModule() {
                       <div className="flex items-center gap-1">
                         <Input 
                           value={regime.basePresuncaoServico} 
-                          onChange={(e) => handleUpdateRegime('basePresuncaoServico', Number(e.target.value), regime.id)}
+                          onChange={(e) => handleUpdateRegime('basePresuncaoServico', e.target.value === '' ? 0 : (parseFloat(e.target.value) || 0), regime.id)}
                           className="text-center" 
                         />
                         <span className="text-sm text-muted-foreground">%</span>
@@ -346,7 +346,7 @@ export function ConfigurationModule() {
                       <div className="flex items-center gap-1">
                         <Input
                           value={regime.anexoI}
-                          onChange={(e) => handleUpdateRegime('anexoI', Number(e.target.value), regime.id)}
+                          onChange={(e) => handleUpdateRegime('anexoI', e.target.value === '' ? 0 : (parseFloat(e.target.value) || 0), regime.id)}
                           className="text-center"
                         />
                         <span className="text-sm text-muted-foreground">%</span>
@@ -357,7 +357,7 @@ export function ConfigurationModule() {
                       <div className="flex items-center gap-1">
                         <Input
                           value={regime.anexoIII}
-                          onChange={(e) => handleUpdateRegime('anexoIII', Number(e.target.value), regime.id)}
+                          onChange={(e) => handleUpdateRegime('anexoIII', e.target.value === '' ? 0 : (parseFloat(e.target.value) || 0), regime.id)}
                           className="text-center"
                         />
                         <span className="text-sm text-muted-foreground">%</span>
@@ -368,7 +368,7 @@ export function ConfigurationModule() {
                       <div className="flex items-center gap-1">
                         <Input
                           value={regime.meiTaxa}
-                          onChange={(e) => handleUpdateRegime('meiTaxa', Number(e.target.value), regime.id)}
+                          onChange={(e) => handleUpdateRegime('meiTaxa', e.target.value === '' ? 0 : (parseFloat(e.target.value) || 0), regime.id)}
                           className="text-center"
                         />
                         <span className="text-sm text-muted-foreground">%</span>
@@ -386,7 +386,7 @@ export function ConfigurationModule() {
                           <div className="flex items-center gap-1">
                             <Input
                               value={regime.ivaCbs}
-                              onChange={(e) => handleUpdateRegime('ivaCbs', Number(e.target.value), regime.id)}
+                              onChange={(e) => handleUpdateRegime('ivaCbs', e.target.value === '' ? 0 : (parseFloat(e.target.value) || 0), regime.id)}
                               className="text-center"
                             />
                             <span className="text-sm text-muted-foreground">%</span>
@@ -397,7 +397,7 @@ export function ConfigurationModule() {
                           <div className="flex items-center gap-1">
                             <Input
                               value={regime.ivaIbs}
-                              onChange={(e) => handleUpdateRegime('ivaIbs', Number(e.target.value), regime.id)}
+                              onChange={(e) => handleUpdateRegime('ivaIbs', e.target.value === '' ? 0 : (parseFloat(e.target.value) || 0), regime.id)}
                               className="text-center"
                             />
                             <span className="text-sm text-muted-foreground">%</span>
@@ -408,7 +408,7 @@ export function ConfigurationModule() {
                           <div className="flex items-center gap-1">
                             <Input
                               value={regime.ivaTotal}
-                              onChange={(e) => handleUpdateRegime('ivaTotal', Number(e.target.value), regime.id)}
+                              onChange={(e) => handleUpdateRegime('ivaTotal', e.target.value === '' ? 0 : (parseFloat(e.target.value) || 0), regime.id)}
                               className="text-center font-bold"
                             />
                             <span className="text-sm text-muted-foreground">%</span>
@@ -442,7 +442,7 @@ export function ConfigurationModule() {
                   <div className="flex items-center gap-2">
                     <Input 
                       value={localCostsExpenses.comissaoVenda ?? 0} 
-                      onChange={(e) => setLocalCostsExpenses({...localCostsExpenses, comissaoVenda: Number(e.target.value)})}
+                      onChange={(e) => setLocalCostsExpenses({...localCostsExpenses, comissaoVenda: e.target.value === '' ? 0 : (parseFloat(e.target.value) || 0)})}
                       readOnly={!isEditingCosts}
                       className="text-center" 
                     />
@@ -454,7 +454,7 @@ export function ConfigurationModule() {
                   <div className="flex items-center gap-2">
                     <Input 
                       value={localCostsExpenses.comissaoLocacao ?? 0} 
-                      onChange={(e) => setLocalCostsExpenses({...localCostsExpenses, comissaoLocacao: Number(e.target.value)})}
+                      onChange={(e) => setLocalCostsExpenses({...localCostsExpenses, comissaoLocacao: e.target.value === '' ? 0 : (parseFloat(e.target.value) || 0)})}
                       readOnly={!isEditingCosts}
                       className="text-center" 
                     />
@@ -466,7 +466,7 @@ export function ConfigurationModule() {
                   <div className="flex items-center gap-2">
                     <Input 
                       value={localCostsExpenses.comissaoServico ?? 0} 
-                      onChange={(e) => setLocalCostsExpenses({...localCostsExpenses, comissaoServico: Number(e.target.value)})}
+                      onChange={(e) => setLocalCostsExpenses({...localCostsExpenses, comissaoServico: e.target.value === '' ? 0 : (parseFloat(e.target.value) || 0)})}
                       readOnly={!isEditingCosts}
                       className="text-center" 
                     />
@@ -478,7 +478,7 @@ export function ConfigurationModule() {
                   <div className="flex items-center gap-2">
                     <Input 
                       value={localCostsExpenses.margemLucroServico ?? 0} 
-                      onChange={(e) => setLocalCostsExpenses({...localCostsExpenses, margemLucroServico: Number(e.target.value)})}
+                      onChange={(e) => setLocalCostsExpenses({...localCostsExpenses, margemLucroServico: e.target.value === '' ? 0 : (parseFloat(e.target.value) || 0)})}
                       readOnly={!isEditingCosts}
                       className="text-center" 
                     />
@@ -490,7 +490,7 @@ export function ConfigurationModule() {
                   <div className="flex items-center gap-2">
                     <Input 
                       value={localCostsExpenses.despesasAdmin ?? 0} 
-                      onChange={(e) => setLocalCostsExpenses({...localCostsExpenses, despesasAdmin: Number(e.target.value)})}
+                      onChange={(e) => setLocalCostsExpenses({...localCostsExpenses, despesasAdmin: e.target.value === '' ? 0 : (parseFloat(e.target.value) || 0)})}
                       readOnly={!isEditingCosts}
                       className="text-center" 
                     />
@@ -502,7 +502,7 @@ export function ConfigurationModule() {
                   <div className="flex items-center gap-2">
                     <Input 
                       value={localCostsExpenses.outrasDespesas ?? 0} 
-                      onChange={(e) => setLocalCostsExpenses({...localCostsExpenses, outrasDespesas: Number(e.target.value)})}
+                      onChange={(e) => setLocalCostsExpenses({...localCostsExpenses, outrasDespesas: e.target.value === '' ? 0 : (parseFloat(e.target.value) || 0)})}
                       readOnly={!isEditingCosts}
                       className="text-center" 
                     />
@@ -514,7 +514,7 @@ export function ConfigurationModule() {
                   <div className="flex items-center gap-2">
                     <Input 
                       value={localCostsExpenses.custoFinanceiroMensal ?? 0} 
-                      onChange={(e) => setLocalCostsExpenses({...localCostsExpenses, custoFinanceiroMensal: Number(e.target.value)})}
+                      onChange={(e) => setLocalCostsExpenses({...localCostsExpenses, custoFinanceiroMensal: e.target.value === '' ? 0 : (parseFloat(e.target.value) || 0)})}
                       readOnly={!isEditingCosts}
                       className="text-center" 
                     />
@@ -526,7 +526,7 @@ export function ConfigurationModule() {
                   <div className="flex items-center gap-2">
                     <Input 
                       value={localCostsExpenses.taxaDescontoVPL ?? 0} 
-                      onChange={(e) => setLocalCostsExpenses({...localCostsExpenses, taxaDescontoVPL: Number(e.target.value)})}
+                      onChange={(e) => setLocalCostsExpenses({...localCostsExpenses, taxaDescontoVPL: e.target.value === '' ? 0 : (parseFloat(e.target.value) || 0)})}
                       readOnly={!isEditingCosts}
                       className="text-center" 
                     />
@@ -538,7 +538,7 @@ export function ConfigurationModule() {
                   <div className="flex items-center gap-2">
                     <Input 
                       value={localCostsExpenses.depreciacao ?? 0} 
-                      onChange={(e) => setLocalCostsExpenses({...localCostsExpenses, depreciacao: Number(e.target.value)})}
+                      onChange={(e) => setLocalCostsExpenses({...localCostsExpenses, depreciacao: e.target.value === '' ? 0 : (parseFloat(e.target.value) || 0)})}
                       readOnly={!isEditingCosts}
                       className="text-center" 
                     />
@@ -584,7 +584,7 @@ export function ConfigurationModule() {
                         <div className="flex items-center gap-2">
                           <Input 
                             value={localLaborCosts.ferias ?? 0} 
-                            onChange={(e) => setLocalLaborCosts({...localLaborCosts, ferias: Number(e.target.value)})}
+                            onChange={(e) => setLocalLaborCosts({...localLaborCosts, ferias: e.target.value === '' ? 0 : (parseFloat(e.target.value) || 0)})}
                             readOnly={!isEditingLabor}
                             className="text-center" 
                           />
@@ -596,7 +596,7 @@ export function ConfigurationModule() {
                         <div className="flex items-center gap-2">
                           <Input 
                             value={localLaborCosts.umTercoFerias ?? 0} 
-                            onChange={(e) => setLocalLaborCosts({...localLaborCosts, umTercoFerias: Number(e.target.value)})}
+                            onChange={(e) => setLocalLaborCosts({...localLaborCosts, umTercoFerias: e.target.value === '' ? 0 : (parseFloat(e.target.value) || 0)})}
                             readOnly={!isEditingLabor}
                             className="text-center" 
                           />
@@ -608,7 +608,7 @@ export function ConfigurationModule() {
                         <div className="flex items-center gap-2">
                           <Input 
                             value={localLaborCosts.decimoTerceiro ?? 0} 
-                            onChange={(e) => setLocalLaborCosts({...localLaborCosts, decimoTerceiro: Number(e.target.value)})}
+                            onChange={(e) => setLocalLaborCosts({...localLaborCosts, decimoTerceiro: e.target.value === '' ? 0 : (parseFloat(e.target.value) || 0)})}
                             readOnly={!isEditingLabor}
                             className="text-center" 
                           />
@@ -620,7 +620,7 @@ export function ConfigurationModule() {
                         <div className="flex items-center gap-2">
                           <Input 
                             value={localLaborCosts.inssBase ?? 0} 
-                            onChange={(e) => setLocalLaborCosts({...localLaborCosts, inssBase: Number(e.target.value)})}
+                            onChange={(e) => setLocalLaborCosts({...localLaborCosts, inssBase: e.target.value === '' ? 0 : (parseFloat(e.target.value) || 0)})}
                             readOnly={!isEditingLabor}
                             className="text-center" 
                           />
@@ -632,7 +632,7 @@ export function ConfigurationModule() {
                         <div className="flex items-center gap-2">
                           <Input 
                             value={localLaborCosts.fgts ?? 0} 
-                            onChange={(e) => setLocalLaborCosts({...localLaborCosts, fgts: Number(e.target.value)})}
+                            onChange={(e) => setLocalLaborCosts({...localLaborCosts, fgts: e.target.value === '' ? 0 : (parseFloat(e.target.value) || 0)})}
                             readOnly={!isEditingLabor}
                             className="text-center" 
                           />
@@ -644,7 +644,7 @@ export function ConfigurationModule() {
                         <div className="flex items-center gap-2">
                           <Input 
                             value={localLaborCosts.outros ?? 0} 
-                            onChange={(e) => setLocalLaborCosts({...localLaborCosts, outros: Number(e.target.value)})}
+                            onChange={(e) => setLocalLaborCosts({...localLaborCosts, outros: e.target.value === '' ? 0 : (parseFloat(e.target.value) || 0)})}
                             readOnly={!isEditingLabor}
                             className="text-center" 
                           />
@@ -673,7 +673,7 @@ export function ConfigurationModule() {
                         <div className="flex items-center gap-2">
                           <Input 
                             value={localLaborCosts.valeTransporte ?? 0} 
-                            onChange={(e) => setLocalLaborCosts({...localLaborCosts, valeTransporte: Number(e.target.value)})}
+                            onChange={(e) => setLocalLaborCosts({...localLaborCosts, valeTransporte: e.target.value === '' ? 0 : (parseFloat(e.target.value) || 0)})}
                             readOnly={!isEditingLabor}
                             className="text-center" 
                           />
@@ -685,7 +685,7 @@ export function ConfigurationModule() {
                         <div className="flex items-center gap-2">
                           <Input 
                             value={localLaborCosts.planoSaude ?? 0} 
-                            onChange={(e) => setLocalLaborCosts({...localLaborCosts, planoSaude: Number(e.target.value)})}
+                            onChange={(e) => setLocalLaborCosts({...localLaborCosts, planoSaude: e.target.value === '' ? 0 : (parseFloat(e.target.value) || 0)})}
                             readOnly={!isEditingLabor}
                             className="text-center" 
                           />
@@ -697,7 +697,7 @@ export function ConfigurationModule() {
                         <div className="flex items-center gap-2">
                           <Input 
                             value={localLaborCosts.valeAlimentacao ?? 0} 
-                            onChange={(e) => setLocalLaborCosts({...localLaborCosts, valeAlimentacao: Number(e.target.value)})}
+                            onChange={(e) => setLocalLaborCosts({...localLaborCosts, valeAlimentacao: e.target.value === '' ? 0 : (parseFloat(e.target.value) || 0)})}
                             readOnly={!isEditingLabor}
                             className="text-center" 
                           />
@@ -728,7 +728,7 @@ export function ConfigurationModule() {
                         <div className="flex items-center gap-2">
                           <Input 
                             value={localLaborCosts.salarioBasePadrao ?? 0} 
-                            onChange={(e) => setLocalLaborCosts({...localLaborCosts, salarioBasePadrao: Number(e.target.value)})}
+                            onChange={(e) => setLocalLaborCosts({...localLaborCosts, salarioBasePadrao: e.target.value === '' ? 0 : (parseFloat(e.target.value) || 0)})}
                             readOnly={!isEditingLabor}
                             className="text-center" 
                           />
@@ -739,7 +739,7 @@ export function ConfigurationModule() {
                         <Label className="text-sm font-medium">Dias Úteis no Mês</Label>
                         <Input 
                           value={localLaborCosts.diasUteisNoMes ?? 0} 
-                          onChange={(e) => setLocalLaborCosts({...localLaborCosts, diasUteisNoMes: Number(e.target.value)})}
+                          onChange={(e) => setLocalLaborCosts({...localLaborCosts, diasUteisNoMes: e.target.value === '' ? 0 : (parseFloat(e.target.value) || 0)})}
                           readOnly={!isEditingLabor}
                           className="text-center" 
                         />
@@ -748,7 +748,7 @@ export function ConfigurationModule() {
                         <Label className="text-sm font-medium">Horas/Dia</Label>
                         <Input 
                           value={localLaborCosts.horasPorDia ?? 0} 
-                          onChange={(e) => setLocalLaborCosts({...localLaborCosts, horasPorDia: Number(e.target.value)})}
+                          onChange={(e) => setLocalLaborCosts({...localLaborCosts, horasPorDia: e.target.value === '' ? 0 : (parseFloat(e.target.value) || 0)})}
                           readOnly={!isEditingLabor}
                           className="text-center" 
                         />
@@ -843,7 +843,7 @@ export function ConfigurationModule() {
                   <Label>Comissão de Venda (%)</Label>
                   <Input
                     value={localOutsourcingConfig.comissaoVenda}
-                    onChange={(e) => setLocalOutsourcingConfig({...localOutsourcingConfig, comissaoVenda: Number(e.target.value)})}
+                    onChange={(e) => setLocalOutsourcingConfig({...localOutsourcingConfig, comissaoVenda: e.target.value === '' ? 0 : (parseFloat(e.target.value) || 0)})}
                     readOnly={!isEditingOutsourcing}
                     className="text-center"
                   />
@@ -852,7 +852,7 @@ export function ConfigurationModule() {
                   <Label>Custos Operacionais (%)</Label>
                   <Input
                     value={localOutsourcingConfig.custosOperacionais}
-                    onChange={(e) => setLocalOutsourcingConfig({...localOutsourcingConfig, custosOperacionais: Number(e.target.value)})}
+                    onChange={(e) => setLocalOutsourcingConfig({...localOutsourcingConfig, custosOperacionais: e.target.value === '' ? 0 : (parseFloat(e.target.value) || 0)})}
                     readOnly={!isEditingOutsourcing}
                     className="text-center"
                   />
@@ -861,7 +861,7 @@ export function ConfigurationModule() {
                   <Label>Margem Padrão (%)</Label>
                   <Input
                     value={localOutsourcingConfig.margemPadrao}
-                    onChange={(e) => setLocalOutsourcingConfig({...localOutsourcingConfig, margemPadrao: Number(e.target.value)})}
+                    onChange={(e) => setLocalOutsourcingConfig({...localOutsourcingConfig, margemPadrao: e.target.value === '' ? 0 : (parseFloat(e.target.value) || 0)})}
                     readOnly={!isEditingOutsourcing}
                     className="text-center"
                   />
@@ -873,7 +873,7 @@ export function ConfigurationModule() {
                 <div className="flex items-center gap-2 max-w-xs">
                   <Input
                     value={localOutsourcingConfig.taxaFinanceiraMensal}
-                    onChange={(e) => setLocalOutsourcingConfig({...localOutsourcingConfig, taxaFinanceiraMensal: Number(e.target.value)})}
+                    onChange={(e) => setLocalOutsourcingConfig({...localOutsourcingConfig, taxaFinanceiraMensal: e.target.value === '' ? 0 : (parseFloat(e.target.value) || 0)})}
                     readOnly={!isEditingOutsourcing}
                     className="text-center"
                   />
@@ -896,7 +896,7 @@ export function ConfigurationModule() {
                         step="0.001"
                         onChange={(e) => setLocalOutsourcingConfig({
                           ...localOutsourcingConfig,
-                          custosBase: { ...localOutsourcingConfig.custosBase, [key]: Number(e.target.value) }
+                          custosBase: { ...localOutsourcingConfig.custosBase, [key]: e.target.value === '' ? 0 : (parseFloat(e.target.value) || 0) }
                         })}
                         readOnly={!isEditingOutsourcing}
                         className="text-center"
@@ -1033,7 +1033,7 @@ export function ConfigurationModule() {
                     <div className="flex items-center gap-1">
                       <Input
                         value={icmsRates[uf as keyof ICMSInterstateRates]}
-                        onChange={(e) => setIcmsRatesLocal({...icmsRates, [uf]: Number(e.target.value)})}
+                        onChange={(e) => setIcmsRatesLocal({...icmsRates, [uf]: e.target.value === '' ? 0 : (parseFloat(e.target.value) || 0)})}
                         readOnly={!isEditingICMS}
                         className="text-center text-sm"
                       />
