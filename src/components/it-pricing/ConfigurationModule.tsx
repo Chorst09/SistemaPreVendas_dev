@@ -11,7 +11,9 @@ import { Badge } from "@/components/ui/badge"
 import { Trash2, Plus, Settings, Building, Calculator, BarChart3, Users, Edit, Save, Printer, Monitor, Headphones } from "lucide-react"
 import type { TaxRegime } from "@/lib/types/tax-regimes"
 import type { CostsExpenses } from "@/lib/types/costs-expenses"
+import { initialCostsExpenses } from "@/lib/types/costs-expenses"
 import type { LaborCosts } from "@/lib/types/labor-costs"
+import { initialLaborCosts } from "@/lib/types/labor-costs"
 import type { CompanyData } from "@/lib/types/company-data"
 import type { OutsourcingConfig, ModuleTaxConfig } from "@/lib/stores/configuration-store"
 import { defaultICMSRates, stateNames, type ICMSInterstateRates } from "@/lib/types/pricing"
@@ -37,10 +39,16 @@ export function ConfigurationModule() {
     setServiceDeskConfig,
   } = useConfigurationStore()
   
-  // Estados locais para edição
+  // Estados locais para edição — sempre merge com valores iniciais para evitar NaN
   const [localTaxRegimes, setLocalTaxRegimes] = useState<TaxRegime[]>(taxRegimes || [])
-  const [localCostsExpenses, setLocalCostsExpenses] = useState<CostsExpenses>(costsExpenses)
-  const [localLaborCosts, setLocalLaborCosts] = useState<LaborCosts>(laborCosts)
+  const [localCostsExpenses, setLocalCostsExpenses] = useState<CostsExpenses>({
+    ...initialCostsExpenses,
+    ...(costsExpenses || {}),
+  })
+  const [localLaborCosts, setLocalLaborCosts] = useState<LaborCosts>({
+    ...initialLaborCosts,
+    ...(laborCosts || {}),
+  })
   const [companyData, setCompanyDataLocal] = useState<CompanyData>(storeCompanyData)
   const [icmsRates, setIcmsRatesLocal] = useState<ICMSInterstateRates>(storeIcmsRates || defaultICMSRates)
   
@@ -63,13 +71,13 @@ export function ConfigurationModule() {
 
   useEffect(() => {
     if (costsExpenses) {
-      setLocalCostsExpenses(costsExpenses)
+      setLocalCostsExpenses({ ...initialCostsExpenses, ...costsExpenses })
     }
   }, [costsExpenses])
 
   useEffect(() => {
     if (laborCosts) {
-      setLocalLaborCosts(laborCosts)
+      setLocalLaborCosts({ ...initialLaborCosts, ...laborCosts })
     }
   }, [laborCosts])
 
@@ -124,14 +132,14 @@ export function ConfigurationModule() {
 
   const handleSaveLabor = () => {
     // Recalcular valores
-    const totalEncargos = localLaborCosts.ferias + localLaborCosts.umTercoFerias + localLaborCosts.decimoTerceiro + 
-                         localLaborCosts.inssBase + localLaborCosts.inssSistemaS + localLaborCosts.inssFeriasDecimo +
-                         localLaborCosts.fgts + localLaborCosts.fgtsFeriasDecimo + localLaborCosts.multaFgtsRescisao + localLaborCosts.outros
+    const totalEncargos = (localLaborCosts.ferias ?? 0) + (localLaborCosts.umTercoFerias ?? 0) + (localLaborCosts.decimoTerceiro ?? 0) + 
+                         (localLaborCosts.inssBase ?? 0) + (localLaborCosts.inssSistemaS ?? 0) + (localLaborCosts.inssFeriasDecimo ?? 0) +
+                         (localLaborCosts.fgts ?? 0) + (localLaborCosts.fgtsFeriasDecimo ?? 0) + (localLaborCosts.multaFgtsRescisao ?? 0) + (localLaborCosts.outros ?? 0)
     
-    const totalBeneficios = localLaborCosts.valeTransporte + localLaborCosts.planoSaude + localLaborCosts.valeAlimentacao
+    const totalBeneficios = (localLaborCosts.valeTransporte ?? 0) + (localLaborCosts.planoSaude ?? 0) + (localLaborCosts.valeAlimentacao ?? 0)
     
-    const horasMes = localLaborCosts.diasUteisNoMes * localLaborCosts.horasPorDia
-    const custoHora = (localLaborCosts.salarioBasePadrao * (1 + totalEncargos / 100) + totalBeneficios) / horasMes
+    const horasMes = (localLaborCosts.diasUteisNoMes ?? 1) * (localLaborCosts.horasPorDia ?? 1)
+    const custoHora = ((localLaborCosts.salarioBasePadrao ?? 0) * (1 + totalEncargos / 100) + totalBeneficios) / horasMes
     const valorVendaHora = custoHora * 1.66 // Aplicando margem padrão
     
     const updatedLaborCosts = {
@@ -433,7 +441,7 @@ export function ConfigurationModule() {
                   <Label className="text-sm font-medium">Comissão Venda</Label>
                   <div className="flex items-center gap-2">
                     <Input 
-                      value={localCostsExpenses.comissaoVenda} 
+                      value={localCostsExpenses.comissaoVenda ?? 0} 
                       onChange={(e) => setLocalCostsExpenses({...localCostsExpenses, comissaoVenda: Number(e.target.value)})}
                       readOnly={!isEditingCosts}
                       className="text-center" 
@@ -445,7 +453,7 @@ export function ConfigurationModule() {
                   <Label className="text-sm font-medium">Comissão Locação</Label>
                   <div className="flex items-center gap-2">
                     <Input 
-                      value={localCostsExpenses.comissaoLocacao} 
+                      value={localCostsExpenses.comissaoLocacao ?? 0} 
                       onChange={(e) => setLocalCostsExpenses({...localCostsExpenses, comissaoLocacao: Number(e.target.value)})}
                       readOnly={!isEditingCosts}
                       className="text-center" 
@@ -457,7 +465,7 @@ export function ConfigurationModule() {
                   <Label className="text-sm font-medium">Comissão Serviço</Label>
                   <div className="flex items-center gap-2">
                     <Input 
-                      value={localCostsExpenses.comissaoServico} 
+                      value={localCostsExpenses.comissaoServico ?? 0} 
                       onChange={(e) => setLocalCostsExpenses({...localCostsExpenses, comissaoServico: Number(e.target.value)})}
                       readOnly={!isEditingCosts}
                       className="text-center" 
@@ -469,7 +477,7 @@ export function ConfigurationModule() {
                   <Label className="text-sm font-medium">Margem Lucro Serviço</Label>
                   <div className="flex items-center gap-2">
                     <Input 
-                      value={localCostsExpenses.margemLucroServico} 
+                      value={localCostsExpenses.margemLucroServico ?? 0} 
                       onChange={(e) => setLocalCostsExpenses({...localCostsExpenses, margemLucroServico: Number(e.target.value)})}
                       readOnly={!isEditingCosts}
                       className="text-center" 
@@ -481,7 +489,7 @@ export function ConfigurationModule() {
                   <Label className="text-sm font-medium">Despesas Admin.</Label>
                   <div className="flex items-center gap-2">
                     <Input 
-                      value={localCostsExpenses.despesasAdmin} 
+                      value={localCostsExpenses.despesasAdmin ?? 0} 
                       onChange={(e) => setLocalCostsExpenses({...localCostsExpenses, despesasAdmin: Number(e.target.value)})}
                       readOnly={!isEditingCosts}
                       className="text-center" 
@@ -493,7 +501,7 @@ export function ConfigurationModule() {
                   <Label className="text-sm font-medium">Outras Despesas</Label>
                   <div className="flex items-center gap-2">
                     <Input 
-                      value={localCostsExpenses.outrasDespesas} 
+                      value={localCostsExpenses.outrasDespesas ?? 0} 
                       onChange={(e) => setLocalCostsExpenses({...localCostsExpenses, outrasDespesas: Number(e.target.value)})}
                       readOnly={!isEditingCosts}
                       className="text-center" 
@@ -505,7 +513,7 @@ export function ConfigurationModule() {
                   <Label className="text-sm font-medium">Custo Financeiro Mensal</Label>
                   <div className="flex items-center gap-2">
                     <Input 
-                      value={localCostsExpenses.custoFinanceiroMensal} 
+                      value={localCostsExpenses.custoFinanceiroMensal ?? 0} 
                       onChange={(e) => setLocalCostsExpenses({...localCostsExpenses, custoFinanceiroMensal: Number(e.target.value)})}
                       readOnly={!isEditingCosts}
                       className="text-center" 
@@ -517,7 +525,7 @@ export function ConfigurationModule() {
                   <Label className="text-sm font-medium">Taxa Desconto VPL</Label>
                   <div className="flex items-center gap-2">
                     <Input 
-                      value={localCostsExpenses.taxaDescontoVPL} 
+                      value={localCostsExpenses.taxaDescontoVPL ?? 0} 
                       onChange={(e) => setLocalCostsExpenses({...localCostsExpenses, taxaDescontoVPL: Number(e.target.value)})}
                       readOnly={!isEditingCosts}
                       className="text-center" 
@@ -529,7 +537,7 @@ export function ConfigurationModule() {
                   <Label className="text-sm font-medium">Depreciação</Label>
                   <div className="flex items-center gap-2">
                     <Input 
-                      value={localCostsExpenses.depreciacao} 
+                      value={localCostsExpenses.depreciacao ?? 0} 
                       onChange={(e) => setLocalCostsExpenses({...localCostsExpenses, depreciacao: Number(e.target.value)})}
                       readOnly={!isEditingCosts}
                       className="text-center" 
@@ -575,7 +583,7 @@ export function ConfigurationModule() {
                         <Label className="text-sm font-medium">Férias</Label>
                         <div className="flex items-center gap-2">
                           <Input 
-                            value={localLaborCosts.ferias} 
+                            value={localLaborCosts.ferias ?? 0} 
                             onChange={(e) => setLocalLaborCosts({...localLaborCosts, ferias: Number(e.target.value)})}
                             readOnly={!isEditingLabor}
                             className="text-center" 
@@ -587,7 +595,7 @@ export function ConfigurationModule() {
                         <Label className="text-sm font-medium">1/3 Férias</Label>
                         <div className="flex items-center gap-2">
                           <Input 
-                            value={localLaborCosts.umTercoFerias} 
+                            value={localLaborCosts.umTercoFerias ?? 0} 
                             onChange={(e) => setLocalLaborCosts({...localLaborCosts, umTercoFerias: Number(e.target.value)})}
                             readOnly={!isEditingLabor}
                             className="text-center" 
@@ -599,7 +607,7 @@ export function ConfigurationModule() {
                         <Label className="text-sm font-medium">13º Salário</Label>
                         <div className="flex items-center gap-2">
                           <Input 
-                            value={localLaborCosts.decimoTerceiro} 
+                            value={localLaborCosts.decimoTerceiro ?? 0} 
                             onChange={(e) => setLocalLaborCosts({...localLaborCosts, decimoTerceiro: Number(e.target.value)})}
                             readOnly={!isEditingLabor}
                             className="text-center" 
@@ -611,7 +619,7 @@ export function ConfigurationModule() {
                         <Label className="text-sm font-medium">INSS (Base)</Label>
                         <div className="flex items-center gap-2">
                           <Input 
-                            value={localLaborCosts.inssBase} 
+                            value={localLaborCosts.inssBase ?? 0} 
                             onChange={(e) => setLocalLaborCosts({...localLaborCosts, inssBase: Number(e.target.value)})}
                             readOnly={!isEditingLabor}
                             className="text-center" 
@@ -623,7 +631,7 @@ export function ConfigurationModule() {
                         <Label className="text-sm font-medium">FGTS</Label>
                         <div className="flex items-center gap-2">
                           <Input 
-                            value={localLaborCosts.fgts} 
+                            value={localLaborCosts.fgts ?? 0} 
                             onChange={(e) => setLocalLaborCosts({...localLaborCosts, fgts: Number(e.target.value)})}
                             readOnly={!isEditingLabor}
                             className="text-center" 
@@ -635,7 +643,7 @@ export function ConfigurationModule() {
                         <Label className="text-sm font-medium">Outros</Label>
                         <div className="flex items-center gap-2">
                           <Input 
-                            value={localLaborCosts.outros} 
+                            value={localLaborCosts.outros ?? 0} 
                             onChange={(e) => setLocalLaborCosts({...localLaborCosts, outros: Number(e.target.value)})}
                             readOnly={!isEditingLabor}
                             className="text-center" 
@@ -647,7 +655,7 @@ export function ConfigurationModule() {
                     <div className="pt-4 border-t">
                       <div className="flex items-center justify-between">
                         <span className="font-medium">Total Encargos:</span>
-                        <span className="text-lg font-bold text-primary">{localLaborCosts.totalEncargos.toFixed(2)}%</span>
+                        <span className="text-lg font-bold text-primary">{(localLaborCosts.totalEncargos ?? 0).toFixed(2)}%</span>
                       </div>
                     </div>
                   </CardContent>
@@ -664,7 +672,7 @@ export function ConfigurationModule() {
                         <Label className="text-sm font-medium">Vale Transporte</Label>
                         <div className="flex items-center gap-2">
                           <Input 
-                            value={localLaborCosts.valeTransporte} 
+                            value={localLaborCosts.valeTransporte ?? 0} 
                             onChange={(e) => setLocalLaborCosts({...localLaborCosts, valeTransporte: Number(e.target.value)})}
                             readOnly={!isEditingLabor}
                             className="text-center" 
@@ -676,7 +684,7 @@ export function ConfigurationModule() {
                         <Label className="text-sm font-medium">Plano de Saúde</Label>
                         <div className="flex items-center gap-2">
                           <Input 
-                            value={localLaborCosts.planoSaude} 
+                            value={localLaborCosts.planoSaude ?? 0} 
                             onChange={(e) => setLocalLaborCosts({...localLaborCosts, planoSaude: Number(e.target.value)})}
                             readOnly={!isEditingLabor}
                             className="text-center" 
@@ -688,7 +696,7 @@ export function ConfigurationModule() {
                         <Label className="text-sm font-medium">Vale Alimentação</Label>
                         <div className="flex items-center gap-2">
                           <Input 
-                            value={localLaborCosts.valeAlimentacao} 
+                            value={localLaborCosts.valeAlimentacao ?? 0} 
                             onChange={(e) => setLocalLaborCosts({...localLaborCosts, valeAlimentacao: Number(e.target.value)})}
                             readOnly={!isEditingLabor}
                             className="text-center" 
@@ -719,7 +727,7 @@ export function ConfigurationModule() {
                         <Label className="text-sm font-medium">Salário Base Padrão</Label>
                         <div className="flex items-center gap-2">
                           <Input 
-                            value={localLaborCosts.salarioBasePadrao} 
+                            value={localLaborCosts.salarioBasePadrao ?? 0} 
                             onChange={(e) => setLocalLaborCosts({...localLaborCosts, salarioBasePadrao: Number(e.target.value)})}
                             readOnly={!isEditingLabor}
                             className="text-center" 
@@ -730,7 +738,7 @@ export function ConfigurationModule() {
                       <div className="space-y-2">
                         <Label className="text-sm font-medium">Dias Úteis no Mês</Label>
                         <Input 
-                          value={localLaborCosts.diasUteisNoMes} 
+                          value={localLaborCosts.diasUteisNoMes ?? 0} 
                           onChange={(e) => setLocalLaborCosts({...localLaborCosts, diasUteisNoMes: Number(e.target.value)})}
                           readOnly={!isEditingLabor}
                           className="text-center" 
@@ -739,7 +747,7 @@ export function ConfigurationModule() {
                       <div className="space-y-2">
                         <Label className="text-sm font-medium">Horas/Dia</Label>
                         <Input 
-                          value={localLaborCosts.horasPorDia} 
+                          value={localLaborCosts.horasPorDia ?? 0} 
                           onChange={(e) => setLocalLaborCosts({...localLaborCosts, horasPorDia: Number(e.target.value)})}
                           readOnly={!isEditingLabor}
                           className="text-center" 

@@ -116,6 +116,28 @@ export const useConfigurationStore = create<ConfigurationState>()(
     {
       name: 'it-pricing-configuration',
       version: 2,
+      merge: (persistedState: any, currentState: ConfigurationState): ConfigurationState => {
+        // Garantir que todos os campos numéricos existam com valores padrão
+        const mergedCosts: CostsExpenses = {
+          ...initialCostsExpenses,
+          ...(persistedState?.costsExpenses || {}),
+        }
+        const mergedLabor: LaborCosts = {
+          ...initialLaborCosts,
+          ...(persistedState?.laborCosts || {}),
+        }
+        return {
+          ...currentState,
+          ...persistedState,
+          costsExpenses: mergedCosts,
+          laborCosts: mergedLabor,
+          taxRegimes: persistedState?.taxRegimes || initialTaxRegimes || [],
+          icmsRates: persistedState?.icmsRates || defaultICMSRates,
+          outsourcingConfig: { ...defaultOutsourcingConfig, ...(persistedState?.outsourcingConfig || {}) },
+          nocConfig: { ...defaultModuleConfig, ...(persistedState?.nocConfig || {}) },
+          serviceDeskConfig: { ...defaultModuleConfig, ...(persistedState?.serviceDeskConfig || {}) },
+        }
+      },
     },
   ),
 )
