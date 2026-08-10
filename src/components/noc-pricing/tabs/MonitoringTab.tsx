@@ -80,11 +80,40 @@ export function MonitoringTab({ data, onChange }: MonitoringTabProps) {
   }, 0);
 
   const fmt = (v: number) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+  const costInputRefs = React.useRef<Record<string, HTMLInputElement | null>>({});
+
   const handleToolToggle = (tool: MonitoringTool) => {
-    const tools = data.tools.includes(tool)
-      ? data.tools.filter(t => t !== tool)
-      : [...data.tools, tool];
-    onChange({ ...data, tools });
+    const alreadySelected = data.tools.includes(tool);
+
+    if (alreadySelected) {
+      // Se já selecionado e sem preço → abrir painel e focar no campo de custo
+      const license = getLicense(tool);
+      if (!license?.unitCost) {
+        setExpandedLicenses(prev => ({ ...prev, [tool]: true }));
+        // Focar no input de custo após render
+        setTimeout(() => {
+          costInputRefs.current[tool]?.focus();
+          costInputRefs.current[tool]?.select();
+        }, 100);
+        return; // Não desmarca — apenas abre para cadastrar
+      }
+      // Se já tem preço, desmarca normalmente
+      const tools = data.tools.filter(t => t !== tool);
+      onChange({ ...data, tools });
+    } else {
+      // Selecionando nova ferramenta → adiciona e abre painel de licença
+      const tools = [...data.tools, tool];
+      onChange({ ...data, tools });
+      // Abre o painel de licença automaticamente para ferramentas comerciais/SaaS
+      const toolMeta = MONITORING_TOOLS.find(t => t.value === tool);
+      if (toolMeta && toolMeta.type !== 'open-source') {
+        setExpandedLicenses(prev => ({ ...prev, [tool]: true }));
+        setTimeout(() => {
+          costInputRefs.current[tool]?.focus();
+          costInputRefs.current[tool]?.select();
+        }, 150);
+      }
+    }
   };
 
   const handleChannelToggle = (channel: any) => {
@@ -122,16 +151,30 @@ export function MonitoringTab({ data, onChange }: MonitoringTabProps) {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {MONITORING_TOOLS.map((tool) => {
                 const isSelected = data.tools.includes(tool.value);
+                const license = getLicense(tool.value);
+                const hasCost = isSelected && (license?.unitCost ?? 0) > 0;
+                const needsCost = isSelected && !hasCost && tool.type !== 'open-source';
+
                 return (
                   <div
                     key={tool.value}
-                    className={`border rounded-xl p-4 cursor-pointer transition-all ${
+                    className={`relative border rounded-xl p-4 cursor-pointer transition-all ${
                       isSelected
-                        ? 'border-emerald-500/60 bg-gradient-to-br from-emerald-500/20 via-emerald-500/12 to-transparent shadow-[0_12px_30px_-18px_rgba(16,185,129,0.7)]'
-                        : 'border-slate-300/80 bg-card/95 hover:border-blue-500/45 hover:bg-blue-500/10'
+                        ? needsCost
+                          ? 'border-amber-500/60 bg-gradient-to-br from-amber-500/15 via-amber-500/8 to-transparent shadow-[0_8px_24px_-12px_rgba(245,158,11,0.5)]'
+                          : hasCost
+                          ? 'border-emerald-500/60 bg-gradient-to-br from-emerald-500/20 via-emerald-500/12 to-transparent shadow-[0_12px_30px_-18px_rgba(16,185,129,0.7)]'
+                          : 'border-emerald-500/40 bg-gradient-to-br from-emerald-500/12 to-transparent'
+                        : 'border-slate-300/80 dark:border-border bg-card/95 hover:border-blue-500/45 hover:bg-blue-500/10'
                     }`}
                     onClick={() => handleToolToggle(tool.value)}
                   >
+                    {/* Indicador de status de preço */}
+                    {isSelected && (
+                      <div className={`absolute top-2 right-2 w-2 h-2 rounded-full ${
+                        hasCost ? 'bg-emerald-500' : tool.type === 'open-source' ? 'bg-blue-400' : 'bg-amber-500 animate-pulse'
+                      }`} title={hasCost ? 'Preço cadastrado' : tool.type === 'open-source' ? 'Open Source (gratuito)' : 'Preço não cadastrado'} />
+                    )}
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <div className="flex items-center space-x-2">
@@ -139,17 +182,33 @@ export function MonitoringTab({ data, onChange }: MonitoringTabProps) {
                             checked={isSelected}
                             onCheckedChange={() => handleToolToggle(tool.value)}
                           />
-                          <span className={`font-semibold ${isSelected ? 'text-emerald-900 dark:text-emerald-200' : 'text-foreground'}`}>
+                          <span className={`font-semibold ${
+                            isSelected
+                              ? needsCost ? 'text-amber-900 dark:text-amber-200' : 'text-emerald-900 dark:text-emerald-200'
+                              : 'text-foreground'
+                          }`}>
                             {tool.label}
                           </span>
                         </div>
-                        <Badge
-                          variant="outline"
-                          className={`mt-2 text-xs ${getToolTypeBadgeClass(tool.type, isSelected)}`}
-                        >
-                          {tool.type === 'open-source' ? 'Open Source' :
-                           tool.type === 'commercial' ? 'Comercial' : 'SaaS'}
-                        </Badge>
+                        <div className="flex items-center gap-2 mt-2 flex-wrap">
+                          <Badge
+                            variant="outline"
+                            className={`text-xs ${getToolTypeBadgeClass(tool.type, isSelected)}`}
+                          >
+                            {tool.type === 'open-source' ? 'Open Source' :
+                             tool.type === 'commercial' ? 'Comercial' : 'SaaS'}
+                          </Badge>
+                          {isSelected && hasCost && (
+                            <span className="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400">
+                              {fmt(license!.billingCycle === 'annual' ? license!.unitCost / 12 : license!.unitCost)}{license!.licenseType !== 'flat-rate' ? '/un.' : '/mês'}
+                            </span>
+                          )}
+                          {needsCost && (
+                            <span className="text-[10px] font-semibold text-amber-600 dark:text-amber-400 flex items-center gap-0.5">
+                              ⚠ Cadastre o preço
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -159,12 +218,40 @@ export function MonitoringTab({ data, onChange }: MonitoringTabProps) {
 
           <div className="bg-gradient-to-r from-blue-500/16 via-cyan-500/10 to-transparent border border-blue-500/35 rounded-xl p-4 mt-4">
             <h4 className="font-semibold text-blue-900 dark:text-blue-200 mb-2">Ferramentas Selecionadas</h4>
-            <p className="text-sm text-blue-900/85 dark:text-blue-200/90">
-              {data.tools.length === 0 ? 'Nenhuma ferramenta selecionada' :
-               `${data.tools.length} ferramenta(s): ${data.tools.map(t => 
-                 MONITORING_TOOLS.find(mt => mt.value === t)?.label
-               ).join(', ')}`}
-            </p>
+            {data.tools.length === 0 ? (
+              <p className="text-sm text-blue-900/85 dark:text-blue-200/90">Nenhuma ferramenta selecionada</p>
+            ) : (
+              <div className="space-y-1.5">
+                {data.tools.map(t => {
+                  const toolMeta = MONITORING_TOOLS.find(mt => mt.value === t);
+                  const lic = getLicense(t);
+                  const hasCost = (lic?.unitCost ?? 0) > 0;
+                  const isOpenSource = toolMeta?.type === 'open-source';
+                  return (
+                    <div key={t} className="flex items-center justify-between text-sm">
+                      <span className="text-blue-900/85 dark:text-blue-200/90">{toolMeta?.label}</span>
+                      {isOpenSource ? (
+                        <span className="text-[10px] text-blue-500 dark:text-blue-400 font-medium">Open Source</span>
+                      ) : hasCost ? (
+                        <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold">
+                          ✓ {fmt(lic!.billingCycle === 'annual' ? lic!.unitCost / 12 : lic!.unitCost)}/mês
+                        </span>
+                      ) : (
+                        <button
+                          className="text-[10px] text-amber-600 dark:text-amber-400 font-semibold underline hover:no-underline"
+                          onClick={() => {
+                            setExpandedLicenses(prev => ({ ...prev, [t]: true }));
+                            setTimeout(() => { costInputRefs.current[t]?.focus(); costInputRefs.current[t]?.select(); }, 100);
+                          }}
+                        >
+                          ⚠ Cadastrar preço ↓
+                        </button>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>
@@ -269,10 +356,11 @@ export function MonitoringTab({ data, onChange }: MonitoringTabProps) {
                               {(license?.licenseType ?? 'flat-rate') === 'flat-rate' ? 'Custo Total' : 'Custo Unitário'} (R$)
                             </Label>
                             <Input
+                              ref={el => { costInputRefs.current[toolValue] = el; }}
                               type="number"
                               min={0}
                               step={0.01}
-                              className="h-9 text-sm"
+                              className={`h-9 text-sm ${!license?.unitCost ? 'border-amber-500/60 focus:border-amber-500 ring-amber-500/20' : ''}`}
                               value={license?.unitCost ?? ''}
                               placeholder="0,00"
                               onChange={e => updateLicense(toolValue, { unitCost: parseFloat(e.target.value.replace(',', '.')) || 0 })}
