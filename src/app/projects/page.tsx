@@ -208,6 +208,15 @@ export default function ProjectsPage() {
 
                     <div className="flex flex-wrap items-center gap-2">
                         <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-9 gap-1.5 text-sm text-muted-foreground hover:text-foreground"
+                            onClick={() => window.location.href = '/'}
+                        >
+                            <LayoutDashboard className="h-4 w-4" />
+                            Sistema
+                        </Button>
+                        <Button
                             variant="outline"
                             size="sm"
                             className="h-9 gap-1.5 text-sm"
