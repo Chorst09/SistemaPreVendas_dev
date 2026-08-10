@@ -666,6 +666,9 @@ export function NOCPricingSystem({ onBack, proposalClientData, onNavigateToQuote
               <TabsContent value="project">
                 <ProjectTab
                   data={data.project}
+                  calculations={data.calculations}
+                  variables={data.variables}
+                  onVariablesChange={(variablesData) => handleDataUpdate('variables', variablesData)}
                   onChange={(projectData) => handleDataUpdate('project', projectData)}
                 />
               </TabsContent>
@@ -735,6 +738,7 @@ export function NOCPricingSystem({ onBack, proposalClientData, onNavigateToQuote
               <TabsContent value="variables">
                 <VariablesTab
                   data={data.variables}
+                  calculations={data.calculations}
                   onChange={(variablesData) => handleDataUpdate('variables', variablesData)}
                 />
               </TabsContent>
