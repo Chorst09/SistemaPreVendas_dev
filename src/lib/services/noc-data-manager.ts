@@ -33,6 +33,7 @@ export class NOCDataManager {
       estimatedAlertsPerMonth: 0,
       monitoring: {
         tools: ['zabbix'],
+        toolLicenses: [],
         customDashboards: 5,
         alertChannels: ['email', 'slack'],
         automationLevel: 'basic',

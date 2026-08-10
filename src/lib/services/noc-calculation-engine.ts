@@ -249,20 +249,35 @@ export class NOCCalculationEngine {
    * Calcula custos de licenças mensais
    */
   private static calculateMonthlyLicenseCost(data: NOCPricingData): number {
-    let licenseCost = data.operationalCosts.monitoringLicenses;
-    
-    // Adiciona custo de integrações
-    licenseCost += data.operationalCosts.integrationCosts;
-    
-    // Ajusta baseado nas ferramentas selecionadas
-    const toolsMultiplier = this.getToolsMultiplier(data.monitoring.tools);
-    licenseCost *= toolsMultiplier;
-    
-    // Adiciona custo de IA se habilitado
-    if (data.monitoring.aiEnabled) {
-      licenseCost *= 1.5; // 50% adicional para IA
+    // 1. Custos de licença detalhados por ferramenta (toolLicenses)
+    const toolLicensesCost = (data.monitoring.toolLicenses || []).reduce((total, license) => {
+      const monthlyCost = license.billingCycle === 'annual'
+        ? (license.unitCost / 12)
+        : license.unitCost;
+
+      if (license.licenseType === 'flat-rate') {
+        return total + monthlyCost;
+      }
+      return total + (monthlyCost * (license.quantity || 1));
+    }, 0);
+
+    // 2. Custo base manual da aba Custos (legado / complementar)
+    let legacyCost = (data.operationalCosts.monitoringLicenses || 0)
+      + (data.operationalCosts.integrationCosts || 0);
+
+    // Aplica multiplicador de ferramentas apenas sobre o custo legado
+    if (legacyCost > 0) {
+      const toolsMultiplier = this.getToolsMultiplier(data.monitoring.tools);
+      legacyCost *= toolsMultiplier;
     }
-    
+
+    let licenseCost = toolLicensesCost + legacyCost;
+
+    // 3. Adiciona custo de IA se habilitado (+50%)
+    if (data.monitoring.aiEnabled) {
+      licenseCost *= 1.5;
+    }
+
     return licenseCost;
   }
 

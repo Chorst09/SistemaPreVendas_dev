@@ -80,9 +80,21 @@ export interface MonitoredDevice {
   estimatedAlerts: number; // Alertas estimados por mês
 }
 
+// Configuração de licença por ferramenta de monitoramento
+export interface ToolLicenseConfig {
+  tool: MonitoringTool;
+  licenseType: 'flat-rate' | 'per-device' | 'per-user' | 'per-metric';
+  quantity: number;          // qtd dispositivos/usuários/métricas (ignorado para flat-rate)
+  unitCost: number;          // custo por unidade ou total (flat-rate)
+  billingCycle: 'monthly' | 'annual';
+  vendor?: string;
+  notes?: string;
+}
+
 // Configuração de monitoramento
 export interface MonitoringConfig {
   tools: MonitoringTool[];
+  toolLicenses: ToolLicenseConfig[];  // custos de licença por ferramenta selecionada
   customDashboards: number;
   alertChannels: ('email' | 'sms' | 'slack' | 'teams' | 'webhook')[];
   automationLevel: 'none' | 'basic' | 'advanced' | 'full';
