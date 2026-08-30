@@ -33,6 +33,7 @@ import TrainingManagementView from '@/components/training-management/TrainingMan
 import CalculatorFrame from '@/components/calculators/CalculatorFrame';
 import BidsAnalysis from '@/components/bids/BidsAnalysis';
 import BidsDocumentationView from '@/components/bids/BidsDocumentationView';
+import PortalBusca from '@/components/bids/PortalBusca';
 import RFPView from '@/components/rfp/RFPView';
 import PriceRecordView from '@/components/price-records/PriceRecordView';
 import EditalAnalysisView from '@/components/edital-analysis/EditalAnalysisView';
@@ -1033,6 +1034,7 @@ export default function App() { // Ou Home
             label: 'Licitações/Editais',
             icon: <Gavel size={20} />,
             subItems: [
+                { id: 'portal-busca', label: 'Portal de Busca', icon: <Globe size={16} /> },
                 { id: 'bids-analysis', label: 'Editais Analisados', icon: <Search size={16} /> },
                 { id: 'ai-bid-analyzer', label: 'Analisar Edital com IA', icon: <Brain size={16} /> },
                 { id: 'bids-docs', label: 'Documentações para Editais', icon: <FileText size={16} /> },
@@ -1254,6 +1256,7 @@ export default function App() { // Ou Home
             case 'calculator-printer': return <PrinterModuleWrapper onNavigateToQuotes={() => setActiveTab('quotes')} />;
 
 
+            case 'portal-busca': return <PortalBusca />;
             case 'bids-analysis': return <EditalAnalysisView
                 editais={editais}
                 onAdd={(edital) => setEditais(prev => [...prev, { ...edital, id: `EDT-${Date.now()}` }])}

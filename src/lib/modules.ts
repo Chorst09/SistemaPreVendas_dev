@@ -39,6 +39,7 @@ export const MODULE_DEFINITIONS: ModuleDefinition[] = [
     label: 'Licitações/Editais',
     category: 'B2G',
     subModules: [
+      { id: 'portal-busca', label: 'Portal de Busca' },
       { id: 'bids-analysis', label: 'Editais Analisados' },
       { id: 'ai-bid-analyzer', label: 'Analisar Edital com IA' },
       { id: 'bids-docs', label: 'Documentações para Editais' },
