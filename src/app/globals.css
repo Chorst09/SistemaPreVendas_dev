@@ -2,6 +2,23 @@
 @tailwind components;
 @tailwind utilities;
 
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #111827;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #374151;
+  border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #ff7a00;
+}
+
 @layer base {
   :root {
     /* Core Brand Colors - Design System Moderno */

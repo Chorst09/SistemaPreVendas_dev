@@ -40,6 +40,7 @@ import EditalAnalysisView from '@/components/edital-analysis/EditalAnalysisView'
 import AIBidAnalyzer from '@/components/ai-bid-analyzer/AIBidAnalyzer';
 import { ITAssessmentView } from '@/components/it-assessment';
 import { POCManagementView } from '@/components/poc';
+import ProjectManagementApp from '@/components/project-management/App';
 
 import { ITPricingModule } from '@/components/it-pricing/ITPricingModule';
 import { SettingsView } from '@/components/settings/SettingsView';
@@ -1142,32 +1143,7 @@ export default function App() { // Ou Home
         switch (activeTab) {
             case 'home': return <HomeLandingPage setActiveTab={setActiveTab} />;
             case 'dashboard': return <DashboardView salesData={salesData} quoteStatusData={quoteStatusData} partners={partners} ros={ros} />;
-            case 'projects': return (
-                <div className="p-6">
-                    <div className="text-center">
-                        <h2 className="text-2xl font-bold mb-4">Gestão de Projetos</h2>
-                        <p className="text-muted-foreground mb-6">
-                            Gerencie e acompanhe todos os seus projetos de TI
-                        </p>
-                        <div className="flex items-center justify-center space-x-4">
-                            <a
-                                href="/projects"
-                                className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2"
-                            >
-                                <Briefcase className="h-4 w-4 mr-2" />
-                                Acessar Projetos
-                            </a>
-                            <a
-                                href="/dashboard"
-                                className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2"
-                            >
-                                <BarChart3 className="h-4 w-4 mr-2" />
-                                Ver Dashboard
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            );
+            case 'projects': return <ProjectManagementApp onBack={() => setActiveTab('dashboard')} />;
             case 'distributors': return <PartnerView partnerType="Distribuidor" />; // PartnerView pode precisar adaptação
             case 'suppliers-register': return <PartnerView partnerType="Fornecedor" />; // PartnerView pode precisar adaptação
             case 'ro-management': return <RoManagementView
@@ -1332,6 +1308,14 @@ export default function App() { // Ou Home
         { category: 'tecnico',    label: 'Técnico',       iconClass: 'nav-icon-tecnico',    items: filteredNavItems.filter(i => ['it-assessment','poc'].includes(i.id)) },
         { category: 'sistema',    label: 'Sistema',       iconClass: 'nav-icon-sistema',    items: filteredNavItems.filter(i => ['settings'].includes(i.id)) },
     ].filter(g => g.items.length > 0);
+
+    if (activeTab === 'projects') {
+        return (
+            <QuoteProvider initialData={quotes}>
+                <ProjectManagementApp onBack={() => setActiveTab('dashboard')} />
+            </QuoteProvider>
+        );
+    }
 
     // **Renderização da UI completa da página principal autenticada**
     return (
