@@ -112,56 +112,56 @@
   }
 
   .dark {
-    /* Dark Theme - Contraste Acessível WCAG AA */
-    --background: 222 47% 8%;
-    --foreground: 210 40% 96%;
-    --card: 222 47% 11%;
-    --card-foreground: 210 40% 96%;
-    --popover: 222 47% 11%;
-    --popover-foreground: 210 40% 96%;
-    --primary: 186 100% 42%;
-    --primary-foreground: 222 47% 8%;
-    --secondary: 217 33% 17%;
-    --secondary-foreground: 210 40% 96%;
-    --muted: 217 33% 14%;
-    --muted-foreground: 215 20% 65%;
-    --accent: 24 100% 58%;
+    /* Dark Theme - Verde Oliva Gradiente & Alta Sofisticação */
+    --background: 140 22% 7%;
+    --foreground: 84 20% 95%;
+    --card: 140 20% 10%;
+    --card-foreground: 84 20% 95%;
+    --popover: 140 20% 10%;
+    --popover-foreground: 84 20% 95%;
+    --primary: 84 81% 44%; /* #65a30d */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 140 20% 14%;
+    --secondary-foreground: 84 20% 95%;
+    --muted: 140 18% 13%;
+    --muted-foreground: 84 15% 65%;
+    --accent: 84 81% 44%;
     --accent-foreground: 0 0% 100%;
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
-    --border: 217 33% 17%;
-    --input: 217 33% 14%;
-    --ring: 186 100% 42%;
+    --border: 140 18% 16%;
+    --input: 140 18% 18%;
+    --ring: 84 81% 44%;
     
-    /* Sidebar Variables - Dark Theme */
-    --sidebar-background: 222 47% 6%;
-    --sidebar-foreground: 210 40% 96%;
-    --sidebar-primary: 186 100% 42%;
-    --sidebar-primary-foreground: 222 47% 8%;
-    --sidebar-accent: 217 33% 14%;
-    --sidebar-accent-foreground: 210 40% 96%;
-    --sidebar-border: 217 33% 17%;
-    --sidebar-ring: 186 100% 42%;
+    /* Sidebar Variables - Dark Theme Verde Oliva */
+    --sidebar-background: 140 26% 6%;
+    --sidebar-foreground: 84 20% 92%;
+    --sidebar-primary: 84 81% 44%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 140 20% 11%;
+    --sidebar-accent-foreground: 84 20% 95%;
+    --sidebar-border: 140 18% 13%;
+    --sidebar-ring: 84 81% 44%;
     
-    /* Chart Colors - Dark Theme */
-    --chart-1: 186 100% 42%;
-    --chart-2: 24 100% 58%;
+    /* Chart Colors - Dark Theme Verde Oliva */
+    --chart-1: 84 81% 44%;
+    --chart-2: 45 95% 55%;
     --chart-3: 152 68% 42%;
-    --chart-4: 45 100% 55%;
+    --chart-4: 175 85% 48%;
     --chart-5: 262 83% 62%;
     --chart-6: 350 80% 58%;
     --chart-7: 220 15% 55%;
-    --chart-8: 186 80% 38%;
+    --chart-8: 84 65% 35%;
     
     /* Chart Colors específicas para tipos de dados - Dark */
-    --chart-revenue: 152 68% 42%;
+    --chart-revenue: 84 81% 44%;
     --chart-cost: 0 72% 51%;
-    --chart-profit: 186 100% 42%;
+    --chart-profit: 84 81% 55%;
     --chart-tax: 350 80% 58%;
     --chart-commission: 45 100% 55%;
-    --chart-growth: 152 68% 42%;
+    --chart-growth: 84 81% 44%;
     --chart-decline: 0 72% 51%;
-    --chart-neutral: 220 15% 55%;
+    --chart-neutral: 140 15% 50%;
   }
   
   /* Modo claro alternativo - Mesmas variáveis do :root */

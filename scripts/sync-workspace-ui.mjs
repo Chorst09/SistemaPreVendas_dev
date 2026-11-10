@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const files = [
   'components/layout/application-shell.tsx', 'components/layout/application-header.tsx',
+  'components/layout/Nav3DIcon.tsx',
   'components/dashboard/DashboardOverview.tsx', 'components/dashboard/MetricCard.tsx',
   'components/dashboard/RevenueChart.tsx', 'components/dashboard/PipelineChart.tsx',
   'components/shared/ModuleLauncher.tsx', 'components/ui/page-header.tsx',

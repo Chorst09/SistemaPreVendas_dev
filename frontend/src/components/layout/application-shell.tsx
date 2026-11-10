@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { BriefcaseBusiness, ChevronDown, ChevronsLeft, ChevronsRight, LogOut, Moon, Sun } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { ApplicationHeader } from './application-header';
+import { Nav3DIcon } from './Nav3DIcon';
 import { Sheet, SheetContent, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { useQuotes } from '@/contexts/QuoteContext';
@@ -62,14 +63,60 @@ export function ApplicationShell({ children, items, activeTab, onNavigate, user,
           {groupItems.map(item => {
             const selected = item.id === activeTab || !!item.subItems?.some(sub => sub.id === activeTab);
             const open = expanded.includes(item.id);
-            if (!item.subItems) return <button type="button" key={item.id} className={cn('app-nav-item', selected && 'is-active', compact && 'is-compact')} aria-current={selected ? 'page' : undefined} title={compact ? item.label : undefined} aria-label={compact ? item.label : undefined} onClick={() => navigate(item.id)}>{item.icon}{!compact && <span>{item.label === 'Dashboard' ? 'Visão geral' : item.label}</span>}</button>;
-            return <div key={item.id}>
-              <button type="button" title={compact ? item.label : undefined} aria-label={compact ? item.label : undefined} className={cn('app-nav-item', selected && 'is-parent-active', compact && 'is-compact')} aria-expanded={!compact && open} aria-controls={!compact && open ? `nav-${surface}-${item.id}` : undefined} onClick={() => {
-                if (compact) { setCollapsed(false); setExpanded(prev => [...prev, item.id]); }
-                else setExpanded(prev => prev.includes(item.id) ? prev.filter(id => id !== item.id) : [...prev, item.id]);
-              }}>{item.icon}{!compact && <><span>{item.label}</span><ChevronDown className={cn('app-nav-chevron', open && 'rotate-180')} /></>}</button>
-              {!compact && open && <div className="app-subnav" id={`nav-${surface}-${item.id}`}>{item.subItems.map(sub => <button type="button" key={sub.id} className={cn('app-nav-item', activeTab === sub.id && 'is-active')} aria-current={activeTab === sub.id ? 'page' : undefined} onClick={() => navigate(sub.id)}>{sub.icon}<span>{sub.label}</span></button>)}</div>}
-            </div>;
+            if (!item.subItems) return (
+              <button
+                type="button"
+                key={item.id}
+                className={cn('app-nav-item group', selected && 'is-active', compact && 'is-compact')}
+                aria-current={selected ? 'page' : undefined}
+                title={compact ? item.label : undefined}
+                aria-label={compact ? item.label : undefined}
+                onClick={() => navigate(item.id)}
+              >
+                <Nav3DIcon id={item.id} size={compact ? 24 : 22} />
+                {!compact && <span>{item.label === 'Dashboard' ? 'Visão geral' : item.label}</span>}
+              </button>
+            );
+            return (
+              <div key={item.id}>
+                <button
+                  type="button"
+                  title={compact ? item.label : undefined}
+                  aria-label={compact ? item.label : undefined}
+                  className={cn('app-nav-item group', selected && 'is-parent-active', compact && 'is-compact')}
+                  aria-expanded={!compact && open}
+                  aria-controls={!compact && open ? `nav-${surface}-${item.id}` : undefined}
+                  onClick={() => {
+                    if (compact) { setCollapsed(false); setExpanded(prev => [...prev, item.id]); }
+                    else setExpanded(prev => prev.includes(item.id) ? prev.filter(id => id !== item.id) : [...prev, item.id]);
+                  }}
+                >
+                  <Nav3DIcon id={item.id} size={compact ? 24 : 22} />
+                  {!compact && (
+                    <>
+                      <span>{item.label}</span>
+                      <ChevronDown className={cn('app-nav-chevron ml-auto', open && 'rotate-180')} />
+                    </>
+                  )}
+                </button>
+                {!compact && open && (
+                  <div className="app-subnav" id={`nav-${surface}-${item.id}`}>
+                    {item.subItems.map(sub => (
+                      <button
+                        type="button"
+                        key={sub.id}
+                        className={cn('app-nav-item group', activeTab === sub.id && 'is-active')}
+                        aria-current={activeTab === sub.id ? 'page' : undefined}
+                        onClick={() => navigate(sub.id)}
+                      >
+                        <Nav3DIcon id={sub.id} size={18} />
+                        <span>{sub.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
           })}
         </div>;
       })}
