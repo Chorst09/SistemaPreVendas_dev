@@ -23,13 +23,13 @@ export function Nav3DIcon({ id, className = '', size = 26 }: Nav3DIconProps) {
         >
           <defs>
             <linearGradient id="db-base" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#84cc16" />
-              <stop offset="50%" stopColor="#4d7c0f" />
-              <stop offset="100%" stopColor="#1e3a0f" />
+              <stop offset="0%" stopColor="#0284c7" />
+              <stop offset="50%" stopColor="#0891b2" />
+              <stop offset="100%" stopColor="#0c2d3e" />
             </linearGradient>
             <linearGradient id="db-bar1" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#bef264" />
-              <stop offset="100%" stopColor="#65a30d" />
+              <stop offset="0%" stopColor="#22d3ee" />
+              <stop offset="100%" stopColor="#06b6d4" />
             </linearGradient>
             <linearGradient id="db-bar2" x1="0%" y1="0%" x2="100%" y2="100%">
               <stop offset="0%" stopColor="#38bdf8" />
@@ -47,7 +47,7 @@ export function Nav3DIcon({ id, className = '', size = 26 }: Nav3DIconProps) {
           {/* Base 3D Platform */}
           <rect x="2" y="3" width="28" height="26" rx="8" fill="url(#db-base)" />
           <rect x="2" y="3" width="28" height="26" rx="8" fill="url(#db-glow)" />
-          <rect x="2.5" y="3.5" width="27" height="25" rx="7.5" stroke="#bef264" strokeOpacity="0.35" />
+          <rect x="2.5" y="3.5" width="27" height="25" rx="7.5" stroke="#38bdf8" strokeOpacity="0.4" />
           {/* 3D Pillars */}
           <rect x="6" y="16" width="5" height="9" rx="2" fill="url(#db-bar1)" />
           <rect x="13.5" y="10" width="5" height="15" rx="2" fill="url(#db-bar2)" />
@@ -70,8 +70,8 @@ export function Nav3DIcon({ id, className = '', size = 26 }: Nav3DIconProps) {
         >
           <defs>
             <linearGradient id="qt-body" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#65a30d" />
-              <stop offset="100%" stopColor="#1e3a0f" />
+              <stop offset="0%" stopColor="#0284c7" />
+              <stop offset="100%" stopColor="#083344" />
             </linearGradient>
             <linearGradient id="qt-coin" x1="0%" y1="0%" x2="100%" y2="100%">
               <stop offset="0%" stopColor="#fde047" />
@@ -79,9 +79,9 @@ export function Nav3DIcon({ id, className = '', size = 26 }: Nav3DIconProps) {
             </linearGradient>
           </defs>
           <rect x="4" y="3" width="24" height="26" rx="6" fill="url(#qt-body)" />
-          <rect x="4.5" y="3.5" width="23" height="25" rx="5.5" stroke="#bef264" strokeOpacity="0.4" />
+          <rect x="4.5" y="3.5" width="23" height="25" rx="5.5" stroke="#38bdf8" strokeOpacity="0.4" />
           {/* Sheet rows */}
-          <rect x="8" y="8" width="10" height="2" rx="1" fill="#bef264" fillOpacity="0.8" />
+          <rect x="8" y="8" width="10" height="2" rx="1" fill="#38bdf8" fillOpacity="0.8" />
           <rect x="8" y="13" width="16" height="2" rx="1" fill="#ffffff" fillOpacity="0.7" />
           <rect x="8" y="18" width="12" height="2" rx="1" fill="#ffffff" fillOpacity="0.5" />
           {/* 3D Coin Badge */}
@@ -213,15 +213,15 @@ export function Nav3DIcon({ id, className = '', size = 26 }: Nav3DIconProps) {
         >
           <defs>
             <linearGradient id="ro-shield" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#84cc16" />
-              <stop offset="50%" stopColor="#4d7c0f" />
-              <stop offset="100%" stopColor="#14532d" />
+              <stop offset="0%" stopColor="#0284c7" />
+              <stop offset="50%" stopColor="#0891b2" />
+              <stop offset="100%" stopColor="#083344" />
             </linearGradient>
           </defs>
           <path
             d="M16 3L26 7.5V15C26 21.5 21.7 26.5 16 29C10.3 26.5 6 21.5 6 15V7.5L16 3Z"
             fill="url(#ro-shield)"
-            stroke="#bef264"
+            stroke="#38bdf8"
             strokeWidth="1.5"
           />
           <path d="M12 15.5L15 18.5L20.5 13" stroke="#ffffff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
@@ -245,7 +245,7 @@ export function Nav3DIcon({ id, className = '', size = 26 }: Nav3DIconProps) {
             </linearGradient>
           </defs>
           <rect x="3" y="4" width="26" height="24" rx="6" fill="url(#roc-bg)" />
-          <path d="M8 22L13 16L18 19L24 10" stroke="#bef264" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+          <path d="M8 22L13 16L18 19L24 10" stroke="#38bdf8" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
           <circle cx="24" cy="10" r="2" fill="#ffffff" />
         </svg>
       );
@@ -287,19 +287,19 @@ export function Nav3DIcon({ id, className = '', size = 26 }: Nav3DIconProps) {
         >
           <defs>
             <linearGradient id="calc-body" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#4d7c0f" />
-              <stop offset="100%" stopColor="#1e3a0f" />
+              <stop offset="0%" stopColor="#0369a1" />
+              <stop offset="100%" stopColor="#082f49" />
             </linearGradient>
           </defs>
           <rect x="5" y="3" width="22" height="26" rx="6" fill="url(#calc-body)" />
-          <rect x="5.5" y="3.5" width="21" height="25" rx="5.5" stroke="#a3e635" strokeOpacity="0.5" />
+          <rect x="5.5" y="3.5" width="21" height="25" rx="5.5" stroke="#38bdf8" strokeOpacity="0.5" />
           {/* Screen */}
           <rect x="8" y="7" width="16" height="5" rx="2" fill="#0f172a" />
-          <rect x="18" y="8.5" width="4" height="2" rx="0.5" fill="#a3e635" />
+          <rect x="18" y="8.5" width="4" height="2" rx="0.5" fill="#38bdf8" />
           {/* Buttons */}
-          <circle cx="10" cy="16" r="1.5" fill="#bef264" />
-          <circle cx="16" cy="16" r="1.5" fill="#bef264" />
-          <circle cx="22" cy="16" r="1.5" fill="#bef264" />
+          <circle cx="10" cy="16" r="1.5" fill="#38bdf8" />
+          <circle cx="16" cy="16" r="1.5" fill="#38bdf8" />
+          <circle cx="22" cy="16" r="1.5" fill="#38bdf8" />
           <circle cx="10" cy="21" r="1.5" fill="#ffffff" fillOpacity="0.7" />
           <circle cx="16" cy="21" r="1.5" fill="#ffffff" fillOpacity="0.7" />
           <circle cx="22" cy="21" r="1.5" fill="#f59e0b" />
@@ -326,8 +326,8 @@ export function Nav3DIcon({ id, className = '', size = 26 }: Nav3DIconProps) {
           <ellipse cx="16" cy="16" rx="12" ry="4.5" stroke="#ffffff" strokeOpacity="0.6" strokeWidth="1" />
           <line x1="16" y1="4" x2="16" y2="28" stroke="#ffffff" strokeOpacity="0.6" strokeWidth="1" />
           {/* Radar Blip */}
-          <circle cx="20" cy="12" r="2" fill="#bef264" />
-          <circle cx="20" cy="12" r="4" stroke="#bef264" strokeOpacity="0.7" strokeWidth="0.8" />
+          <circle cx="20" cy="12" r="2" fill="#38bdf8" />
+          <circle cx="20" cy="12" r="4" stroke="#38bdf8" strokeOpacity="0.7" strokeWidth="0.8" />
         </svg>
       );
 
@@ -352,7 +352,7 @@ export function Nav3DIcon({ id, className = '', size = 26 }: Nav3DIconProps) {
           <path d="M10 16C10 12.7 12.7 10 16 10C19.3 10 22 12.7 22 16V19" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" />
           <rect x="8" y="15" width="4" height="6" rx="2" fill="#a5b4fc" />
           <rect x="20" y="15" width="4" height="6" rx="2" fill="#a5b4fc" />
-          <path d="M22 19C22 21 19 22 17 22" stroke="#bef264" strokeWidth="1.5" strokeLinecap="round" />
+          <path d="M22 19C22 21 19 22 17 22" stroke="#38bdf8" strokeWidth="1.5" strokeLinecap="round" />
         </svg>
       );
 
@@ -377,7 +377,7 @@ export function Nav3DIcon({ id, className = '', size = 26 }: Nav3DIconProps) {
           <path d="M9 11V6C9 5 10 4 11 4H21C22 4 23 5 23 6V11" fill="#fbcfe8" />
           {/* Printed paper bottom */}
           <path d="M9 20V27C9 27.5 10 28 11 28H21C22 28 23 27.5 23 27V20" fill="#ffffff" />
-          <rect x="12" y="23" width="8" height="1.5" rx="0.5" fill="#84cc16" />
+          <rect x="12" y="23" width="8" height="1.5" rx="0.5" fill="#38bdf8" />
         </svg>
       );
 
@@ -403,7 +403,7 @@ export function Nav3DIcon({ id, className = '', size = 26 }: Nav3DIconProps) {
               <stop offset="100%" stopColor="#713f12" />
             </linearGradient>
           </defs>
-          <rect x="4" y="4" width="24" height="24" rx="6" fill="#14532d" stroke="#84cc16" strokeOpacity="0.4" />
+          <rect x="4" y="4" width="24" height="24" rx="6" fill="#082f49" stroke="#38bdf8" strokeOpacity="0.4" />
           {/* 3D Gavel */}
           <path d="M12 10L17 5L20 8L15 13L12 10Z" fill="url(#bid-gavel)" stroke="#fef08a" strokeWidth="0.8" />
           <path d="M15 12L7 20L9 22L17 14" stroke="#eab308" strokeWidth="2.2" strokeLinecap="round" />
@@ -423,15 +423,15 @@ export function Nav3DIcon({ id, className = '', size = 26 }: Nav3DIconProps) {
         >
           <defs>
             <linearGradient id="prj-bg" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#059669" />
-              <stop offset="100%" stopColor="#064e3b" />
+              <stop offset="0%" stopColor="#0284c7" />
+              <stop offset="100%" stopColor="#082f49" />
             </linearGradient>
           </defs>
           <rect x="3" y="4" width="26" height="24" rx="6" fill="url(#prj-bg)" />
           {/* Kanban Columns */}
           <rect x="6" y="8" width="5.5" height="16" rx="2" fill="#ffffff" fillOpacity="0.3" />
-          <rect x="13.2" y="8" width="5.5" height="11" rx="2" fill="#a7f3d0" />
-          <rect x="20.5" y="8" width="5.5" height="14" rx="2" fill="#bef264" />
+          <rect x="13.2" y="8" width="5.5" height="11" rx="2" fill="#38bdf8" />
+          <rect x="20.5" y="8" width="5.5" height="14" rx="2" fill="#22d3ee" />
         </svg>
       );
 
@@ -452,9 +452,9 @@ export function Nav3DIcon({ id, className = '', size = 26 }: Nav3DIconProps) {
               <stop offset="100%" stopColor="#1e293b" />
             </linearGradient>
           </defs>
-          <rect x="4" y="4" width="24" height="24" rx="6" fill="url(#gear-metal)" stroke="#84cc16" strokeOpacity="0.3" />
-          <circle cx="16" cy="16" r="6" stroke="#84cc16" strokeWidth="2.5" strokeDasharray="3 2" />
-          <circle cx="16" cy="16" r="3" fill="#84cc16" />
+          <rect x="4" y="4" width="24" height="24" rx="6" fill="url(#gear-metal)" stroke="#38bdf8" strokeOpacity="0.3" />
+          <circle cx="16" cy="16" r="6" stroke="#38bdf8" strokeWidth="2.5" strokeDasharray="3 2" />
+          <circle cx="16" cy="16" r="3" fill="#38bdf8" />
         </svg>
       );
 
@@ -468,8 +468,8 @@ export function Nav3DIcon({ id, className = '', size = 26 }: Nav3DIconProps) {
           xmlns="http://www.w3.org/2000/svg"
           className={`shrink-0 drop-shadow-md transition-transform duration-200 group-hover:scale-110 ${className}`}
         >
-          <rect x="4" y="4" width="24" height="24" rx="6" fill="#3f6212" stroke="#bef264" strokeOpacity="0.4" />
-          <circle cx="16" cy="16" r="4" fill="#84cc16" />
+          <rect x="4" y="4" width="24" height="24" rx="6" fill="#082f49" stroke="#38bdf8" strokeOpacity="0.4" />
+          <circle cx="16" cy="16" r="4" fill="#38bdf8" />
         </svg>
       );
   }

@@ -112,56 +112,56 @@
   }
 
   .dark {
-    /* Dark Theme - Verde Oliva Gradiente & Alta Sofisticação */
-    --background: 140 22% 7%;
-    --foreground: 84 20% 95%;
-    --card: 140 20% 10%;
-    --card-foreground: 84 20% 95%;
-    --popover: 140 20% 10%;
-    --popover-foreground: 84 20% 95%;
-    --primary: 84 81% 44%; /* #65a30d */
+    /* Dark Theme - Petrol Navy / Deep Teal Gradient & Cyan Accents */
+    --background: 213 45% 6%; /* #070e17 */
+    --foreground: 210 40% 96%; /* Crisp off-white */
+    --card: 212 40% 9%; /* #0b1723 */
+    --card-foreground: 210 40% 96%;
+    --popover: 212 40% 9%;
+    --popover-foreground: 210 40% 96%;
+    --primary: 199 89% 48%; /* Electric Cyan/Sky #0284c7 */
     --primary-foreground: 0 0% 100%;
-    --secondary: 140 20% 14%;
-    --secondary-foreground: 84 20% 95%;
-    --muted: 140 18% 13%;
-    --muted-foreground: 84 15% 65%;
-    --accent: 84 81% 44%;
+    --secondary: 206 53% 13%;
+    --secondary-foreground: 210 40% 95%;
+    --muted: 209 50% 11%;
+    --muted-foreground: 215 16% 65%;
+    --accent: 189 94% 43%;
     --accent-foreground: 0 0% 100%;
-    --destructive: 0 72% 51%;
+    --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
-    --border: 140 18% 16%;
-    --input: 140 18% 18%;
-    --ring: 84 81% 44%;
+    --border: 205 35% 17%;
+    --input: 208 35% 16%;
+    --ring: 199 89% 48%;
     
-    /* Sidebar Variables - Dark Theme Verde Oliva */
-    --sidebar-background: 140 26% 6%;
-    --sidebar-foreground: 84 20% 92%;
-    --sidebar-primary: 84 81% 44%;
+    /* Sidebar Variables - Dark Theme Petrol */
+    --sidebar-background: 213 48% 5%;
+    --sidebar-foreground: 210 40% 92%;
+    --sidebar-primary: 199 89% 48%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 140 20% 11%;
-    --sidebar-accent-foreground: 84 20% 95%;
-    --sidebar-border: 140 18% 13%;
-    --sidebar-ring: 84 81% 44%;
+    --sidebar-accent: 208 45% 11%;
+    --sidebar-accent-foreground: 210 40% 95%;
+    --sidebar-border: 205 35% 14%;
+    --sidebar-ring: 199 89% 48%;
     
-    /* Chart Colors - Dark Theme Verde Oliva */
-    --chart-1: 84 81% 44%;
-    --chart-2: 45 95% 55%;
-    --chart-3: 152 68% 42%;
-    --chart-4: 175 85% 48%;
-    --chart-5: 262 83% 62%;
+    /* Chart Colors - Dark Theme Petrol & Vibrant Signals */
+    --chart-1: 199 89% 48%;
+    --chart-2: 35 95% 52%;
+    --chart-3: 152 75% 42%;
+    --chart-4: 189 94% 43%;
+    --chart-5: 221 83% 53%;
     --chart-6: 350 80% 58%;
-    --chart-7: 220 15% 55%;
-    --chart-8: 84 65% 35%;
+    --chart-7: 215 16% 65%;
+    --chart-8: 199 70% 35%;
     
     /* Chart Colors específicas para tipos de dados - Dark */
-    --chart-revenue: 84 81% 44%;
-    --chart-cost: 0 72% 51%;
-    --chart-profit: 84 81% 55%;
+    --chart-revenue: 152 75% 42%;
+    --chart-cost: 0 84% 60%;
+    --chart-profit: 199 89% 48%;
     --chart-tax: 350 80% 58%;
-    --chart-commission: 45 100% 55%;
-    --chart-growth: 84 81% 44%;
-    --chart-decline: 0 72% 51%;
-    --chart-neutral: 140 15% 50%;
+    --chart-commission: 35 95% 52%;
+    --chart-growth: 152 75% 42%;
+    --chart-decline: 0 84% 60%;
+    --chart-neutral: 215 16% 55%;
   }
   
   /* Modo claro alternativo - Mesmas variáveis do :root */

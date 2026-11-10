@@ -20,7 +20,7 @@ const ADMIN_PASSWORD = 'Double@2026';
 function createAdminUser(): SystemUser {
   return {
     id: 'admin-chorstconsult',
-    name: 'Administrador Chorst',
+    name: 'Carlos Horst',
     email: ADMIN_EMAIL,
     password: ADMIN_PASSWORD,
     role: 'admin',
