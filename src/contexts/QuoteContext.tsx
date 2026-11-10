@@ -15,7 +15,7 @@ interface QuoteContextType {
 }
 
 export const QuoteContext = createContext<QuoteContextType | undefined>(undefined);
-const QUOTES_STORAGE_KEY = 'quotes-storage-v1';
+const QUOTES_STORAGE_KEY = 'quotes-storage-v3';
 
 interface QuoteProviderProps {
   children: ReactNode;
@@ -30,8 +30,12 @@ export function QuoteProvider({ children, initialData = initialQuotes }: QuotePr
       const storedQuotes = localStorage.getItem(QUOTES_STORAGE_KEY);
       if (storedQuotes) {
         const parsed = JSON.parse(storedQuotes);
-        if (Array.isArray(parsed)) {
-          return parsed;
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          const currentYear = new Date().getFullYear().toString();
+          const hasRecentQuotes = parsed.some((q: Quote) => q.date && q.date.startsWith(currentYear));
+          if (hasRecentQuotes) {
+            return parsed;
+          }
         }
       }
     } catch (error) {

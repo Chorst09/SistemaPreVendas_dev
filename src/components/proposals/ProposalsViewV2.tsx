@@ -19,6 +19,9 @@ import {
   XCircle,
   AlertCircle,
   Eye,
+  Sparkles,
+  Building,
+  TrendingUp,
 } from 'lucide-react';
 import type { Proposal, Partner } from '@/lib/types';
 import { Button } from '@/components/ui/button';
@@ -28,7 +31,6 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { PageHeader } from '@/components/ui/page-header';
 import { EmptyState } from '@/components/ui/empty-state';
-import { StatCard } from '@/components/ui/enhanced-card';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -53,11 +55,46 @@ interface ProposalsViewV2Props {
 }
 
 const STATUS_CONFIG = {
-  'Rascunho': { icon: FileText, color: 'text-muted-foreground', bg: 'bg-muted', label: 'Rascunho' },
-  'Enviada': { icon: Clock, color: 'text-blue-600', bg: 'bg-blue-100', label: 'Enviada' },
-  'Em Análise': { icon: AlertCircle, color: 'text-yellow-600', bg: 'bg-yellow-100', label: 'Em Análise' },
-  'Aprovada': { icon: CheckCircle2, color: 'text-green-600', bg: 'bg-green-100', label: 'Aprovada' },
-  'Rejeitada': { icon: XCircle, color: 'text-red-600', bg: 'bg-red-100', label: 'Rejeitada' },
+  'Rascunho': {
+    icon: FileText,
+    color: 'text-muted-foreground',
+    bg: 'bg-muted border-border',
+    bar: 'bg-muted-foreground',
+    dot: 'bg-muted-foreground',
+    label: 'Rascunho',
+  },
+  'Enviada': {
+    icon: Clock,
+    color: 'text-blue-500',
+    bg: 'bg-blue-500/10 border-blue-500/25',
+    bar: 'bg-blue-500',
+    dot: 'bg-blue-500',
+    label: 'Enviada ao Cliente',
+  },
+  'Em Análise': {
+    icon: AlertCircle,
+    color: 'text-amber-500',
+    bg: 'bg-amber-500/10 border-amber-500/25',
+    bar: 'bg-amber-500',
+    dot: 'bg-amber-500',
+    label: 'Em Análise pelo Cliente',
+  },
+  'Aprovada': {
+    icon: CheckCircle2,
+    color: 'text-emerald-500',
+    bg: 'bg-emerald-500/10 border-emerald-500/25',
+    bar: 'bg-emerald-500',
+    dot: 'bg-emerald-500',
+    label: 'Aprovada / Fechada',
+  },
+  'Rejeitada': {
+    icon: XCircle,
+    color: 'text-rose-500',
+    bg: 'bg-rose-500/10 border-rose-500/25',
+    bar: 'bg-rose-500',
+    dot: 'bg-rose-500',
+    label: 'Recusada',
+  },
 } as const;
 
 export default function ProposalsViewV2({
@@ -101,11 +138,11 @@ export default function ProposalsViewV2({
   // Statistics
   const stats = useMemo(() => {
     const total = proposals.length;
-    const totalValue = proposals.reduce((sum, p) => sum + p.value, 0);
+    const totalValue = proposals.reduce((sum, p) => sum + (p.value || 0), 0);
     const approved = proposals.filter((p) => p.status === 'Aprovada').length;
     const approvedValue = proposals
       .filter((p) => p.status === 'Aprovada')
-      .reduce((sum, p) => sum + p.value, 0);
+      .reduce((sum, p) => sum + (p.value || 0), 0);
     const pending = proposals.filter(
       (p) => p.status === 'Enviada' || p.status === 'Em Análise'
     ).length;
@@ -139,108 +176,176 @@ export default function ProposalsViewV2({
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
       currency: 'BRL',
+      maximumFractionDigits: 0,
     }).format(value);
   };
 
   const formatDate = (dateString: string) => {
+    if (!dateString) return 'Data não informada';
     return new Date(dateString).toLocaleDateString('pt-BR');
   };
 
-  return (
-    <div className="space-y-6">
-      {/* Header */}
-      <PageHeader
-        title="Propostas Comerciais"
-        description="Gerencie todas as suas propostas em um só lugar"
-        icon={<FileText className="h-6 w-6" />}
-        actions={
-          <Button onClick={handleNew} size="lg" className="gap-2">
-            <PlusCircle className="h-5 w-5" />
-            Nova Proposta
-          </Button>
-        }
-      />
+  const getDaysRemaining = (expiryDateString: string) => {
+    if (!expiryDateString) return null;
+    const expiry = new Date(expiryDateString);
+    const diff = Math.ceil((expiry.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
+    return diff;
+  };
 
-      {/* Stats */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <StatCard
-          label="Total de Propostas"
-          value={stats.total}
-          icon={<FileText className="h-5 w-5" />}
-        />
-        <StatCard
-          label="Valor Total"
-          value={formatCurrency(stats.totalValue)}
-          icon={<DollarSign className="h-5 w-5" />}
-        />
-        <StatCard
-          label="Propostas Aprovadas"
-          value={stats.approved}
-          icon={<CheckCircle2 className="h-5 w-5" />}
-        />
-        <StatCard
-          label="Em Análise"
-          value={stats.pending}
-          icon={<Clock className="h-5 w-5" />}
-        />
+  // Status pills
+  const statusTabs = [
+    { id: 'all', label: 'Todas', count: proposals.length },
+    { id: 'Em Análise', label: 'Em Análise', count: proposals.filter((p) => p.status === 'Em Análise').length },
+    { id: 'Enviada', label: 'Enviadas', count: proposals.filter((p) => p.status === 'Enviada').length },
+    { id: 'Aprovada', label: 'Aprovadas', count: proposals.filter((p) => p.status === 'Aprovada').length },
+    { id: 'Rascunho', label: 'Rascunhos', count: proposals.filter((p) => p.status === 'Rascunho').length },
+  ];
+
+  return (
+    <div className="space-y-6 pb-12">
+      {/* Header */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-primary">
+            <Sparkles className="h-3.5 w-3.5" />
+            Documentação Comercial & Validade
+          </div>
+          <h1 className="mt-1 text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+            Propostas Comerciais
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            Gerencie minutas, escopo técnico, valores e prazos de validade jurídica das propostas.
+          </p>
+        </div>
+
+        <Button onClick={handleNew} size="lg" className="gap-2 shadow-md hover:shadow-lg">
+          <PlusCircle className="h-5 w-5" />
+          Nova Proposta
+        </Button>
+      </div>
+
+      {/* Stats Cards */}
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="rounded-xl border border-border/60 bg-gradient-to-br from-card to-card/80 p-5 shadow-sm">
+          <div className="flex items-center justify-between text-muted-foreground text-xs font-medium">
+            <span>Total de Propostas</span>
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
+              <FileText className="h-4 w-4" />
+            </div>
+          </div>
+          <div className="mt-2 text-2xl font-bold tracking-tight text-foreground">
+            {stats.total}
+          </div>
+          <p className="mt-1 text-xs text-muted-foreground">Documentos emitidos</p>
+        </div>
+
+        <div className="rounded-xl border border-border/60 bg-gradient-to-br from-card to-card/80 p-5 shadow-sm">
+          <div className="flex items-center justify-between text-muted-foreground text-xs font-medium">
+            <span>Valor Total Ofertado</span>
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
+              <DollarSign className="h-4 w-4" />
+            </div>
+          </div>
+          <div className="mt-2 text-2xl font-bold tracking-tight text-foreground">
+            {formatCurrency(stats.totalValue)}
+          </div>
+          <p className="mt-1 text-xs text-muted-foreground">Volume de propostas no ar</p>
+        </div>
+
+        <div className="rounded-xl border border-border/60 bg-gradient-to-br from-card to-card/80 p-5 shadow-sm">
+          <div className="flex items-center justify-between text-muted-foreground text-xs font-medium">
+            <span>Propostas Aprovadas</span>
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-500">
+              <CheckCircle2 className="h-4 w-4" />
+            </div>
+          </div>
+          <div className="mt-2 flex items-baseline gap-2">
+            <span className="text-2xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400">
+              {stats.approved}
+            </span>
+            <Badge variant="outline" className="text-[10px] bg-emerald-500/10 text-emerald-600 border-emerald-500/20">
+              {formatCurrency(stats.approvedValue)}
+            </Badge>
+          </div>
+          <p className="mt-1 text-xs text-muted-foreground">Contratos fechados</p>
+        </div>
+
+        <div className="rounded-xl border border-border/60 bg-gradient-to-br from-card to-card/80 p-5 shadow-sm">
+          <div className="flex items-center justify-between text-muted-foreground text-xs font-medium">
+            <span>Em Negociação Ativa</span>
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-500/10 text-amber-500">
+              <Clock className="h-4 w-4" />
+            </div>
+          </div>
+          <div className="mt-2 text-2xl font-bold tracking-tight text-amber-600 dark:text-amber-400">
+            {stats.pending}
+          </div>
+          <p className="mt-1 text-xs text-muted-foreground">Enviadas ou em análise no cliente</p>
+        </div>
+      </div>
+
+      {/* Quick Status Pills */}
+      <div className="flex flex-wrap items-center gap-2 border-b border-border/50 pb-3">
+        {statusTabs.map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => setStatusFilter(tab.id)}
+            className={cn(
+              'inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-all',
+              statusFilter === tab.id
+                ? 'bg-primary text-primary-foreground shadow-sm'
+                : 'bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground'
+            )}
+          >
+            <span>{tab.label}</span>
+            <span
+              className={cn(
+                'rounded-full px-1.5 py-0.2 text-[10px] font-bold',
+                statusFilter === tab.id
+                  ? 'bg-primary-foreground/20 text-primary-foreground'
+                  : 'bg-background text-muted-foreground'
+              )}
+            >
+              {tab.count}
+            </span>
+          </button>
+        ))}
       </div>
 
       {/* Filters */}
-      <Card>
-        <CardContent className="pt-6">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-            {/* Search */}
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                placeholder="Buscar por título, cliente ou ID..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
-            </div>
+      <div className="flex flex-col gap-3 rounded-xl border border-border/60 bg-card p-4 shadow-sm sm:flex-row sm:items-center">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            placeholder="Buscar por código (PROP-001), cliente ou título..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-9 h-10 bg-background"
+          />
+        </div>
 
-            {/* Status Filter */}
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-full sm:w-[180px]">
-                <Filter className="mr-2 h-4 w-4" />
-                <SelectValue placeholder="Status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos os status</SelectItem>
-                {Object.keys(STATUS_CONFIG).map((status) => (
-                  <SelectItem key={status} value={status}>
-                    {status}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            {/* Manager Filter */}
-            {managers.length > 0 && (
-              <Select value={managerFilter} onValueChange={setManagerFilter}>
-                <SelectTrigger className="w-full sm:w-[200px]">
-                  <User className="mr-2 h-4 w-4" />
-                  <SelectValue placeholder="Responsável" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos</SelectItem>
-                  {managers.map((manager) => (
-                    <SelectItem key={manager} value={manager}>
-                      {manager}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )}
-          </div>
-        </CardContent>
-      </Card>
+        {managers.length > 0 && (
+          <Select value={managerFilter} onValueChange={setManagerFilter}>
+            <SelectTrigger className="w-full sm:w-[220px] h-10 bg-background">
+              <User className="mr-2 h-4 w-4 text-muted-foreground" />
+              <SelectValue placeholder="Responsável" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos os responsáveis</SelectItem>
+              {managers.map((manager) => (
+                <SelectItem key={manager} value={manager}>
+                  {manager}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
+      </div>
 
       {/* Proposals List */}
       {filteredProposals.length === 0 ? (
         <EmptyState
-          icon={<FileText className="h-12 w-12" />}
+          icon={<FileText className="h-12 w-12 text-muted-foreground" />}
           title={
             searchTerm || statusFilter !== 'all' || managerFilter !== 'all'
               ? 'Nenhuma proposta encontrada'
@@ -248,8 +353,8 @@ export default function ProposalsViewV2({
           }
           description={
             searchTerm || statusFilter !== 'all' || managerFilter !== 'all'
-              ? 'Tente ajustar os filtros de busca para encontrar o que procura'
-              : 'Crie sua primeira proposta comercial e comece a gerenciar oportunidades'
+              ? 'Tente ajustar os filtros de busca para encontrar o que procura.'
+              : 'Crie sua primeira proposta comercial e comece a gerenciar oportunidades.'
           }
           actions={
             searchTerm || statusFilter !== 'all' || managerFilter !== 'all'
@@ -274,122 +379,149 @@ export default function ProposalsViewV2({
           }
         />
       ) : (
-        <div className="space-y-3">
+        <div className="grid gap-4">
           {filteredProposals.map((proposal) => {
-            const statusConfig = STATUS_CONFIG[proposal.status];
+            const statusConfig = STATUS_CONFIG[proposal.status as keyof typeof STATUS_CONFIG] || {
+              icon: FileText,
+              color: 'text-muted-foreground',
+              bg: 'bg-muted',
+              bar: 'bg-muted-foreground',
+              dot: 'bg-muted-foreground',
+              label: proposal.status,
+            };
             const StatusIcon = statusConfig.icon;
+            const daysRemaining = getDaysRemaining(proposal.expiryDate);
 
             return (
-              <Card
+              <div
                 key={proposal.id}
-                className="group transition-all hover:shadow-md hover:border-primary/50"
+                className="group relative overflow-hidden rounded-xl border border-border/60 bg-card p-5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-md"
               >
-                <CardContent className="p-6">
-                  <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
-                    {/* Status Icon */}
-                    <div
-                      className={cn(
-                        'flex h-12 w-12 shrink-0 items-center justify-center rounded-lg',
-                        statusConfig.bg
+                {/* Accent bar */}
+                <div className={cn('absolute left-0 top-0 bottom-0 w-1.5', statusConfig.bar)} />
+
+                <div className="flex flex-col gap-4 pl-2 lg:flex-row lg:items-center lg:justify-between">
+                  {/* Left Info */}
+                  <div className="space-y-2 min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="font-mono text-xs font-bold text-primary bg-primary/10 px-2.5 py-0.5 rounded-md">
+                        {proposal.id}
+                      </span>
+                      <span
+                        className={cn(
+                          'inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium',
+                          statusConfig.bg,
+                          statusConfig.color
+                        )}
+                      >
+                        <span className={cn('h-1.5 w-1.5 rounded-full', statusConfig.dot)} />
+                        {statusConfig.label}
+                      </span>
+                      {daysRemaining !== null && (
+                        <span
+                          className={cn(
+                            'text-[11px] font-medium px-2 py-0.5 rounded-md border',
+                            daysRemaining < 0
+                              ? 'bg-rose-500/10 text-rose-500 border-rose-500/20'
+                              : daysRemaining <= 7
+                              ? 'bg-amber-500/10 text-amber-600 border-amber-500/20'
+                              : 'bg-muted/40 text-muted-foreground border-border/50'
+                          )}
+                        >
+                          {daysRemaining < 0
+                            ? 'Vencida'
+                            : daysRemaining === 0
+                            ? 'Vence hoje'
+                            : `Vence em ${daysRemaining}d`}
+                        </span>
                       )}
-                    >
-                      <StatusIcon className={cn('h-6 w-6', statusConfig.color)} />
                     </div>
 
-                    {/* Content */}
-                    <div className="min-w-0 flex-1 space-y-3">
-                      {/* Header */}
-                      <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-                        <div className="space-y-1">
-                          <div className="flex items-center gap-2">
-                            <Badge variant="outline" className="text-xs">
-                              {proposal.id}
-                            </Badge>
-                            <Badge
-                              className={cn(
-                                'text-xs',
-                                statusConfig.color,
-                                statusConfig.bg
-                              )}
-                            >
-                              {statusConfig.label}
-                            </Badge>
-                          </div>
-                          <h3 className="text-lg font-semibold text-foreground">
-                            {proposal.title}
-                          </h3>
-                        </div>
+                    <h3 className="text-base font-semibold text-foreground group-hover:text-primary transition-colors">
+                      {proposal.title}
+                    </h3>
 
-                        {/* Actions */}
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                              <MoreVertical className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => setViewingProposal(proposal)}>
-                              <Eye className="mr-2 h-4 w-4" />
-                              Visualizar
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleEdit(proposal)}>
-                              <Edit className="mr-2 h-4 w-4" />
-                              Editar
-                            </DropdownMenuItem>
-                            {proposal.proposalFile && (
-                              <DropdownMenuItem>
-                                <FileDown className="mr-2 h-4 w-4" />
-                                Baixar PDF
-                              </DropdownMenuItem>
-                            )}
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem
-                              onClick={() => handleDelete(proposal.id)}
-                              className="text-destructive"
-                            >
-                              <Trash2 className="mr-2 h-4 w-4" />
-                              Excluir
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
+                    {proposal.description && (
+                      <p className="text-xs text-muted-foreground line-clamp-1 max-w-2xl">
+                        {proposal.description}
+                      </p>
+                    )}
+
+                    <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground pt-1">
+                      <div className="flex items-center gap-1.5">
+                        <Building className="h-3.5 w-3.5 text-muted-foreground" />
+                        <span className="font-medium text-foreground">{proposal.client}</span>
                       </div>
-
-                      {/* Details */}
-                      <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
-                        <div className="flex items-center gap-1.5">
-                          <User className="h-4 w-4" />
-                          <span>{proposal.client}</span>
-                        </div>
-                        <div className="flex items-center gap-1.5">
-                          <DollarSign className="h-4 w-4" />
-                          <span className="font-semibold text-foreground">
-                            {formatCurrency(proposal.value)}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-1.5">
-                          <User className="h-4 w-4" />
-                          <span>{proposal.accountManager}</span>
-                        </div>
-                        <div className="flex items-center gap-1.5">
-                          <Calendar className="h-4 w-4" />
-                          <span>Criada: {formatDate(proposal.date)}</span>
-                        </div>
-                        <div className="flex items-center gap-1.5">
-                          <Calendar className="h-4 w-4" />
-                          <span>Vence: {formatDate(proposal.expiryDate)}</span>
-                        </div>
+                      <div className="flex items-center gap-1.5">
+                        <User className="h-3.5 w-3.5 text-muted-foreground" />
+                        <span>{proposal.accountManager || 'Carlos Horst'}</span>
                       </div>
-
-                      {/* Description */}
-                      {proposal.description && (
-                        <p className="text-sm text-muted-foreground line-clamp-2">
-                          {proposal.description}
-                        </p>
-                      )}
+                      <div className="flex items-center gap-1.5">
+                        <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
+                        <span>Emissão: {formatDate(proposal.date)}</span>
+                      </div>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
+
+                  {/* Right Value & Actions */}
+                  <div className="flex flex-wrap items-center justify-between lg:justify-end gap-4 border-t lg:border-t-0 pt-3 lg:pt-0 border-border/50 shrink-0">
+                    <div className="text-left lg:text-right">
+                      <span className="text-[11px] uppercase tracking-wider text-muted-foreground font-medium">Valor da Proposta</span>
+                      <p className="text-xl font-bold tracking-tight text-foreground">
+                        {formatCurrency(proposal.value)}
+                      </p>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setViewingProposal(proposal)}
+                        className="gap-1.5 text-xs"
+                      >
+                        <Eye className="h-3.5 w-3.5" />
+                        Ver
+                      </Button>
+
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleEdit(proposal)}
+                        className="gap-1.5 text-xs text-primary hover:text-primary hover:bg-primary/10"
+                      >
+                        <Edit className="h-3.5 w-3.5" />
+                        Editar
+                      </Button>
+
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                            <MoreVertical className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => setViewingProposal(proposal)}>
+                            <Eye className="mr-2 h-4 w-4" />
+                            Visualizar detalhes
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleEdit(proposal)}>
+                            <Edit className="mr-2 h-4 w-4" />
+                            Editar
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem
+                            onClick={() => handleDelete(proposal.id)}
+                            className="text-destructive focus:text-destructive"
+                          >
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Excluir
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                  </div>
+                </div>
+              </div>
             );
           })}
         </div>
@@ -400,7 +532,7 @@ export default function ProposalsViewV2({
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
-              {editingProposal ? 'Editar Proposta' : 'Nova Proposta'}
+              {editingProposal ? 'Editar Proposta Comercial' : 'Nova Proposta Comercial'}
             </DialogTitle>
           </DialogHeader>
           <ProposalForm
@@ -415,52 +547,72 @@ export default function ProposalsViewV2({
         </DialogContent>
       </Dialog>
 
-      {/* View Dialog */}
+      {/* View Details Dialog */}
       {viewingProposal && (
         <Dialog open={!!viewingProposal} onOpenChange={() => setViewingProposal(null)}>
-          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="max-w-2xl">
             <DialogHeader>
-              <DialogTitle>{viewingProposal.title}</DialogTitle>
+              <DialogTitle className="flex items-center gap-2">
+                <span className="font-mono text-sm bg-primary/10 text-primary px-2.5 py-1 rounded-md">
+                  {viewingProposal.id}
+                </span>
+                <span>{viewingProposal.title}</span>
+              </DialogTitle>
             </DialogHeader>
-            <div className="space-y-4">
-              <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-4 pt-4 text-sm">
+              <div className="grid grid-cols-2 gap-4 rounded-xl border border-border/60 bg-muted/20 p-4">
                 <div>
-                  <label className="text-sm font-medium text-muted-foreground">
-                    Cliente
-                  </label>
-                  <p className="text-base font-semibold">{viewingProposal.client}</p>
+                  <span className="text-xs text-muted-foreground">Cliente</span>
+                  <p className="font-semibold text-foreground">{viewingProposal.client}</p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-muted-foreground">
-                    Valor
-                  </label>
-                  <p className="text-base font-semibold">
-                    {formatCurrency(viewingProposal.value)}
-                  </p>
+                  <span className="text-xs text-muted-foreground">Valor Total</span>
+                  <p className="text-lg font-bold text-foreground">{formatCurrency(viewingProposal.value)}</p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-muted-foreground">
-                    Status
-                  </label>
-                  <p className="text-base font-semibold">{viewingProposal.status}</p>
+                  <span className="text-xs text-muted-foreground">Responsável Técnico/Comercial</span>
+                  <p className="font-medium text-foreground">{viewingProposal.accountManager}</p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-muted-foreground">
-                    Responsável
-                  </label>
-                  <p className="text-base font-semibold">
-                    {viewingProposal.accountManager}
-                  </p>
+                  <span className="text-xs text-muted-foreground">Status</span>
+                  <p className="font-medium text-foreground">{viewingProposal.status}</p>
+                </div>
+                <div>
+                  <span className="text-xs text-muted-foreground">Data de Emissão</span>
+                  <p className="font-medium text-foreground">{formatDate(viewingProposal.date)}</p>
+                </div>
+                <div>
+                  <span className="text-xs text-muted-foreground">Validade da Proposta</span>
+                  <p className="font-medium text-foreground">{formatDate(viewingProposal.expiryDate)}</p>
                 </div>
               </div>
+
               {viewingProposal.description && (
                 <div>
-                  <label className="text-sm font-medium text-muted-foreground">
-                    Descrição
-                  </label>
-                  <p className="text-base">{viewingProposal.description}</p>
+                  <h4 className="font-semibold text-xs text-muted-foreground uppercase tracking-wider mb-1">
+                    Escopo do Projeto
+                  </h4>
+                  <p className="text-muted-foreground leading-relaxed bg-card p-3 rounded-lg border border-border/50">
+                    {viewingProposal.description}
+                  </p>
                 </div>
               )}
+
+              <div className="flex justify-end gap-2 pt-2">
+                <Button variant="outline" onClick={() => setViewingProposal(null)}>
+                  Fechar
+                </Button>
+                <Button
+                  onClick={() => {
+                    handleEdit(viewingProposal);
+                    setViewingProposal(null);
+                  }}
+                  className="gap-1.5"
+                >
+                  <Edit className="h-4 w-4" />
+                  Editar Proposta
+                </Button>
+              </div>
             </div>
           </DialogContent>
         </Dialog>

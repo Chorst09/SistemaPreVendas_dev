@@ -11,6 +11,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { PlusCircle, Edit, Trash2, Package, Search, Eye, FileText, Building, Globe, User, Lock } from "lucide-react";
 import PartnerForm from "./PartnerForm"; // Assumindo que você tem este componente
 import { Partner } from "@/lib/types"; // Assumindo que você tem este tipo
+import { initialPartners } from "@/lib/data";
 
 // Importar Firebase
 import { getFirestore, doc, collection, setDoc, deleteDoc, getDocs } from "firebase/firestore";
@@ -51,31 +52,36 @@ const PartnerView: React.FC<PartnerViewProps> = ({ partnerType }) => {
     return collection(db, "partners"); // Coleção "partners" no nível raiz
   };
 
-  // Função para carregar parceiros do Firestore
+  // Função para carregar parceiros do Firestore com fallback local
   const loadPartners = async () => {
-    // Verifica se Firestore está disponível antes de tentar carregar
+    // Se Firestore não estiver configurado, usa a base inicial local
     if (!db) {
-      setPartners([]);
+      setPartners(initialPartners.filter(p => p.type === partnerType));
       setLoadingPartners(false);
-      console.error("Firestore não disponível para carregar parceiros.");
       return;
     }
 
-    setLoadingPartners(true); // Indica que o carregamento começou
-    const partnersCollectionRef = getPartnersCollectionRef(); // Usa a nova função
+    setLoadingPartners(true);
+    const partnersCollectionRef = getPartnersCollectionRef();
 
     if (!partnersCollectionRef) {
+      setPartners(initialPartners.filter(p => p.type === partnerType));
       setLoadingPartners(false);
-      console.error("Referência da coleção de parceiros não disponível.");
       return;
     }
 
     try {
       const querySnapshot = await getDocs(partnersCollectionRef);
+      if (querySnapshot.empty) {
+        setPartners(initialPartners.filter(p => p.type === partnerType));
+        setLoadingPartners(false);
+        return;
+      }
+
       const loadedPartners: Partner[] = querySnapshot.docs.map(doc => {
         const data = doc.data();
         return {
-          id: parseInt(doc.id) || Date.now(), // Converte para number ou usa timestamp
+          id: parseInt(doc.id) || Date.now(),
           name: data.name || '',
           type: data.type || 'Distribuidor',
           contact: data.contact || '',
@@ -97,17 +103,13 @@ const PartnerView: React.FC<PartnerViewProps> = ({ partnerType }) => {
         } as Partner;
       });
 
-      // Filtrar por partnerType, se necessário, no cliente após carregar tudo
-      // Ou você pode adicionar uma query no getDocs para filtrar no lado do servidor
-      const filteredPartners = loadedPartners.filter(p => p.type === partnerType); // Exemplo de filtro
-
-      setPartners(filteredPartners); // Atualiza o estado local com os parceiros carregados e filtrados
-      console.log(`Parceiros (${partnerType}) carregados:`, filteredPartners);
+      const filteredPartners = loadedPartners.filter(p => p.type === partnerType);
+      setPartners(filteredPartners.length > 0 ? filteredPartners : initialPartners.filter(p => p.type === partnerType));
     } catch (error) {
-      console.error("Erro ao carregar parceiros:", error);
-      // Implementar tratamento de erro na UI (ex: exibir mensagem de erro)
+      console.warn("Usando base de parceiros local:", error);
+      setPartners(initialPartners.filter(p => p.type === partnerType));
     } finally {
-      setLoadingPartners(false); // Indica que o carregamento terminou
+      setLoadingPartners(false);
     }
   };
 
@@ -301,36 +303,48 @@ const PartnerView: React.FC<PartnerViewProps> = ({ partnerType }) => {
   );
 
   return (
-    <Card className="shadow-lg">
-      {/* Não precisamos mais verificar loadingAuth */}
-      {/* {!loadingAuth && ( */}
-      <>
-        <CardHeader className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
-          <CardTitle className="text-2xl mb-4 sm:mb-0">Lista de {partnerType}s</CardTitle>
-          {/* O botão "Novo" não depende mais do usuário logado */}
-          {/* {user && ( */}
-          <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-            <DialogTrigger asChild>
-              <Button onClick={() => handleOpenModal()}>
-                <PlusCircle size={20} className="mr-2" />
-                Novo {partnerType}
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-2xl">
-              <DialogHeader>
-                <DialogTitle>{editingPartner ? `Editar ${partnerType}` : `Adicionar Novo ${partnerType}`}</DialogTitle>
-              </DialogHeader>
-              {/* Renderiza o formulário de parceiro */}
-              {isModalOpen && (
-                <PartnerForm
-                  partner={editingPartner}
-                  onSave={handleSave}
-                  onCancel={handleCloseModal}
-                  partnerType={partnerType as any}
-                />
-              )}
-            </DialogContent>
-          </Dialog>
+    <div className="space-y-6 pb-12">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-primary">
+            <Building className="h-3.5 w-3.5" />
+            Ecossistema de Canais & Distribuição
+          </div>
+          <h1 className="mt-1 text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+            {partnerType === 'Distribuidor' ? 'Distribuidores Homologados' : 'Fabricantes & Fornecedores'}
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            {partnerType === 'Distribuidor' 
+              ? 'Portais de cotação B2B, contatos de gerentes de produto (PMs) e credenciais de acesso.'
+              : 'Fabricantes de hardware, software, regras de Registro de Oportunidades (RO) e SLAs de suporte.'}
+          </p>
+        </div>
+
+        <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+          <DialogTrigger asChild>
+            <Button onClick={() => handleOpenModal()} className="gap-2 shadow-md">
+              <PlusCircle size={18} />
+              Novo {partnerType}
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>{editingPartner ? `Editar ${partnerType}` : `Adicionar Novo ${partnerType}`}</DialogTitle>
+            </DialogHeader>
+            {isModalOpen && (
+              <PartnerForm
+                partner={editingPartner}
+                onSave={handleSave}
+                onCancel={handleCloseModal}
+                partnerType={partnerType as any}
+              />
+            )}
+          </DialogContent>
+        </Dialog>
+      </div>
+
+      <Card className="border-border/60 shadow-sm">
+        <CardContent className="pt-6">
 
           {/* Modal de Visualização */}
           <Dialog open={isViewModalOpen} onOpenChange={setIsViewModalOpen}>
@@ -744,9 +758,7 @@ const PartnerView: React.FC<PartnerViewProps> = ({ partnerType }) => {
               )}
             </DialogContent>
           </Dialog>
-          {/* )} */}
-        </CardHeader>
-        <CardContent>
+
           {/* Campo de busca e estatísticas */}
           <div className="mb-4 space-y-3">
             <div className="relative">
@@ -911,9 +923,8 @@ const PartnerView: React.FC<PartnerViewProps> = ({ partnerType }) => {
             )}
           </div>
         </CardContent>
-      </>
-      {/* )} */}
-    </Card>
+      </Card>
+    </div>
   );
 };
 

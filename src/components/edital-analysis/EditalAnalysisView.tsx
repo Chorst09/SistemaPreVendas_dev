@@ -182,16 +182,22 @@ const EditalAnalysisView: React.FC<EditalAnalysisViewProps> = ({
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
+    <div className="space-y-6 pb-12">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight">Análise de Editais</h2>
-          <p className="text-muted-foreground">
-            Gerencie e analise editais de licitações
+          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-primary">
+            <Target className="h-3.5 w-3.5" />
+            Inteligência de Mercado B2G & Editais Públicos
+          </div>
+          <h1 className="mt-1 text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+            Análise e Qualificação de Editais
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            Acompanhe prazos de abertura, viabilidade técnica, score de atratividade e documentos habilitatórios.
           </p>
         </div>
-        <Button onClick={handleCreate} className="btn-primary-modern">
-          <Plus className="h-4 w-4 mr-2" />
+        <Button onClick={handleCreate} size="lg" className="gap-2 shadow-md">
+          <Plus className="h-4 w-4" />
           Novo Edital
         </Button>
       </div>
