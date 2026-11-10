@@ -79,7 +79,7 @@ export default function App({ onBack }: { onBack?: () => void }) {
         id: 's1',
         name: 'Projeto Paranacidade',
         initial: 'P',
-        color: 'bg-[#ff7a00]',
+        color: 'bg-primary',
         client: 'Paranacidade',
         manager: 'Carlos Horst',
         status: 'PLANEJAMENTO',
@@ -98,7 +98,7 @@ export default function App({ onBack }: { onBack?: () => void }) {
       id: 's1',
       name: 'Projeto Paranacidade',
       initial: 'P',
-      color: 'bg-[#ff7a00]',
+      color: 'bg-primary',
       client: 'Paranacidade',
       manager: 'Carlos Horst',
       status: 'PLANEJAMENTO',
@@ -141,7 +141,7 @@ export default function App({ onBack }: { onBack?: () => void }) {
     }
 
     if (isCreatingSpace) {
-      const colors = ['bg-[#ff7a00]', 'bg-[#18c8df]', 'bg-[#22c55e]', 'bg-[#f6b40b]', 'bg-[#1f7fe5]'];
+      const colors = ['bg-primary', 'bg-accent-cyan', 'bg-accent-green', 'bg-primary', 'bg-[#1f7fe5]'];
       const randomColor = colors[spaces.length % colors.length];
       const newSpace: Space = {
         id: `s-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
@@ -220,12 +220,12 @@ export default function App({ onBack }: { onBack?: () => void }) {
   };
 
   return (
-    <div className="flex h-screen bg-[#050914] font-sans overflow-hidden text-slate-300 text-sm">
+    <div className="project-workspace relative flex h-[calc(100dvh-108px)] min-h-[640px] flex-col md:flex-row bg-background font-body overflow-hidden text-foreground text-sm">
       {isDashboardFocus && onBack && (
         <button
           type="button"
           onClick={onBack}
-          className="fixed left-4 top-4 z-50 flex h-9 items-center gap-2 rounded-md border border-[#374151] bg-[#111827]/95 px-3 text-xs font-bold uppercase tracking-wide text-slate-200 shadow-xl shadow-black/30 transition-colors hover:border-[#ff7a00] hover:bg-[#1f2937] hover:text-white"
+          className="absolute left-4 top-4 z-20 flex h-9 items-center gap-2 rounded-md border border-border bg-card/95 px-3 text-xs font-bold uppercase tracking-wide text-foreground shadow-xl shadow-black/30 transition-colors hover:border-primary hover:bg-muted hover:text-foreground"
           title="Voltar"
         >
           <ArrowLeft className="h-4 w-4" />
@@ -235,16 +235,16 @@ export default function App({ onBack }: { onBack?: () => void }) {
 
       {/* Far Left Thin Navigation */}
       {!isDashboardFocus && (
-      <nav className="w-16 bg-[#050914] flex-shrink-0 flex flex-col items-center py-4 border-r border-[#263345] z-30">
+      <nav className="project-local-nav w-full md:w-16 bg-card flex-shrink-0 flex flex-row md:flex-col items-center p-2 md:py-4 border-b md:border-r border-border z-20">
         <div
           onClick={onBack}
-          className="w-8 h-8 bg-[#22c55e] rounded text-white flex items-center justify-center font-bold mb-6 cursor-pointer shadow-[0_0_22px_rgba(34,197,94,0.25)]"
+          className="w-8 h-8 bg-accent-green rounded text-foreground flex items-center justify-center font-bold mb-6 cursor-pointer shadow-[0_0_22px_rgba(34,197,94,0.25)]"
           title="Voltar"
         >
           C
         </div>
 
-        <div className="flex flex-col gap-4 w-full px-2">
+        <div className="flex flex-row md:flex-col gap-1 md:gap-4 w-full overflow-x-auto md:px-2">
           <NavItem icon={Home} label="Início" active={globalView === 'home'} onClick={() => setGlobalView('home')} />
           <NavItem icon={Compass} label="Projetos" active={globalView === 'spaces'} onClick={() => setGlobalView('spaces')} />
           <NavItem icon={CheckSquare} label="Planejado" active={globalView === 'planned'} onClick={() => setGlobalView('planned')} />
@@ -258,16 +258,16 @@ export default function App({ onBack }: { onBack?: () => void }) {
 
       {/* Second Sidebar (Spaces) */}
       {globalView === 'spaces' && !isDashboardFocus && (
-        <aside className="w-[280px] bg-[#111827] flex-shrink-0 flex flex-col h-full border-r border-[#263345] z-20">
-          <div className="p-4 flex items-center justify-between border-b border-[#263345] bg-[linear-gradient(90deg,rgba(255,122,0,0.13),transparent)]">
-          <h2 className="font-semibold text-slate-100">Projetos</h2>
-          <button onClick={() => setIsCreatingSpace(true)} className="bg-[#ff7a00] hover:bg-[#f6b40b] text-white hover:text-[#050914] text-xs font-semibold px-3 py-2 rounded flex items-center gap-1 transition-colors">
+        <aside className="hidden lg:flex w-[240px] bg-card flex-shrink-0 flex-col h-full border-r border-border z-20">
+          <div className="p-4 flex items-center justify-between border-b border-border bg-[linear-gradient(90deg,rgba(255,122,0,0.13),transparent)]">
+          <h2 className="font-semibold text-foreground">Projetos</h2>
+          <button onClick={() => setIsCreatingSpace(true)} className="bg-primary hover:bg-primary text-primary-foreground hover:text-primary-foreground text-xs font-semibold px-3 py-2 rounded flex items-center gap-1 transition-colors">
             <Plus className="w-3 h-3" /> Criar
           </button>
         </div>
 
         <div className="p-3 flex-1 overflow-y-auto">
-          <div className="flex items-center gap-2 text-slate-400 hover:bg-[#1f2937] p-1.5 rounded cursor-pointer mb-4">
+          <div className="flex items-center gap-2 text-muted-foreground hover:bg-muted p-1.5 rounded cursor-pointer mb-4">
             <LayoutTemplate className="w-4 h-4" />
             <span className="text-sm">Todos os projetos</span>
           </div>
@@ -276,18 +276,18 @@ export default function App({ onBack }: { onBack?: () => void }) {
             {spaces.map(space => (
               <div key={space.id}>
                 <div
-                  className={cn("flex items-center justify-between p-2 rounded cursor-pointer group", activeSpaceId === space.id ? "bg-[#263345] text-slate-100 ring-1 ring-[#ff7a00]/35" : "text-slate-300 hover:bg-[#1f2937]")}
+                  className={cn("flex items-center justify-between p-2 rounded cursor-pointer group", activeSpaceId === space.id ? "bg-secondary text-foreground ring-1 ring-[#ff7a00]/35" : "text-foreground hover:bg-muted")}
                   onClick={() => setActiveSpaceId(space.id)}
                 >
                   <div className="flex items-center gap-2">
-                    <div className={cn("w-4 h-4 rounded-sm text-[8px] flex items-center justify-center font-bold text-white", space.color)}>{space.initial}</div>
+                    <div className={cn("w-4 h-4 rounded-sm text-[8px] flex items-center justify-center font-bold text-foreground", space.color)}>{space.initial}</div>
                     <div className="min-w-0">
                       <span className="block truncate font-medium text-sm">{space.name}</span>
-                      <span className="block truncate text-[10px] text-slate-500">{space.client || space.status || 'Projeto'}</span>
+                      <span className="block truncate text-[10px] text-muted-foreground">{space.client || space.status || 'Projeto'}</span>
                     </div>
                   </div>
                   <ChevronDown
-                    className={cn("w-4 h-4 transition-transform", expandedSpaces[space.id] ? "rotate-180 text-slate-300" : "opacity-0 group-hover:opacity-100")}
+                    className={cn("w-4 h-4 transition-transform", expandedSpaces[space.id] ? "rotate-180 text-foreground" : "opacity-0 group-hover:opacity-100")}
                     onClick={(e) => { e.stopPropagation(); toggleSpace(space.id); }}
                   />
                 </div>
@@ -295,21 +295,21 @@ export default function App({ onBack }: { onBack?: () => void }) {
                 {expandedSpaces[space.id] && (
                   <div className="ml-5 mt-1 border-l border-slate-700 pl-2 flex flex-col gap-1">
                     <div
-                      className={cn("flex items-center justify-between p-1.5 rounded cursor-pointer", activeView === 'list' && activeSpaceId === space.id ? 'bg-[#263345] text-slate-100' : 'text-slate-400 hover:bg-[#1f2937]')}
+                      className={cn("flex items-center justify-between p-1.5 rounded cursor-pointer", activeView === 'list' && activeSpaceId === space.id ? 'bg-secondary text-foreground' : 'text-muted-foreground hover:bg-muted')}
                       onClick={() => { setActiveView('list'); setActiveSpaceId(space.id); }}
                     >
                       <div className="flex items-center gap-2">
                         <ListIcon className="w-4 h-4" />
                         <span className="text-sm">Fases</span>
                       </div>
-                      <span className="text-xs text-slate-500">{activeSpaceId === space.id ? issues.length : 0}</span>
+                      <span className="text-xs text-muted-foreground">{activeSpaceId === space.id ? issues.length : 0}</span>
                     </div>
                   </div>
                 )}
               </div>
             ))}
 
-            <div onClick={() => setIsCreatingSpace(true)} className="flex items-center gap-2 text-slate-500 hover:text-[#ffb15c] p-1.5 ml-5 rounded cursor-pointer mt-1">
+            <div onClick={() => setIsCreatingSpace(true)} className="flex items-center gap-2 text-muted-foreground hover:text-primary p-1.5 ml-5 rounded cursor-pointer mt-1">
               <Plus className="w-3.5 h-3.5" />
               <span className="text-sm">Novo Projeto</span>
             </div>
@@ -319,60 +319,12 @@ export default function App({ onBack }: { onBack?: () => void }) {
       )}
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col min-w-0 bg-[#070b16]">
+      <main className="flex-1 flex flex-col min-w-0 bg-background">
 
-        {/* Top Global Bar */}
-        {!isDashboardFocus && (
-        <header className="h-12 border-b border-[#263345] px-4 flex items-center justify-between bg-[#111827] flex-shrink-0">
-          <div className="flex items-center gap-2">
-            {onBack && (
-              <button
-                type="button"
-                onClick={onBack}
-                className="flex h-8 items-center gap-1.5 rounded-md border border-[#374151] px-2.5 text-xs font-semibold text-slate-300 transition-colors hover:border-[#ff7a00] hover:bg-[#1f2937] hover:text-white"
-                title="Voltar ao CRM"
-              >
-                <ArrowLeft className="h-4 w-4" />
-                Voltar
-              </button>
-            )}
-            <div className="flex items-center gap-2 cursor-pointer hover:bg-[#1f2937] px-2 py-1 rounded transition-colors">
-              <div className="w-5 h-5 bg-[#22c55e] rounded text-white flex items-center justify-center font-bold text-xs">C</div>
-              <span className="font-semibold text-slate-200">Gestão de Projetos</span>
-              <ChevronDown className="w-4 h-4 text-slate-500" />
-            </div>
-          </div>
-
-          <div className="flex-1 max-w-lg mx-4 flex items-center gap-2">
-            <div className="flex-1 relative group">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Search className="h-3.5 w-3.5 text-slate-500" />
-              </div>
-              <input
-                type="text"
-                className="block w-full pl-8 pr-3 py-1 bg-[#0d1423] border border-[#374151] rounded-md text-slate-300 placeholder-slate-500 focus:outline-none focus:border-[#ff7a00] text-xs transition-colors"
-                placeholder="Pesquisar ⌘ K"
-                onClick={() => alert('Pesquisa global ativada. Use ⌘ K para buscar fases, documentos ou pessoas.')}
-              />
-            </div>
-            <button onClick={() => alert('Abrindo painel de Chat com IA...')} className="bg-[#0d1423] hover:bg-[#1f2937] border border-[#374151] text-slate-300 px-3 py-1 rounded-md text-xs font-medium flex items-center gap-2 transition-colors">
-              Chats com IA <Sparkles className="w-3.5 h-3.5 text-teal-400" />
-            </button>
-          </div>
-
-          <div className="flex items-center gap-3 text-slate-400">
-            <CheckCircle2 onClick={() => setGlobalView('planned')} className="w-5 h-5 hover:text-slate-200 cursor-pointer" />
-            <Bell onClick={() => alert('Painel de Notificações')} className="w-5 h-5 hover:text-slate-200 cursor-pointer" />
-            <div onClick={() => alert('Menu do Perfil')} className="w-6 h-6 rounded-full bg-[#ff7a00] flex items-center justify-center text-white text-xs font-bold ring-2 ring-[#111827] cursor-pointer">
-              CH
-            </div>
-          </div>
-        </header>
-        )}
-
+        {globalView === 'spaces' && <div className="flex flex-wrap items-center gap-3 border-b border-border bg-card p-3 lg:hidden"><label className="text-xs text-muted-foreground" htmlFor="project-selector">Projeto</label><select id="project-selector" className="min-w-0 flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm" value={activeSpaceId} onChange={event => setActiveSpaceId(event.target.value)}>{spaces.map(project => <option key={project.id} value={project.id}>{project.name}</option>)}</select></div>}
         {globalView === 'spaces' ? (
           isDashboardFocus ? (
-            <div className="flex-1 overflow-hidden bg-[#070b16]">
+            <div className="flex-1 overflow-hidden bg-background">
               <Dashboard
                 projects={spaces}
                 issues={issues}
@@ -385,22 +337,22 @@ export default function App({ onBack }: { onBack?: () => void }) {
           ) : (
           <>
             {/* Project Header & Tabs */}
-            <div className="bg-[#111827] border-b border-[#263345] flex-shrink-0">
+            <div className="bg-card border-b border-border flex-shrink-0">
           <div className="px-6 pt-4 pb-0 flex flex-col gap-4">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-xl font-bold text-slate-200">
-                <div className={cn("w-5 h-5 rounded-sm text-[10px] flex items-center justify-center font-bold text-white mr-1", activeProject?.color || "bg-slate-700")}>
+              <div className="flex items-center gap-2 text-xl font-bold text-foreground">
+                <div className={cn("w-5 h-5 rounded-sm text-[10px] flex items-center justify-center font-bold text-foreground mr-1", activeProject?.color || "bg-slate-700")}>
                   {activeProject?.initial || "P"}
                 </div>
-                {activeProject?.name || "Projeto Paranacidade"} <span className="text-slate-500 font-normal">/</span>
-                <ListIcon className="w-5 h-5 text-slate-400 ml-1" /> Fases
-                <ChevronDown className="w-5 h-5 text-slate-500 cursor-pointer" />
+                {activeProject?.name || "Projeto Paranacidade"} <span className="text-muted-foreground font-normal">/</span>
+                <ListIcon className="w-5 h-5 text-muted-foreground ml-1" /> Fases
+                <ChevronDown className="w-5 h-5 text-muted-foreground cursor-pointer" />
               </div>
 
-              <div className="flex items-center gap-4 text-xs font-medium text-slate-400">
-                <button onClick={() => alert('Funcionalidade de Agentes será lançada em breve')} className="hover:text-slate-200 flex items-center gap-1"><Users2 className="w-4 h-4" /> Agentes</button>
-                <button onClick={() => alert('ClickUp Brain em processamento...')} className="hover:text-slate-200 flex items-center gap-1"><Sparkles className="w-4 h-4 text-teal-400" /> Brain</button>
-                <button onClick={() => alert('Compartilhar este projeto com outras pessoas')} className="hover:text-slate-200 flex items-center gap-1"><Users className="w-4 h-4" /> Compartilhar</button>
+              <div className="flex items-center gap-4 text-xs font-medium text-muted-foreground">
+                <button onClick={() => alert('Funcionalidade de Agentes será lançada em breve')} className="hover:text-foreground flex items-center gap-1"><Users2 className="w-4 h-4" /> Agentes</button>
+                <button onClick={() => alert('ClickUp Brain em processamento...')} className="hover:text-foreground flex items-center gap-1"><Sparkles className="w-4 h-4 text-teal-400" /> Brain</button>
+                <button onClick={() => alert('Compartilhar este projeto com outras pessoas')} className="hover:text-foreground flex items-center gap-1"><Users className="w-4 h-4" /> Compartilhar</button>
               </div>
             </div>
 
@@ -413,7 +365,7 @@ export default function App({ onBack }: { onBack?: () => void }) {
               <Tab icon={GanttChartSquare} label="Gantt" active={activeView === 'gantt'} onClick={() => setActiveView('gantt')} />
               <Tab icon={Activity} label="Atividade" active={activeView === 'activity'} onClick={() => setActiveView('activity')} />
               <Tab icon={ListIcon} label="Carga de trabalho" active={activeView === 'workload'} onClick={() => setActiveView('workload')} />
-              <div className="flex items-center gap-1 text-slate-400 hover:text-slate-200 cursor-pointer pb-2">
+              <div className="flex items-center gap-1 text-muted-foreground hover:text-foreground cursor-pointer pb-2">
                 <Plus className="w-4 h-4" /> Visualização
               </div>
             </div>
@@ -421,39 +373,39 @@ export default function App({ onBack }: { onBack?: () => void }) {
         </div>
 
         {/* Toolbar */}
-        <div className="px-6 py-3 flex flex-col gap-3 flex-shrink-0 bg-[#070b16] border-b border-[#263345]">
+        <div className="px-6 py-3 flex flex-col gap-3 flex-shrink-0 bg-background border-b border-border">
           {activeProject && (
             <div className="grid gap-3 lg:grid-cols-[1.2fr_1fr_1fr]">
-              <div className="rounded-lg border border-[#263345] bg-[#111827] p-3">
-                <p className="text-[10px] font-bold uppercase tracking-wide text-[#8f9caf]">Escopo</p>
-                <p className="mt-1 line-clamp-2 text-xs text-slate-200">{activeProject.scope || 'Escopo ainda não informado.'}</p>
+              <div className="rounded-lg border border-border bg-card p-3">
+                <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">Escopo</p>
+                <p className="mt-1 line-clamp-2 text-xs text-foreground">{activeProject.scope || 'Escopo ainda não informado.'}</p>
               </div>
-              <div className="rounded-lg border border-[#263345] bg-[#111827] p-3">
-                <p className="text-[10px] font-bold uppercase tracking-wide text-[#8f9caf]">Objetivo</p>
-                <p className="mt-1 line-clamp-2 text-xs text-slate-200">{activeProject.objective || 'Objetivo ainda não informado.'}</p>
+              <div className="rounded-lg border border-border bg-card p-3">
+                <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">Objetivo</p>
+                <p className="mt-1 line-clamp-2 text-xs text-foreground">{activeProject.objective || 'Objetivo ainda não informado.'}</p>
               </div>
               <div className="grid grid-cols-2 gap-3">
-                <div className="rounded-lg border border-[#263345] bg-[linear-gradient(140deg,rgba(255,122,0,0.16),rgba(17,24,39,0.98))] p-3">
-                  <p className="text-[10px] font-bold uppercase tracking-wide text-[#8f9caf]">Status</p>
-                  <p className="mt-1 text-sm font-black text-[#ffb15c]">{activeProject.status || 'PLANEJAMENTO'}</p>
+                <div className="rounded-lg border border-border bg-[linear-gradient(140deg,rgba(255,122,0,0.16),rgba(17,24,39,0.98))] p-3">
+                  <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">Status</p>
+                  <p className="mt-1 text-sm font-semibold text-primary">{activeProject.status || 'PLANEJAMENTO'}</p>
                 </div>
-                <div className="rounded-lg border border-[#263345] bg-[linear-gradient(140deg,rgba(34,197,94,0.14),rgba(17,24,39,0.98))] p-3">
-                  <p className="text-[10px] font-bold uppercase tracking-wide text-[#8f9caf]">Fases</p>
-                  <p className="mt-1 text-sm font-black text-[#22c55e]">{activeProjectIssues.length}</p>
+                <div className="rounded-lg border border-border bg-[linear-gradient(140deg,rgba(34,197,94,0.14),rgba(17,24,39,0.98))] p-3">
+                  <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">Fases</p>
+                  <p className="mt-1 text-sm font-semibold text-accent-green">{activeProjectIssues.length}</p>
                 </div>
               </div>
             </div>
           )}
           <div className="flex items-center gap-3">
-            <button onClick={() => alert('Controles de Visão (Filtros, Agrupamento)')} className="bg-[#111827] hover:bg-[#1f2937] text-slate-200 px-3 py-1.5 rounded-md text-xs font-medium flex items-center gap-2 border border-[#374151]">
-              <LayersIcon className="w-4 h-4 text-[#ff7a00]" /> Controles
+            <button onClick={() => alert('Controles de Visão (Filtros, Agrupamento)')} className="bg-card hover:bg-muted text-foreground px-3 py-1.5 rounded-md text-xs font-medium flex items-center gap-2 border border-border">
+              <LayersIcon className="w-4 h-4 text-primary" /> Controles
             </button>
 
-          <div className="ml-auto flex items-center gap-3 text-slate-400">
-            <button onClick={() => alert('Busca específica na lista atual')} className="hover:bg-[#111827] p-1.5 rounded"><Search className="w-4 h-4" /></button>
-            <button onClick={() => alert('Configurações da visualização atual')} className="hover:bg-[#111827] p-1.5 rounded"><Settings className="w-4 h-4" /></button>
+          <div className="ml-auto flex items-center gap-3 text-muted-foreground">
+            <button onClick={() => alert('Busca específica na lista atual')} className="hover:bg-card p-1.5 rounded"><Search className="w-4 h-4" /></button>
+            <button onClick={() => alert('Configurações da visualização atual')} className="hover:bg-card p-1.5 rounded"><Settings className="w-4 h-4" /></button>
             <div className="h-4 w-px bg-slate-700 mx-1"></div>
-            <button onClick={handleCreateTask} className="bg-[#ff7a00] hover:bg-[#f6b40b] text-white hover:text-[#050914] px-4 py-1.5 rounded-md text-xs font-semibold flex items-center gap-2 transition-colors">
+            <button onClick={handleCreateTask} className="bg-primary hover:bg-primary text-primary-foreground hover:text-primary-foreground px-4 py-1.5 rounded-md text-xs font-semibold flex items-center gap-2 transition-colors">
               <Plus className="w-3.5 h-3.5" /> Fase <ChevronDown className="w-3 h-3 ml-1" />
             </button>
           </div>
@@ -461,7 +413,7 @@ export default function App({ onBack }: { onBack?: () => void }) {
         </div>
 
         {/* View Renderer */}
-        <div className="flex-1 overflow-hidden relative bg-[#070b16]">
+        <div className="flex-1 overflow-hidden relative bg-background">
           {activeView === 'board' && <KanbanBoard issues={issues} setIssues={setIssues} onTaskClick={setSelectedTask} onCreateTask={handleGlobalCreateTaskSubmit} />}
           {activeView === 'list' && <ListView issues={issues} onTaskClick={setSelectedTask} />}
           {activeView === 'dashboard' && (
@@ -484,7 +436,7 @@ export default function App({ onBack }: { onBack?: () => void }) {
           </>
           )
         ) : (
-          <div className="flex-1 overflow-hidden relative bg-[#070b16]">
+          <div className="flex-1 overflow-hidden relative bg-background">
             {globalView === 'home' && (
               <HomeView
                 projects={spaces}
@@ -570,31 +522,31 @@ function ProjectCreateModal({
   onCancel: () => void;
   onSubmit: () => void;
 }) {
-  const fieldClass = "w-full rounded-md border border-[#374151] bg-[#070b16] px-3 py-2 text-sm text-slate-100 outline-none transition-colors placeholder:text-slate-600 focus:border-[#ff7a00] focus:ring-2 focus:ring-[#ff7a00]/20";
-  const labelClass = "text-[11px] font-bold uppercase tracking-wide text-[#8f9caf]";
+  const fieldClass = "w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-[#ff7a00]/20";
+  const labelClass = "text-[11px] font-bold uppercase tracking-wide text-muted-foreground";
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
-      <div className="flex max-h-[92vh] w-full max-w-5xl flex-col overflow-hidden rounded-lg border border-[#374151] bg-[#0b1020] shadow-2xl">
-        <div className="relative overflow-hidden border-b border-[#263345] bg-[radial-gradient(circle_at_12%_0%,rgba(255,122,0,0.28),transparent_28%),linear-gradient(120deg,#111827,#070b16_58%,#111827)] px-6 py-5">
-          <div className="absolute right-10 top-0 h-24 w-24 rounded-full bg-[#22c55e]/10 blur-2xl" />
+      <div className="flex max-h-[92vh] w-full max-w-5xl flex-col overflow-hidden rounded-lg border border-border bg-card shadow-2xl">
+        <div className="relative overflow-hidden border-b border-border bg-[radial-gradient(circle_at_12%_0%,rgba(255,122,0,0.28),transparent_28%),linear-gradient(120deg,#111827,#070b16_58%,#111827)] px-6 py-5">
+          <div className="absolute right-10 top-0 h-24 w-24 rounded-full bg-accent-green/10 blur-2xl" />
           <div className="relative flex items-start justify-between gap-4">
             <div>
               <div className="mb-2 flex items-center gap-2">
-                <span className="flex h-9 w-9 items-center justify-center rounded-md bg-[#ff7a00] text-white shadow-[0_0_24px_rgba(255,122,0,0.28)]">
+                <span className="flex h-9 w-9 items-center justify-center rounded-md bg-primary text-primary-foreground shadow-[0_0_24px_rgba(255,122,0,0.28)]">
                   <Briefcase className="h-5 w-5" />
                 </span>
-                <span className="rounded-full border border-[#f6b40b]/40 bg-[#f6b40b]/10 px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-[#f6b40b]">
+                <span className="rounded-full border border-accent-yellow/40 bg-primary/10 px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-accent-yellow">
                   Novo projeto
                 </span>
               </div>
-              <h2 className="text-2xl font-black text-slate-100">Cadastro completo do projeto</h2>
-              <p className="mt-1 max-w-2xl text-sm text-slate-400">Escopo, objetivo, responsáveis e critérios entram antes da criação das fases.</p>
+              <h2 className="text-2xl font-semibold text-foreground">Cadastro completo do projeto</h2>
+              <p className="mt-1 max-w-2xl text-sm text-muted-foreground">Escopo, objetivo, responsáveis e critérios entram antes da criação das fases.</p>
             </div>
             <button
               type="button"
               onClick={onCancel}
-              className="rounded-md border border-[#374151] bg-[#111827]/80 p-2 text-slate-400 transition-colors hover:border-[#ff7a00] hover:text-white"
+              className="rounded-md border border-border bg-card/80 p-2 text-muted-foreground transition-colors hover:border-primary hover:text-foreground"
             >
               <X className="h-5 w-5" />
             </button>
@@ -603,7 +555,7 @@ function ProjectCreateModal({
 
         <div className="overflow-y-auto px-6 py-5">
           {error && (
-            <div className="mb-4 rounded-md border border-[#ff7a00]/40 bg-[#ff7a00]/10 px-4 py-3 text-sm font-semibold text-[#ffb15c]">
+            <div className="mb-4 rounded-md border border-primary/40 bg-primary/10 px-4 py-3 text-sm font-semibold text-primary">
               {error}
             </div>
           )}
@@ -629,7 +581,7 @@ function ProjectCreateModal({
             <label className="flex flex-col gap-1.5">
               <span className={labelClass}>Orçamento</span>
               <div className="relative">
-                <DollarSign className="pointer-events-none absolute left-3 top-2.5 h-4 w-4 text-[#22c55e]" />
+                <DollarSign className="pointer-events-none absolute left-3 top-2.5 h-4 w-4 text-accent-green" />
                 <input className={`${fieldClass} pl-9`} value={form.budget} onChange={(e) => onChange({ budget: e.target.value })} placeholder="R$ 0,00" />
               </div>
             </label>
@@ -692,29 +644,29 @@ function ProjectCreateModal({
           </div>
 
           <div className="mt-5 grid gap-3 md:grid-cols-3">
-            <div className="rounded-lg border border-[#374151] bg-[linear-gradient(140deg,rgba(255,122,0,0.16),rgba(17,24,39,0.96))] p-3">
-              <Target className="mb-3 h-5 w-5 text-[#ff7a00]" />
-              <p className="text-xs font-bold text-slate-100">Objetivo definido</p>
-              <p className="mt-1 text-[11px] text-slate-500">{form.objective.trim() ? 'Pronto para validação executiva.' : 'Pendente'}</p>
+            <div className="rounded-lg border border-border bg-[linear-gradient(140deg,rgba(255,122,0,0.16),rgba(17,24,39,0.96))] p-3">
+              <Target className="mb-3 h-5 w-5 text-primary" />
+              <p className="text-xs font-bold text-foreground">Objetivo definido</p>
+              <p className="mt-1 text-[11px] text-muted-foreground">{form.objective.trim() ? 'Pronto para validação executiva.' : 'Pendente'}</p>
             </div>
-            <div className="rounded-lg border border-[#374151] bg-[linear-gradient(140deg,rgba(246,180,11,0.14),rgba(17,24,39,0.96))] p-3">
-              <FileText className="mb-3 h-5 w-5 text-[#f6b40b]" />
-              <p className="text-xs font-bold text-slate-100">Escopo registrado</p>
-              <p className="mt-1 text-[11px] text-slate-500">{form.scope.trim() ? 'Base para montar as fases.' : 'Pendente'}</p>
+            <div className="rounded-lg border border-border bg-[linear-gradient(140deg,rgba(246,180,11,0.14),rgba(17,24,39,0.96))] p-3">
+              <FileText className="mb-3 h-5 w-5 text-accent-yellow" />
+              <p className="text-xs font-bold text-foreground">Escopo registrado</p>
+              <p className="mt-1 text-[11px] text-muted-foreground">{form.scope.trim() ? 'Base para montar as fases.' : 'Pendente'}</p>
             </div>
-            <div className="rounded-lg border border-[#374151] bg-[linear-gradient(140deg,rgba(34,197,94,0.14),rgba(17,24,39,0.96))] p-3">
-              <CheckCircle2 className="mb-3 h-5 w-5 text-[#22c55e]" />
-              <p className="text-xs font-bold text-slate-100">Governança</p>
-              <p className="mt-1 text-[11px] text-slate-500">{form.manager.trim() || form.sponsor.trim() ? 'Responsáveis informados.' : 'Pendente'}</p>
+            <div className="rounded-lg border border-border bg-[linear-gradient(140deg,rgba(34,197,94,0.14),rgba(17,24,39,0.96))] p-3">
+              <CheckCircle2 className="mb-3 h-5 w-5 text-accent-green" />
+              <p className="text-xs font-bold text-foreground">Governança</p>
+              <p className="mt-1 text-[11px] text-muted-foreground">{form.manager.trim() || form.sponsor.trim() ? 'Responsáveis informados.' : 'Pendente'}</p>
             </div>
           </div>
         </div>
 
-        <div className="flex items-center justify-end gap-3 border-t border-[#263345] bg-[#111827] px-6 py-4">
-          <button type="button" onClick={onCancel} className="rounded-md border border-[#374151] px-4 py-2 text-sm font-semibold text-slate-300 transition-colors hover:bg-[#1f2937] hover:text-white">
+        <div className="flex items-center justify-end gap-3 border-t border-border bg-card px-6 py-4">
+          <button type="button" onClick={onCancel} className="rounded-md border border-border px-4 py-2 text-sm font-semibold text-foreground transition-colors hover:bg-muted hover:text-foreground">
             Cancelar
           </button>
-          <button type="button" onClick={onSubmit} className="rounded-md bg-[#ff7a00] px-5 py-2 text-sm font-black text-white shadow-[0_0_24px_rgba(255,122,0,0.2)] transition-colors hover:bg-[#f6b40b] hover:text-[#050914]">
+          <button type="button" onClick={onSubmit} className="rounded-md bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground shadow-[0_0_24px_rgba(255,122,0,0.2)] transition-colors hover:bg-primary hover:text-primary-foreground">
             Criar projeto
           </button>
         </div>
@@ -730,7 +682,7 @@ function NavItem({ icon: Icon, label, active, onClick }: { icon: any, label: str
       onClick={onClick}
       className={cn(
         "flex flex-col items-center justify-center gap-1 w-full py-2 px-1 rounded-md transition-colors group",
-      active ? "text-[#ff7a00] bg-[#ff7a00]/10" : "text-slate-500 hover:text-slate-300 hover:bg-[#263345]"
+      active ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-foreground hover:bg-secondary"
     )}>
       <Icon className="w-5 h-5" />
       <span className="text-[10px] font-medium leading-none">{label}</span>
@@ -744,10 +696,10 @@ function Tab({ icon: Icon, label, active, onClick }: { icon: any, label: string,
       onClick={onClick}
       className={cn(
         "flex items-center gap-1.5 pb-2 border-b-2 transition-colors whitespace-nowrap",
-        active ? "border-[#ff7a00] text-slate-200" : "border-transparent text-slate-400 hover:text-slate-200 hover:border-slate-600"
+        active ? "border-primary text-foreground" : "border-transparent text-muted-foreground hover:text-foreground hover:border-slate-600"
       )}
     >
-      <Icon className={cn("w-4 h-4", active ? "text-[#ff7a00]" : "")} />
+      <Icon className={cn("w-4 h-4", active ? "text-primary" : "")} />
       {label}
     </button>
   );

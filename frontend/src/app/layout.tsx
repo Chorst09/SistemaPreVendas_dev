@@ -1,5 +1,6 @@
 // src/app/layout.tsx
 import './globals.css';
+import '@/styles/workspace.css';
 import { ThemeProvider } from '@/components/theme-provider'; // Importe seu ThemeProvider
 // Importe AuthProvider removido
 // import { AuthProvider } from '@/hooks/use-auth';

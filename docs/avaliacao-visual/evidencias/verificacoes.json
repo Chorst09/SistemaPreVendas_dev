@@ -1,0 +1,23 @@
+{
+  "periodKpisUnchanged": true,
+  "periodBefore": "Orçamentos no mês\n85\n+15\nvs. período anterior\n\nNovos orçamentos criados\n\nVendas convertidas\n65\n+10\nvs. período anterior\n\nOrçamentos fechados no período\n\nTotal de parceiros\n6\n\nDistribuidores e fornecedores\n\nValor no pipeline\nR$ 1.350,00\n\nR$ 400,00 aprovados",
+  "periodAfter": "Orçamentos no mês\n85\n+15\nvs. período anterior\n\nNovos orçamentos criados\n\nVendas convertidas\n65\n+10\nvs. período anterior\n\nOrçamentos fechados no período\n\nTotal de parceiros\n6\n\nDistribuidores e fornecedores\n\nValor no pipeline\nR$ 1.350,00\n\nR$ 400,00 aprovados",
+  "searchNavigationUnchanged": true,
+  "fontFaces": [
+    "__nextjs-Geist",
+    "__nextjs-Geist Mono",
+    "__nextjs-Geist",
+    "__nextjs-Geist Mono"
+  ],
+  "tablet": {
+    "viewport": 768,
+    "content": 528,
+    "overflow": 528
+  },
+  "formMobile": {
+    "width": 390,
+    "height": 674.796875,
+    "scrollHeight": 939,
+    "scrollWidth": 388
+  }
+}

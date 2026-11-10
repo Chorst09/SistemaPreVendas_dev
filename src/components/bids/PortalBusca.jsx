@@ -1,6 +1,5 @@
 import { useState, useCallback, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { useTheme } from 'next-themes';
 import {
   Search, Filter, X, ExternalLink, Loader2, Heart,
   MapPin, Calendar, Lock, Plus, Bell, Settings, RefreshCcw, CheckCircle, Trash2,
@@ -1053,8 +1052,6 @@ function SalvarLeadModal({
 
 export default function PortalBusca() {
   const router = useRouter();
-  const { resolvedTheme, theme } = useTheme();
-  const isDarkMode = resolvedTheme === 'dark' || theme === 'dark';
   const [activeTab, setActiveTab] = useState('busca'); // 'busca' | 'gerenciadas' | 'fontes' | 'alertas'
 
   // Busca
@@ -1740,7 +1737,7 @@ export default function PortalBusca() {
   // ─── Render ────────────────────────────────────────────────────────────────
 
   return (
-    <div className={`flex flex-col min-h-full ${isDarkMode ? 'dark bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'}`}>
+    <div className="portal-workspace flex min-h-full flex-col bg-background text-foreground">
       <Toast toasts={toasts} />
       <SalvarLeadModal
         item={leadModalItem}
@@ -1754,8 +1751,8 @@ export default function PortalBusca() {
       />
 
       {/* Tabs de navegação */}
-      <div className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700 sticky top-[5.65rem] z-10 shadow-sm">
-        <div className="flex items-center gap-1 px-4 py-2">
+      <div className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700 sticky top-0 z-10 shadow-sm">
+        <div className="flex flex-wrap items-center gap-1 px-4 py-2">
           {[
             { id: 'busca', label: 'Início', icon: <Search size={14} /> },
             { id: 'gerenciadas', label: `Licitações Gerenciadas (${licitacoesGerenciadas.length})`, icon: <ClipboardList size={14} /> },
@@ -1794,10 +1791,10 @@ export default function PortalBusca() {
       {activeTab === 'busca' && (
         <div className="flex flex-col flex-1">
           {/* Header de busca */}
-          <div className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700 pb-6 pt-8 shadow-sm">
-            <div className="px-4 max-w-5xl mx-auto">
+          <div className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700 py-5 shadow-sm">
+            <div className="px-4 max-w-7xl mx-auto">
               <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-100 mb-1">Buscador Unificado</h2>
-              <p className="text-slate-500 dark:text-slate-400 text-sm mb-6">Pesquise editais de todas as esferas públicas em um só lugar.</p>
+              <p className="text-slate-500 dark:text-slate-400 text-sm mb-4">Pesquise editais de todas as esferas públicas em um só lugar.</p>
               <div className="flex flex-col md:flex-row gap-3">
                 <div className="relative flex-1">
                   <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -1807,13 +1804,13 @@ export default function PortalBusca() {
                     onChange={e => setObjeto(e.target.value)}
                     onKeyDown={handleKeyDown}
                     placeholder="Ex: Aquisição de Notebooks, Obras, Merenda..."
-                    className="w-full pl-12 pr-4 py-3.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm text-base transition placeholder:text-slate-400 dark:placeholder:text-slate-500"
+                    className="h-11 w-full rounded-xl border border-slate-300 bg-white pl-12 pr-4 text-base text-slate-800 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500"
                   />
                 </div>
                 <button
                   onClick={handleBuscar}
                   disabled={loading}
-                  className="flex items-center justify-center gap-2 px-8 py-3.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold shadow-sm transition disabled:opacity-50 text-base"
+                  className="flex h-11 items-center justify-center gap-2 rounded-xl bg-blue-600 px-8 text-base font-semibold text-white shadow-sm transition hover:bg-blue-700 disabled:opacity-50"
                 >
                   {loading ? <Loader2 size={18} className="animate-spin" /> : <Search size={18} />}
                   {loading ? 'Buscando...' : 'Buscar'}
@@ -1826,11 +1823,11 @@ export default function PortalBusca() {
           <div className="flex flex-col gap-4 p-4 max-w-7xl mx-auto w-full flex-1">
 
             {/* Painel de filtros */}
-            <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_18px_42px_-32px_rgba(15,23,42,0.45)] dark:border-slate-700/80 dark:bg-slate-900/70">
-              <div className="flex flex-col gap-3 border-b border-slate-200 bg-slate-50/80 px-4 py-3 dark:border-slate-700/80 dark:bg-slate-900/85 md:flex-row md:items-center md:justify-between">
+            <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-[0_18px_42px_-32px_rgba(15,23,42,0.45)] dark:border-slate-700/80 dark:bg-slate-900/70">
+              <div className="flex flex-col gap-3 border-b border-slate-200 bg-slate-50/80 px-4 py-2.5 dark:border-slate-700/80 dark:bg-slate-900/85 md:flex-row md:items-center md:justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600 text-white shadow-sm">
-                    <Filter size={18} />
+                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-600 text-white shadow-sm">
+                    <Filter size={16} />
                   </div>
                   <div>
                     <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100">Filtros de pesquisa</h3>
@@ -1846,17 +1843,17 @@ export default function PortalBusca() {
                 </button>
               </div>
 
-              <div className="grid gap-4 p-4 xl:grid-cols-[minmax(0,1.1fr)_minmax(360px,0.9fr)]">
-                <div className="space-y-4">
+              <div className="grid gap-3 p-3 xl:grid-cols-[minmax(0,0.9fr)_minmax(420px,1.1fr)]">
+                <div className="space-y-3">
                   <div className="grid gap-3 lg:grid-cols-2">
                     <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-3 dark:border-slate-700/70 dark:bg-slate-800/45">
-                      <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">Status</p>
+                      <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">Status</p>
                       <div className="flex flex-wrap gap-2">
-                        <label className={`inline-flex cursor-pointer items-center gap-2 rounded-lg border px-3 py-2 text-xs font-semibold transition ${apenasVigentes ? 'border-blue-400 bg-blue-50 text-blue-700 dark:border-blue-500/60 dark:bg-blue-500/15 dark:text-blue-200' : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 dark:border-slate-700 dark:bg-slate-900/60 dark:text-slate-300'}`}>
+                        <label className={`inline-flex cursor-pointer items-center gap-2 rounded-lg border px-3 py-1.5 text-xs font-semibold transition ${apenasVigentes ? 'border-blue-400 bg-blue-50 text-blue-700 dark:border-blue-500/60 dark:bg-blue-500/15 dark:text-blue-200' : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 dark:border-slate-700 dark:bg-slate-900/60 dark:text-slate-300'}`}>
                           <input type="checkbox" checked={apenasVigentes} onChange={e => setApenasVigentes(e.target.checked)} className="h-4 w-4 rounded border-slate-300 text-blue-600" />
                           Vigentes
                         </label>
-                        <label className={`inline-flex cursor-pointer items-center gap-2 rounded-lg border px-3 py-2 text-xs font-semibold transition ${incluirPropostas ? 'border-blue-400 bg-blue-50 text-blue-700 dark:border-blue-500/60 dark:bg-blue-500/15 dark:text-blue-200' : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 dark:border-slate-700 dark:bg-slate-900/60 dark:text-slate-300'}`}>
+                        <label className={`inline-flex cursor-pointer items-center gap-2 rounded-lg border px-3 py-1.5 text-xs font-semibold transition ${incluirPropostas ? 'border-blue-400 bg-blue-50 text-blue-700 dark:border-blue-500/60 dark:bg-blue-500/15 dark:text-blue-200' : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 dark:border-slate-700 dark:bg-slate-900/60 dark:text-slate-300'}`}>
                           <input type="checkbox" checked={incluirPropostas} onChange={e => setIncluirPropostas(e.target.checked)} className="h-4 w-4 rounded border-slate-300 text-blue-600" />
                           Em Proposta
                         </label>
@@ -1864,14 +1861,14 @@ export default function PortalBusca() {
                     </div>
 
                     <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-3 dark:border-slate-700/70 dark:bg-slate-800/45">
-                      <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">Portais autenticados</p>
+                      <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">Portais autenticados</p>
                       <div className="flex flex-wrap gap-2">
                         {[
                           { label: 'Busca exata', checked: buscaExata, onChange: setBuscaExata },
                           { label: 'Com edital', checked: comEdital, onChange: setComEdital },
                           { label: 'Chat', checked: comMonitoramentoChat, onChange: setComMonitoramentoChat }
                         ].map(item => (
-                          <label key={item.label} className={`inline-flex cursor-pointer items-center gap-2 rounded-lg border px-3 py-2 text-xs font-semibold transition ${item.checked ? 'border-cyan-400 bg-cyan-50 text-cyan-700 dark:border-cyan-500/60 dark:bg-cyan-500/15 dark:text-cyan-200' : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 dark:border-slate-700 dark:bg-slate-900/60 dark:text-slate-300'}`}>
+                          <label key={item.label} className={`inline-flex cursor-pointer items-center gap-2 rounded-lg border px-3 py-1.5 text-xs font-semibold transition ${item.checked ? 'border-cyan-400 bg-cyan-50 text-cyan-700 dark:border-cyan-500/60 dark:bg-cyan-500/15 dark:text-cyan-200' : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 dark:border-slate-700 dark:bg-slate-900/60 dark:text-slate-300'}`}>
                             <input type="checkbox" checked={item.checked} onChange={e => item.onChange(e.target.checked)} className="h-4 w-4 rounded border-slate-300 text-cyan-600" />
                             {item.label}
                           </label>
@@ -1883,53 +1880,53 @@ export default function PortalBusca() {
                   <div className="grid gap-3">
                     <div>
                       <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">Nº edital</label>
-                      <input type="text" value={numeroEdital} onChange={e => setNumeroEdital(e.target.value)} placeholder="Nº edital" className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500" />
+                      <input type="text" value={numeroEdital} onChange={e => setNumeroEdital(e.target.value)} placeholder="Nº edital" className="h-9 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500" />
                     </div>
                   </div>
 
                   <div className="grid gap-3 lg:grid-cols-[0.7fr_1.3fr]">
                     <div>
                       <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">UF</label>
-                      <select value={uf} onChange={e => setUf(e.target.value)} className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-800 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100">
+                      <select value={uf} onChange={e => setUf(e.target.value)} className="h-9 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-800 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100">
                         <option value="">Todo Brasil</option>
                         {ESTADOS_BR.map(e => <option key={e.sigla} value={e.sigla}>{e.sigla}</option>)}
                       </select>
                     </div>
                     <div>
                       <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">Cidade</label>
-                      <input type="text" value={cidade} onChange={e => setCidade(e.target.value)} placeholder="Cidade..." className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500" />
+                      <input type="text" value={cidade} onChange={e => setCidade(e.target.value)} placeholder="Cidade..." className="h-9 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500" />
                     </div>
                   </div>
 
                   <div className="grid gap-3 lg:grid-cols-2">
                     <div>
                       <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">Publicação</label>
-                      <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-3 rounded-xl border border-slate-200 bg-slate-50/70 p-2 dark:border-slate-700 dark:bg-slate-800/45">
-                        <input type="date" value={dataInicio} onChange={e => setDataInicio(e.target.value)} className="h-11 min-w-0 rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-800 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-slate-700 dark:bg-slate-900/70 dark:text-slate-100" />
+                      <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 rounded-lg border border-slate-200 bg-slate-50/70 p-1.5 dark:border-slate-700 dark:bg-slate-800/45">
+                        <input type="date" value={dataInicio} onChange={e => setDataInicio(e.target.value)} className="h-9 min-w-0 rounded-md border border-slate-200 bg-white px-2 text-sm text-slate-800 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-slate-700 dark:bg-slate-900/70 dark:text-slate-100" />
                         <span className="text-xs font-semibold text-slate-400">até</span>
-                        <input type="date" value={dataFim} onChange={e => setDataFim(e.target.value)} className="h-11 min-w-0 rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-800 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-slate-700 dark:bg-slate-900/70 dark:text-slate-100" />
+                        <input type="date" value={dataFim} onChange={e => setDataFim(e.target.value)} className="h-9 min-w-0 rounded-md border border-slate-200 bg-white px-2 text-sm text-slate-800 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-slate-700 dark:bg-slate-900/70 dark:text-slate-100" />
                       </div>
                     </div>
                     <div>
                       <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">Prazo</label>
-                      <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-3 rounded-xl border border-slate-200 bg-slate-50/70 p-2 dark:border-slate-700 dark:bg-slate-800/45">
-                        <input type="date" value={dataPrazoInicio} onChange={e => setDataPrazoInicio(e.target.value)} className="h-11 min-w-0 rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-800 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-slate-700 dark:bg-slate-900/70 dark:text-slate-100" />
+                      <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 rounded-lg border border-slate-200 bg-slate-50/70 p-1.5 dark:border-slate-700 dark:bg-slate-800/45">
+                        <input type="date" value={dataPrazoInicio} onChange={e => setDataPrazoInicio(e.target.value)} className="h-9 min-w-0 rounded-md border border-slate-200 bg-white px-2 text-sm text-slate-800 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-slate-700 dark:bg-slate-900/70 dark:text-slate-100" />
                         <span className="text-xs font-semibold text-slate-400">até</span>
-                        <input type="date" value={dataPrazoFim} onChange={e => setDataPrazoFim(e.target.value)} className="h-11 min-w-0 rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-800 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-slate-700 dark:bg-slate-900/70 dark:text-slate-100" />
+                        <input type="date" value={dataPrazoFim} onChange={e => setDataPrazoFim(e.target.value)} className="h-9 min-w-0 rounded-md border border-slate-200 bg-white px-2 text-sm text-slate-800 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-slate-700 dark:bg-slate-900/70 dark:text-slate-100" />
                       </div>
                     </div>
                   </div>
                 </div>
 
-                <div className="space-y-4">
+                <div className="space-y-3">
                   <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-3 dark:border-slate-700/70 dark:bg-slate-800/45">
                     <div className="mb-3 flex items-center justify-between gap-2">
                       <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">Fontes</p>
                       <span className="rounded-full bg-blue-100 px-2 py-0.5 text-[11px] font-bold text-blue-700 dark:bg-blue-500/15 dark:text-blue-200">{fontesAtivas.length} ativas</span>
                     </div>
-                    <div className="grid gap-2 sm:grid-cols-2">
+                    <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
                       {fontesDisponiveis.map(f => (
-                        <label key={f.id} className={`flex min-h-[42px] cursor-pointer items-center gap-2 rounded-lg border px-3 py-2 text-xs font-semibold transition ${fontesAtivas.includes(f.id) ? 'border-blue-400 bg-blue-50 text-blue-800 dark:border-blue-500/60 dark:bg-blue-500/15 dark:text-blue-100' : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 dark:border-slate-700 dark:bg-slate-900/60 dark:text-slate-300'}`}>
+                        <label key={f.id} className={`flex min-h-[36px] cursor-pointer items-center gap-2 rounded-lg border px-2.5 py-1.5 text-xs font-semibold transition ${fontesAtivas.includes(f.id) ? 'border-blue-400 bg-blue-50 text-blue-800 dark:border-blue-500/60 dark:bg-blue-500/15 dark:text-blue-100' : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 dark:border-slate-700 dark:bg-slate-900/60 dark:text-slate-300'}`}>
                           <input type="checkbox" checked={fontesAtivas.includes(f.id)} onChange={() => toggleFonte(f.id)} className="h-4 w-4 rounded border-slate-300 text-blue-600" />
                           <span className="truncate">{f.icon} {f.nome}</span>
                         </label>
@@ -1942,7 +1939,7 @@ export default function PortalBusca() {
                       <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">Produtos TI</p>
                       <span className="rounded-full bg-cyan-100 px-2 py-0.5 text-[11px] font-bold text-cyan-700 dark:bg-cyan-500/15 dark:text-cyan-200">{categoriasProdutoTI.length} selecionados</span>
                     </div>
-                    <div className="max-h-[148px] overflow-y-auto pr-1">
+                    <div className="max-h-[116px] overflow-y-auto pr-1">
                       <div className="flex flex-wrap gap-2">
                         {CATEGORIAS_PRODUTO_TI.map(cat => (
                           <label key={cat.id} className={`inline-flex cursor-pointer items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs font-semibold transition ${categoriasProdutoTI.includes(cat.id) ? 'border-cyan-400 bg-cyan-50 text-cyan-800 dark:border-cyan-500/60 dark:bg-cyan-500/15 dark:text-cyan-100' : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 dark:border-slate-700 dark:bg-slate-900/60 dark:text-slate-300'}`}>

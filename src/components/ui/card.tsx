@@ -8,12 +8,12 @@ const cardVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-card border border-border/80 shadow-sm hover:shadow-md",
-        glass: "bg-card/80 backdrop-blur-xl border border-border/50 shadow-lg hover:shadow-xl hover:-translate-y-0.5",
-        gradient: "bg-gradient-to-br from-card to-muted/50 border border-border/60 shadow-md hover:shadow-lg hover:-translate-y-0.5",
-        glow: "bg-card border border-primary/20 shadow-lg shadow-primary/5 hover:shadow-xl hover:shadow-primary/15 hover:-translate-y-0.5",
-        premium: "bg-gradient-to-br from-card to-accent/5 border border-accent/20 shadow-lg hover:shadow-xl hover:-translate-y-0.5",
-        surface: "bg-gradient-to-br from-card via-card to-muted/30 border border-border/60 shadow-xl hover:shadow-2xl hover:-translate-y-1",
+        default: "bg-card border border-border shadow-sm",
+        glass: "bg-card border border-border shadow-sm",
+        gradient: "bg-card border border-border shadow-sm",
+        glow: "bg-card border border-primary/20 shadow-sm",
+        premium: "bg-card border border-border shadow-sm",
+        surface: "bg-card border border-border shadow-sm",
       },
     },
     defaultVariants: {
@@ -55,8 +55,10 @@ const CardTitle = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
+    role="heading"
+    aria-level={2}
     className={cn(
-      "text-xl font-bold leading-none tracking-tight",
+      "text-base font-semibold leading-snug tracking-tight",
       className
     )}
     {...props}

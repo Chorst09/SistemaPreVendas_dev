@@ -1,3 +1,5 @@
+import { PageHeader } from '@/components/ui/page-header';
+import { Button } from '@/components/ui/button';
 import React, { useEffect, useState } from 'react';
 import {
   Home, CheckCircle2, FileText, LayoutTemplate, Clock, Calendar,
@@ -10,274 +12,31 @@ import 'tldraw/tldraw.css';
 import ArchitectureDiagram from './ArchitectureDiagram';
 import type { Issue, Space } from '../types';
 
-export function HomeView({
-  projects = [],
-  issues = [],
-  onCreateProject,
-  onOpenDashboard,
-  onOpenProject
-}: {
-  projects?: Space[];
-  issues?: Issue[];
-  onCreateProject?: () => void;
-  onOpenDashboard?: () => void;
-  onOpenProject?: (projectId: string) => void;
+export function HomeView({ projects = [], issues = [], onCreateProject, onOpenDashboard, onOpenProject }: {
+ projects?: Space[]; issues?: Issue[]; onCreateProject?: () => void; onOpenDashboard?: () => void; onOpenProject?: (id: string) => void;
 }) {
-  const totalProjects = projects.length;
-  const activeProjects = projects.filter(project => project.status !== 'CONCLUIDO').length;
-  const riskProjects = projects.filter(project => project.status === 'EM RISCO' || project.priority === 'Urgente').length;
-  const highlightedProject = projects[0];
-  const highlightedIssues = highlightedProject
-    ? issues.filter(issue => issue.projectId === highlightedProject.id || (!issue.projectId && highlightedProject.id === projects[0]?.id))
-    : [];
-  const completedHighlightedIssues = highlightedIssues.filter(issue => issue.status === 'CONCLUÍDO').length;
-  const highlightedProgress = highlightedIssues.length
-    ? Math.round((completedHighlightedIssues / highlightedIssues.length) * 100)
-    : 0;
-
-  const projectPhotos = [
-    {
-      title: 'Implantação e campo',
-      label: 'Execução',
-      image: 'https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=900&q=80'
-    },
-    {
-      title: 'Planejamento executivo',
-      label: 'Governança',
-      image: 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=900&q=80'
-    },
-    {
-      title: 'Equipe integrada',
-      label: 'Colaboração',
-      image: 'https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=900&q=80'
-    }
-  ];
-
-  return (
-    <div className="h-full bg-[#070b16] overflow-y-auto p-8 text-slate-300 custom-scrollbar">
-      <div className="max-w-7xl mx-auto space-y-6">
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-slate-100 flex items-center gap-3">
-            <Home className="w-6 h-6 text-[#ff7a00]" />
-            Início
-          </h1>
-          <div className="hidden items-center gap-2 rounded-full border border-[#263345] bg-[#111827] px-4 py-2 text-xs font-semibold text-slate-400 md:flex">
-            <Sparkles className="h-4 w-4 text-[#18c8df]" />
-            Central executiva de projetos
-          </div>
-        </div>
-
-        <section className="relative min-h-[360px] overflow-hidden rounded-lg border border-[#263345] bg-[#111827]">
-          <img
-            src="https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=1800&q=80"
-            alt="Equipe em sala de planejamento de projetos"
-            className="absolute inset-0 h-full w-full object-cover opacity-35"
-          />
-          <div className="absolute inset-0 bg-[linear-gradient(90deg,#070b16_0%,rgba(7,11,22,0.92)_34%,rgba(7,11,22,0.58)_100%)]" />
-          <div className="relative z-10 grid min-h-[360px] gap-6 p-8 lg:grid-cols-[1.1fr_0.9fr]">
-            <div className="flex max-w-3xl flex-col justify-center">
-              <span className="mb-4 flex w-fit items-center gap-2 rounded-full border border-[#ff7a00]/35 bg-[#ff7a00]/10 px-3 py-1 text-[11px] font-black uppercase tracking-wide text-[#ffb15c]">
-                <Briefcase className="h-3.5 w-3.5" />
-                Gestão de Projetos
-              </span>
-              <h2 className="text-4xl font-black leading-tight text-white">
-                Controle projetos, fases, equipe e decisões em uma visão única.
-              </h2>
-              <p className="mt-4 max-w-2xl text-base leading-relaxed text-slate-300">
-                Organize escopo, cronograma, responsáveis, entregáveis e acompanhamentos com leitura executiva para cada iniciativa em andamento.
-              </p>
-              <div className="mt-7 flex flex-wrap gap-3">
-                <button
-                  type="button"
-                  onClick={onCreateProject}
-                  className="flex items-center gap-2 rounded-md bg-[#ff7a00] px-5 py-2.5 text-sm font-black text-white transition-colors hover:bg-[#f6b40b] hover:text-[#050914]"
-                >
-                  <Plus className="h-4 w-4" />
-                  Novo projeto
-                </button>
-                <button
-                  type="button"
-                  onClick={onOpenDashboard}
-                  className="flex items-center gap-2 rounded-md border border-[#374151] bg-[#111827]/80 px-5 py-2.5 text-sm font-bold text-slate-200 transition-colors hover:border-[#ff7a00] hover:text-white"
-                >
-                  <BarChart2 className="h-4 w-4 text-[#22c55e]" />
-                  Ver painel
-                </button>
-              </div>
-            </div>
-
-            <div className="grid content-center gap-3">
-              <div className="grid grid-cols-3 gap-3">
-                {[
-                  [String(totalProjects), 'Projetos salvos', '#22c55e'],
-                  [String(activeProjects), 'Em andamento', '#f6b40b'],
-                  [String(riskProjects), 'Em atenção', '#18c8df']
-                ].map(([value, label, color]) => (
-                  <div key={label} className="rounded-lg border border-[#263345] bg-[#070b16]/80 p-4 backdrop-blur">
-                    <p className="text-2xl font-black text-white" style={{ color }}>{value}</p>
-                    <p className="mt-1 text-[11px] font-semibold uppercase text-slate-500">{label}</p>
-                  </div>
-                ))}
-              </div>
-              <div className="rounded-lg border border-[#263345] bg-[#070b16]/85 p-5 backdrop-blur">
-                <div className="mb-4 flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-bold text-slate-100">Projeto em destaque</p>
-                    <p className="text-xs text-slate-500">{highlightedProject ? `${highlightedProject.client || 'Cliente'} · ${highlightedProject.status || 'Projeto'}` : 'Nenhum projeto salvo'}</p>
-                  </div>
-                  <span className="rounded-full bg-[#22c55e]/10 px-3 py-1 text-xs font-bold text-[#22c55e]">{highlightedProject?.priority || 'Em controle'}</span>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => highlightedProject && onOpenProject?.(highlightedProject.id)}
-                  disabled={!highlightedProject}
-                  className="mb-3 text-left text-xl font-black text-white disabled:cursor-default disabled:text-slate-500"
-                >
-                  {highlightedProject?.name || 'Crie seu primeiro projeto'}
-                </button>
-                <div className="h-2 overflow-hidden rounded-full bg-[#1f2937]">
-                  <div className="h-full rounded-full bg-[linear-gradient(90deg,#ff7a00,#f6b40b,#22c55e)]" style={{ width: `${highlightedProgress}%` }} />
-                </div>
-                <div className="mt-4 grid grid-cols-3 gap-3 text-xs">
-                  <div>
-                    <p className="font-black text-slate-100">{highlightedProgress}%</p>
-                    <p className="text-slate-500">Progresso</p>
-                  </div>
-                  <div>
-                    <p className="font-black text-slate-100">{highlightedIssues.length}</p>
-                    <p className="text-slate-500">Fases</p>
-                  </div>
-                  <div>
-                    <p className="font-black text-slate-100">{highlightedProject?.manager ? 1 : 0}</p>
-                    <p className="text-slate-500">Gestor</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section className="grid gap-4 lg:grid-cols-3">
-          {projectPhotos.map(item => (
-            <article key={item.title} className="group overflow-hidden rounded-lg border border-[#263345] bg-[#111827]">
-              <div className="relative h-44 overflow-hidden">
-                <img src={item.image} alt={item.title} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
-                <div className="absolute inset-0 bg-[linear-gradient(180deg,transparent,rgba(7,11,22,0.88))]" />
-                <span className="absolute left-4 top-4 rounded-full bg-[#070b16]/80 px-3 py-1 text-[11px] font-black uppercase tracking-wide text-[#ffb15c]">
-                  {item.label}
-                </span>
-              </div>
-              <div className="p-5">
-                <h3 className="text-lg font-black text-slate-100">{item.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-slate-400">
-                  Acompanhe responsabilidades, marcos, riscos e decisões para manter cada entrega visível do início ao encerramento.
-                </p>
-              </div>
-            </article>
-          ))}
-        </section>
-
-        <section className="rounded-lg border border-[#263345] bg-[#111827] p-5">
-          <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <h2 className="text-lg font-black text-slate-100">Projetos salvos</h2>
-              <p className="text-sm text-slate-500">Projetos criados no módulo ficam disponíveis neste painel inicial.</p>
-            </div>
-            <button
-              type="button"
-              onClick={onCreateProject}
-              className="flex items-center gap-2 rounded-md bg-[#ff7a00] px-4 py-2 text-xs font-black text-white transition-colors hover:bg-[#f6b40b] hover:text-[#050914]"
-            >
-              <Plus className="h-4 w-4" />
-              Novo projeto
-            </button>
-          </div>
-
-          {projects.length === 0 ? (
-            <div className="rounded-lg border border-dashed border-[#374151] bg-[#070b16] p-8 text-center">
-              <Folder className="mx-auto mb-3 h-8 w-8 text-slate-600" />
-              <p className="font-bold text-slate-300">Nenhum projeto salvo</p>
-              <p className="mt-1 text-sm text-slate-500">Crie um projeto para ele aparecer aqui.</p>
-            </div>
-          ) : (
-            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-              {projects.map(project => {
-                const projectIssues = issues.filter(issue => issue.projectId === project.id || (!issue.projectId && project.id === projects[0]?.id));
-                const completedIssues = projectIssues.filter(issue => issue.status === 'CONCLUÍDO').length;
-                const progress = projectIssues.length ? Math.round((completedIssues / projectIssues.length) * 100) : 0;
-                return (
-                  <button
-                    key={project.id}
-                    type="button"
-                    onClick={() => onOpenProject?.(project.id)}
-                    className="group rounded-lg border border-[#263345] bg-[#070b16] p-4 text-left transition-colors hover:border-[#ff7a00]/60 hover:bg-[#0d1423]"
-                  >
-                    <div className="mb-3 flex items-start justify-between gap-3">
-                      <div className="flex min-w-0 items-center gap-3">
-                        <span className={`flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-md text-sm font-black text-white ${project.color}`}>
-                          {project.initial}
-                        </span>
-                        <div className="min-w-0">
-                          <h3 className="truncate font-black text-slate-100 group-hover:text-[#ffb15c]">{project.name}</h3>
-                          <p className="truncate text-xs text-slate-500">{project.client || project.manager || 'Projeto'}</p>
-                        </div>
-                      </div>
-                      <span className="rounded-full border border-[#374151] px-2 py-1 text-[10px] font-black uppercase text-slate-400">
-                        {project.status || 'PLANEJAMENTO'}
-                      </span>
-                    </div>
-                    <p className="line-clamp-2 min-h-[40px] text-sm leading-5 text-slate-400">
-                      {project.objective || project.scope || 'Projeto sem objetivo informado.'}
-                    </p>
-                    <div className="mt-4 h-2 overflow-hidden rounded-full bg-[#1f2937]">
-                      <div className="h-full rounded-full bg-[linear-gradient(90deg,#ff7a00,#22c55e)]" style={{ width: `${progress}%` }} />
-                    </div>
-                    <div className="mt-3 flex items-center justify-between text-xs text-slate-500">
-                      <span>{projectIssues.length} fases</span>
-                      <span>{progress}% concluído</span>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-          )}
-        </section>
-
-        <section className="grid gap-4 lg:grid-cols-[1fr_1fr_1fr]">
-          {[
-            { icon: Target, title: 'Escopo claro', text: 'Cada projeto começa com objetivo, escopo, entregáveis, critérios de sucesso e responsáveis.', color: 'text-[#ff7a00]' },
-            { icon: Users, title: 'Equipe conectada', text: 'Convites por e-mail, papéis definidos e acompanhamento das pessoas envolvidas.', color: 'text-[#22c55e]' },
-            { icon: ArrowUpRight, title: 'Visão executiva', text: 'Indicadores, fases e decisões ficam em evidência para acelerar a tomada de decisão.', color: 'text-[#18c8df]' }
-          ].map(item => {
-            const Icon = item.icon;
-            return (
-              <div key={item.title} className="rounded-lg border border-[#263345] bg-[#111827] p-5">
-                <Icon className={`mb-4 h-6 w-6 ${item.color}`} />
-                <h3 className="text-base font-black text-slate-100">{item.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-slate-400">{item.text}</p>
-              </div>
-            );
-          })}
-        </section>
-      </div>
-    </div>
-  );
+ const active = projects.filter(project => !['CONCLUIDO', 'CONCLUÍDO', 'CANCELADO'].includes(project.status || '')).length;
+ const risk = projects.filter(project => project.status === 'EM RISCO' || project.priority === 'Urgente').length;
+ return <div className="h-full overflow-y-auto p-4 sm:p-6"><PageHeader eyebrow="Soluções e entrega" title="Projetos" description="Escopo, fases e responsáveis conectados à execução." actions={<><Button onClick={onCreateProject}><Plus className="h-4 w-4" />Novo projeto</Button><Button variant="outline" onClick={onOpenDashboard}><BarChart2 className="h-4 w-4" />Ver painel</Button></>} />
+ <div className="mb-6 grid gap-4 sm:grid-cols-3">{[[projects.length,'Projetos cadastrados'],[active,'Em andamento'],[risk,'Precisam de atenção']].map(([value,label])=><div key={label} className="rounded-xl border border-border bg-card p-5"><p className="text-xs text-muted-foreground">{label}</p><strong className="mt-3 block text-3xl font-semibold tabular-nums">{value}</strong></div>)}</div>
+ <div className="grid gap-4 xl:grid-cols-2">{projects.map(project=>{const phases=issues.filter(issue=>issue.projectId===project.id||(!issue.projectId&&project.id===projects[0]?.id));const done=phases.filter(issue=>issue.status==='CONCLUÍDO').length;const progress=phases.length?Math.round(done/phases.length*100):0;return <button key={project.id} type="button" className="rounded-xl border border-border bg-card p-5 text-left transition-colors hover:border-primary/50" onClick={()=>onOpenProject?.(project.id)}><div className="mb-3 flex flex-wrap justify-between gap-2"><span className="text-xs text-muted-foreground">{project.client||'Cliente não informado'}</span><span className="rounded bg-muted px-2 py-1 text-xs text-muted-foreground">{project.status||'PLANEJAMENTO'}</span></div><h2 className="text-lg font-semibold">{project.name}</h2><p className="mt-2 line-clamp-2 text-sm text-muted-foreground">{project.objective||project.scope||'Defina o objetivo e o escopo deste projeto.'}</p><p className="mt-4 text-xs text-muted-foreground">Responsável: {project.manager||'A definir'}</p><div className="mt-4 h-1.5 overflow-hidden rounded-full bg-muted"><div className="h-full rounded-full bg-primary" style={{width:progress+'%'}} /></div><div className="mt-2 flex justify-between text-xs text-muted-foreground"><span>{done}/{phases.length} fases concluídas</span><span>{progress}%</span></div></button>})}</div>
+ {!projects.length&&<p className="py-12 text-center text-sm text-muted-foreground">Crie seu primeiro projeto para acompanhar a execução.</p>}</div>;
 }
 
 export function PlannedView() {
   return (
-    <div className="h-full bg-[#070b16] overflow-y-auto p-8 text-slate-300">
+    <div className="h-full bg-background overflow-y-auto p-8 text-foreground">
       <div className="max-w-5xl mx-auto">
         <div className="flex items-center justify-between mb-8">
-          <h1 className="text-2xl font-bold text-slate-100 flex items-center gap-3">
-            <Calendar className="w-6 h-6 text-[#22c55e]" />
+          <h1 className="text-2xl font-bold text-foreground flex items-center gap-3">
+            <Calendar className="w-6 h-6 text-accent-green" />
             Planejado
           </h1>
           <div className="flex items-center gap-3">
-            <button className="flex items-center gap-2 text-sm text-slate-400 hover:text-slate-200 bg-[#111827] border border-[#263345] px-3 py-1.5 rounded-md transition-colors">
+            <button className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground bg-card border border-border px-3 py-1.5 rounded-md transition-colors">
               <Calendar className="w-4 h-4" /> Hoje
             </button>
-            <button className="flex items-center gap-2 text-sm text-white bg-[#ff7a00] hover:bg-[#f6b40b] px-3 py-1.5 rounded-md transition-colors font-medium">
+            <button className="flex items-center gap-2 text-sm text-primary-foreground bg-primary hover:bg-primary px-3 py-1.5 rounded-md transition-colors font-medium">
               <Plus className="w-4 h-4" /> Nova Fase
             </button>
           </div>
@@ -286,34 +45,34 @@ export function PlannedView() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Today's Tasks */}
           <div className="lg:col-span-2 flex flex-col gap-4">
-            <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wider">Para Hoje</h2>
+            <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Para Hoje</h2>
 
-            <div className="bg-[#111827] border border-[#263345] rounded-md p-8 flex flex-col items-center justify-center min-h-[250px] text-center">
-              <div className="w-16 h-16 bg-[#22c55e]/10 rounded-full flex items-center justify-center mb-4">
-                <CheckCircle2 className="w-8 h-8 text-[#22c55e]" />
+            <div className="bg-card border border-border rounded-md p-8 flex flex-col items-center justify-center min-h-[250px] text-center">
+              <div className="w-16 h-16 bg-accent-green/10 rounded-full flex items-center justify-center mb-4">
+                <CheckCircle2 className="w-8 h-8 text-accent-green" />
               </div>
-              <h2 className="text-lg font-semibold text-slate-200 mb-2">Tudo em dia!</h2>
-              <p className="text-slate-500 max-w-sm">Você não tem fases planejadas para hoje. Aproveite para planejar sua semana ou descansar.</p>
+              <h2 className="text-lg font-semibold text-foreground mb-2">Tudo em dia!</h2>
+              <p className="text-muted-foreground max-w-sm">Você não tem fases planejadas para hoje. Aproveite para planejar sua semana ou descansar.</p>
             </div>
           </div>
 
           {/* Overdue / Upcoming */}
           <div className="flex flex-col gap-4">
-            <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wider">Atrasadas</h2>
-            <div className="bg-[#111827] border border-[#263345] rounded-md p-6 text-center text-slate-500 text-sm">
+            <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Atrasadas</h2>
+            <div className="bg-card border border-border rounded-md p-6 text-center text-muted-foreground text-sm">
               Nenhuma tarefa em atraso.
             </div>
 
-            <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mt-4">Próximos 7 dias</h2>
-            <div className="bg-[#111827] border border-[#263345] rounded-md p-4 flex flex-col gap-3">
+            <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mt-4">Próximos 7 dias</h2>
+            <div className="bg-card border border-border rounded-md p-4 flex flex-col gap-3">
               {[1, 2].map((i) => (
-                <div key={i} className="flex gap-3 p-2 hover:bg-[#111827] rounded-lg transition-colors cursor-pointer border border-transparent hover:border-[#263345]">
-                  <div className="w-8 h-8 rounded bg-[#ff7a00]/10 text-[#ff7a00] flex items-center justify-center shrink-0">
+                <div key={i} className="flex gap-3 p-2 hover:bg-card rounded-lg transition-colors cursor-pointer border border-transparent hover:border-border">
+                  <div className="w-8 h-8 rounded bg-primary/10 text-primary flex items-center justify-center shrink-0">
                     <Clock className="w-4 h-4" />
                   </div>
                   <div className="overflow-hidden">
-                    <p className="text-sm font-medium text-slate-200 truncate">Revisão de planejamento sprint {i}</p>
-                    <p className="text-xs text-slate-500">Quinta-feira, 14:00</p>
+                    <p className="text-sm font-medium text-foreground truncate">Revisão de planejamento sprint {i}</p>
+                    <p className="text-xs text-muted-foreground">Quinta-feira, 14:00</p>
                   </div>
                 </div>
               ))}
@@ -327,73 +86,73 @@ export function PlannedView() {
 
 export function DocsView() {
   return (
-    <div className="h-full bg-[#070b16] overflow-y-auto p-8 text-slate-300">
+    <div className="h-full bg-background overflow-y-auto p-8 text-foreground">
       <div className="max-w-5xl mx-auto flex flex-col h-full">
         <div className="flex items-center justify-between mb-8">
-          <h1 className="text-2xl font-bold text-slate-100 flex items-center gap-3">
-            <FileText className="w-6 h-6 text-[#ff7a00]" />
+          <h1 className="text-2xl font-bold text-foreground flex items-center gap-3">
+            <FileText className="w-6 h-6 text-primary" />
             Documentos
           </h1>
           <div className="flex items-center gap-3">
             <div className="relative">
-              <Search className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
+              <Search className="w-4 h-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
                 placeholder="Buscar documentos..."
-                className="bg-[#111827] border border-[#263345] text-sm text-slate-200 rounded-md pl-9 pr-4 py-1.5 focus:outline-none focus:border-[#ff7a00] w-64"
+                className="bg-card border border-border text-sm text-foreground rounded-md pl-9 pr-4 py-1.5 focus:outline-none focus:border-primary w-64"
               />
             </div>
-            <button className="flex items-center justify-center p-1.5 text-slate-400 hover:text-slate-200 bg-[#111827] border border-[#263345] rounded-md transition-colors">
+            <button className="flex items-center justify-center p-1.5 text-muted-foreground hover:text-foreground bg-card border border-border rounded-md transition-colors">
               <LayoutGrid className="w-4 h-4" />
             </button>
-            <button className="flex items-center gap-2 text-sm text-white bg-[#ff7a00] hover:bg-[#f6b40b] px-3 py-1.5 rounded-md transition-colors font-medium">
+            <button className="flex items-center gap-2 text-sm text-primary-foreground bg-primary hover:bg-primary px-3 py-1.5 rounded-md transition-colors font-medium">
               <Plus className="w-4 h-4" /> Novo Doc
             </button>
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <div className="bg-[#111827] border border-dashed border-[#263345] rounded-md p-6 hover:border-[#ff7a00] cursor-pointer transition-all flex flex-col items-center justify-center text-slate-500 hover:text-[#ff7a00] hover:bg-[#ff7a00]/5 min-h-[160px]">
+          <div className="bg-card border border-dashed border-border rounded-md p-6 hover:border-primary cursor-pointer transition-all flex flex-col items-center justify-center text-muted-foreground hover:text-primary hover:bg-primary/5 min-h-[160px]">
             <Plus className="w-8 h-8 mb-2 opacity-50" />
             <span className="text-sm font-medium">Novo Documento</span>
           </div>
 
-          <div className="bg-[#111827] border border-[#263345] rounded-md p-5 hover:border-[#ff7a00] cursor-pointer transition-colors group relative flex flex-col min-h-[160px]">
-            <div className="absolute top-4 right-4 text-slate-500 opacity-0 group-hover:opacity-100 transition-opacity">
-              <MoreVertical className="w-4 h-4 hover:text-slate-300" />
+          <div className="bg-card border border-border rounded-md p-5 hover:border-primary cursor-pointer transition-colors group relative flex flex-col min-h-[160px]">
+            <div className="absolute top-4 right-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity">
+              <MoreVertical className="w-4 h-4 hover:text-foreground" />
             </div>
-            <div className="w-10 h-10 rounded-lg bg-[#ff7a00]/10 text-[#ff7a00] flex items-center justify-center mb-auto group-hover:bg-[#ff7a00] group-hover:text-white transition-colors">
+            <div className="w-10 h-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center mb-auto group-hover:bg-primary group-hover:text-foreground transition-colors">
               <FileText className="w-5 h-5" />
             </div>
             <div className="mt-4">
-              <h3 className="font-bold text-slate-200 group-hover:text-[#ff7a00] transition-colors line-clamp-1">Guia de Integração API</h3>
-              <p className="text-xs text-slate-500 mt-1">Modificado há 2 dias</p>
+              <h3 className="font-bold text-foreground group-hover:text-primary transition-colors line-clamp-1">Guia de Integração API</h3>
+              <p className="text-xs text-muted-foreground mt-1">Modificado há 2 dias</p>
             </div>
           </div>
 
-          <div className="bg-[#111827] border border-[#263345] rounded-md p-5 hover:border-[#22c55e] cursor-pointer transition-colors group relative flex flex-col min-h-[160px]">
-            <div className="absolute top-4 right-4 text-slate-500 opacity-0 group-hover:opacity-100 transition-opacity">
-              <MoreVertical className="w-4 h-4 hover:text-slate-300" />
+          <div className="bg-card border border-border rounded-md p-5 hover:border-accent-green cursor-pointer transition-colors group relative flex flex-col min-h-[160px]">
+            <div className="absolute top-4 right-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity">
+              <MoreVertical className="w-4 h-4 hover:text-foreground" />
             </div>
-            <div className="w-10 h-10 rounded-lg bg-[#22c55e]/10 text-[#22c55e] flex items-center justify-center mb-auto group-hover:bg-[#22c55e] group-hover:text-white transition-colors">
+            <div className="w-10 h-10 rounded-lg bg-accent-green/10 text-accent-green flex items-center justify-center mb-auto group-hover:bg-accent-green group-hover:text-foreground transition-colors">
               <FileText className="w-5 h-5" />
             </div>
             <div className="mt-4">
-              <h3 className="font-bold text-slate-200 group-hover:text-[#22c55e] transition-colors line-clamp-1">Ata: Kick-off Paranacidade</h3>
-              <p className="text-xs text-slate-500 mt-1">Vinculado à PRJ-002</p>
+              <h3 className="font-bold text-foreground group-hover:text-accent-green transition-colors line-clamp-1">Ata: Kick-off Paranacidade</h3>
+              <p className="text-xs text-muted-foreground mt-1">Vinculado à PRJ-002</p>
             </div>
           </div>
 
-          <div className="bg-[#111827] border border-[#263345] rounded-md p-5 hover:border-[#eab308] cursor-pointer transition-colors group relative flex flex-col min-h-[160px]">
-            <div className="absolute top-4 right-4 text-slate-500 opacity-0 group-hover:opacity-100 transition-opacity">
-              <MoreVertical className="w-4 h-4 hover:text-slate-300" />
+          <div className="bg-card border border-border rounded-md p-5 hover:border-[#eab308] cursor-pointer transition-colors group relative flex flex-col min-h-[160px]">
+            <div className="absolute top-4 right-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity">
+              <MoreVertical className="w-4 h-4 hover:text-foreground" />
             </div>
-            <div className="w-10 h-10 rounded-lg bg-[#eab308]/10 text-[#eab308] flex items-center justify-center mb-auto group-hover:bg-[#eab308] group-hover:text-slate-900 transition-colors">
+            <div className="w-10 h-10 rounded-lg bg-[#eab308]/10 text-accent-yellow flex items-center justify-center mb-auto group-hover:bg-[#eab308] group-hover:text-slate-900 transition-colors">
               <Folder className="w-5 h-5" />
             </div>
             <div className="mt-4">
-              <h3 className="font-bold text-slate-200 group-hover:text-[#eab308] transition-colors line-clamp-1">Requisitos de Sistema</h3>
-              <p className="text-xs text-slate-500 mt-1">5 documentos internos</p>
+              <h3 className="font-bold text-foreground group-hover:text-accent-yellow transition-colors line-clamp-1">Requisitos de Sistema</h3>
+              <p className="text-xs text-muted-foreground mt-1">5 documentos internos</p>
             </div>
           </div>
         </div>
@@ -420,16 +179,16 @@ export function WhiteboardsView() {
 
   if (activeBoard) {
     return (
-      <div className="h-full flex flex-col bg-[#070b16] overflow-hidden">
-        <div className="h-14 border-b border-[#263345] bg-[#111827] flex items-center px-4 flex-shrink-0 gap-4">
+      <div className="h-full flex flex-col bg-background overflow-hidden">
+        <div className="h-14 border-b border-border bg-card flex items-center px-4 flex-shrink-0 gap-4">
           <button
             onClick={() => setActiveBoard(null)}
-            className="flex items-center gap-2 text-slate-400 hover:text-slate-200 transition-colors"
+            className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
           >
             <ArrowLeft className="w-4 h-4" /> Voltar
           </button>
-          <div className="w-px h-6 bg-[#263345]"></div>
-          <h2 className="text-slate-200 font-semibold">{activeBoard}</h2>
+          <div className="w-px h-6 bg-secondary"></div>
+          <h2 className="text-foreground font-semibold">{activeBoard}</h2>
         </div>
         <div className="flex-1 relative">
           <Tldraw />
@@ -439,30 +198,30 @@ export function WhiteboardsView() {
   }
 
   return (
-    <div className="h-full bg-[#070b16] overflow-y-auto p-8 text-slate-300">
+    <div className="h-full bg-background overflow-y-auto p-8 text-foreground">
       <div className="max-w-5xl mx-auto">
         <div className="flex items-center justify-between mb-8">
-          <h1 className="text-2xl font-bold text-slate-100 flex items-center gap-3">
-            <LayoutTemplate className="w-6 h-6 text-[#ff7a00]" />
+          <h1 className="text-2xl font-bold text-foreground flex items-center gap-3">
+            <LayoutTemplate className="w-6 h-6 text-primary" />
             Quadros Mágicos
           </h1>
           <button
             onClick={() => setActiveBoard('Novo Quadro em Branco')}
-            className="flex items-center gap-2 text-sm text-white bg-[#ff7a00] hover:bg-[#f6b40b] px-4 py-2 rounded-md transition-colors font-medium"
+            className="flex items-center gap-2 text-sm text-primary-foreground bg-primary hover:bg-primary px-4 py-2 rounded-md transition-colors font-medium"
           >
             <Plus className="w-4 h-4" /> Novo Quadro
           </button>
         </div>
 
         {/* Hero Section */}
-        <div className="relative bg-gradient-to-br from-[#111827] to-[#070b16] border border-[#263345] rounded-lg p-10 mb-8 overflow-hidden">
+        <div className="relative bg-gradient-to-br from-[#111827] to-[#070b16] border border-border rounded-lg p-10 mb-8 overflow-hidden">
           <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10 mix-blend-overlay"></div>
           <div className="relative z-10 flex flex-col items-start max-w-lg">
-            <div className="bg-[#ff7a00]/20 text-[#ff7a00] text-xs font-bold px-3 py-1 rounded-full mb-4 border border-[#ff7a00]/30 flex items-center gap-1">
+            <div className="bg-primary/20 text-primary text-xs font-bold px-3 py-1 rounded-full mb-4 border border-primary/30 flex items-center gap-1">
               <Sparkles className="w-3 h-3" /> NOVO
             </div>
-            <h2 className="text-3xl font-bold text-white mb-3">Colabore de forma visual</h2>
-            <p className="text-slate-400 mb-6 text-sm leading-relaxed">
+            <h2 className="text-3xl font-bold text-foreground mb-3">Colabore de forma visual</h2>
+            <p className="text-muted-foreground mb-6 text-sm leading-relaxed">
               Use Quadros Mágicos para desenhar fluxos de projeto, arquiteturas de sistema, ou fazer brainstorming em tempo real com toda a sua equipe.
             </p>
             <button
@@ -474,12 +233,12 @@ export function WhiteboardsView() {
           </div>
 
           <div className="absolute -right-20 -bottom-20 opacity-40 pointer-events-none">
-            <LayoutTemplate className="w-96 h-96 text-[#ff7a00]" />
+            <LayoutTemplate className="w-96 h-96 text-primary" />
           </div>
         </div>
 
         {/* Templates */}
-        <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-4">Templates Populares</h2>
+        <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">Templates Populares</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {[
             {
@@ -509,17 +268,17 @@ export function WhiteboardsView() {
             <div
               key={template.title}
               onClick={() => setActiveBoard(template.title)}
-              className="group cursor-pointer overflow-hidden rounded-lg border border-[#263345] bg-[#111827] transition-colors hover:border-[#ff7a00]"
+              className="group cursor-pointer overflow-hidden rounded-lg border border-border bg-card transition-colors hover:border-primary"
             >
-              <div className="relative h-32 border-b border-[#263345] bg-[#070b16] p-4">
+              <div className="relative h-32 border-b border-border bg-background p-4">
                 <div className="absolute inset-0 opacity-80" style={{ background: `radial-gradient(circle at 20% 10%, ${template.color}22, transparent 34%)` }} />
                 <div className="relative grid h-full grid-cols-4 items-center gap-2">
                   {template.preview.map((label, index) => (
                     <div key={label} className="min-w-0">
                       <div className="mx-auto mb-2 flex h-9 w-9 items-center justify-center rounded-lg border" style={{ borderColor: `${template.color}55`, backgroundColor: `${template.color}18`, color: template.color }}>
-                        {index === 0 ? <Icon className="h-4 w-4" /> : <span className="text-xs font-black">{index + 1}</span>}
+                        {index === 0 ? <Icon className="h-4 w-4" /> : <span className="text-xs font-semibold">{index + 1}</span>}
                       </div>
-                      <div className="h-1 rounded-full bg-[#263345]">
+                      <div className="h-1 rounded-full bg-secondary">
                         <div className="h-full rounded-full" style={{ width: `${72 - index * 10}%`, backgroundColor: template.color }} />
                       </div>
                     </div>
@@ -527,8 +286,8 @@ export function WhiteboardsView() {
                 </div>
               </div>
               <div className="p-4">
-                <h3 className="text-sm font-black text-slate-100 transition-colors group-hover:text-[#ffb15c]">{template.title}</h3>
-                <p className="mt-1 text-xs text-slate-500">{template.subtitle}</p>
+                <h3 className="text-sm font-semibold text-foreground transition-colors group-hover:text-primary">{template.title}</h3>
+                <p className="mt-1 text-xs text-muted-foreground">{template.subtitle}</p>
               </div>
             </div>
           )})}
@@ -574,11 +333,11 @@ type RoadmapWave = {
   color: string;
 };
 
-const editableInputClass = 'w-full rounded-md border border-[#263345] bg-[#070b16] px-2.5 py-2 text-sm font-semibold text-slate-100 outline-none transition-colors placeholder:text-slate-600 focus:border-[#ff7a00]';
-const editableSmallInputClass = 'w-full rounded-md border border-[#263345] bg-[#070b16] px-2 py-1.5 text-xs font-semibold text-slate-200 outline-none transition-colors placeholder:text-slate-600 focus:border-[#ff7a00]';
-const editableTextAreaClass = 'w-full resize-none rounded-md border border-[#263345] bg-[#070b16] px-2.5 py-2 text-sm font-semibold leading-relaxed text-slate-100 outline-none transition-colors placeholder:text-slate-600 focus:border-[#ff7a00]';
-const boardActionButtonClass = 'flex items-center gap-2 rounded-md border border-[#374151] bg-[#111827] px-3 py-2 text-xs font-black text-slate-200 transition-colors hover:border-[#ff7a00] hover:text-white';
-const dangerIconButtonClass = 'flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md border border-[#374151] bg-[#111827] text-slate-500 transition-colors hover:border-[#ef4444] hover:text-[#ef4444]';
+const editableInputClass = 'w-full rounded-md border border-border bg-background px-2.5 py-2 text-sm font-semibold text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-primary';
+const editableSmallInputClass = 'w-full rounded-md border border-border bg-background px-2 py-1.5 text-xs font-semibold text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-primary';
+const editableTextAreaClass = 'w-full resize-none rounded-md border border-border bg-background px-2.5 py-2 text-sm font-semibold leading-relaxed text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-primary';
+const boardActionButtonClass = 'flex items-center gap-2 rounded-md border border-border bg-card px-3 py-2 text-xs font-semibold text-foreground transition-colors hover:border-primary hover:text-foreground';
+const dangerIconButtonClass = 'flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md border border-border bg-card text-muted-foreground transition-colors hover:border-[#ef4444] hover:text-destructive';
 
 const PROCESS_DEFAULT_BOARD: { steps: ProcessStep[]; swimlanes: Swimlane[]; actions: string[] } = {
   steps: [
@@ -648,32 +407,32 @@ function BoardShell({
   children: React.ReactNode;
 }) {
   return (
-    <div className="h-full overflow-y-auto bg-[radial-gradient(circle_at_16%_0%,rgba(255,122,0,0.18),transparent_26%),radial-gradient(circle_at_86%_8%,rgba(34,197,94,0.14),transparent_30%),linear-gradient(135deg,#050914,#070b16_46%,#111827)] p-6 text-slate-300 custom-scrollbar">
+    <div className="h-full overflow-y-auto bg-[radial-gradient(circle_at_16%_0%,rgba(255,122,0,0.18),transparent_26%),radial-gradient(circle_at_86%_8%,rgba(34,197,94,0.14),transparent_30%),linear-gradient(135deg,#050914,#070b16_46%,#111827)] p-6 text-foreground custom-scrollbar">
       <div className="mx-auto flex max-w-7xl flex-col gap-5">
-        <header className="flex flex-col gap-4 rounded-lg border border-[#263345] bg-[#0b1020]/88 p-5 shadow-2xl shadow-black/20 md:flex-row md:items-center md:justify-between">
+        <header className="flex flex-col gap-4 rounded-lg border border-border bg-card/88 p-5 shadow-2xl shadow-black/20 md:flex-row md:items-center md:justify-between">
           <div className="flex min-w-0 items-start gap-4">
             <button
               onClick={onBack}
-              className="mt-1 flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg border border-[#374151] bg-[#111827] text-slate-400 transition-colors hover:border-[#ff7a00] hover:text-white"
+              className="mt-1 flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg border border-border bg-card text-muted-foreground transition-colors hover:border-primary hover:text-foreground"
               title="Voltar"
             >
               <ArrowLeft className="h-5 w-5" />
             </button>
             <div>
               <div className="mb-2 flex items-center gap-2">
-                <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#ff7a00]/14 text-[#ff7a00] ring-1 ring-[#ff7a00]/35">
+                <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/14 text-primary ring-1 ring-[#ff7a00]/35">
                   <Icon className="h-5 w-5" />
                 </span>
-                <span className="rounded-full border border-[#22c55e]/35 bg-[#22c55e]/10 px-3 py-1 text-[11px] font-black uppercase tracking-wide text-[#5ee2a0]">
+                <span className="rounded-full border border-accent-green/35 bg-accent-green/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-accent-green">
                   Quadro inteligente
                 </span>
               </div>
-              <h1 className="text-3xl font-black tracking-tight text-white">{title}</h1>
-              <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-400">{subtitle}</p>
+              <h1 className="text-3xl font-semibold tracking-tight text-foreground">{title}</h1>
+              <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">{subtitle}</p>
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <span className="flex items-center gap-2 rounded-md border border-[#22c55e]/35 bg-[#22c55e]/10 px-3 py-2 text-xs font-black text-[#5ee2a0]">
+            <span className="flex items-center gap-2 rounded-md border border-accent-green/35 bg-accent-green/10 px-3 py-2 text-xs font-semibold text-accent-green">
               <Save className="h-4 w-4" />
               Autosalvo
             </span>
@@ -754,33 +513,33 @@ function ProcessMappingBoard({ onBack }: { onBack: () => void }) {
         ].map(item => {
           const Icon = item.icon;
           return (
-            <div key={item.label} className="rounded-lg border border-[#263345] bg-[#0b1020]/88 p-4">
+            <div key={item.label} className="rounded-lg border border-border bg-card/88 p-4">
               <Icon className="mb-4 h-5 w-5" style={{ color: item.tone }} />
-              <p className="text-3xl font-black text-white">{item.value}</p>
-              <p className="mt-1 text-xs font-bold uppercase tracking-wide text-slate-500">{item.label}</p>
+              <p className="text-3xl font-semibold text-foreground">{item.value}</p>
+              <p className="mt-1 text-xs font-bold uppercase tracking-wide text-muted-foreground">{item.label}</p>
             </div>
           );
         })}
       </section>
 
-      <section className="rounded-lg border border-[#263345] bg-[#0b1020]/88 p-5">
+      <section className="rounded-lg border border-border bg-card/88 p-5">
         <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h2 className="text-xl font-black text-white">Fluxo ponta a ponta</h2>
-            <p className="mt-1 text-sm text-slate-500">Sequência recomendada com dono, SLA e pontos de controle.</p>
+            <h2 className="text-xl font-semibold text-foreground">Fluxo ponta a ponta</h2>
+            <p className="mt-1 text-sm text-muted-foreground">Sequência recomendada com dono, SLA e pontos de controle.</p>
           </div>
-          <span className="rounded-full border border-[#ff7a00]/35 bg-[#ff7a00]/10 px-3 py-1 text-xs font-black text-[#ffb15c]">AS-IS para TO-BE</span>
+          <span className="rounded-full border border-primary/35 bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">AS-IS para TO-BE</span>
         </div>
 
         <div className="grid gap-3 xl:grid-cols-5">
           {board.steps.map((step, index) => (
-            <div key={`${step.title}-${index}`} className="relative rounded-lg border border-[#263345] bg-[#070b16] p-4">
-              {index < board.steps.length - 1 && <div className="absolute -right-3 top-1/2 hidden h-0.5 w-3 bg-[#374151] xl:block" />}
+            <div key={`${step.title}-${index}`} className="relative rounded-lg border border-border bg-background p-4">
+              {index < board.steps.length - 1 && <div className="absolute -right-3 top-1/2 hidden h-0.5 w-3 bg-muted xl:block" />}
               <div className="mb-4 flex items-center justify-between">
-                <span className="flex h-10 w-10 items-center justify-center rounded-lg text-sm font-black text-white" style={{ backgroundColor: `${step.color}22`, color: step.color, border: `1px solid ${step.color}55` }}>
+                <span className="flex h-10 w-10 items-center justify-center rounded-lg text-sm font-semibold text-foreground" style={{ backgroundColor: `${step.color}22`, color: step.color, border: `1px solid ${step.color}55` }}>
                   {index + 1}
                 </span>
-                <input value={step.status} onChange={event => updateStep(index, { status: event.target.value })} className="w-24 rounded-full border border-transparent bg-transparent px-2 py-1 text-right text-[10px] font-black uppercase outline-none focus:border-[#ff7a00]" style={{ backgroundColor: `${step.color}16`, color: step.color }} />
+                <input value={step.status} onChange={event => updateStep(index, { status: event.target.value })} className="w-24 rounded-full border border-transparent bg-transparent px-2 py-1 text-right text-[10px] font-semibold uppercase outline-none focus:border-primary" style={{ backgroundColor: `${step.color}16`, color: step.color }} />
               </div>
               <input value={step.title} onChange={event => updateStep(index, { title: event.target.value })} className={editableInputClass} />
               <div className="mt-2 grid grid-cols-2 gap-2">
@@ -789,20 +548,20 @@ function ProcessMappingBoard({ onBack }: { onBack: () => void }) {
               </div>
               <div className="mt-4 space-y-2">
                 {step.items.map((item, itemIndex) => (
-                  <div key={`${item}-${itemIndex}`} className="flex items-center gap-2 text-xs text-slate-400">
+                  <div key={`${item}-${itemIndex}`} className="flex items-center gap-2 text-xs text-muted-foreground">
                     <CheckCircle2 className="h-3.5 w-3.5" style={{ color: step.color }} />
-                    <input value={item} onChange={event => updateStepItem(index, itemIndex, event.target.value)} className="min-w-0 flex-1 bg-transparent font-semibold text-slate-300 outline-none focus:text-white" />
-                    <button type="button" onClick={() => updateStep(index, { items: step.items.filter((_, currentIndex) => currentIndex !== itemIndex) })} className="text-slate-600 hover:text-[#ef4444]" title="Remover item">
+                    <input value={item} onChange={event => updateStepItem(index, itemIndex, event.target.value)} className="min-w-0 flex-1 bg-transparent font-semibold text-foreground outline-none focus:text-foreground" />
+                    <button type="button" onClick={() => updateStep(index, { items: step.items.filter((_, currentIndex) => currentIndex !== itemIndex) })} className="text-muted-foreground hover:text-destructive" title="Remover item">
                       <Trash2 className="h-3.5 w-3.5" />
                     </button>
                   </div>
                 ))}
-                <button type="button" onClick={() => updateStep(index, { items: [...step.items, 'Novo controle'] })} className="mt-2 flex items-center gap-1 text-xs font-black text-[#18c8df] hover:text-[#5ee2a0]">
+                <button type="button" onClick={() => updateStep(index, { items: [...step.items, 'Novo controle'] })} className="mt-2 flex items-center gap-1 text-xs font-semibold text-accent-cyan hover:text-accent-green">
                   <Plus className="h-3.5 w-3.5" />
                   Controle
                 </button>
               </div>
-              <button type="button" onClick={() => setBoard(current => ({ ...current, steps: current.steps.filter((_, stepIndex) => stepIndex !== index) }))} className="mt-4 text-xs font-black text-slate-600 hover:text-[#ef4444]">
+              <button type="button" onClick={() => setBoard(current => ({ ...current, steps: current.steps.filter((_, stepIndex) => stepIndex !== index) }))} className="mt-4 text-xs font-semibold text-muted-foreground hover:text-destructive">
                 Remover etapa
               </button>
             </div>
@@ -811,20 +570,20 @@ function ProcessMappingBoard({ onBack }: { onBack: () => void }) {
       </section>
 
       <section className="grid gap-4 lg:grid-cols-[1.2fr_.8fr]">
-        <div className="rounded-lg border border-[#263345] bg-[#0b1020]/88 p-5">
-          <h2 className="text-xl font-black text-white">Raias de responsabilidade</h2>
+        <div className="rounded-lg border border-border bg-card/88 p-5">
+          <h2 className="text-xl font-semibold text-foreground">Raias de responsabilidade</h2>
           <div className="mt-4 space-y-3">
             {board.swimlanes.map((lane, laneIndex) => (
-              <div key={`${lane.area}-${laneIndex}`} className="grid gap-3 rounded-lg border border-[#263345] bg-[#070b16] p-3 md:grid-cols-[170px_1fr_36px]">
-                <div className="flex items-center gap-2 text-sm font-black text-slate-100">
+              <div key={`${lane.area}-${laneIndex}`} className="grid gap-3 rounded-lg border border-border bg-background p-3 md:grid-cols-[170px_1fr_36px]">
+                <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
                   <span className="h-3 w-3 rounded-full" style={{ backgroundColor: lane.color }} />
-                  <input value={lane.area} onChange={event => updateLane(laneIndex, { area: event.target.value })} className="min-w-0 flex-1 bg-transparent outline-none focus:text-white" />
+                  <input value={lane.area} onChange={event => updateLane(laneIndex, { area: event.target.value })} className="min-w-0 flex-1 bg-transparent outline-none focus:text-foreground" />
                 </div>
                 <div className="grid gap-2 md:grid-cols-3">
                   {lane.entries.map((entry, entryIndex) => (
                     <input key={`${entry}-${entryIndex}`} value={entry} onChange={event => updateLane(laneIndex, { entries: lane.entries.map((current, index) => index === entryIndex ? event.target.value : current) })} className={editableSmallInputClass} />
                   ))}
-                  <button type="button" onClick={() => updateLane(laneIndex, { entries: [...lane.entries, 'Nova ação'] })} className="rounded-md border border-dashed border-[#374151] px-3 py-2 text-xs font-black text-[#18c8df] hover:border-[#18c8df]">
+                  <button type="button" onClick={() => updateLane(laneIndex, { entries: [...lane.entries, 'Nova ação'] })} className="rounded-md border border-dashed border-border px-3 py-2 text-xs font-semibold text-accent-cyan hover:border-accent-cyan">
                     + Ação
                   </button>
                 </div>
@@ -840,14 +599,14 @@ function ProcessMappingBoard({ onBack }: { onBack: () => void }) {
           </div>
         </div>
 
-        <div className="rounded-lg border border-[#263345] bg-[linear-gradient(135deg,rgba(255,122,0,0.14),rgba(17,24,39,0.96))] p-5">
-          <h2 className="text-xl font-black text-white">Ações de melhoria</h2>
+        <div className="rounded-lg border border-border bg-[linear-gradient(135deg,rgba(255,122,0,0.14),rgba(17,24,39,0.96))] p-5">
+          <h2 className="text-xl font-semibold text-foreground">Ações de melhoria</h2>
           <div className="mt-4 space-y-3">
             {board.actions.map((action, index) => (
-              <div key={`${action}-${index}`} className="flex gap-3 rounded-lg border border-[#374151] bg-[#070b16]/70 p-3">
-                <span className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-md bg-[#ff7a00]/15 text-xs font-black text-[#ffb15c]">{index + 1}</span>
-                <input value={action} onChange={event => setBoard(current => ({ ...current, actions: current.actions.map((item, actionIndex) => actionIndex === index ? event.target.value : item) }))} className="min-w-0 flex-1 bg-transparent text-sm font-semibold text-slate-300 outline-none focus:text-white" />
-                <button type="button" onClick={() => setBoard(current => ({ ...current, actions: current.actions.filter((_, actionIndex) => actionIndex !== index) }))} className="text-slate-600 hover:text-[#ef4444]" title="Remover ação">
+              <div key={`${action}-${index}`} className="flex gap-3 rounded-lg border border-border bg-background/70 p-3">
+                <span className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-md bg-primary/15 text-xs font-semibold text-primary">{index + 1}</span>
+                <input value={action} onChange={event => setBoard(current => ({ ...current, actions: current.actions.map((item, actionIndex) => actionIndex === index ? event.target.value : item) }))} className="min-w-0 flex-1 bg-transparent text-sm font-semibold text-foreground outline-none focus:text-foreground" />
+                <button type="button" onClick={() => setBoard(current => ({ ...current, actions: current.actions.filter((_, actionIndex) => actionIndex !== index) }))} className="text-muted-foreground hover:text-destructive" title="Remover ação">
                   <Trash2 className="h-4 w-4" />
                 </button>
               </div>
@@ -921,35 +680,35 @@ function ProductBrainstormBoard({ onBack }: { onBack: () => void }) {
         ].map(item => {
           const Icon = item.icon;
           return (
-            <div key={item.label} className="rounded-lg border border-[#263345] bg-[#0b1020]/88 p-4">
+            <div key={item.label} className="rounded-lg border border-border bg-card/88 p-4">
               <Icon className="mb-4 h-5 w-5" style={{ color: item.tone }} />
-              <p className="text-3xl font-black text-white">{item.value}</p>
-              <p className="mt-1 text-xs font-bold uppercase tracking-wide text-slate-500">{item.label}</p>
+              <p className="text-3xl font-semibold text-foreground">{item.value}</p>
+              <p className="mt-1 text-xs font-bold uppercase tracking-wide text-muted-foreground">{item.label}</p>
             </div>
           );
         })}
       </section>
 
       <section className="grid gap-4 lg:grid-cols-[.95fr_1.05fr]">
-        <div className="rounded-lg border border-[#263345] bg-[#0b1020]/88 p-5">
+        <div className="rounded-lg border border-border bg-card/88 p-5">
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-xl font-black text-white">Banco de ideias</h2>
-            <span className="rounded-full border border-[#22c55e]/35 bg-[#22c55e]/10 px-3 py-1 text-xs font-black text-[#5ee2a0]">Priorizado</span>
+            <h2 className="text-xl font-semibold text-foreground">Banco de ideias</h2>
+            <span className="rounded-full border border-accent-green/35 bg-accent-green/10 px-3 py-1 text-xs font-semibold text-accent-green">Priorizado</span>
           </div>
           <div className="space-y-3">
             {board.ideas.map((idea, index) => (
-              <div key={`${idea.title}-${index}`} className="rounded-lg border border-[#263345] bg-[#070b16] p-4">
+              <div key={`${idea.title}-${index}`} className="rounded-lg border border-border bg-background p-4">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0 flex-1 space-y-2">
                     <input value={idea.title} onChange={event => updateIdea(index, { title: event.target.value })} className={editableInputClass} />
                     <input value={idea.cluster} onChange={event => updateIdea(index, { cluster: event.target.value })} className={editableSmallInputClass} />
                   </div>
-                  <input type="number" min="0" max="100" value={idea.score} onChange={event => updateIdea(index, { score: Number(event.target.value) })} className="w-16 rounded-full border border-transparent px-2.5 py-1 text-center text-xs font-black outline-none focus:border-[#ff7a00]" style={{ color: idea.color, backgroundColor: `${idea.color}16` }} />
+                  <input type="number" min="0" max="100" value={idea.score} onChange={event => updateIdea(index, { score: Number(event.target.value) })} className="w-16 rounded-full border border-transparent px-2.5 py-1 text-center text-xs font-semibold outline-none focus:border-primary" style={{ color: idea.color, backgroundColor: `${idea.color}16` }} />
                   <button type="button" onClick={() => setBoard(current => ({ ...current, ideas: current.ideas.filter((_, ideaIndex) => ideaIndex !== index) }))} className={dangerIconButtonClass} title="Remover ideia">
                     <Trash2 className="h-4 w-4" />
                   </button>
                 </div>
-                <div className="mt-4 h-2 overflow-hidden rounded-full bg-[#263345]">
+                <div className="mt-4 h-2 overflow-hidden rounded-full bg-secondary">
                   <div className="h-full rounded-full" style={{ width: `${Math.max(0, Math.min(100, Number(idea.score || 0)))}%`, background: `linear-gradient(90deg, ${idea.color}, #f6b40b)` }} />
                 </div>
               </div>
@@ -957,21 +716,21 @@ function ProductBrainstormBoard({ onBack }: { onBack: () => void }) {
           </div>
         </div>
 
-        <div className="rounded-lg border border-[#263345] bg-[#0b1020]/88 p-5">
-          <h2 className="text-xl font-black text-white">Matriz impacto x esforço</h2>
+        <div className="rounded-lg border border-border bg-card/88 p-5">
+          <h2 className="text-xl font-semibold text-foreground">Matriz impacto x esforço</h2>
           <div className="mt-4 grid gap-3 md:grid-cols-2">
             {board.matrix.map((item, index) => (
-              <div key={`${item.quadrant}-${index}`} className="min-h-[150px] rounded-lg border border-[#263345] bg-[#070b16] p-4">
+              <div key={`${item.quadrant}-${index}`} className="min-h-[150px] rounded-lg border border-border bg-background p-4">
                 <div className="mb-3 flex items-center justify-between">
-                  <input value={item.quadrant} onChange={event => updateMatrix(index, { quadrant: event.target.value })} className="min-w-0 flex-1 bg-transparent text-sm font-black text-slate-100 outline-none focus:text-white" />
+                  <input value={item.quadrant} onChange={event => updateMatrix(index, { quadrant: event.target.value })} className="min-w-0 flex-1 bg-transparent text-sm font-semibold text-foreground outline-none focus:text-foreground" />
                   <Wand2 className="h-4 w-4" style={{ color: item.color }} />
                 </div>
-                <input value={item.hint} onChange={event => updateMatrix(index, { hint: event.target.value })} className="mb-4 w-full bg-transparent text-xs font-semibold text-slate-500 outline-none focus:text-slate-300" />
+                <input value={item.hint} onChange={event => updateMatrix(index, { hint: event.target.value })} className="mb-4 w-full bg-transparent text-xs font-semibold text-muted-foreground outline-none focus:text-foreground" />
                 <div className="space-y-2">
                   {item.ideas.map((idea, ideaIndex) => (
-                    <input key={`${idea}-${ideaIndex}`} value={idea} onChange={event => updateMatrix(index, { ideas: item.ideas.map((current, currentIndex) => currentIndex === ideaIndex ? event.target.value : current) })} className="w-full rounded-md border px-3 py-2 text-xs font-bold text-slate-300 outline-none focus:border-[#ff7a00]" style={{ borderColor: `${item.color}33`, backgroundColor: `${item.color}10` }} />
+                    <input key={`${idea}-${ideaIndex}`} value={idea} onChange={event => updateMatrix(index, { ideas: item.ideas.map((current, currentIndex) => currentIndex === ideaIndex ? event.target.value : current) })} className="w-full rounded-md border px-3 py-2 text-xs font-bold text-foreground outline-none focus:border-primary" style={{ borderColor: `${item.color}33`, backgroundColor: `${item.color}10` }} />
                   ))}
-                  <button type="button" onClick={() => updateMatrix(index, { ideas: [...item.ideas, 'Nova hipótese'] })} className="text-xs font-black text-[#18c8df] hover:text-[#5ee2a0]">
+                  <button type="button" onClick={() => updateMatrix(index, { ideas: [...item.ideas, 'Nova hipótese'] })} className="text-xs font-semibold text-accent-cyan hover:text-accent-green">
                     + Hipótese
                   </button>
                 </div>
@@ -981,20 +740,20 @@ function ProductBrainstormBoard({ onBack }: { onBack: () => void }) {
         </div>
       </section>
 
-      <section className="rounded-lg border border-[#263345] bg-[#0b1020]/88 p-5">
-        <h2 className="text-xl font-black text-white">Roadmap sugerido</h2>
+      <section className="rounded-lg border border-border bg-card/88 p-5">
+        <h2 className="text-xl font-semibold text-foreground">Roadmap sugerido</h2>
         <div className="mt-5 grid gap-4 lg:grid-cols-3">
           {board.roadmap.map((item, index) => (
-            <div key={`${item.wave}-${index}`} className="rounded-lg border border-[#263345] bg-[#070b16] p-4">
-              <input value={item.wave} onChange={event => updateRoadmap(index, { wave: event.target.value })} className="w-28 rounded-full border border-transparent px-3 py-1 text-[11px] font-black uppercase tracking-wide outline-none focus:border-[#ff7a00]" style={{ color: item.color, backgroundColor: `${item.color}14` }} />
-              <input value={item.title} onChange={event => updateRoadmap(index, { title: event.target.value })} className="mt-4 w-full bg-transparent text-base font-black text-slate-100 outline-none focus:text-white" />
+            <div key={`${item.wave}-${index}`} className="rounded-lg border border-border bg-background p-4">
+              <input value={item.wave} onChange={event => updateRoadmap(index, { wave: event.target.value })} className="w-28 rounded-full border border-transparent px-3 py-1 text-[11px] font-semibold uppercase tracking-wide outline-none focus:border-primary" style={{ color: item.color, backgroundColor: `${item.color}14` }} />
+              <input value={item.title} onChange={event => updateRoadmap(index, { title: event.target.value })} className="mt-4 w-full bg-transparent text-base font-semibold text-foreground outline-none focus:text-foreground" />
               <textarea value={item.text} onChange={event => updateRoadmap(index, { text: event.target.value })} rows={3} className={`${editableTextAreaClass} mt-2`} />
-              <button type="button" onClick={() => setBoard(current => ({ ...current, roadmap: current.roadmap.filter((_, roadmapIndex) => roadmapIndex !== index) }))} className="mt-3 text-xs font-black text-slate-600 hover:text-[#ef4444]">
+              <button type="button" onClick={() => setBoard(current => ({ ...current, roadmap: current.roadmap.filter((_, roadmapIndex) => roadmapIndex !== index) }))} className="mt-3 text-xs font-semibold text-muted-foreground hover:text-destructive">
                 Remover onda
               </button>
             </div>
           ))}
-          <button type="button" onClick={() => setBoard(current => ({ ...current, roadmap: [...current.roadmap, { wave: 'Nova onda', title: 'Nova entrega', text: 'Descreva a próxima entrega do roadmap.', color: '#18c8df' }] }))} className="min-h-[170px] rounded-lg border border-dashed border-[#374151] bg-[#070b16]/60 p-4 text-sm font-black text-[#18c8df] transition-colors hover:border-[#18c8df] hover:text-[#5ee2a0]">
+          <button type="button" onClick={() => setBoard(current => ({ ...current, roadmap: [...current.roadmap, { wave: 'Nova onda', title: 'Nova entrega', text: 'Descreva a próxima entrega do roadmap.', color: '#18c8df' }] }))} className="min-h-[170px] rounded-lg border border-dashed border-border bg-background/60 p-4 text-sm font-semibold text-accent-cyan transition-colors hover:border-accent-cyan hover:text-accent-green">
             + Nova onda
           </button>
         </div>

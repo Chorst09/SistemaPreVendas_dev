@@ -619,3 +619,581 @@ enum TemplateType {
   BUDGET
   FORECAST
 }
+
+// ============================================
+// PRÉ-VENDAS - NOVOS MODELOS
+// Sistema de Gestão de Orçamentos, Cotações e Fornecedores
+// ============================================
+
+// Parceiros (Fornecedores e Distribuidores)
+model Partner {
+  id                    String             @id @default(cuid())
+  name                  String
+  type                  PartnerType
+  document              String?            // CNPJ
+  mainContact           String?
+  email                 String?
+  phone                 String?
+  status                PartnerStatus      @default(ACTIVE)
+  createdAt             DateTime           @default(now())
+  updatedAt             DateTime           @updatedAt
+  
+  // URLs e acessos
+  website               String?
+  ecommerceUrl          String?
+  partnerPortalUrl      String?
+  roPortalUrl           String?
+  
+  // Produtos e serviços
+  productsOffered       String?            // Text com lista de produtos
+  brands                String[]           // Array de marcas
+  
+  // Procedimentos
+  roTemplate            String?            // URL do template
+  roProcedure           String?            // Texto com procedimento
+  
+  // Métricas operacionais
+  avgResponseTime       Float?             // Dias médios de resposta
+  rating                Float?             // Avaliação (0-5)
+  totalQuotations       Int                @default(0)
+  
+  // Relations
+  contacts              PartnerContact[]
+  credentials           PartnerCredential[]
+  quotes                Quote[]
+  quotations            Quotation[]
+  registeredOpportunities RegisteredOpportunity[]
+  priceConditions       SpecialPriceCondition[]
+  evaluations           PartnerEvaluation[]
+
+  @@map("partners")
+}
+
+model PartnerContact {
+  id            String   @id @default(cuid())
+  partnerId     String
+  name          String
+  role          String?
+  email         String?
+  phone         String?
+  mobile        String?
+  isPrimary     Boolean  @default(false)
+  manufacturer  String?  // Fabricante que representa
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  partner Partner @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+
+  @@map("partner_contacts")
+}
+
+model PartnerCredential {
+  id             String   @id @default(cuid())
+  partnerId      String
+  systemName     String   // "Portal Principal", "E-commerce", "RO Portal"
+  url            String?
+  username       String
+  passwordHash   String   // ❌ Nunca armazenar plain text
+  notes          String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  partner Partner @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+
+  @@map("partner_credentials")
+}
+
+model PartnerEvaluation {
+  id              String   @id @default(cuid())
+  partnerId       String
+  evaluatedBy     String   // userId
+  rating          Float    // 0-5
+  responseTime    Float?   // Dias
+  priceCompetitiveness Float? // 0-5
+  serviceQuality  Float?   // 0-5
+  comments        String?
+  evaluatedAt     DateTime @default(now())
+
+  partner Partner @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+
+  @@map("partner_evaluations")
+}
+
+// Produtos e Serviços (Catálogo)
+model Product {
+  id              String         @id @default(cuid())
+  sku             String         @unique
+  name            String
+  description     String?
+  category        String
+  manufacturer    String?
+  unitOfMeasure   String         @default("UN")
+  isActive        Boolean        @default(true)
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  
+  // Custos de referência
+  referenceCost   Float?
+  lastCostUpdate  DateTime?
+  
+  // Documentação
+  technicalSheet  String?
+  
+  // Relations
+  costHistory     ProductCost[]
+  quoteItems      QuoteItem[]
+  quotationItems  QuotationItem[]
+
+  @@map("products")
+}
+
+model ProductCost {
+  id          String   @id @default(cuid())
+  productId   String
+  cost        Float
+  partnerId   String?  // Fornecedor que ofereceu
+  validFrom   DateTime
+  validUntil  DateTime?
+  notes       String?
+  createdAt   DateTime @default(now())
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@map("product_costs")
+}
+
+// Orçamentos (Quotes)
+model Quote {
+  id                String         @id @default(cuid())
+  quoteNumber       String         @unique // Auto-gerado: ORC-YYYY-9999
+  clientName        String
+  projectName       String?
+  accountManager    String         // Nome do responsável
+  status            QuoteStatus    @default(DRAFT)
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+  
+  // Valores
+  subtotal          Float          @default(0)
+  discount          Float          @default(0)
+  discountPercent   Float          @default(0)
+  totalCost         Float          @default(0)
+  totalPrice        Float          @default(0)
+  margin            Float          @default(0)
+  marginPercent     Float          @default(0)
+  
+  // Prazos
+  validUntil        DateTime?
+  deliveryDays      Int?
+  
+  // Informações adicionais
+  notes             String?
+  internalNotes     String?
+  
+  // Vinculações
+  partnerId         String?
+  partner           Partner?       @relation(fields: [partnerId], references: [id])
+  
+  roId              String?        @unique
+  registeredOpportunity RegisteredOpportunity? @relation(fields: [roId], references: [id])
+  
+  // Relations
+  items             QuoteItem[]
+  versions          QuoteVersion[]
+  quotations        Quotation[]
+  proposals         Proposal[]
+  approvals         QuoteApproval[]
+  activities        QuoteActivity[]
+
+  @@map("quotes")
+}
+
+model QuoteItem {
+  id                String   @id @default(cuid())
+  quoteId           String
+  productId         String?
+  description       String
+  quantity          Float
+  unitOfMeasure     String   @default("UN")
+  
+  // Custos
+  unitCost          Float    @default(0)
+  totalCost         Float    @default(0)
+  freight           Float    @default(0)
+  taxes             Float    @default(0)
+  otherCosts        Float    @default(0)
+  
+  // Preço
+  markup            Float    @default(0)
+  markupPercent     Float    @default(0)
+  unitPrice         Float    @default(0)
+  totalPrice        Float    @default(0)
+  discount          Float    @default(0)
+  
+  // Margem
+  margin            Float    @default(0)
+  marginPercent     Float    @default(0)
+  
+  notes             String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  quote   Quote    @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+  product Product? @relation(fields: [productId], references: [id])
+
+  @@map("quote_items")
+}
+
+model QuoteVersion {
+  id          String   @id @default(cuid())
+  quoteId     String
+  version     Int
+  snapshot    Json     // Snapshot completo do orçamento
+  changes     String?  // Descrição das mudanças
+  createdBy   String
+  createdAt   DateTime @default(now())
+
+  quote Quote @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+
+  @@unique([quoteId, version])
+  @@map("quote_versions")
+}
+
+model QuoteApproval {
+  id          String         @id @default(cuid())
+  quoteId     String
+  approvedBy  String
+  level       ApprovalLevel
+  status      ApprovalStatus @default(PENDING)
+  comments    String?
+  approvedAt  DateTime?
+  createdAt   DateTime       @default(now())
+
+  quote Quote @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+
+  @@map("quote_approvals")
+}
+
+model QuoteActivity {
+  id          String   @id @default(cuid())
+  quoteId     String
+  type        ActivityType
+  description String
+  userId      String?
+  metadata    Json?
+  createdAt   DateTime @default(now())
+
+  quote Quote @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+
+  @@map("quote_activities")
+}
+
+// Cotações com Fornecedores
+model Quotation {
+  id                String            @id @default(cuid())
+  quotationNumber   String            @unique
+  quoteId           String
+  partnerId         String
+  status            QuotationStatus   @default(REQUESTED)
+  requestedAt       DateTime          @default(now())
+  respondedAt       DateTime?
+  
+  // Prazos
+  responseDeadline  DateTime?
+  deliveryDays      Int?
+  validUntil        DateTime?
+  
+  // Condições
+  paymentTerms      String?
+  freight           Float             @default(0)
+  freightType       String?           // "FOB", "CIF"
+  notes             String?
+  
+  // Documentos
+  attachments       String[]
+  
+  // Métricas
+  responseTime      Float?            // Dias até resposta
+  
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+
+  quote    Quote   @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+  partner  Partner @relation(fields: [partnerId], references: [id])
+  items    QuotationItem[]
+  history  QuotationHistory[]
+
+  @@map("quotations")
+}
+
+model QuotationItem {
+  id              String   @id @default(cuid())
+  quotationId     String
+  productId       String?
+  description     String
+  quantity        Float
+  unitPrice       Float
+  totalPrice      Float
+  deliveryDays    Int?
+  notes           String?
+  createdAt       DateTime @default(now())
+
+  quotation Quotation @relation(fields: [quotationId], references: [id], onDelete: Cascade)
+  product   Product?  @relation(fields: [productId], references: [id])
+
+  @@map("quotation_items")
+}
+
+model QuotationHistory {
+  id            String   @id @default(cuid())
+  quotationId   String
+  status        String
+  notes         String?
+  changedBy     String?
+  createdAt     DateTime @default(now())
+
+  quotation Quotation @relation(fields: [quotationId], references: [id], onDelete: Cascade)
+
+  @@map("quotation_history")
+}
+
+// Registros de Oportunidades (ROs)
+model RegisteredOpportunity {
+  id                String       @id @default(cuid())
+  roNumber          String       @unique
+  partnerId         String
+  clientName        String
+  projectName       String?
+  estimatedValue    Float?
+  status            ROStatus     @default(PENDING)
+  
+  // Datas
+  requestedAt       DateTime     @default(now())
+  approvedAt        DateTime?
+  expiresAt         DateTime?
+  
+  // Condições especiais
+  hasSpecialPrice   Boolean      @default(false)
+  specialConditions String?
+  
+  // Responsável
+  accountManager    String
+  
+  notes             String?
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+
+  partner Partner @relation(fields: [partnerId], references: [id])
+  quote   Quote?
+  history ROHistory[]
+  alerts  ROAlert[]
+
+  @@map("registered_opportunities")
+}
+
+model ROHistory {
+  id        String   @id @default(cuid())
+  roId      String
+  status    String
+  notes     String?
+  changedBy String?
+  createdAt DateTime @default(now())
+
+  ro RegisteredOpportunity @relation(fields: [roId], references: [id], onDelete: Cascade)
+
+  @@map("ro_history")
+}
+
+model ROAlert {
+  id          String       @id @default(cuid())
+  roId        String
+  type        AlertType
+  message     String
+  severity    AlertSeverity
+  isRead      Boolean      @default(false)
+  createdAt   DateTime     @default(now())
+
+  ro RegisteredOpportunity @relation(fields: [roId], references: [id], onDelete: Cascade)
+
+  @@map("ro_alerts")
+}
+
+// Propostas Comerciais
+model Proposal {
+  id              String         @id @default(cuid())
+  proposalNumber  String         @unique
+  title           String
+  quoteId         String?
+  clientName      String
+  description     String?
+  status          ProposalStatus @default(DRAFT)
+  version         Int            @default(1)
+  
+  // Valores
+  totalValue      Float
+  
+  // Prazos
+  issuedAt        DateTime       @default(now())
+  validUntil      DateTime?
+  
+  // Documentos
+  documentUrl     String?
+  technicalSheet  String?
+  commercialTerms String?
+  
+  // Responsável
+  accountManager  String
+  
+  notes           String?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  quote     Quote?            @relation(fields: [quoteId], references: [id])
+  versions  ProposalVersion[]
+  approvals ProposalApproval[]
+
+  @@map("proposals")
+}
+
+model ProposalVersion {
+  id          String   @id @default(cuid())
+  proposalId  String
+  version     Int
+  snapshot    Json
+  changes     String?
+  createdBy   String
+  createdAt   DateTime @default(now())
+
+  proposal Proposal @relation(fields: [proposalId], references: [id], onDelete: Cascade)
+
+  @@unique([proposalId, version])
+  @@map("proposal_versions")
+}
+
+model ProposalApproval {
+  id          String         @id @default(cuid())
+  proposalId  String
+  approvedBy  String
+  level       ApprovalLevel
+  status      ApprovalStatus @default(PENDING)
+  comments    String?
+  approvedAt  DateTime?
+  createdAt   DateTime       @default(now())
+
+  proposal Proposal @relation(fields: [proposalId], references: [id], onDelete: Cascade)
+
+  @@map("proposal_approvals")
+}
+
+// Condições Especiais de Preço
+model SpecialPriceCondition {
+  id          String   @id @default(cuid())
+  partnerId   String
+  productSku  String?
+  discount    Float    @default(0)
+  conditions  String   // Descrição das condições
+  validFrom   DateTime
+  validUntil  DateTime
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  partner Partner @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+
+  @@map("special_price_conditions")
+}
+
+// Regras de Precificação
+model PricingRule {
+  id              String   @id @default(cuid())
+  name            String
+  category        String?
+  minimumMargin   Float    @default(0)
+  targetMargin    Float    @default(20)
+  markup          Float    @default(0)
+  taxRate         Float    @default(0)
+  isActive        Boolean  @default(true)
+  requiresApproval Boolean @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("pricing_rules")
+}
+
+// Enums para Pré-Vendas
+enum PartnerType {
+  DISTRIBUTOR
+  SUPPLIER
+  MANUFACTURER
+}
+
+enum PartnerStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
+enum QuoteStatus {
+  DRAFT
+  IN_PREPARATION
+  AWAITING_QUOTATION
+  IN_PRICING
+  AWAITING_APPROVAL
+  APPROVED
+  SENT
+  ACCEPTED
+  REJECTED
+  EXPIRED
+  CANCELLED
+}
+
+enum QuotationStatus {
+  REQUESTED
+  IN_ANALYSIS
+  RESPONDED
+  ACCEPTED
+  REJECTED
+  EXPIRED
+}
+
+enum ROStatus {
+  PENDING
+  REQUESTED
+  IN_ANALYSIS
+  APPROVED
+  REJECTED
+  EXPIRED
+}
+
+enum ProposalStatus {
+  DRAFT
+  IN_REVIEW
+  APPROVED
+  SENT
+  ACCEPTED
+  REJECTED
+  EXPIRED
+}
+
+enum ApprovalLevel {
+  MANAGER
+  DIRECTOR
+  EXECUTIVE
+}
+
+enum ApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum ActivityType {
+  CREATED
+  UPDATED
+  STATUS_CHANGED
+  ITEM_ADDED
+  ITEM_REMOVED
+  APPROVED
+  REJECTED
+  SENT
+  COMMENTED
+}

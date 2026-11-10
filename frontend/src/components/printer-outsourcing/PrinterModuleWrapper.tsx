@@ -63,6 +63,7 @@ export function PrinterModuleWrapper({ onNavigateToQuotes }: PrinterModuleWrappe
   if (view === 'landing') {
     return (
       <PrinterLandingPage
+        onOpenQuotes={onNavigateToQuotes}
         onNewProposal={() => setView('client-data')}
         onAdminPanel={() => setView('admin')}
       />

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useMemo, useState } from 'react';
+import { PageHeader } from '@/components/ui/page-header';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -1188,61 +1189,10 @@ export function POCManagementView() {
     };
 
     return (
-        <div className="space-y-7 p-4 sm:p-6">
+        <div className="space-y-6">
 
             {/* ── Hero banner ── */}
-            <section className="relative overflow-hidden rounded-lg border border-cyan-400/20 bg-card shadow-xl">
-                <div className="absolute inset-0 bg-[linear-gradient(115deg,rgba(6,14,30,0.96)_0%,rgba(11,24,48,0.86)_48%,rgba(255,115,45,0.16)_100%)]" />
-                <div className="absolute inset-0 bg-cover bg-center opacity-25"
-                    style={{ backgroundImage: "url('https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1600&q=80')" }} />
-                <div className="relative z-10 grid gap-6 p-6 text-white lg:grid-cols-[1fr_380px] lg:p-8">
-                    <div className="flex flex-col justify-center">
-                        <div className="mb-5 inline-flex w-fit items-center gap-2 rounded-full border border-cyan-300/35 bg-cyan-300/10 px-4 py-2 text-sm font-medium text-cyan-100">
-                            <FlaskConical className="h-4 w-4 text-cyan-300" />
-                            Gestão de validações técnicas e provas controladas
-                        </div>
-                        <h1 className="max-w-4xl text-3xl font-bold leading-tight sm:text-4xl lg:text-5xl">
-                            Provas de Conceito (POC)
-                        </h1>
-                        <p className="mt-4 max-w-3xl text-base leading-7 text-slate-200">
-                            Acompanhe objetivos, critérios de sucesso, orçamento, riscos e evolução das POCs antes de transformar uma validação técnica em proposta ou projeto.
-                        </p>
-                        <div className="mt-6 flex flex-wrap gap-3">
-                            <Button className="bg-orange-500 text-white hover:bg-orange-600"
-                                onClick={() => setShowNewPOC(true)}>
-                                <Plus className="mr-2 h-4 w-4" />Nova POC
-                            </Button>
-                            <Button variant="outline" className="border-cyan-300/50 bg-slate-950/30 text-white hover:bg-cyan-300/10 hover:text-white"
-                                onClick={() => setShowReport(true)}>
-                                <FileText className="mr-2 h-4 w-4" />Relatório Executivo
-                            </Button>
-                        </div>
-                    </div>
-                    <Card className="border-white/15 bg-slate-950/50 text-white backdrop-blur">
-                        <CardHeader className="pb-3">
-                            <CardTitle className="flex items-center gap-2 text-lg text-white">
-                                <ShieldCheck className="h-5 w-5 text-cyan-300" />Governança da POC
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            <div className="grid grid-cols-2 gap-3">
-                                <div className="rounded-md border border-white/10 bg-white/5 p-3">
-                                    <p className="text-xs text-slate-300">Progresso médio</p>
-                                    <p className="mt-1 text-2xl font-bold">{stats.mediaProgresso}%</p>
-                                </div>
-                                <div className="rounded-md border border-white/10 bg-white/5 p-3">
-                                    <p className="text-xs text-slate-300">Em execução</p>
-                                    <p className="mt-1 text-2xl font-bold text-amber-300">{stats.emExecucao}</p>
-                                </div>
-                            </div>
-                            <div className="rounded-md border border-white/10 bg-white/5 p-3">
-                                <p className="text-xs text-slate-300">Orçamento total em validação</p>
-                                <p className="mt-1 text-xl font-bold">{formatCurrency(stats.orcamentoTotal)}</p>
-                            </div>
-                        </CardContent>
-                    </Card>
-                </div>
-            </section>
+            <PageHeader eyebrow="Soluções e entrega" title="Provas de conceito" description="Valide hipóteses, acompanhe riscos e confira os critérios de sucesso de cada iniciativa." actions={<><Button onClick={() => setShowNewPOC(true)}><Plus className="h-4 w-4" />Nova POC</Button><Button variant="outline" onClick={() => setShowReport(true)}><FileText className="h-4 w-4" />Relatório executivo</Button></>} />
 
             {/* ── Stats cards ── */}
             <section className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">

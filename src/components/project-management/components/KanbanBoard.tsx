@@ -195,7 +195,7 @@ export default function KanbanBoard({
   };
 
   return (
-    <div className="h-full flex flex-col bg-[#070b16] overflow-hidden text-slate-300 font-sans">
+    <div className="h-full flex flex-col bg-background overflow-hidden text-foreground font-body">
       <div className="flex-1 overflow-x-auto overflow-y-hidden p-6 custom-scrollbar">
         <div className="flex gap-5 items-start h-full pb-4">
           {columns.map(column => {
@@ -221,7 +221,7 @@ export default function KanbanBoard({
                           if (e.key === 'Enter') handleColumnTitleChange(column.id, e.currentTarget.value);
                           if (e.key === 'Escape') setEditingColumnId(null);
                         }}
-                        className={cn("w-32 bg-[#111827] text-[10px] font-bold tracking-wider rounded-md px-2 py-1 outline-none focus:ring-2 focus:ring-[#ff7a00]", column.colorClass.split('bg-')[0])}
+                        className={cn("w-32 bg-card text-[10px] font-bold tracking-wider rounded-md px-2 py-1 outline-none focus:ring-2 focus:ring-[#ff7a00]", column.colorClass.split('bg-')[0])}
                       />
                     ) : (
                       <span
@@ -234,20 +234,20 @@ export default function KanbanBoard({
                         {column.title}
                       </span>
                     )}
-                    <span className="text-xs font-medium text-slate-500">
+                    <span className="text-xs font-medium text-muted-foreground">
                       {columnIssues.length}
                     </span>
                   </div>
-                  <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity text-slate-500 gap-1">
-                    <button onClick={() => handleAddTask(column.id)} className="p-1 hover:bg-[#0d1423] hover:text-slate-300 rounded transition-colors"><Plus className="w-4 h-4" /></button>
-                    <button onClick={() => setEditingColumnId(column.id)} className="p-1 hover:bg-[#0d1423] hover:text-slate-300 rounded transition-colors"><MoreHorizontal className="w-4 h-4" /></button>
+                  <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground gap-1">
+                    <button onClick={() => handleAddTask(column.id)} className="p-1 hover:bg-muted hover:text-foreground rounded transition-colors"><Plus className="w-4 h-4" /></button>
+                    <button onClick={() => setEditingColumnId(column.id)} className="p-1 hover:bg-muted hover:text-foreground rounded transition-colors"><MoreHorizontal className="w-4 h-4" /></button>
                   </div>
                 </div>
 
                 {/* Column Cards Container */}
                 <div className={cn(
                   "flex-1 overflow-y-auto custom-scrollbar flex flex-col gap-3 px-1 pb-4 transition-colors duration-200",
-                  isDragActive && "bg-[#1f2125]/80 rounded-md ring-2 ring-[#ff7a00]/30"
+                  isDragActive && "bg-muted/80 rounded-md ring-2 ring-[#ff7a00]/30"
                 )}>
                   {columnIssues.map(issue => {
                     const checklist = getChecklist(issue.id);
@@ -267,20 +267,20 @@ export default function KanbanBoard({
                             onTaskClick?.(issue);
                           }
                         }}
-                        className="group/card relative bg-[#111827] hover:bg-[#111827] rounded-md border border-[#263345] hover:border-[#374151] shadow-sm hover:shadow-lg cursor-grab active:cursor-grabbing transition-all duration-200 overflow-hidden flex flex-col"
+                        className="group/card relative bg-card hover:bg-card rounded-md border border-border hover:border-border shadow-sm hover:shadow-lg cursor-grab active:cursor-grabbing transition-all duration-200 overflow-hidden flex flex-col"
                       >
                         {/* Priority Top Border Highlight */}
                         <div className={cn(
                           "absolute top-0 left-0 right-0 h-[2px]",
-                          issue.priority === 'Alta' ? 'bg-yellow-500' : 'bg-[#1f2937]'
+                          issue.priority === 'Alta' ? 'bg-yellow-500' : 'bg-muted'
                         )} />
 
                         {/* Drag Handle & ID */}
                         <div className="px-4 pt-3 flex items-center justify-between mb-2">
-                          <span className="text-[10px] font-mono text-slate-500 tracking-wider">
+                          <span className="text-[10px] font-mono text-muted-foreground tracking-wider">
                             {getTaskId(issue.id, issue.key)}
                           </span>
-                          <button className="opacity-0 group-hover/card:opacity-100 text-slate-600 hover:text-slate-400 transition-opacity cursor-grab active:cursor-grabbing">
+                          <button className="opacity-0 group-hover/card:opacity-100 text-muted-foreground hover:text-muted-foreground transition-opacity cursor-grab active:cursor-grabbing">
                             <GripVertical className="w-4 h-4" />
                           </button>
                         </div>
@@ -309,14 +309,14 @@ export default function KanbanBoard({
                                     handleTitleChange(issue.id, issue.title);
                                   }
                                 }}
-                                className="w-full bg-[#111827] border border-[#ff7a00] text-[13px] font-medium text-white rounded px-2 py-1 outline-none shadow-sm"
+                                className="w-full bg-card border border-primary text-[13px] font-medium text-foreground rounded px-2 py-1 outline-none shadow-sm"
                                 placeholder="Digite o título da tarefa..."
                               />
                             ) : (
                               <div
                                 onClick={() => setEditingTitleId(issue.id)}
                                 className={cn(
-                                  "text-[13px] font-medium leading-relaxed px-1 -mx-1 cursor-text hover:bg-[#111827] rounded transition-colors break-words",
+                                  "text-[13px] font-medium leading-relaxed px-1 -mx-1 cursor-text hover:bg-card rounded transition-colors break-words",
                                   getTitleColor(issue.id)
                                 )}
                               >
@@ -329,9 +329,9 @@ export default function KanbanBoard({
                           {issue.customFields && issue.customFields.length > 0 && (
                             <div className="flex flex-col gap-1.5 mb-3">
                               {issue.customFields.map((cf) => (
-                                <div key={cf.id} className="flex items-center justify-between bg-[#111827] rounded px-2 py-1 text-[10px]">
-                                  <span className="text-slate-500 font-medium truncate max-w-[45%]">{cf.name}:</span>
-                                  <span className="text-slate-300 truncate max-w-[50%]">{cf.value}</span>
+                                <div key={cf.id} className="flex items-center justify-between bg-card rounded px-2 py-1 text-[10px]">
+                                  <span className="text-muted-foreground font-medium truncate max-w-[45%]">{cf.name}:</span>
+                                  <span className="text-foreground truncate max-w-[50%]">{cf.value}</span>
                                 </div>
                               ))}
                             </div>
@@ -339,17 +339,17 @@ export default function KanbanBoard({
 
                         </div>
                         {/* Footer (Stats & Avatars) */}
-                        <div className="px-4 py-3 bg-[#111827]/50 border-t border-[#263345] flex items-center justify-between mt-auto">
+                        <div className="px-4 py-3 bg-card/50 border-t border-border flex items-center justify-between mt-auto">
 
                           {/* Badges/Stats */}
                           <div className="flex items-center gap-3">
-                            <div className={cn("flex items-center gap-1 text-[11px]", checklist.done === checklist.total ? "text-emerald-500" : "text-slate-500")}>
+                            <div className={cn("flex items-center gap-1 text-[11px]", checklist.done === checklist.total ? "text-emerald-500" : "text-muted-foreground")}>
                               <CheckSquare className="w-3.5 h-3.5" />
                               <span className="font-medium">{checklist.done}/{checklist.total}</span>
                             </div>
 
                             {commentsCount > 0 && (
-                              <div className="flex items-center gap-1 text-[11px] text-slate-500">
+                              <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
                                 <MessageSquare className="w-3.5 h-3.5" />
                                 <span className="font-medium">{commentsCount}</span>
                               </div>
@@ -358,7 +358,7 @@ export default function KanbanBoard({
                             {issue.dueDate && (
                               <div className={cn(
                                 "flex items-center gap-1 text-[11px] font-medium",
-                                issue.status === 'EM RISCO' ? "text-red-400" : "text-slate-500"
+                                issue.status === 'EM RISCO' ? "text-red-400" : "text-muted-foreground"
                               )}>
                                 <Calendar className="w-3 h-3" />
                                 {issue.dueDate.substring(5).replace('-', '/')}
@@ -370,13 +370,13 @@ export default function KanbanBoard({
                           <div>
                             {issue.assignee ? (
                               <div className={cn(
-                                "w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold text-white shadow-sm ring-2 ring-[#111827]",
+                                "w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold text-foreground shadow-sm ring-2 ring-[#111827]",
                                 issue.assignee.color
                               )}>
                                 {issue.assignee.initials}
                               </div>
                             ) : (
-                              <div className="w-6 h-6 rounded-full flex items-center justify-center bg-[#0d1423] ring-2 ring-[#111827] text-slate-500 border border-dashed border-slate-600">
+                              <div className="w-6 h-6 rounded-full flex items-center justify-center bg-muted ring-2 ring-[#111827] text-muted-foreground border border-dashed border-slate-600">
                                 <UserIcon className="w-3 h-3" />
                               </div>
                             )}
@@ -389,11 +389,11 @@ export default function KanbanBoard({
 
                   {/* Drop zone placeholder if empty */}
                   {columnIssues.length === 0 && isDragActive && (
-                    <div className="h-24 border-2 border-dashed border-[#ff7a00]/30 rounded-md bg-[#ff7a00]/5"></div>
+                    <div className="h-24 border-2 border-dashed border-primary/30 rounded-md bg-primary/5"></div>
                   )}
 
                   {/* Add task button at the bottom of the column */}
-                  <button onClick={() => handleAddTask(column.id)} className="flex items-center gap-2 text-sm text-slate-500 hover:text-slate-300 hover:bg-[#111827] px-3 py-2 rounded-lg w-full text-left transition-colors border border-transparent hover:border-[#263345] mt-1 group">
+                  <button onClick={() => handleAddTask(column.id)} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground hover:bg-card px-3 py-2 rounded-lg w-full text-left transition-colors border border-transparent hover:border-border mt-1 group">
                     <Plus className="w-4 h-4 opacity-70" />
                     <span>Adicionar Fase</span>
                   </button>

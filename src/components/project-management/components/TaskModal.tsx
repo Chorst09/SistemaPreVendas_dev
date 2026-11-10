@@ -69,22 +69,22 @@ export default function TaskModal({
     setFollowUpText('');
   };
 
-  const fieldClass = "w-full rounded-md border border-[#374151] bg-[#070b16] px-3 py-2 text-sm text-slate-100 outline-none transition-colors placeholder:text-slate-600 focus:border-[#ff7a00] focus:ring-2 focus:ring-[#ff7a00]/20";
-  const labelClass = "mb-1.5 flex items-center gap-2 text-xs font-semibold text-slate-500";
+  const fieldClass = "w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-[#ff7a00]/20";
+  const labelClass = "mb-1.5 flex items-center gap-2 text-xs font-semibold text-muted-foreground";
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
-      <div className="flex h-[90vh] w-full max-w-[1240px] overflow-hidden rounded-lg border border-[#263345] bg-[#070b16] text-slate-300 shadow-2xl">
-        <div className="flex h-full w-[65%] flex-col border-r border-[#263345] bg-[#111827]">
+      <div className="flex h-[90vh] w-full max-w-[1240px] overflow-hidden rounded-lg border border-border bg-background text-foreground shadow-2xl">
+        <div className="flex h-full w-[65%] flex-col border-r border-border bg-card">
           <div className="flex h-12 shrink-0 items-center justify-between px-6 text-xs">
-            <div className="mt-2 flex items-center gap-2 text-slate-400">
-              <span className="flex items-center gap-1 rounded border border-[#263345] px-2 py-1">
+            <div className="mt-2 flex items-center gap-2 text-muted-foreground">
+              <span className="flex items-center gap-1 rounded border border-border px-2 py-1">
                 <CheckSquare className="h-3.5 w-3.5" /> Fase <ChevronRight className="h-3 w-3" />
               </span>
-              <Maximize2 className="h-4 w-4 text-slate-500" />
+              <Maximize2 className="h-4 w-4 text-muted-foreground" />
             </div>
-            <div className="flex items-center gap-2 text-slate-500">
-              <Save className="h-3.5 w-3.5 text-[#22c55e]" />
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <Save className="h-3.5 w-3.5 text-accent-green" />
               Salvo {savedAt}
             </div>
           </div>
@@ -93,13 +93,13 @@ export default function TaskModal({
             <input
               value={draft.title}
               onChange={(e) => persist({ title: e.target.value })}
-              className="mb-6 w-full resize-none bg-transparent text-3xl font-black leading-snug text-white outline-none placeholder:text-slate-600"
+              className="mb-6 w-full resize-none bg-transparent text-3xl font-semibold leading-snug text-foreground outline-none placeholder:text-muted-foreground"
               placeholder="Nome da fase"
             />
 
-            <div className="mb-8 rounded-lg border border-[#263345] bg-[#070b16] p-3 text-sm text-slate-400">
+            <div className="mb-8 rounded-lg border border-border bg-background p-3 text-sm text-muted-foreground">
               <div className="flex items-center gap-2">
-                <Sparkles className="h-4 w-4 text-[#18c8df]" />
+                <Sparkles className="h-4 w-4 text-accent-cyan" />
                 <span>Peça ao Brain uma apresentação, documento ou protótipo desta fase</span>
               </div>
             </div>
@@ -194,13 +194,13 @@ export default function TaskModal({
               />
             </label>
 
-            <div className="rounded-lg border border-[#263345] bg-[#070b16] p-4">
+            <div className="rounded-lg border border-border bg-background p-4">
               <div className="mb-3 flex items-center justify-between">
-                <h3 className="text-sm font-bold text-slate-100">Campos adicionais</h3>
+                <h3 className="text-sm font-bold text-foreground">Campos adicionais</h3>
                 <button
                   type="button"
                   onClick={() => persist({ customFields: [...(draft.customFields || []), { id: `cf-${Date.now()}`, name: '', value: '' }] })}
-                  className="flex items-center gap-1.5 rounded-md border border-[#374151] px-3 py-1.5 text-xs font-semibold text-slate-300 hover:border-[#ff7a00] hover:text-white"
+                  className="flex items-center gap-1.5 rounded-md border border-border px-3 py-1.5 text-xs font-semibold text-foreground hover:border-primary hover:text-foreground"
                 >
                   <Plus className="h-3.5 w-3.5" /> Campo
                 </button>
@@ -223,34 +223,34 @@ export default function TaskModal({
                     <button
                       type="button"
                       onClick={() => persist({ customFields: (draft.customFields || []).filter(item => item.id !== field.id) })}
-                      className="rounded-md border border-[#374151] px-3 text-slate-400 hover:border-red-500 hover:text-red-300"
+                      className="rounded-md border border-border px-3 text-muted-foreground hover:border-red-500 hover:text-red-300"
                     >
                       <X className="h-4 w-4" />
                     </button>
                   </div>
                 ))}
                 {(!draft.customFields || draft.customFields.length === 0) && (
-                  <p className="text-sm text-slate-500">Nenhum campo adicional cadastrado.</p>
+                  <p className="text-sm text-muted-foreground">Nenhum campo adicional cadastrado.</p>
                 )}
               </div>
             </div>
           </div>
         </div>
 
-        <div className="flex h-full w-[35%] flex-col bg-[#070b16]">
-          <div className="flex h-12 shrink-0 items-center justify-between border-b border-[#263345] px-4 text-slate-400">
-            <span className="font-semibold text-slate-200">Acompanhamentos</span>
+        <div className="flex h-full w-[35%] flex-col bg-background">
+          <div className="flex h-12 shrink-0 items-center justify-between border-b border-border px-4 text-muted-foreground">
+            <span className="font-semibold text-foreground">Acompanhamentos</span>
             <div className="flex items-center gap-4">
               <Search className="h-4 w-4" />
               <Bell className="h-4 w-4" />
               <Filter className="h-4 w-4" />
               <div className="mx-1 h-4 w-px bg-slate-700" />
-              <X className="h-5 w-5 cursor-pointer hover:text-slate-200" onClick={onClose} />
+              <X className="h-5 w-5 cursor-pointer hover:text-foreground" onClick={onClose} />
             </div>
           </div>
 
           <div className="flex-1 overflow-y-auto p-4 text-sm custom-scrollbar">
-            <div className="mb-6 space-y-3 text-xs text-slate-500">
+            <div className="mb-6 space-y-3 text-xs text-muted-foreground">
               <div className="flex items-center justify-between">
                 <span>Fase criada</span>
                 <span>{formatTime(draft.createdAt)}</span>
@@ -264,47 +264,47 @@ export default function TaskModal({
             <div className="space-y-5">
               {followUps.map(item => (
                 <div key={item.id} className="flex gap-3">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#ff7a00] text-xs font-bold text-white">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
                     CH
                   </div>
-                  <div className="min-w-0 flex-1 rounded-lg border border-[#263345] bg-[#111827] p-3">
+                  <div className="min-w-0 flex-1 rounded-lg border border-border bg-card p-3">
                     <div className="mb-1 flex items-center gap-2">
-                      <span className="font-semibold text-slate-200">{item.author}</span>
-                      <span className="text-xs text-slate-500">{formatTime(item.createdAt)}</span>
+                      <span className="font-semibold text-foreground">{item.author}</span>
+                      <span className="text-xs text-muted-foreground">{formatTime(item.createdAt)}</span>
                     </div>
-                    <p className="whitespace-pre-wrap break-words text-slate-300">{item.text}</p>
+                    <p className="whitespace-pre-wrap break-words text-foreground">{item.text}</p>
                   </div>
                 </div>
               ))}
 
               {followUps.length === 0 && (
-                <div className="rounded-lg border border-dashed border-[#374151] bg-[#111827]/60 p-6 text-center text-slate-500">
+                <div className="rounded-lg border border-dashed border-border bg-card/60 p-6 text-center text-muted-foreground">
                   Nenhum acompanhamento registrado nesta fase.
                 </div>
               )}
             </div>
           </div>
 
-          <div className="border-t border-[#263345] bg-[#070b16] p-4">
-            <div className="rounded-md border border-[#374151] bg-[#111827] p-3 transition-colors focus-within:border-[#ff7a00]">
+          <div className="border-t border-border bg-background p-4">
+            <div className="rounded-md border border-border bg-card p-3 transition-colors focus-within:border-primary">
               <textarea
                 value={followUpText}
                 onChange={(e) => setFollowUpText(e.target.value)}
                 placeholder="Registrar acompanhamento, decisão, impedimento ou próxima ação..."
-                className="mb-3 min-h-[92px] w-full resize-none bg-transparent text-sm text-slate-200 outline-none placeholder:text-slate-600"
+                className="mb-3 min-h-[92px] w-full resize-none bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
               />
-              <div className="flex items-center justify-between text-slate-400">
+              <div className="flex items-center justify-between text-muted-foreground">
                 <div className="flex items-center gap-2">
-                  <button className="flex h-7 w-7 items-center justify-center rounded hover:bg-[#1f2937]"><Plus className="h-4 w-4" /></button>
-                  <button className="flex h-7 w-7 items-center justify-center rounded hover:bg-[#1f2937]"><Smile className="h-4 w-4" /></button>
-                  <button className="flex h-7 w-7 items-center justify-center rounded hover:bg-[#1f2937]"><ImageIcon className="h-4 w-4" /></button>
-                  <button className="flex h-7 w-7 items-center justify-center rounded hover:bg-[#1f2937]"><Paperclip className="h-4 w-4" /></button>
+                  <button className="flex h-7 w-7 items-center justify-center rounded hover:bg-muted"><Plus className="h-4 w-4" /></button>
+                  <button className="flex h-7 w-7 items-center justify-center rounded hover:bg-muted"><Smile className="h-4 w-4" /></button>
+                  <button className="flex h-7 w-7 items-center justify-center rounded hover:bg-muted"><ImageIcon className="h-4 w-4" /></button>
+                  <button className="flex h-7 w-7 items-center justify-center rounded hover:bg-muted"><Paperclip className="h-4 w-4" /></button>
                 </div>
                 <button
                   type="button"
                   onClick={addFollowUp}
                   disabled={!followUpText.trim()}
-                  className="rounded-md bg-[#ff7a00] px-4 py-2 text-xs font-black text-white transition-colors hover:bg-[#f6b40b] hover:text-[#050914] disabled:cursor-not-allowed disabled:opacity-50"
+                  className="rounded-md bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground transition-colors hover:bg-primary hover:text-primary-foreground disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   Adicionar
                 </button>

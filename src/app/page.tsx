@@ -24,10 +24,12 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { Header } from '@/components/ui/header';
 
 // Importe seus componentes de View
-import DashboardView from '@/components/dashboard/DashboardView';
+import DashboardOverviewV3 from '@/components/dashboard/DashboardOverviewV3';
+import { ApplicationShell } from '@/components/layout/application-shell';
+import { useModuleNavigation } from '@/hooks/use-module-navigation';
 import PartnerView from '@/components/partners/PartnerView';
-import QuotesView from '@/components/quotes/QuotesView';
-import ProposalsView from '@/components/proposals/ProposalsView';
+import QuotesViewV2 from '@/components/quotes/QuotesViewV2';
+import ProposalsViewV2 from '@/components/proposals/ProposalsViewV2';
 import RoManagementView from '@/components/ro-management/RoManagementView';
 import TrainingManagementView from '@/components/training-management/TrainingManagementView';
 import CalculatorFrame from '@/components/calculators/CalculatorFrame';
@@ -950,11 +952,7 @@ export default function App() { // Ou Home
     const [currentUser, setCurrentUser] = useState<SystemUser | null>(null);
     const [showLogin, setShowLogin] = useState(false);
 
-    const [activeTab, setActiveTab] = useState('dashboard');
-    const [activeTabRestored, setActiveTabRestored] = useState(false);
-    useEffect(() => {
-        setActiveTabRestored(true);
-    }, []);
+    const [activeTab, setActiveTab, activeTabRestored] = useModuleNavigation();
     const [editingProposalId, setEditingProposalId] = useState<string | null>(null);
     // Estado para edição de orçamentos IT Sales/Rental/Services na calculadora
     const [itQuoteToEdit, setItQuoteToEdit] = useState<{
@@ -1027,7 +1025,6 @@ export default function App() { // Ou Home
                 { id: 'calculator-noc', label: 'NOC/SOC/SIEM', icon: <Headset size={16} />, openInNewTab: false } as NavSubItem & { openInNewTab?: boolean; url?: string },
                 { id: 'calculator-servicedesk-advanced', label: 'Service Desk Avançado', icon: <Server size={16} />, openInNewTab: false } as NavSubItem & { openInNewTab?: boolean; url?: string },
                 { id: 'calculator-printer', label: 'Outsourcing de Impressão', icon: <Printer size={16} />, openInNewTab: false } as NavSubItem & { openInNewTab?: boolean; url?: string },
-                { id: 'simuladores', label: 'Simuladores', icon: <BarChart size={16} />, openInNewTab: true, url: 'https://simuladores-double-neon.vercel.app/' } as NavSubItem & { openInNewTab?: boolean; url?: string },
             ]
         },
         {
@@ -1142,7 +1139,7 @@ export default function App() { // Ou Home
 
         switch (activeTab) {
             case 'home': return <HomeLandingPage setActiveTab={setActiveTab} />;
-            case 'dashboard': return <DashboardView salesData={salesData} quoteStatusData={quoteStatusData} partners={partners} ros={ros} />;
+            case 'dashboard': return <DashboardOverviewV3 partners={partners} ros={ros} proposals={proposals} editais={editais} onNavigate={setActiveTab} allowedModules={filteredNavItems.flatMap(item => item.subItems ? item.subItems.map(sub => sub.id) : [item.id])} />;
             case 'projects': return <ProjectManagementApp onBack={() => setActiveTab('dashboard')} />;
             case 'distributors': return <PartnerView partnerType="Distribuidor" />; // PartnerView pode precisar adaptação
             case 'suppliers-register': return <PartnerView partnerType="Fornecedor" />; // PartnerView pode precisar adaptação
@@ -1199,11 +1196,11 @@ export default function App() { // Ou Home
                     setTrainings(prevTrainings => prevTrainings.filter(t => t.id !== id));
                 }}
             />;
-            case 'quotes': return <QuotesView partners={partners} onEditITQuote={(data) => {
+            case 'quotes': return <QuotesViewV2 partners={partners} onEditITQuote={(data) => {
                 setItQuoteToEdit(data);
                 setActiveTab('calculator-ti-vls');
             }} />;
-            case 'proposals': return <ProposalsView proposals={proposals} partners={partners} onSave={(proposal) => setProposals(prev => [...prev.filter(p => p.id !== proposal.id), proposal])} onDelete={(id) => setProposals(prev => prev.filter(p => p.id !== id))} />;
+            case 'proposals': return <ProposalsViewV2 proposals={proposals} partners={partners} onSave={(proposal) => setProposals(prev => [...prev.filter(p => p.id !== proposal.id), proposal])} onDelete={(id) => setProposals(prev => prev.filter(p => p.id !== id))} />;
             case 'generated-proposals': return (
                 <div className="p-6">
                     <div className="text-center">
@@ -1284,188 +1281,11 @@ export default function App() { // Ou Home
         return <PublicHomePage logoSrc={logoSrc} onLoginClick={() => setShowLogin(true)} />;
     }
 
-    // Mapeamento de categoria → classe de cor do ícone
-    const categoryIconClass: Record<string, string> = {
-        gestao:     'nav-icon-gestao',
-        comercial:  'nav-icon-comercial',
-        financeiro: 'nav-icon-financeiro',
-        b2g:        'nav-icon-b2g',
-        tecnico:    'nav-icon-tecnico',
-        sistema:    'nav-icon-sistema',
-    };
-
-    // Grupos de navegação com categoria
-    const navGroups: Array<{
-        category: string;
-        label: string;
-        iconClass: string;
-        items: typeof filteredNavItems;
-    }> = [
-        { category: 'gestao',     label: 'Gestão',        iconClass: 'nav-icon-gestao',     items: filteredNavItems.filter(i => ['dashboard','projects'].includes(i.id)) },
-        { category: 'comercial',  label: 'Comercial',     iconClass: 'nav-icon-comercial',  items: filteredNavItems.filter(i => ['distributors','suppliers','quotes','proposals','generated-proposals'].includes(i.id)) },
-        { category: 'financeiro', label: 'Precificação',  iconClass: 'nav-icon-financeiro', items: filteredNavItems.filter(i => ['pricing'].includes(i.id)) },
-        { category: 'b2g',        label: 'B2G / Editais', iconClass: 'nav-icon-b2g',        items: filteredNavItems.filter(i => ['bids','price-records','rfp'].includes(i.id)) },
-        { category: 'tecnico',    label: 'Técnico',       iconClass: 'nav-icon-tecnico',    items: filteredNavItems.filter(i => ['it-assessment','poc'].includes(i.id)) },
-        { category: 'sistema',    label: 'Sistema',       iconClass: 'nav-icon-sistema',    items: filteredNavItems.filter(i => ['settings'].includes(i.id)) },
-    ].filter(g => g.items.length > 0);
-
-    if (activeTab === 'projects') {
-        return (
-            <QuoteProvider initialData={quotes}>
-                <ProjectManagementApp onBack={() => setActiveTab('dashboard')} />
-            </QuoteProvider>
-        );
-    }
-
-    // **Renderização da UI completa da página principal autenticada**
     return (
         <QuoteProvider initialData={quotes}>
-            <div className="flex h-screen overflow-hidden font-body bg-background text-foreground">
-
-                {/* ════════════════════════════════════════════════════
-                    SIDEBAR MODERNA
-                ════════════════════════════════════════════════════ */}
-                <aside className="sidebar-modern hidden md:flex w-60 lg:w-64 flex-col h-screen flex-shrink-0">
-
-                    {/* ── Brand header ── */}
-                    <div className="sidebar-brand-modern flex h-14 flex-shrink-0 items-center gap-3 px-4">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary/10 ring-1 ring-primary/20 flex-shrink-0">
-                            {logoSrc
-                                ? <img src={logoSrc} alt="Logo" className="h-6 w-6 rounded-lg object-contain" />
-                                : <Briefcase className="h-4 w-4 text-primary" />
-                            }
-                        </div>
-                        <div className="min-w-0">
-                            <p className="truncate text-[13px] font-bold text-sidebar-foreground leading-tight">Pré-Venda TI</p>
-                            <p className="truncate text-[10px] text-muted-foreground/70 leading-tight">Sistema Comercial</p>
-                        </div>
-                    </div>
-
-                    {/* ── Nav scrollável ── */}
-                    <nav className="flex-1 overflow-y-auto sidebar-scroll py-2 px-2">
-                        {navGroups.map((group) => (
-                            <div key={group.category}>
-                                {/* Category label */}
-                                <div className="sidebar-category-label">{group.label}</div>
-
-                                {group.items.map((item) => (
-                                    !item.subItems ? (
-                                        /* ── Item simples ── */
-                                        <button
-                                            key={item.id}
-                                            onClick={() => setActiveTab(item.id)}
-                                            className={`nav-item ${activeTab === item.id ? 'active' : ''}`}
-                                        >
-                                            <span className={`flex-shrink-0 ${activeTab === item.id ? 'text-primary' : group.iconClass}`}>
-                                                {item.icon}
-                                            </span>
-                                            <span className="min-w-0 truncate">{item.label}</span>
-                                        </button>
-                                    ) : (
-                                        /* ── Grupo colapsável ── */
-                                        <Collapsible
-                                            key={item.id}
-                                            open={openSections[item.id as keyof typeof openSections] || item.subItems.some(s => s.id === activeTab)}
-                                            onOpenChange={(o) => setOpenSections(prev => ({ ...prev, [item.id]: o }))}
-                                        >
-                                            <CollapsibleTrigger asChild>
-                                                <button
-                                                    className={`nav-group-trigger ${item.subItems.some(s => s.id === activeTab) ? 'has-active' : ''}`}
-                                                >
-                                                    <div className="flex items-center gap-2.5 min-w-0">
-                                                        <span className={`flex-shrink-0 ${item.subItems.some(s => s.id === activeTab) ? 'text-primary' : group.iconClass}`}>
-                                                            {item.icon}
-                                                        </span>
-                                                        <span className="min-w-0 truncate">{item.label}</span>
-                                                    </div>
-                                                    <ChevronDown
-                                                        className={`h-3.5 w-3.5 flex-shrink-0 transition-transform duration-200 ${
-                                                            openSections[item.id as keyof typeof openSections] || item.subItems.some(s => s.id === activeTab)
-                                                                ? 'rotate-180 text-primary'
-                                                                : 'text-muted-foreground/50'
-                                                        }`}
-                                                    />
-                                                </button>
-                                            </CollapsibleTrigger>
-                                            <CollapsibleContent>
-                                                <div className="nav-subitems-container">
-                                                    {item.subItems.map((sub) => (
-                                                        <button
-                                                            key={sub.id}
-                                                            onClick={() => handleNavigation(sub)}
-                                                            className={`nav-subitem ${activeTab === sub.id ? 'active' : ''}`}
-                                                        >
-                                                            <span className={`flex-shrink-0 ${activeTab === sub.id ? 'text-primary' : 'text-muted-foreground/50'}`}>
-                                                                {sub.icon}
-                                                            </span>
-                                                            <span className="min-w-0 truncate">{sub.label}</span>
-                                                            {(sub as any).openInNewTab && (
-                                                                <ExternalLink className="ml-auto h-3 w-3 flex-shrink-0 text-muted-foreground/40" />
-                                                            )}
-                                                        </button>
-                                                    ))}
-                                                </div>
-                                            </CollapsibleContent>
-                                        </Collapsible>
-                                    )
-                                ))}
-                            </div>
-                        ))}
-                    </nav>
-
-                    {/* ── Sidebar footer ── */}
-                    <div className="sidebar-footer-modern flex flex-col gap-2">
-                        {/* User info compacto */}
-                        <div className="flex items-center gap-2 rounded-lg px-2 py-2">
-                            <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-primary/10 text-[11px] font-bold text-primary ring-1 ring-primary/20">
-                                {(currentUser?.name ?? 'U').split(' ').slice(0,2).map(n=>n[0]).join('').toUpperCase()}
-                            </div>
-                            <div className="min-w-0 flex-1">
-                                <p className="truncate text-[12px] font-semibold text-sidebar-foreground leading-tight">
-                                    {currentUser?.name ?? 'Usuário'}
-                                </p>
-                                <p className="text-[10px] text-muted-foreground/60 leading-tight">
-                                    {currentUser?.role === 'admin' ? 'Administrador' : 'Usuário'}
-                                </p>
-                            </div>
-                        </div>
-
-                        {/* Theme toggle */}
-                        <button
-                            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-                            className="flex w-full items-center gap-2.5 rounded-lg border border-border/40 bg-muted/30 px-3 py-2 text-[12px] font-medium text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground"
-                        >
-                            {mounted
-                                ? theme === 'dark'
-                                    ? <><Sun className="h-3.5 w-3.5 text-amber-400" /><span>Modo Claro</span></>
-                                    : <><Moon className="h-3.5 w-3.5 text-primary" /><span>Modo Escuro</span></>
-                                : <><Sun className="h-3.5 w-3.5" /><span>Tema</span></>
-                            }
-                        </button>
-                    </div>
-                </aside>
-
-                {/* ════════════════════════════════════════════════════
-                    CONTEÚDO PRINCIPAL
-                ════════════════════════════════════════════════════ */}
-                <div className="main-content-area">
-                    {/* Header */}
-                    <Header
-                        currentTitle={currentNavItem.parentLabel || currentNavItem.label}
-                        currentSubtitle={currentNavItem.parentLabel ? currentNavItem.label : undefined}
-                        logoSrc={logoSrc}
-                        currentUser={currentUser}
-                        onNavigateSettings={() => setActiveTab('settings')}
-                        onLogout={handleLogout}
-                    />
-
-                    {/* Conteúdo com animação de entrada e scroll customizado */}
-                    <div key={activeTab} className="content-wrapper content-scroll content-animate">
-                        {renderContent()}
-                    </div>
-                </div>
-
-            </div>
+            <ApplicationShell items={filteredNavItems} activeTab={activeTab} onNavigate={setActiveTab} logoSrc={logoSrc} proposals={proposals} ros={ros} editais={editais} user={currentUser} onLogout={handleLogout}>
+                {renderContent()}
+            </ApplicationShell>
         </QuoteProvider>
     );
 }

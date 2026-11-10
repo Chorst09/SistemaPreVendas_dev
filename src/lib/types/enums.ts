@@ -35,6 +35,8 @@ export enum ProposalStatus {
 
 // Status de RO (Registro de Ocorrência)
 export enum ROStatus {
+  PENDING = 'Pendente',
+  IN_ANALYSIS = 'Em Análise',
   APPROVED = 'Aprovado',
   DENIED = 'Negado',
   EXPIRED = 'Expirado'

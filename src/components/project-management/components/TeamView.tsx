@@ -143,28 +143,28 @@ export default function TeamView() {
   };
 
   return (
-    <div className="h-full bg-[#070b16] overflow-y-auto p-8 text-slate-300 custom-scrollbar">
+    <div className="h-full bg-background overflow-y-auto p-8 text-foreground custom-scrollbar">
       <div className="max-w-6xl mx-auto">
 
         <div className="flex items-center justify-between mb-8">
-          <h1 className="text-2xl font-bold text-slate-100 flex items-center gap-3">
-            <Users className="w-6 h-6 text-[#ff7a00]" />
+          <h1 className="text-2xl font-bold text-foreground flex items-center gap-3">
+            <Users className="w-6 h-6 text-primary" />
             Equipe do Projeto
           </h1>
           <div className="flex items-center gap-3">
             <div className="relative">
-              <Search className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
+              <Search className="w-4 h-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Procurar membro..."
-                className="bg-[#111827] border border-[#263345] text-sm text-slate-200 rounded-md pl-9 pr-4 py-1.5 focus:outline-none focus:border-[#ff7a00] w-64"
+                className="bg-card border border-border text-sm text-foreground rounded-md pl-9 pr-4 py-1.5 focus:outline-none focus:border-primary w-64"
               />
             </div>
             <button
               onClick={() => setInviteOpen(true)}
-              className="flex items-center gap-2 text-sm text-white bg-[#ff7a00] hover:bg-[#f6b40b] hover:text-[#050914] px-4 py-1.5 rounded-md transition-colors font-medium"
+              className="flex items-center gap-2 text-sm text-primary-foreground bg-primary hover:bg-primary hover:text-primary-foreground px-4 py-1.5 rounded-md transition-colors font-medium"
             >
               <UserPlus className="w-4 h-4" /> Convidar
             </button>
@@ -172,33 +172,33 @@ export default function TeamView() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          <div className="bg-[linear-gradient(140deg,rgba(255,122,0,0.15),rgba(17,24,39,0.98))] border border-[#263345] rounded-md p-5">
+          <div className="bg-[linear-gradient(140deg,rgba(255,122,0,0.15),rgba(17,24,39,0.98))] border border-border rounded-md p-5">
             <div className="flex justify-between items-start mb-2">
-              <div className="text-slate-500 text-sm font-medium">Membros Totais</div>
-              <Users className="w-4 h-4 text-[#ff7a00]" />
+              <div className="text-muted-foreground text-sm font-medium">Membros Totais</div>
+              <Users className="w-4 h-4 text-primary" />
             </div>
-            <div className="text-2xl font-bold text-slate-100">{mockUsers.length}</div>
+            <div className="text-2xl font-bold text-foreground">{mockUsers.length}</div>
           </div>
-          <div className="bg-[linear-gradient(140deg,rgba(34,197,94,0.14),rgba(17,24,39,0.98))] border border-[#263345] rounded-md p-5">
+          <div className="bg-[linear-gradient(140deg,rgba(34,197,94,0.14),rgba(17,24,39,0.98))] border border-border rounded-md p-5">
             <div className="flex justify-between items-start mb-2">
-              <div className="text-slate-500 text-sm font-medium">Ativos Agora</div>
-              <Activity className="w-4 h-4 text-[#22c55e]" />
+              <div className="text-muted-foreground text-sm font-medium">Ativos Agora</div>
+              <Activity className="w-4 h-4 text-accent-green" />
             </div>
-            <div className="text-2xl font-bold text-slate-100">2</div>
+            <div className="text-2xl font-bold text-foreground">2</div>
           </div>
-          <div className="bg-[linear-gradient(140deg,rgba(246,180,11,0.14),rgba(17,24,39,0.98))] border border-[#263345] rounded-md p-5">
+          <div className="bg-[linear-gradient(140deg,rgba(246,180,11,0.14),rgba(17,24,39,0.98))] border border-border rounded-md p-5">
             <div className="flex justify-between items-start mb-2">
-              <div className="text-slate-500 text-sm font-medium">Convites Pendentes</div>
-              <Mail className="w-4 h-4 text-[#f6b40b]" />
+              <div className="text-muted-foreground text-sm font-medium">Convites Pendentes</div>
+              <Mail className="w-4 h-4 text-accent-yellow" />
             </div>
-            <div className="text-2xl font-bold text-slate-100">{pendingInvites}</div>
+            <div className="text-2xl font-bold text-foreground">{pendingInvites}</div>
           </div>
         </div>
 
         <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
-          <div className="bg-[#111827] border border-[#263345] rounded-md overflow-hidden shadow-sm">
+          <div className="bg-card border border-border rounded-md overflow-hidden shadow-sm">
             <table className="w-full text-left text-sm">
-              <thead className="border-b border-[#263345] text-slate-400 bg-[#0b1020]">
+              <thead className="border-b border-border text-muted-foreground bg-card">
                 <tr>
                   <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">Membro</th>
                   <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">Função</th>
@@ -209,37 +209,37 @@ export default function TeamView() {
               </thead>
               <tbody className="divide-y divide-[#0d1423]">
                 {filteredUsers.map((user, idx) => (
-                  <tr key={user.id} className="hover:bg-[#0d1423] transition-colors group">
+                  <tr key={user.id} className="hover:bg-muted transition-colors group">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <div className={`w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold text-white shadow-inner ${user.color}`}>
+                        <div className={`w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold text-foreground shadow-inner ${user.color}`}>
                           {user.initials}
                         </div>
                         <div>
-                          <p className="font-semibold text-slate-200">{user.name}</p>
-                          <p className="text-xs text-slate-500 flex items-center gap-1 mt-0.5">
+                          <p className="font-semibold text-foreground">{user.name}</p>
+                          <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
                             <Mail className="w-3 h-3" /> {user.email}
                           </p>
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <span className="bg-[#0d1423] border border-[#263345] text-slate-300 px-2.5 py-1 rounded-md text-[11px] font-medium flex items-center gap-1.5 w-fit">
-                        {user.role === 'Admin' && <Shield className="w-3 h-3 text-[#22c55e]" />}
+                      <span className="bg-muted border border-border text-foreground px-2.5 py-1 rounded-md text-[11px] font-medium flex items-center gap-1.5 w-fit">
+                        {user.role === 'Admin' && <Shield className="w-3 h-3 text-accent-green" />}
                         {user.role}
                       </span>
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-1.5">
-                        <span className={`w-2 h-2 rounded-full ${idx < 2 ? 'bg-[#22c55e]' : 'bg-slate-600'}`}></span>
-                        <span className="text-slate-300 text-xs">{idx < 2 ? 'Online' : 'Offline'}</span>
+                        <span className={`w-2 h-2 rounded-full ${idx < 2 ? 'bg-accent-green' : 'bg-slate-600'}`}></span>
+                        <span className="text-foreground text-xs">{idx < 2 ? 'Online' : 'Offline'}</span>
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-slate-500 text-xs font-medium">
+                    <td className="px-6 py-4 text-muted-foreground text-xs font-medium">
                       {idx === 0 ? 'Agora mesmo' : idx === 1 ? 'Há 5 min' : 'Há 2 dias'}
                     </td>
                     <td className="px-6 py-4 text-right">
-                      <button className="text-slate-500 hover:text-slate-200 p-1.5 rounded hover:bg-[#1f2937] transition-colors opacity-0 group-hover:opacity-100">
+                      <button className="text-muted-foreground hover:text-foreground p-1.5 rounded hover:bg-muted transition-colors opacity-0 group-hover:opacity-100">
                         <MoreHorizontal className="w-4 h-4" />
                       </button>
                     </td>
@@ -250,10 +250,10 @@ export default function TeamView() {
           </div>
 
           <div className="space-y-6">
-            <div className="rounded-md border border-[#263345] bg-[#111827] p-5">
+            <div className="rounded-md border border-border bg-card p-5">
               <div className="mb-4 flex items-center justify-between">
-                <h2 className="text-sm font-bold text-slate-100">Integrações de e-mail</h2>
-                <Settings className="h-4 w-4 text-slate-500" />
+                <h2 className="text-sm font-bold text-foreground">Integrações de e-mail</h2>
+                <Settings className="h-4 w-4 text-muted-foreground" />
               </div>
               <div className="space-y-3">
                 {providerOptions.map(item => (
@@ -264,13 +264,13 @@ export default function TeamView() {
                       setProvider(item.name);
                       setInviteOpen(true);
                     }}
-                    className="w-full rounded-md border border-[#263345] bg-[#070b16] p-3 text-left transition-colors hover:border-[#ff7a00] hover:bg-[#0d1423]"
+                    className="w-full rounded-md border border-border bg-background p-3 text-left transition-colors hover:border-primary hover:bg-muted"
                   >
                     <div className="flex items-center gap-3">
                       <span className="h-3 w-3 rounded-full" style={{ backgroundColor: item.accent, boxShadow: `0 0 12px ${item.accent}88` }} />
                       <div>
-                        <p className="text-sm font-semibold text-slate-200">{item.name}</p>
-                        <p className="text-xs text-slate-500">{item.description}</p>
+                        <p className="text-sm font-semibold text-foreground">{item.name}</p>
+                        <p className="text-xs text-muted-foreground">{item.description}</p>
                       </div>
                     </div>
                   </button>
@@ -278,24 +278,24 @@ export default function TeamView() {
               </div>
             </div>
 
-            <div className="rounded-md border border-[#263345] bg-[#111827] p-5">
+            <div className="rounded-md border border-border bg-card p-5">
               <div className="mb-4 flex items-center justify-between">
-                <h2 className="text-sm font-bold text-slate-100">Convites recentes</h2>
-                <Mail className="h-4 w-4 text-[#f6b40b]" />
+                <h2 className="text-sm font-bold text-foreground">Convites recentes</h2>
+                <Mail className="h-4 w-4 text-accent-yellow" />
               </div>
               <div className="space-y-3">
                 {invites.slice(0, 5).map(invite => (
-                  <div key={invite.id} className="rounded-md border border-[#263345] bg-[#070b16] p-3">
+                  <div key={invite.id} className="rounded-md border border-border bg-background p-3">
                     <div className="mb-2 flex items-center justify-between gap-2">
-                      <span className="rounded-full bg-[#ff7a00]/10 px-2 py-1 text-[10px] font-bold text-[#ffb15c]">{invite.provider}</span>
-                      <span className="text-[10px] text-slate-500">{formatDate(invite.createdAt)}</span>
+                      <span className="rounded-full bg-primary/10 px-2 py-1 text-[10px] font-bold text-primary">{invite.provider}</span>
+                      <span className="text-[10px] text-muted-foreground">{formatDate(invite.createdAt)}</span>
                     </div>
-                    <p className="truncate text-xs font-semibold text-slate-300">{invite.emails.join(', ')}</p>
-                    <p className="mt-1 text-[11px] text-slate-500">{invite.role} · {invite.status}</p>
+                    <p className="truncate text-xs font-semibold text-foreground">{invite.emails.join(', ')}</p>
+                    <p className="mt-1 text-[11px] text-muted-foreground">{invite.role} · {invite.status}</p>
                   </div>
                 ))}
                 {invites.length === 0 && (
-                  <div className="rounded-md border border-dashed border-[#374151] bg-[#070b16] p-5 text-center text-sm text-slate-500">
+                  <div className="rounded-md border border-dashed border-border bg-background p-5 text-center text-sm text-muted-foreground">
                     Nenhum convite enviado.
                   </div>
                 )}
@@ -307,22 +307,22 @@ export default function TeamView() {
 
       {inviteOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-3xl overflow-hidden rounded-lg border border-[#374151] bg-[#0b1020] shadow-2xl">
-            <div className="relative border-b border-[#263345] bg-[radial-gradient(circle_at_15%_0%,rgba(255,122,0,0.24),transparent_30%),linear-gradient(120deg,#111827,#070b16)] px-6 py-5">
+          <div className="w-full max-w-3xl overflow-hidden rounded-lg border border-border bg-card shadow-2xl">
+            <div className="relative border-b border-border bg-[radial-gradient(circle_at_15%_0%,rgba(255,122,0,0.24),transparent_30%),linear-gradient(120deg,#111827,#070b16)] px-6 py-5">
               <div className="flex items-start justify-between">
                 <div>
                   <div className="mb-2 flex items-center gap-2">
-                    <span className="flex h-9 w-9 items-center justify-center rounded-md bg-[#ff7a00] text-white">
+                    <span className="flex h-9 w-9 items-center justify-center rounded-md bg-primary text-primary-foreground">
                       <Send className="h-5 w-5" />
                     </span>
-                    <span className="rounded-full border border-[#22c55e]/40 bg-[#22c55e]/10 px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-[#22c55e]">
+                    <span className="rounded-full border border-accent-green/40 bg-accent-green/10 px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-accent-green">
                       Convite de equipe
                     </span>
                   </div>
-                  <h2 className="text-2xl font-black text-slate-100">Enviar convite</h2>
-                  <p className="mt-1 text-sm text-slate-400">Selecione o provedor, defina permissões e envie para um ou vários e-mails.</p>
+                  <h2 className="text-2xl font-semibold text-foreground">Enviar convite</h2>
+                  <p className="mt-1 text-sm text-muted-foreground">Selecione o provedor, defina permissões e envie para um ou vários e-mails.</p>
                 </div>
-                <button onClick={closeInvite} className="rounded-md border border-[#374151] p-2 text-slate-400 hover:border-[#ff7a00] hover:text-white">
+                <button onClick={closeInvite} className="rounded-md border border-border p-2 text-muted-foreground hover:border-primary hover:text-foreground">
                   <X className="h-5 w-5" />
                 </button>
               </div>
@@ -330,22 +330,22 @@ export default function TeamView() {
 
             <div className="grid gap-5 p-6">
               {inviteError && (
-                <div className="rounded-md border border-[#ff7a00]/40 bg-[#ff7a00]/10 px-4 py-3 text-sm font-semibold text-[#ffb15c]">
+                <div className="rounded-md border border-primary/40 bg-primary/10 px-4 py-3 text-sm font-semibold text-primary">
                   {inviteError}
                 </div>
               )}
 
               <div className="grid gap-4 md:grid-cols-2">
                 <label className="block">
-                  <span className="mb-1.5 flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-[#8f9caf]"><AtSign className="h-4 w-4" /> Provedor</span>
-                  <select value={provider} onChange={(e) => setProvider(e.target.value as EmailProvider)} className="w-full rounded-md border border-[#374151] bg-[#070b16] px-3 py-2 text-sm text-slate-100 outline-none focus:border-[#ff7a00]">
+                  <span className="mb-1.5 flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-muted-foreground"><AtSign className="h-4 w-4" /> Provedor</span>
+                  <select value={provider} onChange={(e) => setProvider(e.target.value as EmailProvider)} className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-primary">
                     {providerOptions.map(item => <option key={item.name}>{item.name}</option>)}
                   </select>
                 </label>
 
                 <label className="block">
-                  <span className="mb-1.5 flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-[#8f9caf]"><Shield className="h-4 w-4" /> Permissão</span>
-                  <select value={role} onChange={(e) => setRole(e.target.value as TeamRole)} className="w-full rounded-md border border-[#374151] bg-[#070b16] px-3 py-2 text-sm text-slate-100 outline-none focus:border-[#ff7a00]">
+                  <span className="mb-1.5 flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-muted-foreground"><Shield className="h-4 w-4" /> Permissão</span>
+                  <select value={role} onChange={(e) => setRole(e.target.value as TeamRole)} className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-primary">
                     <option>Admin</option>
                     <option>Gerente</option>
                     <option>Membro</option>
@@ -355,7 +355,7 @@ export default function TeamView() {
               </div>
 
               <label className="block">
-                <span className="mb-1.5 flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-[#8f9caf]"><Mail className="h-4 w-4" /> E-mails</span>
+                <span className="mb-1.5 flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-muted-foreground"><Mail className="h-4 w-4" /> E-mails</span>
                 <textarea
                   value={inviteEmails}
                   onChange={(e) => {
@@ -363,30 +363,30 @@ export default function TeamView() {
                     setInviteError('');
                   }}
                   placeholder="ana@empresa.com; joao@empresa.com"
-                  className="min-h-[88px] w-full resize-none rounded-md border border-[#374151] bg-[#070b16] px-3 py-2 text-sm text-slate-100 outline-none placeholder:text-slate-600 focus:border-[#ff7a00]"
+                  className="min-h-[88px] w-full resize-none rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-primary"
                 />
               </label>
 
               <label className="block">
-                <span className="mb-1.5 flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-[#8f9caf]"><Building2 className="h-4 w-4" /> Mensagem</span>
+                <span className="mb-1.5 flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-muted-foreground"><Building2 className="h-4 w-4" /> Mensagem</span>
                 <textarea
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
-                  className="min-h-[96px] w-full resize-none rounded-md border border-[#374151] bg-[#070b16] px-3 py-2 text-sm text-slate-100 outline-none placeholder:text-slate-600 focus:border-[#ff7a00]"
+                  className="min-h-[96px] w-full resize-none rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-primary"
                 />
               </label>
 
-              <div className="rounded-md border border-[#263345] bg-[#111827] p-4">
+              <div className="rounded-md border border-border bg-card p-4">
                 <div className="mb-2 flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-bold text-slate-100">{selectedProvider.name}</p>
-                    <p className="text-xs text-slate-500">{selectedProvider.description}</p>
+                    <p className="text-sm font-bold text-foreground">{selectedProvider.name}</p>
+                    <p className="text-xs text-muted-foreground">{selectedProvider.description}</p>
                   </div>
                   <span className="h-3 w-3 rounded-full" style={{ backgroundColor: selectedProvider.accent }} />
                 </div>
-                <div className="flex items-center gap-2 rounded-md border border-[#374151] bg-[#070b16] px-3 py-2">
-                  <p className="min-w-0 flex-1 truncate text-xs text-slate-400">{inviteLink}</p>
-                  <button onClick={copyInviteLink} className="flex items-center gap-1.5 text-xs font-semibold text-[#ffb15c] hover:text-[#f6b40b]">
+                <div className="flex items-center gap-2 rounded-md border border-border bg-background px-3 py-2">
+                  <p className="min-w-0 flex-1 truncate text-xs text-muted-foreground">{inviteLink}</p>
+                  <button onClick={copyInviteLink} className="flex items-center gap-1.5 text-xs font-semibold text-primary hover:text-accent-yellow">
                     {copied ? <CheckCircle2 className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
                     {copied ? 'Copiado' : 'Copiar'}
                   </button>
@@ -394,11 +394,11 @@ export default function TeamView() {
               </div>
             </div>
 
-            <div className="flex items-center justify-end gap-3 border-t border-[#263345] bg-[#111827] px-6 py-4">
-              <button onClick={closeInvite} className="rounded-md border border-[#374151] px-4 py-2 text-sm font-semibold text-slate-300 hover:bg-[#1f2937] hover:text-white">
+            <div className="flex items-center justify-end gap-3 border-t border-border bg-card px-6 py-4">
+              <button onClick={closeInvite} className="rounded-md border border-border px-4 py-2 text-sm font-semibold text-foreground hover:bg-muted hover:text-foreground">
                 Cancelar
               </button>
-              <button onClick={sendInvite} className="flex items-center gap-2 rounded-md bg-[#ff7a00] px-5 py-2 text-sm font-black text-white transition-colors hover:bg-[#f6b40b] hover:text-[#050914]">
+              <button onClick={sendInvite} className="flex items-center gap-2 rounded-md bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary hover:text-primary-foreground">
                 <Send className="h-4 w-4" /> Enviar convite
               </button>
             </div>

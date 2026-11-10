@@ -1,5 +1,6 @@
 "use client";
 
+import { useRecordLink } from '@/hooks/use-record-link';
 import React, { useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -40,6 +41,7 @@ const EditalAnalysisView: React.FC<EditalAnalysisViewProps> = ({
   const [showAnalysisForm, setShowAnalysisForm] = useState(false);
   const [editingEdital, setEditingEdital] = useState<Edital | null>(null);
   const [viewingEdital, setViewingEdital] = useState<Edital | null>(null);
+  useRecordLink('bids-analysis', editais, setViewingEdital);
   const [selectedEditalForAnalysis, setSelectedEditalForAnalysis] = useState<Edital | null>(null);
 
   const filteredEditais = useMemo(() => {

@@ -9,30 +9,30 @@ function cn(...inputs: ClassValue[]) {
 }
 
 const statusColors: Record<IssueStatus, string> = {
-  'PENDENTE': 'bg-[#111827] text-slate-300',
-  'PLANEJAMENTO': 'bg-[#111827] text-slate-300',
-  'EM PROGRESSO': 'bg-[#3b82f6] text-white',
-  'EM RISCO': 'bg-[#ff7a00] text-white',
+  'PENDENTE': 'bg-card text-foreground',
+  'PLANEJAMENTO': 'bg-card text-foreground',
+  'EM PROGRESSO': 'bg-[#3b82f6] text-foreground',
+  'EM RISCO': 'bg-primary text-primary-foreground',
   'ATUALIZAÇÃO NECESSÁRIA': 'bg-[#eab308] text-slate-900',
-  'EM ESPERA': 'bg-[#78716c] text-white',
-  'CONCLUÍDO': 'bg-[#22c55e] text-white',
-  'CANCELADO': 'bg-[#22c55e] text-white'
+  'EM ESPERA': 'bg-[#78716c] text-foreground',
+  'CONCLUÍDO': 'bg-accent-green text-foreground',
+  'CANCELADO': 'bg-accent-green text-foreground'
 };
 
 const priorityColors: Record<string, string> = {
   'Urgente': 'text-red-500',
   'Alta': 'text-yellow-500',
   'Normal': 'text-blue-500',
-  'Baixa': 'text-slate-400',
+  'Baixa': 'text-muted-foreground',
 };
 
 export default function ListView({ issues, onTaskClick }: { issues: Issue[], onTaskClick?: (issue: Issue) => void }) {
   return (
-    <div className="h-full bg-[#070b16] flex flex-col text-slate-300">
+    <div className="h-full bg-background flex flex-col text-foreground">
       <div className="flex-1 overflow-auto p-6">
-        <div className="border border-[#263345] rounded-lg shadow-sm overflow-hidden bg-[#111827]">
+        <div className="border border-border rounded-lg shadow-sm overflow-hidden bg-card">
           <table className="w-full text-left text-sm whitespace-nowrap">
-            <thead className="bg-[#111827] border-b border-[#263345] text-slate-400">
+            <thead className="bg-card border-b border-border text-muted-foreground">
               <tr>
                 <th className="px-6 py-3 font-semibold w-full">Nome da Fase</th>
                 <th className="px-6 py-3 font-semibold">Status</th>
@@ -45,11 +45,11 @@ export default function ListView({ issues, onTaskClick }: { issues: Issue[], onT
               {issues.map(issue => (
                 <tr
                   key={issue.id}
-                  className="hover:bg-[#111827] transition-colors group cursor-pointer"
+                  className="hover:bg-card transition-colors group cursor-pointer"
                   onClick={() => onTaskClick?.(issue)}
                 >
-                  <td className="px-6 py-3 font-medium text-slate-200 group-hover:text-white transition-colors truncate max-w-md flex items-center gap-2">
-                    <span className="text-slate-500 text-[10px] font-mono">{issue.key || `PRJ-${issue.id.slice(-3)}`}</span>
+                  <td className="px-6 py-3 font-medium text-foreground group-hover:text-foreground transition-colors truncate max-w-md flex items-center gap-2">
+                    <span className="text-muted-foreground text-[10px] font-mono">{issue.key || `PRJ-${issue.id.slice(-3)}`}</span>
                     {issue.title}
                   </td>
                   <td className="px-6 py-3">
@@ -65,13 +65,13 @@ export default function ListView({ issues, onTaskClick }: { issues: Issue[], onT
                   <td className="px-6 py-3">
                     {issue.assignee ? (
                       <div className="flex items-center gap-2">
-                        <div className={cn("w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold text-white", issue.assignee.color)}>
+                        <div className={cn("w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold text-foreground", issue.assignee.color)}>
                           {issue.assignee.initials}
                         </div>
-                        <span className="text-slate-300 text-xs">{issue.assignee.name}</span>
+                        <span className="text-foreground text-xs">{issue.assignee.name}</span>
                       </div>
                     ) : (
-                      <div className="flex items-center gap-2 text-slate-500 text-xs">
+                      <div className="flex items-center gap-2 text-muted-foreground text-xs">
                         <div className="w-5 h-5 rounded-full border border-dashed border-slate-600 flex items-center justify-center">
                           <UserIcon className="w-3 h-3" />
                         </div>
@@ -79,7 +79,7 @@ export default function ListView({ issues, onTaskClick }: { issues: Issue[], onT
                       </div>
                     )}
                   </td>
-                  <td className="px-6 py-3 text-slate-400 text-xs">
+                  <td className="px-6 py-3 text-muted-foreground text-xs">
                     {issue.dueDate ? issue.dueDate : '-'}
                   </td>
                 </tr>

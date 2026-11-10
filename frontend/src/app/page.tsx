@@ -22,7 +22,9 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { Header } from '@/components/ui/header';
 
 // Importe seus componentes de View
-import DashboardView from '@/components/dashboard/DashboardView';
+import DashboardView from '@/components/dashboard/DashboardOverview';
+import { ApplicationShell } from '@/components/layout/application-shell';
+import { useModuleNavigation } from '@/hooks/use-module-navigation';
 import PartnerView from '@/components/partners/PartnerView';
 import QuotesView from '@/components/quotes/QuotesView';
 import ProposalsView from '@/components/proposals/ProposalsView';
@@ -69,15 +71,7 @@ export default function App() { // Ou Home
     const [mounted, setMounted] = useState(false); // Estado para verificar se montou no cliente
     const { logoSrc } = useLogo(); // Hook para gerenciar logo personalizado
 
-    const [activeTab, setActiveTab] = useState('dashboard'); // Estado da aba ativa
-    const [activeTabRestored, setActiveTabRestored] = useState(false);
-    useEffect(() => {
-        if (typeof window !== 'undefined') {
-            const stored = window.localStorage.getItem(ACTIVE_TAB_STORAGE_KEY);
-            if (stored) setActiveTab(stored);
-        }
-        setActiveTabRestored(true);
-    }, []);
+    const [activeTab, setActiveTab, activeTabRestored] = useModuleNavigation();
     const [editingProposalId, setEditingProposalId] = useState<string | null>(null); // Estado para edição de propostas
     // Você pode remover ou adaptar estes estados se os componentes de view gerenciarem seus próprios dados carregados do Firestore
     const [partners, setPartners] = useState<Partner[]>(initialPartners); // Exemplo: Manter se necessário para dados locais/testes
@@ -143,7 +137,6 @@ export default function App() { // Ou Home
                 { id: 'calculator-noc', label: 'NOC/SOC/SIEM', icon: <Headset size={16} />, openInNewTab: false } as NavSubItem & { openInNewTab?: boolean; url?: string },
                 { id: 'calculator-servicedesk-advanced', label: 'Service Desk Avançado', icon: <Server size={16} />, openInNewTab: false } as NavSubItem & { openInNewTab?: boolean; url?: string },
                 { id: 'calculator-printer', label: 'Outsourcing de Impressão', icon: <Printer size={16} />, openInNewTab: false } as NavSubItem & { openInNewTab?: boolean; url?: string },
-                { id: 'simuladores', label: 'Simuladores', icon: <BarChart size={16} />, openInNewTab: true, url: 'https://simuladores-double-neon.vercel.app/' } as NavSubItem & { openInNewTab?: boolean; url?: string },
             ]
         },
         {
@@ -191,7 +184,7 @@ export default function App() { // Ou Home
         // Remova a dependência de useAuth() dentro deles, se houver.
 
         switch (activeTab) {
-            case 'dashboard': return <DashboardView salesData={salesData} quoteStatusData={quoteStatusData} partners={partners} ros={ros} />;
+            case 'dashboard': return <DashboardView partners={partners} ros={ros} proposals={proposals} editais={editais} onNavigate={setActiveTab} allowedModules={navItems.flatMap(item => item.subItems ? item.subItems.map(sub => sub.id) : [item.id])} />;
             case 'projects': return (
                 <div className="p-6">
                     <div className="text-center">
@@ -328,7 +321,7 @@ export default function App() { // Ou Home
             case 'poc': return <POCManagementView />;
             case 'price-records': return <PriceRecordView priceRecords={priceRecords} onAdd={(priceRecord) => setPriceRecords(prev => [...prev, { ...priceRecord, id: `ATA-${Date.now()}` }])} onUpdate={(id, priceRecord) => setPriceRecords(prev => prev.map(r => r.id === id ? { ...priceRecord, id } : r))} onDelete={(id) => setPriceRecords(prev => prev.filter(r => r.id !== id))} />;
             case 'settings': return <SettingsView />;
-            default: return <DashboardView salesData={salesData} quoteStatusData={quoteStatusData} partners={partners} ros={ros} />;
+            default: return <DashboardView partners={partners} ros={ros} proposals={proposals} editais={editais} onNavigate={setActiveTab} allowedModules={navItems.flatMap(item => item.subItems ? item.subItems.map(sub => sub.id) : [item.id])} />;
         }
     };
 
@@ -336,118 +329,9 @@ export default function App() { // Ou Home
     // **Renderização da UI completa da página principal (sem verificações de autenticação)**
     return (
         <QuoteProvider initialData={quotes}>
-            <div className="min-h-screen font-body bg-background text-foreground transition-colors duration-500">
-                <div className="flex">
-
-                    {/* Sidebar */}
-                    <aside className="w-64 shadow-xl flex-col h-screen sticky top-0 hidden md:flex border-r border-sidebar-border sidebar-bg">
-                        {/* Cabeçalho da Sidebar */}
-                        <div className="flex items-center justify-center h-24 border-b border-sidebar-border/60 sidebar-brand relative">
-                            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/10 to-transparent"></div>
-                            <Briefcase className="w-8 h-8 text-accent-cyan relative z-10 drop-shadow-sm" />
-                            <span className="ml-3 text-xl font-bold text-sidebar-foreground relative z-10 drop-shadow-sm">Menu</span>
-                        </div>
-                        {/* Navegação da Sidebar */}
-                        <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
-                            {navItems.map(item => (
-                                !item.subItems ? (
-                                    <Button
-                                        key={item.id}
-                                        variant="ghost"
-                                        className={`w-full justify-start px-4 py-3 h-auto text-sm transition-all duration-300 rounded-lg ${activeTab === item.id
-                                            ? 'bg-gradient-to-r from-accent-cyan/20 to-accent-orange/10 text-accent-cyan border border-accent-cyan/40 shadow-lg shadow-accent-cyan/15'
-                                            : 'text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent/70 hover:border-accent-cyan/30 hover:shadow-md hover:shadow-accent-cyan/10 border border-transparent'
-                                            }`}
-                                        onClick={() => setActiveTab(item.id)}
-                                    >
-                                        <span className={activeTab === item.id ? 'text-accent-cyan' : 'text-sidebar-foreground/75 group-hover:text-accent-cyan transition-colors duration-300'}>{item.icon}</span>
-                                        <span className="ml-4 font-medium">{item.label}</span>
-                                    </Button>
-                                ) : (
-                                    // Collapsible para itens com sub-itens
-                                    <Collapsible
-                                        key={item.id}
-                                        open={openSections[item.id as keyof typeof openSections] || item.subItems.some(sub => sub.id === activeTab)}
-                                        onOpenChange={(isOpen) => setOpenSections(prev => ({ ...prev, [item.id]: isOpen }))}
-                                    >
-                                        <CollapsibleTrigger asChild>
-                                            <Button
-                                                variant="ghost"
-                                                className={`w-full justify-between px-4 py-3 h-auto text-sm transition-all duration-300 rounded-lg group ${item.subItems.some(sub => sub.id === activeTab)
-                                                    ? 'bg-gradient-to-r from-accent-cyan/20 to-accent-orange/10 text-accent-cyan border border-accent-cyan/40 shadow-lg shadow-accent-cyan/15'
-                                                    : 'text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent/70 hover:border-accent-cyan/30 hover:shadow-md hover:shadow-accent-cyan/10 border border-transparent'
-                                                    }`}
-                                            >
-                                                <div className="flex items-center">
-                                                    <span className={item.subItems.some(sub => sub.id === activeTab) ? 'text-accent-cyan' : 'text-sidebar-foreground/75 group-hover:text-accent-cyan transition-colors duration-300'}>{item.icon}</span>
-                                                    <span className="ml-4 font-medium">{item.label}</span>
-                                                </div>
-                                                <ChevronDown className={`w-5 h-5 transition-all duration-300 ${openSections[item.id as keyof typeof openSections] || item.subItems.some(sub => sub.id === activeTab) ? 'rotate-180 text-accent-cyan' : 'text-sidebar-foreground/60 group-hover:text-accent-cyan'
-                                                    }`} />
-                                            </Button>
-                                        </CollapsibleTrigger>
-                                        <CollapsibleContent className="pl-8 pt-2 space-y-1">
-                                            {item.subItems.map(subItem => (
-                                                <Button
-                                                    key={subItem.id}
-                                                    variant="ghost"
-                                                    onClick={() => handleNavigation(subItem)}
-                                                    className={`w-full justify-start h-auto px-3 py-2 text-sm transition-all duration-300 rounded-md group ${activeTab === subItem.id
-                                                        ? 'text-accent-cyan font-semibold bg-accent-cyan/15 border-l-4 border-accent-cyan shadow-sm shadow-accent-cyan/20'
-                                                        : 'text-sidebar-foreground/65 hover:text-sidebar-foreground hover:bg-sidebar-accent/60 hover:border-l-4 hover:border-accent-orange/60 border-l-4 border-transparent'
-                                                        }`}
-                                                >
-                                                    <span className={activeTab === subItem.id ? 'text-accent-cyan' : 'text-sidebar-foreground/65 group-hover:text-accent-orange transition-colors duration-300'}>{subItem.icon}</span>
-                                                    <span className="ml-3">{subItem.label}</span>
-                                                </Button>
-                                            ))}
-                                        </CollapsibleContent>
-                                    </Collapsible>
-                                )
-                            ))}
-                        </nav>
-                        {/* Parte inferior da Sidebar */}
-                        <div className="p-4 border-t border-sidebar-border bg-sidebar/90 flex flex-col gap-2">
-                            <Button
-                                onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-                                variant="outline"
-                                className="w-full bg-sidebar-accent/70 border-sidebar-border text-sidebar-foreground hover:bg-sidebar-accent hover:border-accent-cyan/50 hover:text-sidebar-foreground hover:shadow-md hover:shadow-accent-cyan/20 transition-all duration-300"
-                            >
-                                {mounted ? (
-                                    <>
-                                        {theme === 'dark' ? <Sun className="mr-2 h-4 w-4 text-accent-orange" /> : <Moon className="mr-2 h-4 w-4 text-accent-cyan" />}
-                                        <span className="font-medium">{theme === 'dark' ? 'Modo Claro' : 'Modo Escuro'}</span>
-                                    </>
-                                ) : (
-                                    <>
-                                        <Sun className="mr-2 h-4 w-4 text-accent-orange" />
-                                        <span className="font-medium">Mudar Tema</span>
-                                    </>
-                                )}
-                            </Button>
-                        </div>
-                    </aside>
-
-
-                    {/* Conteúdo Principal da Página (Main) */}
-                    <main className="flex-1 max-h-screen overflow-y-auto">
-                        {/* Header Elegante com Logo */}
-                        <Header
-                            currentTitle={currentNavItem.parentLabel || currentNavItem.label}
-                            currentSubtitle={currentNavItem.parentLabel ? currentNavItem.label : undefined}
-                            logoSrc={logoSrc}
-                        />
-
-                        {/* Área de conteúdo com padding */}
-                        <div className="p-6 sm:p-10 h-[calc(100vh-200px)] overflow-y-auto">
-
-                            {/* Área de Conteúdo Principal - Renderiza a view ativa */}
-                            {renderContent()} {/* Chama a função para renderizar a view ativa */}
-                        </div>
-
-                    </main>
-                </div>
-            </div>
+            <ApplicationShell items={navItems} activeTab={activeTab} onNavigate={setActiveTab} logoSrc={logoSrc} proposals={proposals} ros={ros} editais={editais}>
+                {renderContent()}
+            </ApplicationShell>
         </QuoteProvider>
     );
 }

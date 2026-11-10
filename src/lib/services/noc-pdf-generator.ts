@@ -197,14 +197,14 @@ export class NOCPDFGenerator {
 
   private addSummaryPlaceholderPage() {
     this.addNewPage();
-    this.summaryPageNumber = this.doc.getNumberOfPages();
+    this.summaryPageNumber = this.doc.internal.getNumberOfPages();
     this.addNewPage();
   }
 
   private beginSection(title: string) {
     this.sectionIndex.push({
       title,
-      page: this.doc.getNumberOfPages(),
+      page: this.doc.internal.getNumberOfPages(),
     });
     this.addSectionTitle(title);
   }
@@ -574,7 +574,7 @@ export class NOCPDFGenerator {
   }
 
   private renderPageFooters() {
-    const totalPages = this.doc.getNumberOfPages();
+    const totalPages = this.doc.internal.getNumberOfPages();
     const companyPhone = this.brandingInfo?.companyPhone || defaultCompanyData.phone;
     const companyEmail = this.brandingInfo?.companyEmail || defaultCompanyData.email;
     const companyWebsite = this.brandingInfo?.companyWebsite || 'www.suaempresa.com';

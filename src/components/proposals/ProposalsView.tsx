@@ -1,5 +1,6 @@
 "use client";
 
+import { useRecordLink } from '@/hooks/use-record-link';
 import React, { useState } from 'react';
 import { Edit, Trash2, PlusCircle, FileDown, User, Calendar, DollarSign, FileText, Briefcase, Printer } from 'lucide-react';
 import type { Proposal, Partner } from '@/lib/types';
@@ -175,6 +176,8 @@ const ProposalsView: React.FC<ProposalsViewProps> = ({ proposals, partners, onSa
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingProposal, setEditingProposal] = useState<Proposal | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [viewingProposal, setViewingProposal] = useState<Proposal | null>(null);
+  const [statusFilter, setStatusFilter] = useState('all');
   const [showProposalTypeDialog, setShowProposalTypeDialog] = useState(false);
   const [showCommercialProposal, setShowCommercialProposal] = useState(false);
   const [localProposals, setLocalProposals] = useState<Proposal[]>([]);
@@ -186,15 +189,16 @@ const ProposalsView: React.FC<ProposalsViewProps> = ({ proposals, partners, onSa
 
   // Combina propostas do sistema com as do localStorage
   const allProposals = [...proposals, ...localProposals];
+  useRecordLink('proposals', allProposals, setViewingProposal);
 
   const handleGoToCommercialProposals = () => {
     window.location.href = '/propostas';
   };
 
   const filteredProposals = allProposals.filter(proposal =>
-    proposal.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (statusFilter === 'all' || proposal.status === statusFilter) && (proposal.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
     proposal.client.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    proposal.accountManager.toLowerCase().includes(searchTerm.toLowerCase())
+    proposal.accountManager.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
   const getStatusColor = (status: string) => {
@@ -296,14 +300,14 @@ const ProposalsView: React.FC<ProposalsViewProps> = ({ proposals, partners, onSa
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-center">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Propostas</h1>
           <p className="text-muted-foreground">
             Gerencie suas propostas comerciais
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Button onClick={handleGoToCommercialProposals} variant="default">
             <FileText className="h-4 w-4 mr-2" />
             Propostas Comerciais
@@ -316,28 +320,7 @@ const ProposalsView: React.FC<ProposalsViewProps> = ({ proposals, partners, onSa
       </div>
 
       {/* Banner Propostas Comerciais */}
-      <Card className="bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-950 dark:to-cyan-950 border-blue-200 dark:border-blue-800">
-        <CardContent className="pt-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-start gap-4">
-              <div className="p-3 bg-blue-100 dark:bg-blue-900 rounded-lg">
-                <FileText className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold text-blue-900 dark:text-blue-100">
-                  Sistema de Propostas Comerciais Completo
-                </h3>
-                <p className="text-sm text-blue-700 dark:text-blue-300 mt-1">
-                  Crie propostas profissionais com 10 seções estruturadas: Capa, Sumário Executivo, Desafio, Solução, Escopo, Cronograma, Investimento, Diferenciais, Próximos Passos e Preview em PDF.
-                </p>
-              </div>
-            </div>
-            <Button onClick={handleGoToCommercialProposals} size="lg" className="shrink-0">
-              Acessar Sistema
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+
 
       {/* Estatísticas */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -386,13 +369,14 @@ const ProposalsView: React.FC<ProposalsViewProps> = ({ proposals, partners, onSa
       </div>
 
       {/* Filtro de Busca */}
-      <div className="flex items-center space-x-2">
+      <div className="workspace-toolbar">
         <Input
           placeholder="Buscar propostas..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           className="max-w-sm"
         />
+        <select className="dashboard-manager" aria-label="Filtrar propostas por status" value={statusFilter} onChange={event => setStatusFilter(event.target.value)}><option value="all">Todos os status</option>{['Rascunho','Enviada','Em Análise','Aprovada','Rejeitada'].map(status => <option key={status}>{status}</option>)}</select>
       </div>
 
       {/* Tabela de Propostas */}
@@ -558,6 +542,7 @@ const ProposalsView: React.FC<ProposalsViewProps> = ({ proposals, partners, onSa
           />
         </DialogContent>
       </Dialog>
+      <Dialog open={!!viewingProposal} onOpenChange={open => { if (!open) setViewingProposal(null); }}><DialogContent className="max-w-2xl"><DialogHeader><DialogTitle>{viewingProposal?.title}</DialogTitle></DialogHeader>{viewingProposal && <div className="space-y-5"><p className="text-sm text-muted-foreground">{viewingProposal.client} · {viewingProposal.accountManager}</p><div className="grid grid-cols-2 gap-4 rounded-lg border bg-muted/30 p-4"><div><p className="text-xs text-muted-foreground">Valor global</p><strong className="mt-1 block text-xl tabular-nums">{formatCurrency(viewingProposal.value)}</strong></div><div><p className="text-xs text-muted-foreground">Validade</p><p className="mt-1 text-sm">{formatDate(viewingProposal.expiryDate)}</p></div></div><Badge variant="secondary">{viewingProposal.status}</Badge><p className="whitespace-pre-wrap text-sm leading-relaxed">{viewingProposal.description}</p><div className="flex justify-end gap-2"><Button variant="outline" onClick={() => setViewingProposal(null)}>Fechar</Button><Button onClick={() => { const proposal = viewingProposal; setViewingProposal(null); handleEdit(proposal); }}>Editar proposta</Button></div></div>}</DialogContent></Dialog>
     </div>
   );
 };

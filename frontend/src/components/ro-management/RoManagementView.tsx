@@ -1,5 +1,6 @@
 "use client";
 
+import { useRecordLink } from '@/hooks/use-record-link';
 import React, { useState } from 'react';
 import { Edit, Trash2, PlusCircle } from 'lucide-react';
 import type { RO, Partner } from '@/lib/types';
@@ -20,6 +21,7 @@ interface RoManagementViewProps {
 const RoManagementView: React.FC<RoManagementViewProps> = ({ ros, partners, onSave, onDelete }) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingRo, setEditingRo] = useState<RO | null>(null);
+    useRecordLink('ro-management', ros, ro => { setEditingRo(ro); setIsModalOpen(true); });
     const suppliers = partners.filter(p => p.type === 'Fornecedor');
 
     const handleOpenModal = (ro: RO | null = null) => {

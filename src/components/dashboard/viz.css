@@ -1,0 +1,21 @@
+/* Paleta de gráficos validada pelo método dataviz — slots categóricos 1 e 2.
+   Duas cores, ordem fixa, nunca ciclo. Validadas em claro e escuro. */
+.viz {
+  --viz-1: #2a78d6; /* azul — série 1 */
+  --viz-2: #eb6834; /* laranja — série 2 */
+}
+
+/* Escuro (o projeto ativa dark via classe .dark do next-themes) */
+.dark .viz,
+[data-theme="dark"] .viz {
+  --viz-1: #3987e5;
+  --viz-2: #d95926;
+}
+
+/* Fallback do nível do SO */
+@media (prefers-color-scheme: dark) {
+  :root:where(:not([data-theme="light"])) .viz {
+    --viz-1: #3987e5;
+    --viz-2: #d95926;
+  }
+}

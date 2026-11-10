@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import QuoteForm from './QuoteForm';
 import { Input } from '@/components/ui/input';
+import { useRecordLink } from '@/hooks/use-record-link';
 import { useQuotes } from '@/contexts/QuoteContext';
 import { hasPDF, getPDF, removePDF } from '@/lib/services/pdf-storage-service';
 
@@ -23,6 +24,9 @@ const QuotesView: React.FC<QuotesViewProps> = ({ partners }) => {
     const [editingQuote, setEditingQuote] = useState<Quote | null>(null);
     const [isViewModalOpen, setIsViewModalOpen] = useState(false);
     const [viewingQuote, setViewingQuote] = useState<Quote | null>(null);
+    useRecordLink('quotes', quotes, quote => { setViewingQuote(quote); setIsViewModalOpen(true); }, () => { setEditingQuote(null); setIsModalOpen(true); });
+    const [statusFilter, setStatusFilter] = useState('all');
+    const [sortOrder, setSortOrder] = useState('recent');
     const [clientFilter, setClientFilter] = useState('');
     const [accountManagerFilter, setAccountManagerFilter] = useState('');
     const [moduleFilter, setModuleFilter] = useState<string>('todos');
@@ -60,10 +64,10 @@ const QuotesView: React.FC<QuotesViewProps> = ({ partners }) => {
 
     const getStatusBadge = (status: Quote['status']) => {
         switch (status) {
-            case 'Aprovado': return <Badge className="bg-green-500 hover:bg-green-600">Aprovado</Badge>;
-            case 'Enviado': return <Badge className="bg-blue-500 hover:bg-blue-600">Enviado</Badge>;
-            case 'Pendente': return <Badge className="bg-yellow-500 hover:bg-yellow-600">Pendente</Badge>;
-            case 'Aguardando Distribuidor': return <Badge className="bg-purple-500 hover:bg-purple-600">Aguardando Distribuidor</Badge>;
+            case 'Aprovado': return <Badge variant="success">Aprovado</Badge>;
+            case 'Enviado': return <Badge variant="info">Enviado</Badge>;
+            case 'Pendente': return <Badge variant="warning">Pendente</Badge>;
+            case 'Aguardando Distribuidor': return <Badge variant="secondary">Aguardando Distribuidor</Badge>;
             case 'Rejeitado': return <Badge variant="destructive">Rejeitado</Badge>;
             default: return <Badge variant="secondary">Status</Badge>;
         }
@@ -81,14 +85,14 @@ const QuotesView: React.FC<QuotesViewProps> = ({ partners }) => {
     const filteredQuotes = quotes.filter(quote => {
         const clientMatch = quote.client.toLowerCase().includes(clientFilter.toLowerCase());
         const amMatch = quote.accountManager ? quote.accountManager.toLowerCase().includes(accountManagerFilter.toLowerCase()) : accountManagerFilter === '';
-        if (!clientMatch || !amMatch) return false;
+        if (!clientMatch || !amMatch || (statusFilter !== 'all' && quote.status !== statusFilter)) return false;
         if (moduleFilter === 'todos') return true;
         if (moduleFilter === 'outros') {
           const knownModules = ['Service Desk', 'IT Sales/Rental/Services', 'Printer Outsourcing', 'NOC'];
           return !quote.module || !knownModules.includes(quote.module);
         }
         return quote.module === moduleFilter;
-    });
+    }).sort((a, b) => sortOrder === 'value' ? b.total - a.total : new Date(b.date).getTime() - new Date(a.date).getTime());
 
     const formatCurrency = (value: number) => value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
     const formatDate = (date: string) => new Date(date).toLocaleDateString('pt-BR');
@@ -306,7 +310,7 @@ const QuotesView: React.FC<QuotesViewProps> = ({ partners }) => {
     };
     
     return (
-        <Card className="shadow-lg">
+        <Card className="shadow-sm">
             <CardHeader>
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
                     <CardTitle className="text-2xl mb-4 sm:mb-0">Orçamentos</CardTitle>
@@ -416,19 +420,22 @@ const QuotesView: React.FC<QuotesViewProps> = ({ partners }) => {
                       </Button>
                     ))}
                 </div>
-                <div className="flex flex-col sm:flex-row gap-4 mt-4">
+                <div className="workspace-toolbar mt-4">
                     <Input 
-                        placeholder="Filtrar por cliente..."
+                        aria-label="Filtrar por cliente" placeholder="Filtrar por cliente..."
                         value={clientFilter}
                         onChange={(e) => setClientFilter(e.target.value)}
                         className="max-w-sm"
                     />
                     <Input 
-                        placeholder="Filtrar por gerente de contas..."
+                        aria-label="Filtrar por gerente de contas" placeholder="Filtrar por gerente de contas..."
                         value={accountManagerFilter}
                         onChange={(e) => setAccountManagerFilter(e.target.value)}
                         className="max-w-sm"
                     />
+                    <select aria-label="Filtrar orçamentos por status" className="dashboard-manager" value={statusFilter} onChange={event => setStatusFilter(event.target.value)}><option value="all">Todos os status</option>{['Pendente','Enviado','Aprovado','Rejeitado','Aguardando Distribuidor'].map(status => <option key={status}>{status}</option>)}</select>
+                    <select aria-label="Ordenar orçamentos" className="dashboard-manager" value={sortOrder} onChange={event => setSortOrder(event.target.value)}><option value="recent">Mais recentes</option><option value="value">Maior valor</option></select>
+                    <span className="text-xs text-muted-foreground">{filteredQuotes.length} orçamento(s)</span>
                 </div>
             </CardHeader>
             <CardContent>

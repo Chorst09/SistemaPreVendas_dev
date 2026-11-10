@@ -79,6 +79,7 @@ export function NOCModuleWrapper({ onNavigateToQuotes }: NOCModuleWrapperProps =
   if (view === 'landing') {
     return (
       <NOCLandingPage
+        onOpenQuotes={onNavigateToQuotes}
         onNewProposal={(mode) => {
           setServiceMode(mode);
           setView('client-data');

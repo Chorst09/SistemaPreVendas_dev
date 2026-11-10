@@ -63,7 +63,7 @@ const iconMap: Record<string, any> = {
 
 const BackgroundImageNode = ({ data }: any) => (
   <div
-    className="pointer-events-none overflow-hidden rounded-xl border border-[#2b3d56]/80 bg-[#050914]/60 shadow-2xl"
+    className="pointer-events-none overflow-hidden rounded-xl border border-border/80 bg-background/60 shadow-2xl"
     style={{
       width: data.width || 1280,
       height: data.height || 760,
@@ -128,10 +128,10 @@ const ArchNode = ({ id, data, selected }: any) => {
   }, [customImage]);
 
   return (
-    <div className={`bg-[#111827] border ${selected ? 'border-[#ff7a00] shadow-[0_0_15px_rgba(14,165,233,0.3)]' : 'border-[#263345]'} rounded-md p-4 shadow-lg min-w-[190px] flex items-center gap-3 text-slate-200 transition-colors`}>
-      <Handle type="target" position={Position.Top} className="w-3 h-3 border-2 border-[#111827] bg-[#ff7a00]" />
+    <div className={`bg-card border ${selected ? 'border-primary shadow-[0_0_15px_rgba(14,165,233,0.3)]' : 'border-border'} rounded-md p-4 shadow-lg min-w-[190px] flex items-center gap-3 text-foreground transition-colors`}>
+      <Handle type="target" position={Position.Top} className="w-3 h-3 border-2 border-border bg-primary" />
       <div
-        className={`w-12 h-12 rounded-lg bg-[#070b16] border border-[#263345] text-[#ff7a00] flex items-center justify-center shrink-0 overflow-hidden p-1.5 relative group ${readOnly ? '' : 'cursor-pointer'}`}
+        className={`w-12 h-12 rounded-lg bg-background border border-border text-primary flex items-center justify-center shrink-0 overflow-hidden p-1.5 relative group ${readOnly ? '' : 'cursor-pointer'}`}
         onClick={(event) => {
           event.stopPropagation();
           if (readOnly) return;
@@ -152,7 +152,7 @@ const ArchNode = ({ id, data, selected }: any) => {
         )}
         {!readOnly && (
           <div className="absolute inset-0 bg-black/50 hidden group-hover:flex items-center justify-center rounded-lg">
-            <Upload className="w-4 h-4 text-white" />
+            <Upload className="w-4 h-4 text-foreground" />
           </div>
         )}
         <input
@@ -166,7 +166,7 @@ const ArchNode = ({ id, data, selected }: any) => {
       </div>
       <div className="flex-1">
         <div className="font-bold text-sm leading-tight">{data.label}</div>
-        {data.sublabel && <div className="text-[10px] text-slate-400 mt-0.5">{data.sublabel}</div>}
+        {data.sublabel && <div className="text-[10px] text-muted-foreground mt-0.5">{data.sublabel}</div>}
         {!readOnly && (
           <button
             type="button"
@@ -175,14 +175,14 @@ const ArchNode = ({ id, data, selected }: any) => {
               fileInputRef.current?.click();
             }}
             onMouseDown={(event) => event.stopPropagation()}
-            className="mt-2 inline-flex items-center gap-1 rounded border border-[#263345] px-2 py-0.5 text-[10px] font-semibold text-slate-400 transition-colors hover:border-[#ff7a00]/70 hover:text-[#ff7a00]"
+            className="mt-2 inline-flex items-center gap-1 rounded border border-border px-2 py-0.5 text-[10px] font-semibold text-muted-foreground transition-colors hover:border-primary/70 hover:text-primary"
           >
             <Upload className="h-3 w-3" />
             Imagem
           </button>
         )}
       </div>
-      <Handle type="source" position={Position.Bottom} className="w-3 h-3 border-2 border-[#111827] bg-[#ff7a00]" />
+      <Handle type="source" position={Position.Bottom} className="w-3 h-3 border-2 border-border bg-primary" />
     </div>
   );
 };
@@ -643,56 +643,56 @@ function ArchitectureDiagramContent({ onBack }: { onBack: () => void }) {
   };
 
   return (
-    <div className="h-full flex flex-col bg-[#070b16] overflow-hidden w-full absolute inset-0 z-50">
-      <div className="h-14 border-b border-[#263345] bg-[#111827] flex items-center justify-between px-4 flex-shrink-0">
+    <div className="h-full flex flex-col bg-background overflow-hidden w-full absolute inset-0 z-50">
+      <div className="h-14 border-b border-border bg-card flex items-center justify-between px-4 flex-shrink-0">
         <div className="flex items-center gap-4">
           <button
             onClick={onBack}
-            className="flex items-center gap-2 text-slate-400 hover:text-slate-200 transition-colors"
+            className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
           >
             <ArrowLeft className="w-4 h-4" /> Voltar
           </button>
-          <div className="w-px h-6 bg-[#263345]"></div>
-          <h2 className="text-slate-200 font-semibold flex items-center gap-2">
-            <Layers className="w-4 h-4 text-[#ff7a00]" /> Diagrama de Arquitetura
+          <div className="w-px h-6 bg-secondary"></div>
+          <h2 className="text-foreground font-semibold flex items-center gap-2">
+            <Layers className="w-4 h-4 text-primary" /> Diagrama de Arquitetura
           </h2>
         </div>
 
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 bg-[#070b16] p-1 rounded-lg border border-[#263345]">
+          <div className="flex items-center gap-2 bg-background p-1 rounded-lg border border-border">
             {savedDiagrams.length > 0 && (
               <button
                 onClick={() => loadTemplate('saved')}
-                className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${activeTemplate === 'saved' ? 'bg-[#ff7a00] text-white' : 'text-[#ff7a00] hover:bg-[#ff7a00]/10'}`}
+                className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${activeTemplate === 'saved' ? 'bg-primary text-primary-foreground' : 'text-primary hover:bg-primary/10'}`}
               >Salvos ({savedDiagrams.length})</button>
             )}
-            <div className="w-px h-4 bg-[#263345] mx-1"></div>
+            <div className="w-px h-4 bg-secondary mx-1"></div>
             <button
               onClick={() => loadTemplate('blank')}
-              className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${activeTemplate === 'blank' ? 'bg-[#263345] text-white' : 'text-slate-400 hover:text-slate-200'}`}
+              className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${activeTemplate === 'blank' ? 'bg-secondary text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
             >Em Branco</button>
             <button
               onClick={() => loadTemplate('fiber-radio')}
-              className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${activeTemplate === 'fiber-radio' ? 'bg-[#263345] text-white' : 'text-slate-400 hover:text-slate-200'}`}
+              className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${activeTemplate === 'fiber-radio' ? 'bg-secondary text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
             >Fibra + Rádio</button>
             <button
               onClick={() => loadTemplate('switch-ap')}
-              className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${activeTemplate === 'switch-ap' ? 'bg-[#263345] text-white' : 'text-slate-400 hover:text-slate-200'}`}
+              className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${activeTemplate === 'switch-ap' ? 'bg-secondary text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
             >Switches + APs</button>
             <button
               onClick={() => loadTemplate('3-tier')}
-              className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${activeTemplate === '3-tier' ? 'bg-[#263345] text-white' : 'text-slate-400 hover:text-slate-200'}`}
+              className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${activeTemplate === '3-tier' ? 'bg-secondary text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
             >Web 3-Tier</button>
             <button
               onClick={() => loadTemplate('microservices')}
-              className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${activeTemplate === 'microservices' ? 'bg-[#263345] text-white' : 'text-slate-400 hover:text-slate-200'}`}
+              className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${activeTemplate === 'microservices' ? 'bg-secondary text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
             >Microserviços</button>
           </div>
 
-          <div className="flex items-center gap-2 border-l border-[#263345] pl-3">
+          <div className="flex items-center gap-2 border-l border-border pl-3">
             {(activeDiagramId || viewingDiagramId) && (
-              <span className="hidden xl:inline max-w-44 truncate text-xs text-slate-400">
-                {diagramMode === 'view' ? 'Visualizando' : 'Editando'}: <strong className="font-semibold text-slate-200">{activeDiagramName}</strong>
+              <span className="hidden xl:inline max-w-44 truncate text-xs text-muted-foreground">
+                {diagramMode === 'view' ? 'Visualizando' : 'Editando'}: <strong className="font-semibold text-foreground">{activeDiagramName}</strong>
               </span>
             )}
             {diagramMode === 'view' && viewingDiagramId && (
@@ -701,7 +701,7 @@ function ArchitectureDiagramContent({ onBack }: { onBack: () => void }) {
                   const entry = savedDiagrams.find((item) => item.id === viewingDiagramId);
                   if (entry) loadSavedDiagram(entry, 'edit');
                 }}
-                className="flex items-center gap-2 text-sm text-white bg-[#ff7a00] hover:bg-[#f6b40b] px-3 py-1.5 rounded-md transition-colors font-medium shadow-sm"
+                className="flex items-center gap-2 text-sm text-primary-foreground bg-primary hover:bg-primary px-3 py-1.5 rounded-md transition-colors font-medium shadow-sm"
               >
                 <Pencil className="w-4 h-4" /> Editar
               </button>
@@ -709,13 +709,13 @@ function ArchitectureDiagramContent({ onBack }: { onBack: () => void }) {
             <button
               onClick={saveDiagram}
               disabled={diagramMode === 'view'}
-              className={`flex items-center gap-2 text-sm border px-3 py-1.5 rounded-md transition-colors font-medium shadow-sm ${diagramMode === 'view' ? 'cursor-not-allowed border-[#263345] bg-[#0b1220] text-slate-600' : 'border-[#263345] bg-[#111827] text-slate-300 hover:bg-[#263345] hover:text-white'}`}
+              className={`flex items-center gap-2 text-sm border px-3 py-1.5 rounded-md transition-colors font-medium shadow-sm ${diagramMode === 'view' ? 'cursor-not-allowed border-border bg-background text-muted-foreground' : 'border-border bg-card text-foreground hover:bg-secondary hover:text-foreground'}`}
             >
               <Save className="w-4 h-4" /> Salvar
             </button>
             <button
               onClick={downloadPDF}
-              className="flex items-center gap-2 text-sm text-white bg-[#ff7a00] hover:bg-[#f6b40b] px-4 py-1.5 rounded-md transition-colors font-medium shadow-lg"
+              className="flex items-center gap-2 text-sm text-primary-foreground bg-primary hover:bg-primary px-4 py-1.5 rounded-md transition-colors font-medium shadow-lg"
             >
               <Download className="w-4 h-4" /> Exportar PDF
             </button>
@@ -738,26 +738,26 @@ function ArchitectureDiagramContent({ onBack }: { onBack: () => void }) {
             elementsSelectable={diagramMode === 'edit'}
             colorMode="dark"
             fitView
-            className="bg-[#070b16]"
+            className="bg-background"
           >
             <Background color="#263345" gap={24} size={2} />
-            <Controls className="bg-[#111827] border-[#263345] fill-slate-300" />
+            <Controls className="bg-card border-border fill-slate-300" />
             <MiniMap
               nodeColor={(n) => '#ff7a00'}
               maskColor="rgba(15, 23, 42, 0.7)"
-              className="bg-[#111827] border border-[#263345] rounded-md"
+              className="bg-card border border-border rounded-md"
             />
 
-            <Panel position="top-right" className="w-64 bg-[#111827]/90 backdrop-blur-md border border-[#263345] p-2 rounded-md shadow-xl flex flex-col gap-2 max-h-[calc(100vh-120px)]">
+            <Panel position="top-right" className="w-64 bg-card/90 backdrop-blur-md border border-border p-2 rounded-md shadow-xl flex flex-col gap-2 max-h-[calc(100vh-120px)]">
               <div className="flex items-center justify-between gap-2">
-                <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider px-1">Diagramas Salvos</h3>
-                <span className="rounded bg-[#070b16] px-1.5 py-0.5 text-[10px] font-semibold text-slate-500">
+                <h3 className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider px-1">Diagramas Salvos</h3>
+                <span className="rounded bg-background px-1.5 py-0.5 text-[10px] font-semibold text-muted-foreground">
                   {savedDiagrams.length}
                 </span>
               </div>
 
               {savedDiagrams.length === 0 ? (
-                <div className="rounded-md border border-dashed border-[#263345] bg-[#070b16]/70 px-2 py-3 text-[11px] leading-4 text-slate-500">
+                <div className="rounded-md border border-dashed border-border bg-background/70 px-2 py-3 text-[11px] leading-4 text-muted-foreground">
                   Salve o primeiro diagrama para ele aparecer aqui.
                 </div>
               ) : (
@@ -765,18 +765,18 @@ function ArchitectureDiagramContent({ onBack }: { onBack: () => void }) {
                   {savedDiagrams.map((entry) => (
                     <div
                       key={entry.id}
-                      className={`rounded-md border px-2 py-2 transition-colors ${activeDiagramId === entry.id ? 'border-[#ff7a00]/70 bg-[#ff7a00]/10' : viewingDiagramId === entry.id ? 'border-[#22d3ee]/70 bg-[#22d3ee]/10' : 'border-[#263345] bg-[#070b16]/70 hover:border-[#3b4b63]'}`}
+                      className={`rounded-md border px-2 py-2 transition-colors ${activeDiagramId === entry.id ? 'border-primary/70 bg-primary/10' : viewingDiagramId === entry.id ? 'border-[#22d3ee]/70 bg-[#22d3ee]/10' : 'border-border bg-background/70 hover:border-border'}`}
                     >
                       <button
                         type="button"
                         onClick={() => loadSavedDiagram(entry, 'view')}
                         className="w-full text-left"
                       >
-                        <div className="flex items-center gap-2 text-xs font-semibold text-slate-200">
-                          <FolderOpen className="h-3.5 w-3.5 shrink-0 text-[#ff7a00]" />
+                        <div className="flex items-center gap-2 text-xs font-semibold text-foreground">
+                          <FolderOpen className="h-3.5 w-3.5 shrink-0 text-primary" />
                           <span className="truncate">{entry.name}</span>
                         </div>
-                        <div className="mt-1 flex items-center gap-1.5 text-[10px] text-slate-500">
+                        <div className="mt-1 flex items-center gap-1.5 text-[10px] text-muted-foreground">
                           <Clock3 className="h-3 w-3" />
                           <span>{new Date(entry.updatedAt).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })}</span>
                         </div>
@@ -785,7 +785,7 @@ function ArchitectureDiagramContent({ onBack }: { onBack: () => void }) {
                         <button
                           type="button"
                           onClick={() => loadSavedDiagram(entry, 'view')}
-                          className="flex-1 rounded border border-[#263345] px-2 py-1 text-[10px] font-semibold text-slate-300 transition-colors hover:border-[#ff7a00]/70 hover:text-white"
+                          className="flex-1 rounded border border-border px-2 py-1 text-[10px] font-semibold text-foreground transition-colors hover:border-primary/70 hover:text-foreground"
                         >
                           <span className="inline-flex items-center justify-center gap-1">
                             <Eye className="h-3 w-3" /> Visualizar
@@ -794,7 +794,7 @@ function ArchitectureDiagramContent({ onBack }: { onBack: () => void }) {
                         <button
                           type="button"
                           onClick={() => loadSavedDiagram(entry, 'edit')}
-                          className="flex-1 rounded border border-[#263345] px-2 py-1 text-[10px] font-semibold text-slate-300 transition-colors hover:border-[#ff7a00]/70 hover:text-white"
+                          className="flex-1 rounded border border-border px-2 py-1 text-[10px] font-semibold text-foreground transition-colors hover:border-primary/70 hover:text-foreground"
                         >
                           <span className="inline-flex items-center justify-center gap-1">
                             <Pencil className="h-3 w-3" /> Editar
@@ -816,39 +816,39 @@ function ArchitectureDiagramContent({ onBack }: { onBack: () => void }) {
             </Panel>
 
           {diagramMode === 'edit' && (
-          <Panel position="top-left" className="w-56 bg-[#111827]/90 backdrop-blur-md border border-[#263345] p-2 rounded-md shadow-xl flex flex-col gap-1.5 max-h-[calc(100vh-120px)] overflow-y-auto">
-            <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider px-1">Componentes</h3>
-            <button onClick={() => addNetworkNode('fiber', 'Fibra Óptica', 'Backbone / FO / DIO', 'fiber')} className="flex items-center gap-2 text-xs text-slate-300 hover:text-white hover:bg-[#263345] px-2 py-1.5 rounded-md transition-colors text-left">
-              <Cable className="w-3.5 h-3.5 text-[#22d3ee]" /> Fibra / DIO
+          <Panel position="top-left" className="w-56 bg-card/90 backdrop-blur-md border border-border p-2 rounded-md shadow-xl flex flex-col gap-1.5 max-h-[calc(100vh-120px)] overflow-y-auto">
+            <h3 className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider px-1">Componentes</h3>
+            <button onClick={() => addNetworkNode('fiber', 'Fibra Óptica', 'Backbone / FO / DIO', 'fiber')} className="flex items-center gap-2 text-xs text-foreground hover:text-foreground hover:bg-secondary px-2 py-1.5 rounded-md transition-colors text-left">
+              <Cable className="w-3.5 h-3.5 text-accent-cyan" /> Fibra / DIO
             </button>
-            <button onClick={() => addNetworkNode('radio', 'Rádio Enlace', 'PTP / Backhaul', 'radio')} className="flex items-center gap-2 text-xs text-slate-300 hover:text-white hover:bg-[#263345] px-2 py-1.5 rounded-md transition-colors text-left">
-              <RadioTower className="w-3.5 h-3.5 text-[#f6b40b]" /> Rádio Enlace
+            <button onClick={() => addNetworkNode('radio', 'Rádio Enlace', 'PTP / Backhaul', 'radio')} className="flex items-center gap-2 text-xs text-foreground hover:text-foreground hover:bg-secondary px-2 py-1.5 rounded-md transition-colors text-left">
+              <RadioTower className="w-3.5 h-3.5 text-accent-yellow" /> Rádio Enlace
             </button>
-            <button onClick={() => addNetworkNode('switch', 'Switch', 'Core / Acesso / PoE', 'switch')} className="flex items-center gap-2 text-xs text-slate-300 hover:text-white hover:bg-[#263345] px-2 py-1.5 rounded-md transition-colors text-left">
-              <Network className="w-3.5 h-3.5 text-[#34d399]" /> Switch
+            <button onClick={() => addNetworkNode('switch', 'Switch', 'Core / Acesso / PoE', 'switch')} className="flex items-center gap-2 text-xs text-foreground hover:text-foreground hover:bg-secondary px-2 py-1.5 rounded-md transition-colors text-left">
+              <Network className="w-3.5 h-3.5 text-accent-green" /> Switch
             </button>
-            <button onClick={() => addNetworkNode('accessPoint', 'Access Point', 'Wi-Fi / SSID / PoE', 'wifi')} className="flex items-center gap-2 text-xs text-slate-300 hover:text-white hover:bg-[#263345] px-2 py-1.5 rounded-md transition-colors text-left">
-              <Wifi className="w-3.5 h-3.5 text-[#38bdf8]" /> Access Point
+            <button onClick={() => addNetworkNode('accessPoint', 'Access Point', 'Wi-Fi / SSID / PoE', 'wifi')} className="flex items-center gap-2 text-xs text-foreground hover:text-foreground hover:bg-secondary px-2 py-1.5 rounded-md transition-colors text-left">
+              <Wifi className="w-3.5 h-3.5 text-primary" /> Access Point
             </button>
-            <button onClick={() => addNetworkNode('router', 'Roteador', 'Gateway / WAN', 'router')} className="flex items-center gap-2 text-xs text-slate-300 hover:text-white hover:bg-[#263345] px-2 py-1.5 rounded-md transition-colors text-left">
-              <Router className="w-3.5 h-3.5 text-[#ff7a00]" /> Roteador
+            <button onClick={() => addNetworkNode('router', 'Roteador', 'Gateway / WAN', 'router')} className="flex items-center gap-2 text-xs text-foreground hover:text-foreground hover:bg-secondary px-2 py-1.5 rounded-md transition-colors text-left">
+              <Router className="w-3.5 h-3.5 text-primary" /> Roteador
             </button>
-            <button onClick={() => addNetworkNode('firewall', 'Firewall', 'Segurança / VPN', 'fortinet')} className="flex items-center gap-2 text-xs text-slate-300 hover:text-white hover:bg-[#263345] px-2 py-1.5 rounded-md transition-colors text-left">
-              <Shield className="w-3.5 h-3.5 text-[#ff7a00]" /> Firewall
+            <button onClick={() => addNetworkNode('firewall', 'Firewall', 'Segurança / VPN', 'fortinet')} className="flex items-center gap-2 text-xs text-foreground hover:text-foreground hover:bg-secondary px-2 py-1.5 rounded-md transition-colors text-left">
+              <Shield className="w-3.5 h-3.5 text-primary" /> Firewall
             </button>
-            <button onClick={() => addNetworkNode('server', 'Servidor', 'Servidor local / VM', 'server')} className="flex items-center gap-2 text-xs text-slate-300 hover:text-white hover:bg-[#263345] px-2 py-1.5 rounded-md transition-colors text-left">
-              <Server className="w-3.5 h-3.5 text-[#ff7a00]" /> Servidor
+            <button onClick={() => addNetworkNode('server', 'Servidor', 'Servidor local / VM', 'server')} className="flex items-center gap-2 text-xs text-foreground hover:text-foreground hover:bg-secondary px-2 py-1.5 rounded-md transition-colors text-left">
+              <Server className="w-3.5 h-3.5 text-primary" /> Servidor
             </button>
-            <button onClick={() => addNetworkNode('cloud', 'Cloud Service', 'Cloud / SaaS / DC', 'cloud')} className="flex items-center gap-2 text-xs text-slate-300 hover:text-white hover:bg-[#263345] px-2 py-1.5 rounded-md transition-colors text-left">
-              <Cloud className="w-3.5 h-3.5 text-[#ff7a00]" /> Cloud
+            <button onClick={() => addNetworkNode('cloud', 'Cloud Service', 'Cloud / SaaS / DC', 'cloud')} className="flex items-center gap-2 text-xs text-foreground hover:text-foreground hover:bg-secondary px-2 py-1.5 rounded-md transition-colors text-left">
+              <Cloud className="w-3.5 h-3.5 text-primary" /> Cloud
             </button>
 
-            <div className="mt-1.5 pt-2 border-t border-[#263345] flex flex-col gap-1.5">
-              <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider px-1">Tecnologia Específica</h3>
+            <div className="mt-1.5 pt-2 border-t border-border flex flex-col gap-1.5">
+              <h3 className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider px-1">Tecnologia Específica</h3>
               <input
                 type="text"
                 placeholder="Ex: React, Docker, AWS"
-                className="bg-[#070b16] border border-[#263345] rounded-md px-2 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-[#ff7a00]"
+                className="bg-background border border-border rounded-md px-2 py-1.5 text-xs text-foreground focus:outline-none focus:border-primary"
                 value={customNodeName}
                 onChange={(e) => setCustomNodeName(e.target.value)}
                 onKeyDown={(e) => {
@@ -857,14 +857,14 @@ function ArchitectureDiagramContent({ onBack }: { onBack: () => void }) {
               />
               <button
                 onClick={addCustomNode}
-                className="bg-[#ff7a00] hover:bg-[#f6b40b] text-white px-2 py-1.5 rounded-md text-xs font-semibold transition-colors w-full"
+                className="bg-primary hover:bg-primary text-primary-foreground px-2 py-1.5 rounded-md text-xs font-semibold transition-colors w-full"
               >
                 Adicionar ao Diagrama
               </button>
             </div>
 
-            <div className="mt-1.5 pt-2 border-t border-[#263345] flex flex-col gap-1.5">
-              <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider px-1">Imagem de Fundo</h3>
+            <div className="mt-1.5 pt-2 border-t border-border flex flex-col gap-1.5">
+              <h3 className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider px-1">Imagem de Fundo</h3>
               <input
                 type="file"
                 accept="image/*"
@@ -874,13 +874,13 @@ function ArchitectureDiagramContent({ onBack }: { onBack: () => void }) {
               />
               <button
                 onClick={() => backgroundInputRef.current?.click()}
-                className="flex items-center justify-center gap-2 bg-[#111827] hover:bg-[#263345] border border-[#263345] text-slate-300 hover:text-white px-2 py-1.5 rounded-md text-xs font-semibold transition-colors w-full"
+                className="flex items-center justify-center gap-2 bg-card hover:bg-secondary border border-border text-foreground hover:text-foreground px-2 py-1.5 rounded-md text-xs font-semibold transition-colors w-full"
               >
                 <ImagePlus className="w-3.5 h-3.5" /> Adicionar fundo
               </button>
               {backgroundImage && (
                 <>
-                  <label className="text-[11px] font-semibold text-slate-400">
+                  <label className="text-[11px] font-semibold text-muted-foreground">
                     Opacidade
                     <input
                       type="range"
@@ -900,7 +900,7 @@ function ArchitectureDiagramContent({ onBack }: { onBack: () => void }) {
                   </button>
                 </>
               )}
-              <p className="text-[9px] leading-3 text-slate-500">
+              <p className="text-[9px] leading-3 text-muted-foreground">
                 Para imagem de um componente, clique no ícone do próprio componente e envie a foto ou símbolo dele.
               </p>
             </div>

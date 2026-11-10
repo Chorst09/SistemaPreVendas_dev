@@ -96,6 +96,7 @@ export function ServiceDeskModuleWrapper({ onNavigateToQuotes }: ServiceDeskModu
   if (view === 'landing') {
     return (
       <ServiceDeskLandingPage
+        onOpenQuotes={onNavigateToQuotes}
         onNewProposal={() => setView('client-data')}
         onAdminPanel={() => setView('admin')}
       />

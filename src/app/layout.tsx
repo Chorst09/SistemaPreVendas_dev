@@ -1,4 +1,5 @@
 import "./globals.css";
+import "@/styles/workspace.css";
 import type { ReactNode } from "react";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/toaster";

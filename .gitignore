@@ -49,3 +49,5 @@ Thumbs.db
 # Deploy
 .deploy-temp/
 ssl/
+deploy-209.sh
+.portal-busca-data/

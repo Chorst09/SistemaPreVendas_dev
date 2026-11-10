@@ -1,0 +1,622 @@
+{
+  "date": "2026-11-03",
+  "results": [
+    {
+      "name": "Dashboard",
+      "slug": "dashboard-claro",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "headings": [],
+      "text": "Período\n7 dias\n30 dias\n90 dias\n1 ano\nOrçamentos no mês\n85\n+15\nvs. período anterior\n\nNovos orçamentos criados\n\nVendas convertidas\n65\n+10\nvs. período anterior\n\nOrçamentos fechados no período\n\nTotal de parceiros\n6\n\nDistribuidores e fornecedores\n\nValor no pipeline\nR$ 1.350,00\n\nR$ 400,00 aprovados\n\nPerformance de Vendas\nFev\nMar\nAbr\nMai\nJun\nOrçamentosVendas\nStatus dos Orçamentos\nAprovado\nPendente\nEnviado\nAguardando Distribuidor\n400\n300\n300\n200\n150\nRO's Próximos da Expiração\nRegistros de oportunidade que precisam de atenção.\nFornecedor\tNº do RO\tCliente Final\tStatus RO\tStatus Expiração\nFornecedor Microsoft\tMS-ABC-678\tStartup Beta\tExpirado\tExpirado\nFo",
+      "width": 1184,
+      "scrollWidth": 1184,
+      "height": 2908,
+      "font": "Inter, sans-serif",
+      "overflow": []
+    },
+    {
+      "name": "Dashboard escuro",
+      "slug": "dashboard-escuro",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "headings": [],
+      "text": "Período\n7 dias\n30 dias\n90 dias\n1 ano\nOrçamentos no mês\n85\n+15\nvs. período anterior\n\nNovos orçamentos criados\n\nVendas convertidas\n65\n+10\nvs. período anterior\n\nOrçamentos fechados no período\n\nTotal de parceiros\n6\n\nDistribuidores e fornecedores\n\nValor no pipeline\nR$ 1.350,00\n\nR$ 400,00 aprovados\n\nPerformance de Vendas\nFev\nMar\nAbr\nMai\nJun\nOrçamentosVendas\nStatus dos Orçamentos\nAprovado\nPendente\nEnviado\nAguardando Distribuidor\n400\n300\n300\n200\n150\nRO's Próximos da Expiração\nRegistros de oportunidade que precisam de atenção.\nFornecedor\tNº do RO\tCliente Final\tStatus RO\tStatus Expiração\nFornecedor Microsoft\tMS-ABC-678\tStartup Beta\tExpirado\tExpirado\nFo",
+      "width": 1184,
+      "scrollWidth": 1184,
+      "height": 2908,
+      "font": "Inter, sans-serif",
+      "overflow": []
+    },
+    {
+      "name": "Dashboard celular",
+      "slug": "dashboard-celular",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "headings": [],
+      "text": "Período\n7 dias\n30 dias\n90 dias\n1 ano\nOrçamentos no mês\n85\n+15\nvs. período anterior\n\nNovos orçamentos criados\n\nVendas convertidas\n65\n+10\nvs. período anterior\n\nOrçamentos fechados no período\n\nTotal de parceiros\n6\n\nDistribuidores e fornecedores\n\nValor no pipeline\nR$ 1.350,00\n\nR$ 400,00 aprovados\n\nPerformance de Vendas\nFev\nMar\nAbr\nMai\nJun\nOrçamentosVendas\nStatus dos Orçamentos\nPendente\nEnviado\nAguardando Distribuidor\n400\n300\n300\n200\n150\nRO's Próximos da Expiração\nRegistros de oportunidade que precisam de atenção.\nFornecedor\tNº do RO\tCliente Final\tStatus RO\tStatus Expiração\nFornecedor Microsoft\tMS-ABC-678\tStartup Beta\tExpirado\tExpirado\nFornecedor ",
+      "width": 390,
+      "scrollWidth": 390,
+      "height": 5829,
+      "font": "Inter, sans-serif",
+      "overflow": [
+        {
+          "tag": "g",
+          "text": "",
+          "width": 424
+        },
+        {
+          "tag": "path",
+          "text": "",
+          "width": 424
+        },
+        {
+          "tag": "g",
+          "text": "",
+          "width": 424
+        },
+        {
+          "tag": "path",
+          "text": "",
+          "width": 424
+        },
+        {
+          "tag": "TABLE",
+          "text": "FornecedorNº do ROCliente FinalStatus ROStatus ExpiraçãoForn",
+          "width": 486
+        },
+        {
+          "tag": "THEAD",
+          "text": "FornecedorNº do ROCliente FinalStatus ROStatus Expiração",
+          "width": 486
+        },
+        {
+          "tag": "TR",
+          "text": "FornecedorNº do ROCliente FinalStatus ROStatus Expiração",
+          "width": 486
+        },
+        {
+          "tag": "TH",
+          "text": "Status RO",
+          "width": 114
+        }
+      ]
+    },
+    {
+      "name": "Distribuidores",
+      "slug": "distribuidores",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "headings": [],
+      "text": "Lista de Distribuidors\nNovo Distribuidor\nMostrando 1 de 1 distribuidors\n1 com produtos/serviços cadastrados\nNome\tTipo\tContato\tTelefone\tProdutos\tStatus\tAções\nIngram Micro\tDistribuidor\tmauricio.deluxe@ingram.com.br\t11-99232-3042\t\nLenovo\nDell\n\tAtivo\t",
+      "width": 1184,
+      "scrollWidth": 1184,
+      "height": 943,
+      "font": "Inter, sans-serif",
+      "overflow": []
+    },
+    {
+      "name": "Cadastro",
+      "slug": "fornecedores",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "headings": [],
+      "text": "Lista de Fornecedors\nNovo Fornecedor\nMostrando 1 de 1 fornecedors\n1 com produtos/serviços cadastrados\nNome\tTipo\tContato\tTelefone\tProdutos\tStatus\tAções\nDell do Brasil\tFornecedor\tandressa.klein@dell.com\t\t\nServidores\nStorages\nWorkstation\n+3 mais\n\tAtivo\t",
+      "width": 1184,
+      "scrollWidth": 1184,
+      "height": 943,
+      "font": "Inter, sans-serif",
+      "overflow": []
+    },
+    {
+      "name": "Gestão de RO’s",
+      "slug": "ros",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "headings": [],
+      "text": "Gestão de RO's\nTotal de RO's: 3\nNovo RO\nFornecedor\tNº do RO\tExpiração\tCliente\tGerente de Contas\tProduto\tValor\tStatus\tAções\nFornecedor AWS\tAWS-12345\t15/10/2024\tEmpresa Alpha\tJoão Silva\tAWS EC2 Instances\tR$ 25.000,00\tAprovado\t\n\nFornecedor Microsoft\tMS-ABC-678\t20/09/2024\tStartup Beta\tMaria Santos\tMicrosoft 365 E5\tR$ 12.000,00\tExpirado\t\n\nFornecedor Oracle\tORA-789-XYZ\t01/11/2024\tIndústria Gama\tCarlos Oliveira\tOracle Database Enterprise\tR$ 45.000,00\tNegado\t",
+      "width": 1184,
+      "scrollWidth": 1184,
+      "height": 943,
+      "font": "Inter, sans-serif",
+      "overflow": []
+    },
+    {
+      "name": "Gráficos de ROs",
+      "slug": "graficos-ros",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "headings": [],
+      "text": "Filtros de RO\nGerente de Contas\nTodos os gerentes\nCliente\nTodos os clientes\nLimpar Filtros\n\nTaxa de Aprovação\n\n33.3%\n\n1 de 3 RO's\n\nTaxa de Rejeição\n\n33.3%\n\n1 de 3 RO's\n\nValor Aprovado\n\nR$ 25.000\n\n30.5% do total\n\nPróximos Vencimento\n\n0\n\nPróximos 30 dias\n\nTop Fornecedor\n\nAWS\n\n1 RO's\n\n1\n\nRO's Expirados\n\n1\n\n33.3% do total\n\nTicket Médio\n\nR$ 27.333\n\nPor RO\n\nPerformance\n\nPrecisa Melhorar\n\nBaseado na taxa de aprovação\n\nTotal de RO's\n\n3\n\nValor Total\n\nR$ 82.000,00\n\nValor Médio\n\nR$ 27.333,33\n\nTaxa de Aprovação\n\n33.3%\n\nDistribuição por Status\nAprovado: 1\nNegado: 1\nExpirado: 1\nRO's por Fornecedor\nAWS\nMicrosoft\nOracle\n0\n0.25\n0.5\n0.75\n1\nAprovadosNegadosExpi",
+      "width": 1184,
+      "scrollWidth": 1184,
+      "height": 1808,
+      "font": "Inter, sans-serif",
+      "overflow": []
+    },
+    {
+      "name": "Gestão de Treinamentos",
+      "slug": "treinamentos",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "headings": [],
+      "text": "Gestão de Treinamentos\nNovo Treinamento\nTodos os Tipos\nFornecedor\tTreinamento\tTipo\tParticipante\tData de Validade\tAções\nFornecedor AWS\tAWS Certified Cloud Practitioner\tTécnico\tCarlos Silva\t01/08/2025\t\n\nFornecedor Microsoft\tMS-900: Microsoft 365 Fundamentals\tComercial\tMariana Oliveira\t15/01/2026\t\n\nFornecedor Microsoft\tAZ-104: Microsoft Azure Administrator\tTécnico\tCarlos Silva\t20/11/2025\t",
+      "width": 1184,
+      "scrollWidth": 1184,
+      "height": 943,
+      "font": "Inter, sans-serif",
+      "overflow": []
+    },
+    {
+      "name": "Orçamentos",
+      "slug": "orcamentos",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "headings": [],
+      "text": "Orçamentos\nNovo Orçamento\nTodos\nService Desk\nVenda/Locação/Serviços\nOutsourcing de Impressão\nNOC\nOutros\nCliente / Projeto\tDistribuidor\tTotal\tStatus\tArquivos\tAções\n\nEmpresa Alpha\nMigração de Servidores\nJoão da Silva\nORC-001\n\tDistribuidor TechData\t\nR$ 15.000,00\nMensal: R$ 1.250,00\nGlobal: R$ 15.000,00 em 12 meses\n\t\n📤 Enviado\n\t\n\t\nVisualizar\nImprimir PDF\nEditar\nExcluir\n\n\nStartup Beta\nNovo App Mobile\nMaria Oliveira\nORC-002\n\tDistribuidor Ingram Micro\t\nR$ 7.500,00\nMensal: R$ 625,00\nGlobal: R$ 7.500,00 em 12 meses\n\t\n✓ Aprovado\n\t\n-\n\t\nVisualizar\nImprimir PDF\nEditar\nExcluir\n\n\nIndústria Gama\nUpgrade de Rede\nJoão da Silva\nORC-003\n\tDistribuidor Westcon\t\nR",
+      "width": 1184,
+      "scrollWidth": 1184,
+      "height": 955,
+      "font": "Inter, sans-serif",
+      "overflow": []
+    },
+    {
+      "name": "Orçamentos celular",
+      "slug": "orcamentos-celular",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "headings": [],
+      "text": "Orçamentos\nNovo Orçamento\nTodos\nService Desk\nVenda/Locação/Serviços\nOutsourcing de Impressão\nNOC\nOutros\nCliente / Projeto\tTotal\tStatus\tArquivos\tAções\n\nEmpresa Alpha\nMigração de Servidores\nJoão da Silva\nORC-001\n\t\nR$ 15.000,00\nMensal: R$ 1.250,00\nGlobal: R$ 15.000,00 em 12 meses\n\t\n📤 Enviado\n\t\n\t\nVisualizar\nImprimir PDF\nEditar\nExcluir\n\n\nStartup Beta\nNovo App Mobile\nMaria Oliveira\nORC-002\n\t\nR$ 7.500,00\nMensal: R$ 625,00\nGlobal: R$ 7.500,00 em 12 meses\n\t\n✓ Aprovado\n\t\n-\n\t\nVisualizar\nImprimir PDF\nEditar\nExcluir\n\n\nIndústria Gama\nUpgrade de Rede\nJoão da Silva\nORC-003\n\t\nR$ 32.000,00\nMensal: R$ 2.666,67\nGlobal: R$ 32.000,00 em 12 meses\n\t\n⏳ Pendente\n\t\n\t\n",
+      "width": 390,
+      "scrollWidth": 390,
+      "height": 1479,
+      "font": "Inter, sans-serif",
+      "overflow": [
+        {
+          "tag": "TABLE",
+          "text": "Cliente / ProjetoDistribuidorTotalStatusArquivosAçõesEmpresa",
+          "width": 664
+        },
+        {
+          "tag": "THEAD",
+          "text": "Cliente / ProjetoDistribuidorTotalStatusArquivosAções",
+          "width": 664
+        },
+        {
+          "tag": "TR",
+          "text": "Cliente / ProjetoDistribuidorTotalStatusArquivosAções",
+          "width": 664
+        },
+        {
+          "tag": "TH",
+          "text": "Status",
+          "width": 176
+        },
+        {
+          "tag": "TH",
+          "text": "Arquivos",
+          "width": 86
+        },
+        {
+          "tag": "TH",
+          "text": "Ações",
+          "width": 163
+        },
+        {
+          "tag": "TBODY",
+          "text": "Empresa AlphaMigração de Servidores João da SilvaORC-001Dist",
+          "width": 664
+        },
+        {
+          "tag": "TR",
+          "text": "Empresa AlphaMigração de Servidores João da SilvaORC-001Dist",
+          "width": 664
+        }
+      ]
+    },
+    {
+      "name": "Propostas",
+      "slug": "propostas",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "headings": [
+        "Propostas",
+        "Sistema de Propostas Comerciais Completo"
+      ],
+      "text": "Propostas\n\nGerencie suas propostas comerciais\n\nPropostas Comerciais\nNova Proposta Técnica\nSistema de Propostas Comerciais Completo\n\nCrie propostas profissionais com 10 seções estruturadas: Capa, Sumário Executivo, Desafio, Solução, Escopo, Cronograma, Investimento, Diferenciais, Próximos Passos e Preview em PDF.\n\nAcessar Sistema\nTotal de Propostas\n5\nValor Total\nR$ 238.000,00\nAprovadas\n1\nEm Análise\n1\nLista de Propostas\nTítulo\tCliente\tGerente de Conta\tDistribuidor\tValor\tStatus\tData de Criação\tValidade\tAções\n\nSolução de Infraestrutura Cloud\n\tEmpresa Alpha\tJoão da Silva\tDistribuidor TechData\tR$ 85.000,00\tAprovada\t14/07/2024\t14/08/2024\t\n\n\nSistema ",
+      "width": 1184,
+      "scrollWidth": 1184,
+      "height": 1035,
+      "font": "Inter, sans-serif",
+      "overflow": []
+    },
+    {
+      "name": "Propostas Geradas",
+      "slug": "propostas-geradas",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "headings": [
+        "Gestão de Propostas"
+      ],
+      "text": "Gestão de Propostas\n\nGerencie todas as suas propostas: Comerciais, NOC/SOC/SIEM, Service Desk, Outsourcing de Impressão e Venda/Locação/Serviços\n\nAcessar Propostas Geradas",
+      "width": 1184,
+      "scrollWidth": 1184,
+      "height": 943,
+      "font": "Inter, sans-serif",
+      "overflow": []
+    },
+    {
+      "name": "Venda/Locação/Serviços",
+      "slug": "precificacao-vls",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "headings": [
+        "PricingPro TI",
+        "Potencialize Seu Negóciocom Precificação Inteligente",
+        "Otimize a Gestão dos Seus Produtos de TI",
+        "Gestão de Propostas",
+        "Dashboard Administrativo",
+        "Analytics Avançado",
+        "Gestão de Clientes",
+        "Configurações"
+      ],
+      "text": "PricingPro TI\n\nSistema Inteligente\n\nVendas\nLocação\nServiços\nPropostas\nAdmin\nAlternar tema\nSistema Completo de Precificação\nPotencialize Seu Negócio\ncom Precificação Inteligente\n\nNossa solução inovadora de precificação foi projetada para profissionais de TI que exigem precisão e flexibilidade. Personalize sua estratégia de preços sem esforço e eleve o potencial do seu negócio.\n\nNova Proposta\nPainel Administrativo\nOtimize a Gestão dos Seus Produtos de TI\n\nTrês módulos integrados que trabalham em harmonia para atender todas as necessidades de precificação do seu negócio de TI\n\nMódulo de Vendas\nPrecificação inteligente para produtos de hardware e",
+      "width": 1184,
+      "scrollWidth": 1184,
+      "height": 2901,
+      "font": "Inter, sans-serif",
+      "overflow": []
+    },
+    {
+      "name": "NOC/SOC/SIEM",
+      "slug": "noc",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "headings": [
+        "Potencialize Seu Negóciocom Precificação Inteligente",
+        "NOC",
+        "SOC",
+        "SIEM",
+        "Precificação Inteligente",
+        "SOC e SIEM Gerenciado",
+        "Cobertura 24x7"
+      ],
+      "text": "Potencialize Seu Negócio\ncom Precificação Inteligente\n\nPrecifique NOC, SOC e SIEM em um único fluxo, com cálculo por dispositivos, ativos, ingestão de logs, retenção, SLA, equipe, impostos e benchmark de mercado.\n\nNOC\n\nMonitoramento de rede, infraestrutura, disponibilidade, métricas, alertas e operação 24x7.\n\nPrecificar NOC\nSOC\n\nOperação de segurança por ativo, MDR, triagem, threat hunting e resposta a incidentes.\n\nPrecificar SOC\nSIEM\n\nIngestão de logs em GB/dia, correlação, retenção, fontes, parsers e regras gerenciadas.\n\nPrecificar SIEM\nPrecificação Inteligente\n\nAlgoritmos avançados para calcular preços competitivos e lucrativos\n\nSOC e SIEM",
+      "width": 1184,
+      "scrollWidth": 1184,
+      "height": 1259,
+      "font": "Inter, sans-serif",
+      "overflow": []
+    },
+    {
+      "name": "Service Desk Avançado",
+      "slug": "service-desk",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "headings": [
+        "Potencialize Seu Negóciocom Precificação Inteligente",
+        "Gestão de Equipe",
+        "Atendimento Ágil",
+        "Métricas Detalhadas"
+      ],
+      "text": "Potencialize Seu Negócio\ncom Precificação Inteligente\n\nNossa solução inovadora de precificação Service Desk foi projetada para profissionais de TI que exigem precisão e flexibilidade. Personalize sua estratégia de preços sem esforço e eleve o potencial do seu negócio.\n\nGestão de Equipe\n\nDimensione sua equipe com base em volume de chamados e SLA\n\nAtendimento Ágil\n\nOtimize processos e reduza tempo de resposta aos chamados\n\nMétricas Detalhadas\n\nAcompanhe KPIs e tome decisões baseadas em dados reais\n\nNova Proposta\nPainel Administrativo\n10K+\nChamados/Mês\n< 15min\nTempo Médio Resposta\n98%\nSatisfação Cliente\n85%\nResolução 1º Nível",
+      "width": 1184,
+      "scrollWidth": 1184,
+      "height": 1064,
+      "font": "Inter, sans-serif",
+      "overflow": []
+    },
+    {
+      "name": "Outsourcing de Impressão",
+      "slug": "impressao",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "headings": [
+        "Potencialize Seu Negóciocom Precificação Inteligente",
+        "Redução de Custos",
+        "Sustentabilidade",
+        "Gestão Simplificada"
+      ],
+      "text": "Potencialize Seu Negócio\ncom Precificação Inteligente\n\nNossa solução inovadora de precificação de Outsourcing de Impressão foi projetada para profissionais de TI que exigem precisão e flexibilidade. Personalize sua estratégia de preços sem esforço e eleve o potencial do seu negócio.\n\nRedução de Custos\n\nOtimize gastos com impressão e reduza custos operacionais\n\nSustentabilidade\n\nReduza desperdício e contribua para um ambiente mais sustentável\n\nGestão Simplificada\n\nControle total sobre equipamentos, suprimentos e manutenção\n\nNova Proposta\nPainel Administrativo\n40%\nEconomia Média\n500K+\nPáginas/Mês\n1000+\nEquipamentos Gerenciados\n99.5%\nUptime Gara",
+      "width": 1184,
+      "scrollWidth": 1184,
+      "height": 1064,
+      "font": "Inter, sans-serif",
+      "overflow": []
+    },
+    {
+      "name": "Portal de Busca",
+      "slug": "portal-busca",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "headings": [
+        "Buscador Unificado",
+        "Filtros de pesquisa",
+        "0 resultado(s) encontrado(s)"
+      ],
+      "text": "Início\nLicitações Gerenciadas (0)\nFontes Integradas\nAlertas\nFavoritos (0)\nBuscador Unificado\n\nPesquise editais de todas as esferas públicas em um só lugar.\n\nBuscar\nFiltros de pesquisa\n\nCombine status, fonte, região, datas e produtos para refinar os editais.\n\nLimpar filtros\n\nSTATUS\n\nVigentes\nEm Proposta\n\nPORTAIS AUTENTICADOS\n\nBusca exata\nCom edital\nChat\nNº EDITAL\nUF\nTodo Brasil\nAC\nAL\nAP\nAM\nBA\nCE\nDF\nES\nGO\nMA\nMT\nMS\nMG\nPA\nPB\nPR\nPE\nPI\nRJ\nRN\nRS\nRO\nRR\nSC\nSP\nSE\nTO\nCIDADE\nPUBLICAÇÃO\naté\nPRAZO\naté\n\nFONTES\n\n2 ativas\n🏛️ PNCP Oficial\n🇧🇷 ComprasNet\n🏙️ Transparência Curitiba\n🔎 Portal Transparência Federal\n📄 Compras.gov.br Dispensas\n⚖️ Contratações Lei",
+      "width": 1184,
+      "scrollWidth": 1184,
+      "height": 1120,
+      "font": "Inter, sans-serif",
+      "overflow": []
+    },
+    {
+      "name": "Editais Analisados",
+      "slug": "editais",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "headings": [
+        "Análise de Editais"
+      ],
+      "text": "Análise de Editais\n\nGerencie e analise editais de licitações\n\nNovo Edital\nFiltros\nBuscar\nStatus\nTodos os status\nCategoria\nTodas as categorias\nTipo de Órgão\nTodos os tipos\n\nTotal de Editais\n\n3\n\nEm Análise\n\n1\n\n2 analisados\n\nValor Total\n\nR$ 7.500.000,00\n\nUrgentes\n\n0\n\nEditais (3)\nTítulo\tÓrgão\tStatus\tCategoria\tData Abertura\tValor Estimado\t\nAnálise\nAções\n\nAquisição de Equipamentos de Informática\n001/2024\n\t\nPrefeitura Municipal de São Paulo\nMunicipal\n\tEm Análise\tTecnologia\t\n14/08/2024\nVencido\n\t\nR$ 2.500.000,00\n\t\nScore: 75/100\nParticipar\n\t\n\n\nSistema de Gestão Escolar\n002/2024\n\t\nSecretaria de Educação do Estado\n\tAberto\tEducação\t\n19/08/2024\nVencido\n\t\nR",
+      "width": 1184,
+      "scrollWidth": 1184,
+      "height": 943,
+      "font": "Inter, sans-serif",
+      "overflow": []
+    },
+    {
+      "name": "Analisar Edital com IA",
+      "slug": "edital-ia",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "headings": [
+        "Analisador de Editais com IA"
+      ],
+      "text": "Analisador de Editais com IA\n\nAnálise inteligente de editais, documentos obrigatórios e produtos do termo de referência\n\nUpload de Documentos\nAnálise\nResultados\nUpload de Documentos\n\nClique para fazer upload dos documentos\n\nSuporte para PDF, DOC, DOCX (máx. 10MB cada)",
+      "width": 1184,
+      "scrollWidth": 1184,
+      "height": 943,
+      "font": "Inter, sans-serif",
+      "overflow": []
+    },
+    {
+      "name": "Documentações para Editais",
+      "slug": "documentacoes",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "headings": [],
+      "text": "Documentações da Empresa\nContrato Social.pdf\nCNPJ.pdf\nAdicionar Arquivo\nComprovações\nAtestado de Capacidade Técnica.pdf\nAdicionar Arquivo\nCertificações\nCertificação ISO 9001.pdf\nCertificação ISO 27001.pdf\nAdicionar Arquivo",
+      "width": 1184,
+      "scrollWidth": 1184,
+      "height": 943,
+      "font": "Inter, sans-serif",
+      "overflow": []
+    },
+    {
+      "name": "Atas de Registro de Preços",
+      "slug": "atas",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "headings": [
+        "Atas de Registro de Preços"
+      ],
+      "text": "Governança de atas, preços registrados e validade contratual\nAtas de Registro de Preços\n\nControle atas, pregões e concorrências com visibilidade de validade, valor contratado, participantes, itens e riscos de vencimento.\n\nNova Ata\nRelatório de Atas\nCarteira monitorada\n\nAtivas\n\n2\n\nA vencer\n\n0\n\nValor total registrado\n\nR$ 8.600.000,00\n\nTotal de Atas\n\n5\n\nAtivas\n\n2\n\nValor Total\n\nR$ 8.600.000,00\n\nParticipantes\n\n16\n\nFiltros e Pesquisa\nBuscar\nStatus\nTodos os status\nTipo\nTodos os tipos\nCategoria\nTodas as categorias\nAtas Encontradas (5)\nTítulo\tCliente\tTipo\tStatus\tValidade\tValor Total\tItens\tGerente\tAções\n\nAta de Registro de Preços - Equipamentos de TI\nA",
+      "width": 1184,
+      "scrollWidth": 1184,
+      "height": 1445,
+      "font": "Inter, sans-serif",
+      "overflow": [
+        {
+          "tag": "TABLE",
+          "text": "TítuloClienteTipoStatusValidadeValor TotalItensGerenteAçõesA",
+          "width": 1262
+        },
+        {
+          "tag": "THEAD",
+          "text": "TítuloClienteTipoStatusValidadeValor TotalItensGerenteAções",
+          "width": 1262
+        },
+        {
+          "tag": "TR",
+          "text": "TítuloClienteTipoStatusValidadeValor TotalItensGerenteAções",
+          "width": 1262
+        },
+        {
+          "tag": "TH",
+          "text": "Ações",
+          "width": 160
+        },
+        {
+          "tag": "TBODY",
+          "text": "Ata de Registro de Preços - Equipamentos de TIAta para aquis",
+          "width": 1262
+        },
+        {
+          "tag": "TR",
+          "text": "Ata de Registro de Preços - Equipamentos de TIAta para aquis",
+          "width": 1262
+        },
+        {
+          "tag": "TD",
+          "text": "",
+          "width": 160
+        },
+        {
+          "tag": "DIV",
+          "text": "",
+          "width": 128
+        }
+      ]
+    },
+    {
+      "name": "RFP/RFI",
+      "slug": "rfp",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "headings": [
+        "RFP/RFI"
+      ],
+      "text": "Gestão de demandas formais, perguntas técnicas e respostas comerciais\nRFP/RFI\n\nControle solicitações, prazos, requisitos, responsáveis e status de resposta para transformar demandas formais em propostas consistentes.\n\nNovo RFP/RFI\nCentral de Respostas\nPrioridade da fila\n\nEm aberto\n\n1\n\nUrgentes\n\n0\n\nValor estimado\n\nR$ 1.600.000,00\n\nTotal RFP/RFI\n\n5\n\nEm Aberto\n\n1\n\nRespondidos\n\n1\n\nValor Total\n\nR$ 1.600.000,00\n\nFiltros e Pesquisa\nBuscar\nStatus\nTodos os status\nTipo\nTodos os tipos\nCategoria\nTodas as categorias\nSolicitações Encontradas (5)\nTítulo\tCliente\tTipo\tStatus\tCategoria\tPrazo\tValor\tGerente\tAções\n\nSistema de Gestão Hospitalar\nAquisição de sistem",
+      "width": 1184,
+      "scrollWidth": 1184,
+      "height": 1331,
+      "font": "Inter, sans-serif",
+      "overflow": [
+        {
+          "tag": "TABLE",
+          "text": "TítuloClienteTipoStatusCategoriaPrazoValorGerenteAçõesSistem",
+          "width": 1266
+        },
+        {
+          "tag": "THEAD",
+          "text": "TítuloClienteTipoStatusCategoriaPrazoValorGerenteAções",
+          "width": 1266
+        },
+        {
+          "tag": "TR",
+          "text": "TítuloClienteTipoStatusCategoriaPrazoValorGerenteAções",
+          "width": 1266
+        },
+        {
+          "tag": "TH",
+          "text": "Ações",
+          "width": 160
+        },
+        {
+          "tag": "TBODY",
+          "text": "Sistema de Gestão HospitalarAquisição de sistema completo de",
+          "width": 1266
+        },
+        {
+          "tag": "TR",
+          "text": "Sistema de Gestão HospitalarAquisição de sistema completo de",
+          "width": 1266
+        },
+        {
+          "tag": "TD",
+          "text": "",
+          "width": 160
+        },
+        {
+          "tag": "DIV",
+          "text": "",
+          "width": 128
+        }
+      ]
+    },
+    {
+      "name": "Assessment de TI",
+      "slug": "assessment",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "headings": [
+        "Assessment de TI"
+      ],
+      "text": "Diagnóstico técnico para arquitetura, risco e roadmap\nAssessment de TI\n\nAvalie infraestrutura, segurança, cloud, dados, rede e usuários com pontuação, maturidade, achados e recomendações executivas.\n\nNovo Assessment\nRelatório Executivo\nMaturidade Geral\n64%\nAtenção\n\nConcluídos\n\n3/6\n\nCríticos\n\n0\n\nScore Geral\n\n64%\n\nConclusão\n\n50%\n\nCategorias\n\n6\n\nItens Avaliados\n\n6\n\nCategorias do Assessment\nTodas\nInfraestrutura\nSegurança\nCloud\nDados\nRede\nUsuários\nConcluído\nAvançado\nServidores e Hardware\n\nAvaliação da infraestrutura física e virtual, capacidade, ciclo de vida e disponibilidade.\n\n85%\n\nSaudável\n\nScore do controle\n85%\n\nPrincipais achados\n\nCapacidade ",
+      "width": 1184,
+      "scrollWidth": 1184,
+      "height": 2292,
+      "font": "Inter, sans-serif",
+      "overflow": []
+    },
+    {
+      "name": "Provas de Conceito POC",
+      "slug": "poc",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "headings": [
+        "Provas de Conceito (POC)"
+      ],
+      "text": "Gestão de validações técnicas e provas controladas\nProvas de Conceito (POC)\n\nAcompanhe objetivos, critérios de sucesso, orçamento, riscos e evolução das POCs antes de transformar uma validação técnica em proposta ou projeto.\n\nNova POC\nRelatório Executivo\nGovernança da POC\n\nProgresso médio\n\n51%\n\nEm execução\n\n2\n\nOrçamento total em validação\n\nR$ 255.000\n\nTotal de POCs\n\n5\n\nEm Execução\n\n2\n\nConcluídas\n\n1\n\nOrçamento Total\n\nR$ 255.000\n\nTodos\nPlanejamento\nEm Execução\nConcluído\nCancelado\nPOC-001\nEm Execução\nRisco Médio\nMigração para Azure Cloud\n\nValidação da migração de infraestrutura on-premise para Azure com foco em disponibilidade, custo e segurança",
+      "width": 1184,
+      "scrollWidth": 1184,
+      "height": 3136,
+      "font": "Inter, sans-serif",
+      "overflow": []
+    },
+    {
+      "name": "Configurações",
+      "slug": "configuracoes",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "headings": [
+        "Configurações",
+        "Logo da Empresa"
+      ],
+      "text": "Configurações\n\nPersonalize a aparência, usuários e permissões do sistema\n\nAparência\nLogo da Empresa\nLogo da Empresa\nCH\nCHORST\nCHORST CONSULTORIA\n\nArraste uma imagem aqui ou\n\nclique para selecionar\n\nPNG, JPG até 5MB\n\nSelecionar Arquivo\nUsuários e Acessos\nNome\nE-mail\nSenha\nPerfil de Acesso\nUsuário\n\nAcesso restrito aos módulos selecionados abaixo.\n\nStatus\nAtivo\nPermissões de Módulos\nMarcar Todos\n\nSelecione os módulos que este usuário poderá acessar. Módulos não marcados ficarão ocultos na barra lateral.\n\nGestão\n0/2\nMarcar\nComercial\n0/9\nMarcar\nFinanceiro\n0/5\nMarcar\nB2G\n0/7\nMarcar\nTécnico\n0/2\nMarcar\nSistema\n0/1\nMarcar\n0 de 26 módulos selecionados\n",
+      "width": 1184,
+      "scrollWidth": 1184,
+      "height": 1458,
+      "font": "Inter, sans-serif",
+      "overflow": []
+    },
+    {
+      "name": "Projetos",
+      "slug": "projetos",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "headings": [
+        "Início",
+        "Controle projetos, fases, equipe e decisões em uma visão única.",
+        "Implantação e campo",
+        "Planejamento executivo",
+        "Equipe integrada",
+        "Projetos salvos",
+        "Projeto Paranacidade",
+        "Escopo claro",
+        "Equipe conectada",
+        "Visão executiva"
+      ],
+      "text": "C\nInício\nProjetos\nPlanejado\nEquipes\nDocumentos\nPainéis\nQuadros\nVoltar\nC\nGestão de Projetos\nChats com IA\nCH\nInício\nCentral executiva de projetos\nGESTÃO DE PROJETOS\nControle projetos, fases, equipe e decisões em uma visão única.\n\nOrganize escopo, cronograma, responsáveis, entregáveis e acompanhamentos com leitura executiva para cada iniciativa em andamento.\n\nNovo projeto\nVer painel\n\n1\n\nPROJETOS SALVOS\n\n1\n\nEM ANDAMENTO\n\n0\n\nEM ATENÇÃO\n\nProjeto em destaque\n\nParanacidade · PLANEJAMENTO\n\nAlta\nProjeto Paranacidade\n\n0%\n\nProgresso\n\n3\n\nFases\n\n1\n\nGestor\n\nEXECUÇÃO\nImplantação e campo\n\nAcompanhe responsabilidades, marcos, riscos e decisões para manter cada",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "height": 1000,
+      "font": "ui-sans-serif, system-ui, sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\", \"Noto Color Emoji\"",
+      "overflow": []
+    }
+  ],
+  "errors": []
+}
