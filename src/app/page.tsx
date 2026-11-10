@@ -70,6 +70,7 @@ const ACTIVE_TAB_STORAGE_KEY = 'sistema-pre-active-tab';
 
 type HomeLandingPageProps = {
     setActiveTab: (tab: string) => void;
+    currentUser?: SystemUser | null;
 };
 
 type LoginScreenProps = {
@@ -182,7 +183,7 @@ function LoginScreen({ logoSrc, onLogin, onBack }: LoginScreenProps) {
                             
                             <Button 
                                 type="submit" 
-                                className="h-12 w-full text-base font-semibold"
+                                className="h-12 w-full text-base font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-lg shadow-blue-500/25"
                                 disabled={isLoading}
                             >
                                 {isLoading ? (
@@ -192,10 +193,22 @@ function LoginScreen({ logoSrc, onLogin, onBack }: LoginScreenProps) {
                                     </>
                                 ) : (
                                     <>
-                                        Entrar
+                                        Entrar no Sistema
                                         <ArrowRight className="h-4 w-4" />
                                     </>
                                 )}
+                            </Button>
+                            
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() => {
+                                    setEmail('chorstconsult@gmail.com');
+                                    setPassword('Double@2026');
+                                }}
+                                className="w-full text-xs border-dashed border-primary/40 bg-primary/5 hover:bg-primary/10 text-primary py-2.5"
+                            >
+                                ⚡ Preencher Acesso Rápido (Admin Demo)
                             </Button>
                             
                             {onBack && (
@@ -757,185 +770,367 @@ function PublicHomePage({ logoSrc, onLoginClick }: PublicHomePageProps) {
     );
 }
 
-function HomeLandingPage({ setActiveTab }: HomeLandingPageProps) {
-    const moduleHighlights = [
+function HomeLandingPage({ setActiveTab, currentUser }: HomeLandingPageProps) {
+    const pricingEngines = [
         {
-            title: 'Orçamentos e Propostas',
-            description: 'Controle o ciclo comercial desde o orçamento do distribuidor até a proposta final, com produtos, modalidades, anexos e PDFs estruturados.',
-            tab: 'quotes',
-            image: 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=1200&q=80',
-            icon: <FileText className="h-5 w-5" />,
-            meta: 'Cadastro, PDF, gestão comercial'
-        },
-        {
-            title: 'Precificação Venda, Locação e Serviços',
-            description: 'Modele custos, margens, impostos e cenários comerciais para hardware, licenças, serviços profissionais e contratos recorrentes.',
-            tab: 'calculator-ti-vls',
-            image: 'https://images.unsplash.com/photo-1554224155-6726b3ff858f?auto=format&fit=crop&w=1200&q=80',
-            icon: <Calculator className="h-5 w-5" />,
-            meta: 'VLS, custos, margens'
-        },
-        {
-            title: 'Service Desk',
-            description: 'Dimensione equipes, escalas, SLAs, custos operacionais e análises executivas para ofertas de suporte e atendimento especializado.',
-            tab: 'calculator-servicedesk-advanced',
-            image: 'https://images.unsplash.com/photo-1553877522-43269d4ea984?auto=format&fit=crop&w=1200&q=80',
-            icon: <Headset className="h-5 w-5" />,
-            meta: 'SLA, equipe, forecast'
-        },
-        {
-            title: 'NOC, SOC e SIEM',
-            description: 'Estruture propostas de monitoramento, segurança, disponibilidade e operação contínua com parâmetros técnicos e financeiros.',
+            title: 'NOC / SOC / SIEM 24×7',
+            category: 'Operação & Cibersegurança',
+            description: 'Monitoramento contínuo de ativos e eventos. Volumetria, ferramentas gerenciadas (Zabbix, Grafana, Wazuh), escala de analistas e DRE em tempo real.',
             tab: 'calculator-noc',
-            image: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=1200&q=80',
-            icon: <Network className="h-5 w-5" />,
-            meta: 'Operação, segurança, monitoramento'
+            icon: <Network className="h-6 w-6 text-cyan-400" />,
+            badge: '24×7 Crítico',
+            accentColor: 'from-cyan-500/20 via-blue-500/10 to-transparent',
+            borderColor: 'hover:border-cyan-500/50',
+            tagColor: 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20',
+            highlights: ['Zabbix & Grafana', 'Escala N1 / N2 / N3', 'Custos & Margens', 'DRE Integrada']
+        },
+        {
+            title: 'Service Desk Avançado',
+            category: 'Suporte & Atendimento',
+            description: 'Dimensionamento operacional por volume de chamados. Simulação de escalas (12x36, 6h, 8h), SLAs 24x7 ou 8x5, custos diretos e margens de lucro.',
+            tab: 'calculator-servicedesk-advanced',
+            icon: <Headset className="h-6 w-6 text-purple-400" />,
+            badge: 'SLA Dinâmico',
+            accentColor: 'from-purple-500/20 via-indigo-500/10 to-transparent',
+            borderColor: 'hover:border-purple-500/50',
+            tagColor: 'bg-purple-500/10 text-purple-400 border-purple-500/20',
+            highlights: ['Escalas 12x36 & 6h', 'Dimensionamento de PAs', 'Forecast de Chamados', 'Margem Desejada']
+        },
+        {
+            title: 'Precificação VLS TI',
+            category: 'Venda, Locação & Serviços',
+            description: 'Formação científica de preço para hardware, software e serviços. Impostos (PIS/COFINS/ISS/ICMS), markups, taxas de risco e cenários CAPEX vs OPEX.',
+            tab: 'calculator-ti-vls',
+            icon: <Calculator className="h-6 w-6 text-emerald-400" />,
+            badge: 'CAPEX & OPEX',
+            accentColor: 'from-emerald-500/20 via-teal-500/10 to-transparent',
+            borderColor: 'hover:border-emerald-500/50',
+            tagColor: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
+            highlights: ['Decomposição Tributária', 'Markups Customizáveis', 'Contratos Recorrentes', 'Memória de Cálculo']
         },
         {
             title: 'Outsourcing de Impressão',
-            description: 'Construa propostas com parque de equipamentos, franquias, excedentes, infraestrutura, contrato e memória de cálculo.',
+            category: 'Gestão de Frotas & Páginas',
+            description: 'Modelagem completa para parque de impressão. Franquias mono e color, custo por página (CPP), excedentes, suprimentos e TCO de longo prazo.',
             tab: 'calculator-printer',
-            image: 'https://images.unsplash.com/photo-1612815154858-60aa4c59eaa6?auto=format&fit=crop&w=1200&q=80',
-            icon: <Printer className="h-5 w-5" />,
-            meta: 'Frota, franquia, contrato'
-        },
-        {
-            title: 'Licitações, Editais e IA',
-            description: 'Leia editais com mais velocidade, organize exigências, gere análises e mantenha documentação crítica sob controle.',
-            tab: 'ai-bid-analyzer',
-            image: 'https://images.unsplash.com/photo-1521791055366-0d553872125f?auto=format&fit=crop&w=1200&q=80',
-            icon: <Gavel className="h-5 w-5" />,
-            meta: 'Editais, IA, conformidade'
-        },
-        {
-            title: 'Gestão de Projetos',
-            description: 'Transforme propostas aprovadas em projetos acompanháveis, com fases, riscos, orçamento, equipe e PDF executivo.',
-            tab: 'projects',
-            image: 'https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=1200&q=80',
-            icon: <Briefcase className="h-5 w-5" />,
-            meta: 'Fases, riscos, entregas'
-        },
-        {
-            title: 'Assessment, POC e Pré-venda Técnica',
-            description: 'Apoie diagnósticos, provas de conceito, RFPs e atas com uma visão organizada para arquitetos de soluções.',
-            tab: 'it-assessment',
-            image: 'https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=1200&q=80',
-            icon: <Target className="h-5 w-5" />,
-            meta: 'Discovery, POC, RFP'
+            icon: <Printer className="h-6 w-6 text-amber-400" />,
+            badge: 'Frota & Franquia',
+            accentColor: 'from-amber-500/20 via-orange-500/10 to-transparent',
+            borderColor: 'hover:border-amber-500/50',
+            tagColor: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
+            highlights: ['Custo por Página (CPP)', 'Franquia Mono / Color', 'Custos de Equipamentos', 'Gestão de Suprimentos']
         }
     ];
 
-    const workflow = [
-        { title: 'Descobrir', text: 'Entenda cliente, edital, cenário técnico e restrições comerciais.', icon: <Search className="h-5 w-5" /> },
-        { title: 'Desenhar', text: 'Converta requisitos em arquitetura, escopo, itens e premissas claras.', icon: <Layers className="h-5 w-5" /> },
-        { title: 'Precificar', text: 'Simule custos, impostos, margem, contrato e riscos antes da proposta.', icon: <DollarSign className="h-5 w-5" /> },
-        { title: 'Propor', text: 'Gere materiais executivos, acompanhe aprovações e entregue projeto.', icon: <ClipboardCheck className="h-5 w-5" /> }
+    const platformModules = [
+        {
+            title: 'Orçamentos & Propostas',
+            meta: 'Comercial & Propostas',
+            description: 'Ciclo completo de orçamentação por fornecedor, margens consolidadas, itens em cotação e emissão de propostas executivas.',
+            tab: 'quotes',
+            icon: <FileText className="h-5 w-5 text-blue-400" />,
+            actionLabel: 'Ver Orçamentos'
+        },
+        {
+            title: 'Gestão de Projetos',
+            meta: 'Handoff & Implantação',
+            description: 'Visões integradas em Kanban, Gráficos de Gantt, carga de equipe (Workload) e arquitetura de entrega.',
+            tab: 'projects',
+            icon: <Briefcase className="h-5 w-5 text-indigo-400" />,
+            actionLabel: 'Abrir Projetos'
+        },
+        {
+            title: 'Portal de Busca B2G',
+            meta: 'Licitações Governamentais',
+            description: 'Rastreamento de editais de compras públicas, Curitiba e-compras, Comprasnet e gestão de licitações concorrentes.',
+            tab: 'portal-busca',
+            icon: <Globe className="h-5 w-5 text-cyan-400" />,
+            actionLabel: 'Buscar Licitações'
+        },
+        {
+            title: 'Análise de Editais com IA',
+            meta: 'Inteligência Artificial',
+            description: 'Leitura assistida de editais complexos via IA, identificação instantânea de requisitos, prazos e itens mandatórios.',
+            tab: 'ai-bid-analyzer',
+            icon: <Brain className="h-5 w-5 text-purple-400" />,
+            actionLabel: 'Analisar com IA'
+        },
+        {
+            title: 'Gestão de ROs com Fabricantes',
+            meta: 'Parcerias & Descontos',
+            description: 'Controle de registro de oportunidades junto a Dell, HP, Lenovo e distribuidores com monitoramento de validade.',
+            tab: 'ro-management',
+            icon: <Building className="h-5 w-5 text-amber-400" />,
+            actionLabel: 'Gerenciar ROs'
+        },
+        {
+            title: 'Assessment & Pré-Venda Técnica',
+            meta: 'Arquitetura de Solução',
+            description: 'Questionários técnicos de diagnóstico de infraestrutura, matriz de maturidade e levantamento de escopo.',
+            tab: 'it-assessment',
+            icon: <Target className="h-5 w-5 text-emerald-400" />,
+            actionLabel: 'Abrir Assessment'
+        }
     ];
 
-    const stats = [
-        { value: '360°', label: 'jornada de pré-vendas' },
-        { value: '4', label: 'motores de precificação' },
-        { value: 'PDF', label: 'documentos executivos' },
-        { value: 'IA', label: 'apoio em editais' }
+    const workflowSteps = [
+        { step: '01', title: 'Descoberta & Edital', text: 'Captura da oportunidade, leitura de edital por IA e identificação de exigências técnicas.', icon: <Search className="h-5 w-5" /> },
+        { step: '02', title: 'Engenharia & POC', text: 'Dimensionamento da arquitetura, validação de viabilidade técnica, provas de conceito e RFPs.', icon: <Layers className="h-5 w-5" /> },
+        { step: '03', title: 'Precificação Científica', text: 'Simulação precisa de custos, salários, escalas, impostos, fornecedores e margem desejada.', icon: <Calculator className="h-5 w-5" /> },
+        { step: '04', title: 'Defesa & Handoff', text: 'Geração de proposta executiva auditável em PDF e passagem automatizada para o time de projetos.', icon: <ClipboardCheck className="h-5 w-5" /> }
     ];
 
     return (
-        <div className="space-y-8">
-            <section
-                className="relative min-h-[520px] overflow-hidden rounded-lg border border-cyan-400/20 bg-cover bg-center"
-                style={{ backgroundImage: "url('https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=1800&q=80')" }}
-            >
-                <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(6,14,30,0.95)_0%,rgba(11,24,48,0.82)_42%,rgba(11,24,48,0.36)_100%)]" />
-                <div className="relative z-10 flex min-h-[520px] max-w-5xl flex-col justify-center px-6 py-12 sm:px-10 lg:px-14">
-                    <div className="mb-6 inline-flex w-fit items-center gap-2 rounded-full border border-cyan-300/35 bg-cyan-300/10 px-4 py-2 text-sm font-medium text-cyan-100">
-                        <ShieldCheck className="h-4 w-4 text-cyan-300" />
-                        Plataforma para pré-vendas, arquitetura de soluções e estratégia comercial
-                    </div>
-                    <h1 className="max-w-4xl text-4xl font-bold leading-tight text-white sm:text-5xl lg:text-6xl">
-                        Sistema Pré-Venda TI
-                    </h1>
-                    <p className="mt-5 max-w-3xl text-lg leading-8 text-slate-200">
-                        Uma central de trabalho para transformar requisitos técnicos em propostas viáveis, precificadas e defendáveis. Da leitura do edital ao desenho da solução, do orçamento à entrega do projeto.
-                    </p>
-                    <div className="mt-8 flex flex-wrap gap-3">
-                        <Button size="lg" onClick={() => setActiveTab('quotes')} className="bg-orange-500 text-white hover:bg-orange-600">
-                            Começar por Orçamentos
-                            <ArrowRight className="ml-2 h-4 w-4" />
-                        </Button>
-                        <Button size="lg" variant="outline" onClick={() => setActiveTab('calculator-ti-vls')} className="border-cyan-300/60 bg-slate-950/30 text-white hover:bg-cyan-300/15 hover:text-white">
-                            Abrir Precificação
-                        </Button>
-                    </div>
-                    <div className="mt-10 grid max-w-3xl grid-cols-2 gap-3 sm:grid-cols-4">
-                        {stats.map((stat) => (
-                            <div key={stat.label} className="rounded-md border border-white/15 bg-white/10 p-4 backdrop-blur">
-                                <div className="text-2xl font-bold text-white">{stat.value}</div>
-                                <div className="mt-1 text-xs text-slate-300">{stat.label}</div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </section>
+        <div className="space-y-10 pb-12">
+            {/* HERO COMMAND CENTER */}
+            <div className="relative overflow-hidden rounded-3xl border border-border/80 bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950 p-8 sm:p-12 text-white shadow-2xl">
+                {/* Ambient Aura Lights */}
+                <div className="absolute -right-24 -top-24 h-96 w-96 rounded-full bg-blue-500/15 blur-3xl pointer-events-none" />
+                <div className="absolute -left-20 -bottom-20 h-80 w-80 rounded-full bg-cyan-500/15 blur-3xl pointer-events-none" />
+                <div className="absolute inset-0 bg-grid-pattern opacity-10 pointer-events-none" />
 
-            <section className="grid gap-4 md:grid-cols-4">
-                {workflow.map((item) => (
-                    <div key={item.title} className="rounded-lg border border-border bg-card p-5 shadow-sm">
-                        <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-md bg-cyan-400/12 text-cyan-300">
-                            {item.icon}
-                        </div>
-                        <h2 className="text-lg font-semibold text-foreground">{item.title}</h2>
-                        <p className="mt-2 text-sm leading-6 text-muted-foreground">{item.text}</p>
+                <div className="relative z-10 max-w-4xl space-y-6">
+                    {/* Live Status Pill */}
+                    <div className="inline-flex items-center gap-2.5 rounded-full border border-cyan-400/30 bg-cyan-500/10 px-4 py-1.5 text-xs font-semibold tracking-wide text-cyan-300 backdrop-blur-md">
+                        <span className="relative flex h-2 w-2">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-2 w-2 bg-cyan-500"></span>
+                        </span>
+                        PLATAFORMA DE PRÉ-VENDAS · CONECTADA AO BANCO DE DADOS
                     </div>
-                ))}
-            </section>
 
-            <section>
-                <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+                    {/* Main Title & Description */}
                     <div>
-                        <h2 className="text-2xl font-bold text-foreground">Módulos do Sistema</h2>
-                        <p className="mt-2 max-w-3xl text-muted-foreground">
-                            Cada módulo cobre uma etapa real da operação de pré-vendas: relacionamento com parceiros, análise técnica, composição de custos, proposta, aprovação e handoff para projeto.
+                        <h1 className="text-3xl font-extrabold tracking-tight sm:text-5xl lg:text-6xl text-white">
+                            Engenharia Comercial & <br className="hidden sm:inline" />
+                            <span className="bg-gradient-to-r from-cyan-400 via-blue-400 to-indigo-300 bg-clip-text text-transparent">
+                                Precificação Estratégica
+                            </span>
+                        </h1>
+                        <p className="mt-4 max-w-2xl text-base sm:text-lg text-slate-300 leading-relaxed">
+                            {currentUser ? `Bem-vindo, ${currentUser.name}. ` : ''}
+                            Elimine planilhas frágeis. Centralize formação de preço, dimensionamento de serviços especializados, análise de editais com IA e geração de propostas executivas.
                         </p>
                     </div>
-                    <Button variant="outline" onClick={() => setActiveTab('dashboard')}>
-                        Ver Dashboard
-                        <BarChart3 className="ml-2 h-4 w-4" />
-                    </Button>
+
+                    {/* Action Bar */}
+                    <div className="flex flex-wrap items-center gap-3 pt-2">
+                        <Button 
+                            size="lg" 
+                            onClick={() => setActiveTab('quotes')} 
+                            className="bg-blue-600 hover:bg-blue-500 text-white font-semibold shadow-lg shadow-blue-500/30 transition-all hover:scale-[1.02]"
+                        >
+                            <PlusCircle className="mr-2 h-5 w-5" />
+                            Novo Orçamento
+                        </Button>
+                        <Button 
+                            size="lg" 
+                            variant="outline" 
+                            onClick={() => setActiveTab('calculator-noc')} 
+                            className="border-cyan-400/30 bg-slate-900/60 text-cyan-200 hover:bg-cyan-500/20 hover:text-white backdrop-blur-md"
+                        >
+                            <Network className="mr-2 h-4 w-4 text-cyan-400" />
+                            Calculadora NOC
+                        </Button>
+                        <Button 
+                            size="lg" 
+                            variant="outline" 
+                            onClick={() => setActiveTab('calculator-servicedesk-advanced')} 
+                            className="border-purple-400/30 bg-slate-900/60 text-purple-200 hover:bg-purple-500/20 hover:text-white backdrop-blur-md"
+                        >
+                            <Headset className="mr-2 h-4 w-4 text-purple-400" />
+                            Service Desk
+                        </Button>
+                        <Button 
+                            size="lg" 
+                            variant="outline" 
+                            onClick={() => setActiveTab('dashboard')} 
+                            className="border-white/20 bg-slate-900/40 text-slate-200 hover:bg-white/10 hover:text-white"
+                        >
+                            <BarChart3 className="mr-2 h-4 w-4" />
+                            Dashboard
+                        </Button>
+                    </div>
+
+                    {/* Real-Time KPIs in Hero */}
+                    <div className="grid grid-cols-2 gap-3 pt-4 sm:grid-cols-4 max-w-3xl">
+                        <div className="rounded-xl border border-white/10 bg-white/5 p-4 backdrop-blur-md">
+                            <p className="text-2xl sm:text-3xl font-extrabold text-white">4</p>
+                            <p className="text-xs text-slate-300 font-medium mt-1">Motores de Precificação</p>
+                        </div>
+                        <div className="rounded-xl border border-white/10 bg-white/5 p-4 backdrop-blur-md">
+                            <p className="text-2xl sm:text-3xl font-extrabold text-cyan-300">100%</p>
+                            <p className="text-xs text-slate-300 font-medium mt-1">Memória Auditável</p>
+                        </div>
+                        <div className="rounded-xl border border-white/10 bg-white/5 p-4 backdrop-blur-md">
+                            <p className="text-2xl sm:text-3xl font-extrabold text-emerald-300">DRE</p>
+                            <p className="text-xs text-slate-300 font-medium mt-1">Margem & Tributos</p>
+                        </div>
+                        <div className="rounded-xl border border-white/10 bg-white/5 p-4 backdrop-blur-md">
+                            <p className="text-2xl sm:text-3xl font-extrabold text-purple-300">IA</p>
+                            <p className="text-xs text-slate-300 font-medium mt-1">Análise de Editais</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* SEÇÃO 1: OS 4 MOTORES ESPECIALIZADOS DE PRECIFICAÇÃO */}
+            <div className="space-y-5">
+                <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+                    <div>
+                        <div className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-primary">
+                            <Calculator className="h-4 w-4" />
+                            Cálculo Especializado
+                        </div>
+                        <h2 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+                            Motores de Precificação Dedicados
+                        </h2>
+                    </div>
+                    <p className="text-sm text-muted-foreground max-w-md">
+                        Cada segmento técnico possui sua própria lógica matemática para formação de preço, encargos e riscos.
+                    </p>
                 </div>
 
-                <div className="grid gap-5 lg:grid-cols-2">
-                    {moduleHighlights.map((module) => (
-                        <Card key={module.title} className="overflow-hidden border-border bg-card">
-                            <div className="grid min-h-[260px] sm:grid-cols-[220px_1fr]">
-                                <div className="relative min-h-[190px] sm:min-h-full">
-                                    <img
-                                        src={module.image}
-                                        alt={module.title}
-                                        className="absolute inset-0 h-full w-full object-cover"
-                                    />
-                                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950/55 to-transparent" />
-                                </div>
-                                <CardContent className="flex flex-col justify-between p-5">
-                                    <div>
-                                        <div className="mb-4 flex items-center gap-3">
-                                            <div className="flex h-10 w-10 items-center justify-center rounded-md bg-orange-500/15 text-orange-300">
-                                                {module.icon}
+                <div className="grid gap-6 md:grid-cols-2">
+                    {pricingEngines.map((engine) => (
+                        <div 
+                            key={engine.title}
+                            className={cn(
+                                "group relative overflow-hidden rounded-2xl border border-border/80 bg-card p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl",
+                                engine.borderColor
+                            )}
+                        >
+                            {/* Subtle Ambient Gradient Corner */}
+                            <div className={cn("absolute inset-0 bg-gradient-to-br opacity-40 transition-opacity group-hover:opacity-100 pointer-events-none", engine.accentColor)} />
+                            
+                            <div className="relative z-10 flex flex-col justify-between h-full space-y-5">
+                                <div>
+                                    <div className="flex items-start justify-between gap-3">
+                                        <div className="flex items-center gap-3">
+                                            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-muted/80 shadow-inner group-hover:scale-110 transition-transform">
+                                                {engine.icon}
                                             </div>
-                                            <div className="text-xs font-semibold uppercase tracking-wide text-cyan-300">{module.meta}</div>
+                                            <div>
+                                                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{engine.category}</p>
+                                                <h3 className="text-xl font-bold text-foreground">{engine.title}</h3>
+                                            </div>
                                         </div>
-                                        <CardTitle className="text-xl">{module.title}</CardTitle>
-                                        <p className="mt-3 text-sm leading-6 text-muted-foreground">{module.description}</p>
+                                        <span className={cn("inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold", engine.tagColor)}>
+                                            {engine.badge}
+                                        </span>
                                     </div>
-                                    <Button className="mt-5 w-fit" variant="outline" onClick={() => setActiveTab(module.tab)}>
-                                        Acessar módulo
-                                        <ArrowRight className="ml-2 h-4 w-4" />
+
+                                    <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
+                                        {engine.description}
+                                    </p>
+
+                                    {/* Highlights Pill Tags */}
+                                    <div className="mt-4 flex flex-wrap gap-1.5">
+                                        {engine.highlights.map(h => (
+                                            <span key={h} className="rounded-md border border-border/60 bg-muted/40 px-2 py-0.5 text-xs font-medium text-foreground/80">
+                                                ✓ {h}
+                                            </span>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                <div className="pt-2">
+                                    <Button 
+                                        onClick={() => setActiveTab(engine.tab)} 
+                                        className="w-full sm:w-auto font-semibold gap-2 transition-all group-hover:bg-primary group-hover:text-primary-foreground"
+                                        variant="outline"
+                                    >
+                                        Acessar Simulador
+                                        <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                                     </Button>
-                                </CardContent>
+                                </div>
                             </div>
-                        </Card>
+                        </div>
                     ))}
                 </div>
-            </section>
+            </div>
+
+            {/* SEÇÃO 2: A JORNADA DE PRÉ-VENDAS 360° */}
+            <div className="space-y-5">
+                <div className="flex flex-col gap-1">
+                    <div className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-primary">
+                        <Layers className="h-4 w-4" />
+                        Metodologia & Governança
+                    </div>
+                    <h2 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+                        A Jornada Completa do Negócio
+                    </h2>
+                    <p className="text-sm text-muted-foreground">
+                        Fluxo estruturado do primeiro contato com o cliente até a entrega do projeto aprovado.
+                    </p>
+                </div>
+
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                    {workflowSteps.map((wf) => (
+                        <div key={wf.step} className="group relative rounded-2xl border border-border/80 bg-card p-5 shadow-sm transition-all hover:border-primary/50 hover:shadow-md">
+                            <div className="flex items-center justify-between mb-4">
+                                <span className="font-mono text-xs font-black px-2 py-1 rounded bg-primary/10 text-primary">
+                                    {wf.step}
+                                </span>
+                                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-muted text-muted-foreground group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+                                    {wf.icon}
+                                </div>
+                            </div>
+                            <h3 className="text-base font-bold text-foreground">{wf.title}</h3>
+                            <p className="mt-2 text-xs leading-relaxed text-muted-foreground">{wf.text}</p>
+                        </div>
+                    ))}
+                </div>
+            </div>
+
+            {/* SEÇÃO 3: MÓDULOS DE GESTÃO, LICITAÇÃO & APOIO */}
+            <div className="space-y-5">
+                <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+                    <div>
+                        <div className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-primary">
+                            <Briefcase className="h-4 w-4" />
+                            Plataforma Integrada
+                        </div>
+                        <h2 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+                            Módulos Operacionais & de Apoio
+                        </h2>
+                    </div>
+                </div>
+
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    {platformModules.map((mod) => (
+                        <div 
+                            key={mod.title}
+                            className="group flex flex-col justify-between rounded-xl border border-border/70 bg-card p-5 shadow-sm transition-all hover:border-primary/40 hover:shadow-md"
+                        >
+                            <div>
+                                <div className="flex items-center justify-between mb-3">
+                                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+                                        {mod.icon}
+                                    </div>
+                                    <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                                        {mod.meta}
+                                    </span>
+                                </div>
+                                <h3 className="text-lg font-bold text-foreground">{mod.title}</h3>
+                                <p className="mt-2 text-xs leading-relaxed text-muted-foreground">{mod.description}</p>
+                            </div>
+
+                            <div className="pt-4 mt-2 border-t border-border/40">
+                                <Button 
+                                    size="sm"
+                                    variant="ghost" 
+                                    onClick={() => setActiveTab(mod.tab)}
+                                    className="w-full justify-between font-semibold text-primary hover:bg-primary/10"
+                                >
+                                    <span>{mod.actionLabel}</span>
+                                    <ArrowRight className="h-4 w-4" />
+                                </Button>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
         </div>
     );
 }
@@ -1257,7 +1452,7 @@ export default function App() { // Ou Home
             case 'poc': return <POCManagementView />;
             case 'price-records': return <PriceRecordView priceRecords={priceRecords} onAdd={(priceRecord) => setPriceRecords(prev => [...prev, { ...priceRecord, id: `ATA-${Date.now()}` }])} onUpdate={(id, priceRecord) => setPriceRecords(prev => prev.map(r => r.id === id ? { ...priceRecord, id } : r))} onDelete={(id) => setPriceRecords(prev => prev.filter(r => r.id !== id))} />;
             case 'settings': return <SettingsView currentUser={currentUser} />;
-            default: return <HomeLandingPage setActiveTab={setActiveTab} />;
+            default: return <HomeLandingPage setActiveTab={setActiveTab} currentUser={currentUser} />;
         }
     };
 

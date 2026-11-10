@@ -39,6 +39,13 @@ export function ApplicationHeader({ currentTitle, currentSubtitle, currentUser, 
       <nav className="app-breadcrumb" aria-label="Localização"><span className="hidden lg:inline">Área de trabalho</span><ChevronRight className="hidden lg:inline" /><span className={currentSubtitle ? 'hidden sm:inline' : 'truncate font-semibold text-foreground'}>{currentTitle === 'Dashboard' ? 'Visão geral' : currentTitle}</span>{currentSubtitle && <><ChevronRight className="hidden sm:inline" /><strong className="truncate">{currentSubtitle}</strong></>}</nav>
     </div>
     <div className="flex shrink-0 items-center gap-1 sm:gap-2">
+      <Button 
+        size="sm" 
+        onClick={() => onNavigate('quotes', 'new')} 
+        className="hidden md:inline-flex items-center gap-1.5 bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs h-8 px-3 rounded-lg shadow-sm transition-all hover:scale-105"
+      >
+        <span>+ Novo Orçamento</span>
+      </Button>
       <Button variant="outline" className="app-search-trigger" onClick={() => setSearchOpen(true)} aria-label="Buscar módulos"><Search /><span className="hidden xl:inline">Buscar módulos...</span><kbd className="hidden xl:inline">⌘ K</kbd></Button>
       {offline && <span className="hidden items-center gap-1 text-xs text-destructive sm:flex"><WifiOff className="h-4 w-4" />Sem conexão</span>}
       <Popover open={notificationOpen} onOpenChange={setNotificationOpen}><PopoverTrigger asChild><Button variant="ghost" size="icon" className="relative" aria-label={`Pendências${notifications.length ? `: ${notifications.length}` : ''}`}><Bell />{notifications.length > 0 && <span className="notification-dot" />}</Button></PopoverTrigger><PopoverContent align="end" className="w-[min(380px,calc(100vw-2rem))] p-0"><div className="border-b p-4"><h2 className="font-semibold">Central de pendências</h2><p className="mt-1 text-xs text-muted-foreground">Prazos e itens que precisam de andamento.</p></div><div className="max-h-[60dvh] overflow-y-auto p-2">{notifications.length ? notifications.slice(0, 12).map(item => <button type="button" key={item.id} className="notification-item" onClick={() => select(item.module, item.recordId)}><span className="text-xs text-muted-foreground">{item.kind} · {dueLabel(item)}</span><strong>{item.title}</strong><span>{item.description}</span></button>) : <div className="p-6 text-center text-sm text-muted-foreground">Nenhuma pendência encontrada.</div>}</div></PopoverContent></Popover>

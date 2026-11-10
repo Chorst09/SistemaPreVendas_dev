@@ -58,6 +58,7 @@ interface MetricCardProps {
   description?: string;
   className?: string;
   variant?: 'default' | 'primary' | 'success' | 'warning' | 'danger';
+  onClick?: () => void;
 }
 
 function MetricCard({
@@ -68,48 +69,60 @@ function MetricCard({
   description,
   className,
   variant = 'default',
+  onClick,
 }: MetricCardProps) {
   const trendColors = {
-    up: 'text-accent-green',
-    down: 'text-destructive',
+    up: 'text-emerald-500 font-semibold',
+    down: 'text-rose-500 font-semibold',
     neutral: 'text-muted-foreground',
   };
 
   const variantStyles = {
-    default: '',
-    primary: 'border-l-4 border-l-primary',
-    success: 'border-l-4 border-l-accent-green',
-    warning: 'border-l-4 border-l-accent-yellow',
-    danger: 'border-l-4 border-l-destructive',
+    default: 'hover:border-primary/40',
+    primary: 'border-l-4 border-l-primary bg-primary/[0.02]',
+    success: 'border-l-4 border-l-emerald-500 bg-emerald-500/[0.02]',
+    warning: 'border-l-4 border-l-amber-500 bg-amber-500/[0.02]',
+    danger: 'border-l-4 border-l-rose-500 bg-rose-500/[0.02]',
   };
 
   return (
-    <Card className={cn('relative overflow-hidden', variantStyles[variant], className)}>
-      <CardHeader className="pb-3">
+    <Card 
+      onClick={onClick}
+      className={cn(
+        'group relative overflow-hidden transition-all duration-300 rounded-xl border border-border/70 bg-card shadow-sm hover:shadow-lg',
+        onClick && 'cursor-pointer hover:-translate-y-1',
+        variantStyles[variant], 
+        className
+      )}
+    >
+      <div className="absolute top-0 right-0 -mr-6 -mt-6 h-20 w-20 rounded-full bg-primary/5 transition-all group-hover:scale-150 group-hover:bg-primary/10 pointer-events-none" />
+      <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
-          <CardDescription className="text-xs font-medium uppercase tracking-wide">
+          <CardDescription className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             {title}
           </CardDescription>
           {icon && (
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary transition-all duration-300 group-hover:bg-primary group-hover:text-primary-foreground group-hover:scale-110 shadow-sm">
               {icon}
             </div>
           )}
         </div>
       </CardHeader>
       <CardContent>
-        <div className="space-y-1">
-          <div className="text-3xl font-bold tracking-tight text-foreground">{value}</div>
+        <div className="space-y-1.5">
+          <div className="text-3xl font-extrabold tracking-tight text-foreground font-mono">
+            {value}
+          </div>
           {(change || description) && (
-            <div className="flex items-center gap-2 text-sm">
+            <div className="flex items-center gap-2 text-xs">
               {change && (
-                <span className={cn('font-medium', trendColors[change.trend])}>
+                <span className={cn('inline-flex items-center gap-0.5 rounded px-1.5 py-0.5 bg-muted/60', trendColors[change.trend])}>
                   {change.trend === 'up' && '↗'} {change.trend === 'down' && '↘'}{' '}
                   {change.value}
                 </span>
               )}
               {description && (
-                <span className="text-muted-foreground">{description}</span>
+                <span className="text-muted-foreground truncate">{description}</span>
               )}
             </div>
           )}
